@@ -16,3 +16,12 @@ tauri-plugin-shell = "2.0.0-beta"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
+keyring = "2.3.2"
+rust-ini = "0.21.0"
+dirs = "5.0.1"
+sys-locale = "0.3.1"
+thiserror = "1.0.58"
+anyhow = "1.0.81"
+winapi = { version = "0.3.9", features = ["winuser", "windef"] }
+x11rb = { version = "0.13.0"}
+tauri-plugin-theme = "0.4.0"
