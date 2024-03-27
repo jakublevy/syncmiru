@@ -3,17 +3,20 @@ use keyring::Entry;
 use crate::config::Language;
 use crate::constants;
 
-pub(super) fn ini_str_to_bool(str: &str) -> bool {
+pub(super) fn ini_str_to_bool(str: &str, default: bool) -> bool {
     let s = str.trim();
     if s == "1" || s.to_lowercase() == "true" {
         true
     }
-    else {
+    else if s == "0" || s.to_lowercase() == "false" {
         false
+    }
+    else {
+        default
     }
 }
 
-pub(super) fn ini_bool_to_str(b: bool) -> String {
+pub(super) fn ini_bool_to_string(b: bool) -> String {
     if b {
         "1".to_string()
     }

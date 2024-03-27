@@ -4,7 +4,7 @@ function App() {
     const { t } = useTranslation()
     return (
         <div className="container">
-            <button className="text-3xl font-bold underline text-red-600">Ahoj</button>
+            <button className="text-3xl font-bold dark:underline text-red-600">Ahoj</button>
             <h1>Welcome to Tauri! {t('send')}</h1>
         </div>
     );

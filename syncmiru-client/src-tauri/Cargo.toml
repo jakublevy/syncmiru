@@ -22,6 +22,10 @@ dirs = "5.0.1"
 sys-locale = "0.3.1"
 thiserror = "1.0.58"
 anyhow = "1.0.81"
-winapi = { version = "0.3.9", features = ["winuser", "windef"] }
-x11rb = { version = "0.13.0"}
 tauri-plugin-theme = "0.4.0"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+winapi = { version = "0.3.9", features = ["winuser", "windef"] }
+
+[target.'cfg(all(target_family = "unix", not(target_os = "macos")))'.dependencies]
+x11rb = { version = "0.13.0"}
