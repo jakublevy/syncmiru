@@ -1,3 +1,4 @@
 {
-  "send": "Odeslat"
+  "welcome": "Vítejte!",
+  "welcome-msg": "Všimli jsme si, že spouštíte aplikace Syncwatch poprvé. Zvolte si jazyk, ve kterém se má aplikace zobrazovat."
 }

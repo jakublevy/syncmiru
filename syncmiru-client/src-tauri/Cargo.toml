@@ -23,6 +23,7 @@ sys-locale = "0.3.1"
 thiserror = "1.0.58"
 anyhow = "1.0.81"
 tauri-plugin-theme = "0.4.0"
+rust-i18n = "3.0.1"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winapi = { version = "0.3.9", features = ["winuser", "windef"] }

@@ -1,0 +1,5 @@
+{
+  "tauri-app-error": "Došlo k chybě při běhu aplikace.",
+  "data-dir-panic": "Datový adresář není dostupný.",
+  "config-dir-panic": "Konfigurační adresář není dostupný."
+}
