@@ -1,21 +1,16 @@
-
+// @ts-ignore
+import {cache} from "react";
 import {invoke} from "@tauri-apps/api/core";
-import {useEffect, useState} from "react";
 import {Language} from "../models/config.tsx";
 
-export default function useLanguage(): [Language | undefined, (l: Language) => Promise<void>] {
-    const [lang, setLang] = useState<Language>()
-    const fetchLanguage = async (): Promise<Language> => {
-        return await invoke('get_language', {})
-    }
-    const invokeSetLanguage = async (l: Language): Promise<void> => {
-        //return Promise.reject("ahoj")
-        return invoke('set_language', {language: l}).then(() => setLang(l))
-    }
 
-    useEffect(() => {
-        fetchLanguage().then(b => setLang(b))
-    }, []);
+export const languagePromise = cache(async (): Promise<Language> => {
+    return invoke('get_language', {})
+})
 
-    return [lang, invokeSetLanguage]
+
+export function useChangeLanguage(): (l: Language) => Promise<void> {
+    return (l: Language): Promise<void> => {
+        return invoke('set_language', {language: l})
+    }
 }

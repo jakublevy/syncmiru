@@ -1,36 +1,37 @@
+// @ts-ignore
+import {ReactElement, use, useEffect, useState} from 'react'
+
 import Select from 'react-select';
-import {LanguagesSelect, LanguageSelectModel} from "../models/config.tsx";
-import useLanguage from "../hooks/useLanguage.ts";
+import {LanguagesSelect, LanguageSelectModel, Language} from "../models/config.tsx";
+import {languagePromise, useChangeLanguage} from '../hooks/useLanguage.ts'
 import {useTranslation} from "react-i18next";
 
 
-export default function LanguageSelector() {
-    const [lang, setLang] = useLanguage()
+export default function LanguageSelector(): ReactElement {
+    const initLang: Language = use(languagePromise())
+    const [lang, setLang] = useState<Language>(initLang)
+    const changeLang = useChangeLanguage()
     const {i18n} = useTranslation()
 
+    useEffect(() => {
+        i18n.changeLanguage(lang)
+    }, [initLang]);
+
     const languageChanged = async (ls: LanguageSelectModel) => {
-        await setLang(ls.id)
+        await changeLang(ls.id).then(() => setLang(ls.id))
         await i18n.changeLanguage(ls.id)
     }
 
-    if(lang !== undefined) {
-        return (
-            <div className="vehicle-picker">
-                {}
-                <Select
-                    //@ts-ignore
-                    getOptionLabel={(ls: LanguageSelectModel) => <span>{ls.flag} {ls.pretty}</span>}
-                    getOptionValue={(ls: LanguageSelectModel) => ls.id}
-                    value={LanguagesSelect.find(l => l.id === lang)}
-
-                    //@ts-ignore
-                    onChange={languageChanged}
-                    options={LanguagesSelect}
-                />
-            </div>
-        );
-    }
     return (
-        <div>Loading</div>
-    )
+        <Select
+            //@ts-ignore
+            getOptionLabel={(ls: LanguageSelectModel) => <span>{ls.flag} {ls.pretty}</span>}
+            getOptionValue={(ls: LanguageSelectModel) => ls.id}
+            value={LanguagesSelect.find(l => l.id === lang)}
+            className="w-52"
+            //@ts-ignore
+            onChange={languageChanged}
+            options={LanguagesSelect}
+        />
+    );
 }

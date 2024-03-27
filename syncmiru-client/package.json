@@ -14,11 +14,12 @@
     "@tauri-apps/plugin-shell": ">=2.0.0-beta.0",
     "i18next": "^23.10.1",
     "i18next-http-backend": "^2.5.0",
-    "react": "^18.2.0",
+    "react": "experimental",
     "react-country-flag": "^3.1.0",
-    "react-dom": "^18.2.0",
+    "react-dom": "experimental",
     "react-i18next": "^14.1.0",
-    "react-select": "^5.8.0"
+    "react-select": "^5.8.0",
+    "react-spinners": "^0.13.8"
   },
   "devDependencies": {
     "@tauri-apps/cli": ">=2.0.0-beta.0",

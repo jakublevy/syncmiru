@@ -29,7 +29,6 @@ pub async fn set_first_run_seen(state: tauri::State<'_, AppState>) -> Result<()>
 
 #[tauri::command]
 pub async fn get_language(state: tauri::State<'_, AppState>) -> Result<Language> {
-    sleep(Duration::from_secs(5));
     let appdata = state.appdata.read()?;
     Ok(appdata.lang)
 }
@@ -38,6 +37,7 @@ pub async fn get_language(state: tauri::State<'_, AppState>) -> Result<Language>
 pub async fn set_language(state: tauri::State<'_, AppState>, language: Language) -> Result<()> {
     let mut appdata = state.appdata.write()?;
     appdata.lang = language;
+    rust_i18n::set_locale(appdata.lang.as_str());
     write_config(&appdata)?;
     Ok(())
 }
