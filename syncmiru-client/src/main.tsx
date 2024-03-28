@@ -13,9 +13,9 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         <I18nextProvider i18n={i18n}>
             <MemoryRouter>
                 <ErrorBoundary fallback={<div>Unrecoverable error</div>}>
-                <Suspense fallback={<Loading/>}>
-                    <App/>
-                </Suspense>
+                    <Suspense fallback={<Loading/>}>
+                        <App/>
+                    </Suspense>
                 </ErrorBoundary>
             </MemoryRouter>
         </I18nextProvider>

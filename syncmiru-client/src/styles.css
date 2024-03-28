@@ -16,3 +16,7 @@ html, body, #root {
 .btn-primary {
     @apply bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 border border-indigo-700 rounded
 }
+
+.btn-secondary {
+    @apply bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded
+}

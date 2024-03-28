@@ -1,45 +1,32 @@
 import Welcome from "./Welcome.tsx";
-// @ts-ignore
-import React, {ReactElement, ReactNode, Suspense, use, useEffect, useState} from "react";
-import {useTranslation} from "react-i18next";
-import Loading from "./Loading.tsx";
-import DepsMissingNoWindows from "./DepsMissingNoWindows.tsx";
-import {firstRunSeenPromise} from "../hooks/useFirstRunSeen.ts";
+import React, {ReactElement, useEffect} from "react";
+import {useFirstRunSeen} from "../hooks/useFirstRunSeen.ts";
 import {Route, Routes, useNavigate} from "react-router-dom";
 import Main from "./Main.tsx";
 import Deps from "./Deps.tsx";
-import {PacmanLoader} from "react-spinners";
-import {Language} from "../models/config.tsx";
-import {languagePromise} from "../hooks/useLanguage.ts";
-import i18n from "../i18n.ts";
+import DepsMissingWindows from "./DepsMissingWindows.tsx";
+import {DepsState} from "../models/config.tsx";
 
 function App(): ReactElement {
-    const firstRunSeen: boolean = use(firstRunSeenPromise())
+    const firstRunSeen: boolean = useFirstRunSeen()
     const navigate = useNavigate()
 
     useEffect(() => {
-        if(firstRunSeen)
+        if (firstRunSeen)
             navigate("/deps", {state: {firstRunSeen: true}})
         else
             navigate("/welcome")
     }, [firstRunSeen]);
 
     return (
+          // <DepsMissingWindows firstRunSeen={false} depsState={{mpv: false, yt_dlp: false}}/>
+         // <Welcome/>
         <Routes>
             <Route path="/welcome" element={<Welcome/>}/>
             <Route path="/main" element={<Main/>}/>
-            <Route path="/deps" element={<Deps />} />
+            <Route path="/deps" element={<Deps/>}/>
         </Routes>
     )
-        // <>
-        //     {firstRunSeen ? <Main/> : <Welcome/>}
-        // </>
-        // <ErrorBoundary fallback={<div>Error</div>}>
-        //     <Suspense fallback={<Loading/>}>
-        //         <Welcome/>
-        //     </Suspense>
-        // </ErrorBoundary>
-
 }
 
 export default App;

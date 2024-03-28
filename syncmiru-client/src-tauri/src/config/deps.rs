@@ -21,22 +21,29 @@ impl DepsInfo {
         Self::from_params(appdata.deps_managed, &appdata.mpv_path, &appdata.yt_dlp_path)
     }
     pub fn from_params(deps_managed: bool, mpv_path: &Option<PathBuf>, yt_dlp_path: &Option<PathBuf>) -> Result<Self> {
-        let mut mpv = "mpv".to_string();
-        let mut yt_dlp = "yt-dlp".to_string();
+        let mut mpv = "".to_string();
+        let mut yt_dlp = "".to_string();
         if deps_managed {
-            mpv = mpv_path
-                .clone()
-                .context("mpv_path is missing")?
-                .join(PathBuf::from("mpv.exe"))
-                .to_string_lossy()
-                .to_string();
-
-            yt_dlp = yt_dlp_path
-                .clone()
-                .context("yt_dlp_path is missing")?
-                .join(PathBuf::from("yt-dlp.exe"))
-                .to_string_lossy()
-                .to_string();
+            if mpv_path.is_some() {
+                mpv = mpv_path
+                    .clone()
+                    .unwrap()
+                    .join(PathBuf::from("mpv.exe"))
+                    .to_string_lossy()
+                    .to_string();
+            }
+            if yt_dlp_path.is_some() {
+                yt_dlp = yt_dlp_path
+                    .clone()
+                    .unwrap()
+                    .join(PathBuf::from("yt-dlp.exe"))
+                    .to_string_lossy()
+                    .to_string();
+            }
+        }
+        else {
+            mpv = "mpv".to_string();
+            yt_dlp = "yt-dlp".to_string();
         }
         let mut mpv_v: Option<String> = None;
         let mut yt_dlp_v: Option<String> = None;

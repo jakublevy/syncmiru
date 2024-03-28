@@ -26,6 +26,7 @@ fn main() -> Result<()> {
             config::frontend::get_language,
             config::frontend::set_language,
             config::frontend::get_deps_state,
+            config::frontend::get_target_family,
             config::frontend::set_home_srv,
         ])
         .manage(appstate)

@@ -2,12 +2,14 @@ import LanguageSelector from "./LanguageSelector.tsx";
 import {useTranslation} from "react-i18next";
 import {ReactElement} from "react";
 import {useNavigate} from "react-router-dom";
+import {refresh} from "@mittwald/react-use-promise";
 
 export default function Welcome(): ReactElement {
     const {t} = useTranslation()
     const navigate = useNavigate()
 
     function navigateToDeps() {
+        refresh({tag: "useDepsState"})
         navigate("/deps", {state: {firstRunSeen: false}})
     }
 

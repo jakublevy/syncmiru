@@ -2,5 +2,11 @@
   "welcome": "Vítejte!",
   "welcome-msg": "Všimli jsme si, že spouštíte aplikace Syncmiru poprvé. Zvolte si jazyk, ve kterém se má aplikace zobrazovat.",
   "language": "Jazyk",
-  "continue": "Pokračovat"
+  "continue": "Pokračovat",
+  "missing-deps-title": "Chybějící závislosti",
+  "missing-deps-windows-p1": "V environmentální proměnné PATH vám chybí závislosti nutné pro správnou funkčnost aplikace Syncmiru.",
+  "missing-deps-windows-p2": "Pokud chcete, aby si program udržoval vlastní kopii těchto závislostí automaticky, klikněte na tlačítko \"Stáhnout závislosti\"",
+  "missing-deps-windows-p3": "V opačném případě zajistěte, aby se v environmentální proměnné PATH nacházely všechny závislosti a pokračujte kliknutím na tlačítko \"Znovu zkontrolovat\".",
+  "missing-deps-check-again": "Znovu zkontrolovat",
+  "missing-deps-download-windows": "Stáhnout závislosti"
 }
