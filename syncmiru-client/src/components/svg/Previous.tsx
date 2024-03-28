@@ -1,6 +1,6 @@
-// https://www.svgrepo.com/svg/459465/left-circle-2
-
 import {ReactElement} from "react";
+
+// https://www.svgrepo.com/svg/459465/left-circle-2
 
 export default function Previous({width, height, stroke}: {width?: string, height?: string, stroke?: string}): ReactElement {
     return (

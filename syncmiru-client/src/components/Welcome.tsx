@@ -8,7 +8,7 @@ export default function Welcome(): ReactElement {
     const {t} = useTranslation()
     const navigate = useNavigate()
 
-    function navigateToDeps() {
+    function navigateToDeps(): void {
         refresh({tag: "useDepsState"})
         navigate("/deps", {state: {firstRunSeen: false}})
     }

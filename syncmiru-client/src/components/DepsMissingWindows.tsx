@@ -4,21 +4,26 @@ import Check from "./svg/Check.tsx";
 import Cross from "./svg/Cross.tsx";
 import {useTranslation} from "react-i18next";
 import Previous from "./svg/Previous.tsx";
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import {refresh} from "@mittwald/react-use-promise";
+import {ReactElement} from "react";
 
-export default function DepsMissingWindows({firstRunSeen, depsState}: { firstRunSeen: boolean, depsState: DepsState }) {
+export default function DepsMissingWindows({firstRunSeen, depsState}: { firstRunSeen: boolean, depsState: DepsState }): ReactElement {
     const {t} = useTranslation()
     const navigate = useNavigate()
+    const location = useLocation()
 
-    function navigateBack() {
+    function navigateBack(): void {
         refresh({tag: "useLanguage"})
         navigate("/welcome")
     }
 
-    function checkDepsAgain() {
+    function checkDepsAgain(): void {
         refresh({tag: "useDepsState"})
-        navigate("/deps", {state: {firstRunSeen: firstRunSeen}})
+        if(location.pathname == "/deps")
+            navigate("/deps-again", {state: {firstRunSeen: firstRunSeen}})
+        else
+            navigate("/deps", {state: {firstRunSeen: firstRunSeen}})
     }
 
     return (

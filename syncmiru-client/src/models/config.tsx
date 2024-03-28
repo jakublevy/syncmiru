@@ -1,13 +1,3 @@
-// interface AppData {
-//     firstRunSeen: boolean,
-//     homeSrv: string | undefined,
-//     language: Language,
-//     autoReady: boolean,
-//     targetFamily: string
-//
-// }
-//
-
 import React from "react";
 import ReactCountryFlag from "react-country-flag";
 

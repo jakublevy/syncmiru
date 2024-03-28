@@ -6,10 +6,9 @@ export const useLanguage = (): Language => {
     return usePromise(languagePromise, [], {tags: ["useLanguage"]})
 }
 
-const languagePromise = async (): Promise<Language> => {
+const languagePromise = (): Promise<Language> => {
     return invoke('get_language', {})
 }
-
 
 export function useChangeLanguage(): (l: Language) => Promise<void> {
     return (l: Language): Promise<void> => {

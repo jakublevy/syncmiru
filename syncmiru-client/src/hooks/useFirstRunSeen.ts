@@ -5,7 +5,7 @@ export const useFirstRunSeen = (): boolean => {
     return usePromise(firstRunSeenPromise, [], {tags: ["useFirstRunSeen"]})
 }
 
-const firstRunSeenPromise = async (): Promise<boolean> => {
+const firstRunSeenPromise = (): Promise<boolean> => {
     return invoke('get_first_run_seen', {})
 }
 
