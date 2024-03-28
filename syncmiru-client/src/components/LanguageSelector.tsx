@@ -1,5 +1,5 @@
 // @ts-ignore
-import {ReactElement, use, useEffect, useState} from 'react'
+import {cache, ReactElement, use, useEffect, useState} from 'react'
 
 import Select from 'react-select';
 import {LanguagesSelect, LanguageSelectModel, Language} from "../models/config.tsx";
@@ -9,12 +9,13 @@ import {useTranslation} from "react-i18next";
 
 export default function LanguageSelector(): ReactElement {
     const initLang: Language = use(languagePromise())
-    const [lang, setLang] = useState<Language>(initLang)
     const changeLang = useChangeLanguage()
     const {i18n} = useTranslation()
+    const [lang, setLang] = useState<Language>(initLang)
 
     useEffect(() => {
-        i18n.changeLanguage(lang)
+        setLang(initLang)
+        i18n.changeLanguage(initLang)
     }, [initLang]);
 
     const languageChanged = async (ls: LanguageSelectModel) => {

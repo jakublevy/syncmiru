@@ -5,7 +5,6 @@ mod config;
 mod constants;
 mod error;
 mod result;
-mod deps;
 mod appstate;
 
 #[macro_use]
@@ -22,11 +21,12 @@ fn main() -> Result<()> {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
-            config::appdata::frontend::get_first_run_seen,
-            config::appdata::frontend::set_first_run_seen,
-            config::appdata::frontend::get_language,
-            config::appdata::frontend::set_language,
-            config::appdata::frontend::set_home_srv,
+            config::frontend::get_first_run_seen,
+            config::frontend::set_first_run_seen,
+            config::frontend::get_language,
+            config::frontend::set_language,
+            config::frontend::get_deps_state,
+            config::frontend::set_home_srv,
         ])
         .manage(appstate)
         .plugin(tauri_plugin_shell::init())

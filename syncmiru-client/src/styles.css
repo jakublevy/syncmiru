@@ -13,6 +13,6 @@ html, body, #root {
     min-height: 100dvh;
 }
 
-.btn-indigo {
+.btn-primary {
     @apply bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 border border-indigo-700 rounded
 }

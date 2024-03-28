@@ -1,11 +1,9 @@
-pub mod frontend;
-
 use std::fs;
 use std::path::PathBuf;
 use std::thread::available_parallelism;
 use anyhow::Context;
 use ini::Ini;
-use crate::config::{Language};
+use crate::config::Language;
 use tauri_plugin_theme::Theme;
 use crate::appstate::AppState;
 use crate::config;
