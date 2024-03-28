@@ -25,7 +25,7 @@ pub async fn set_first_run_seen(state: tauri::State<'_, AppState>) -> Result<()>
 #[tauri::command]
 pub async fn get_language(state: tauri::State<'_, AppState>) -> Result<Language> {
     let appdata = state.appdata.read()?;
-    //sleep(Duration::from_secs(1));
+    //sleep(Duration::from_secs(10));
     Ok(appdata.lang)
 }
 
@@ -42,19 +42,19 @@ pub async fn set_language(state: tauri::State<'_, AppState>, language: Language)
 pub async fn get_deps_state(state: tauri::State<'_, AppState>) -> Result<DepsStateFrontend> {
     //sleep(Duration::from_secs(3));
     let mut appdata = state.appdata.write()?;
-    if cfg!(target_family = "windows") && !appdata.first_run_seen {
-        let local = DepsInfo::from_params(true, &appdata.mpv_path, &appdata.yt_dlp_path)?;
-        if local.ok() {
-            Ok(local.to_frontend())
-        }
-        else {
-            let global = DepsInfo::from_params(false, &appdata.mpv_path, &appdata.yt_dlp_path)?;
-            if global.ok() {
-                appdata.deps_managed = false;
-                write_config(&appdata)?;
+    if cfg!(target_family = "windows") {
+        if appdata.deps_managed {
+            let local = DepsInfo::from_params(true, &appdata.mpv_path, &appdata.yt_dlp_path)?;
+            if local.ok() {
+                return Ok(local.to_frontend())
             }
-            Ok(global.to_frontend())
         }
+        let global = DepsInfo::from_params(false, &appdata.mpv_path, &appdata.yt_dlp_path)?;
+        if global.ok() {
+            appdata.deps_managed = false;
+            write_config(&appdata)?;
+        }
+        Ok(global.to_frontend())
     }
     else {
         let di = DepsInfo::from_params(appdata.deps_managed, &appdata.mpv_path, &appdata.yt_dlp_path)?;
@@ -63,7 +63,7 @@ pub async fn get_deps_state(state: tauri::State<'_, AppState>) -> Result<DepsSta
 }
 
 #[tauri::command]
-pub async fn get_target_family(state: tauri::State<'_, AppState>) -> Result<String> {
+pub async fn get_target_family() -> Result<String> {
     Ok(std::env::consts::FAMILY.to_lowercase().to_string())
 }
 

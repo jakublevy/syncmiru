@@ -1,4 +1,3 @@
-import LanguageSelector from "./LanguageSelector.tsx";
 import {DepsState} from "../models/config.tsx";
 import Check from "./svg/Check.tsx";
 import Cross from "./svg/Cross.tsx";
@@ -30,8 +29,8 @@ export default function DepsMissingWindows({firstRunSeen, depsState}: { firstRun
         <div className="flex justify-center items-center h-dvh">
             <div className="flex flex-col p-4 border-4 m-4">
                 <div className="flex items-start">
-                    <button className="rounded-full hover:bg-gray-300" onClick={navigateBack}>
-                        <Previous height="3rem" stroke="#000"/>
+                    <button className="rounded-full hover:bg-gray-300 dark:hover:bg-gray-600" onClick={navigateBack}>
+                        <Previous height="3rem"/>
                     </button>
                     <h1 className="text-4xl ml-4 mb-4">{t('missing-deps-title')}</h1>
                 </div>

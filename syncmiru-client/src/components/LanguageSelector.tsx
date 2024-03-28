@@ -28,7 +28,8 @@ export default function LanguageSelector(): ReactElement {
             getOptionLabel={(ls: LanguageSelectModel) => <span>{ls.flag} {ls.pretty}</span>}
             getOptionValue={(ls: LanguageSelectModel) => ls.id}
             value={LanguagesSelect.find(l => l.id === lang)}
-            className="w-52"
+            classNamePrefix="my-react-select"
+            className="w-52 my-react-select-container"
             //@ts-ignore
             onChange={languageChanged}
             options={LanguagesSelect}
