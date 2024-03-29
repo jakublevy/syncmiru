@@ -1,10 +1,9 @@
 use std::thread::{available_parallelism, sleep};
 use std::time::Duration;
-use winapi::um::synchapi::Sleep;
 use crate::appstate::AppState;
 use crate::config::appdata::write_config;
 use crate::config::{Language, utils};
-use crate::config::deps::{DepsInfo, DepsStateFrontend};
+use crate::config::deps::{DepsStateFrontend};
 use crate::result::Result;
 
 #[tauri::command]
@@ -44,21 +43,21 @@ pub async fn get_deps_state(state: tauri::State<'_, AppState>) -> Result<DepsSta
     let mut appdata = state.appdata.write()?;
     if cfg!(target_family = "windows") {
         if appdata.deps_managed {
-            let local = DepsInfo::from_params(true, &appdata.mpv_path, &appdata.yt_dlp_path)?;
+            let local = DepsStateFrontend::from_params(true)?;
             if local.ok() {
-                return Ok(local.to_frontend())
+                return Ok(local)
             }
         }
-        let global = DepsInfo::from_params(false, &appdata.mpv_path, &appdata.yt_dlp_path)?;
+        let global = DepsStateFrontend::from_params(false)?;
         if global.ok() {
             appdata.deps_managed = false;
             write_config(&appdata)?;
         }
-        Ok(global.to_frontend())
+        Ok(global)
     }
     else {
-        let di = DepsInfo::from_params(appdata.deps_managed, &appdata.mpv_path, &appdata.yt_dlp_path)?;
-        Ok(di.to_frontend())
+        let di = DepsStateFrontend::from_params(appdata.deps_managed)?;
+        Ok(di)
     }
 }
 

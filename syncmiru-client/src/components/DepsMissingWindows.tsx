@@ -6,6 +6,7 @@ import Previous from "./svg/Previous.tsx";
 import {useLocation, useNavigate} from "react-router-dom";
 import {refresh} from "@mittwald/react-use-promise";
 import {ReactElement} from "react";
+import BackButton from "./BackButton.tsx";
 
 export default function DepsMissingWindows({firstRunSeen, depsState}: { firstRunSeen: boolean, depsState: DepsState }): ReactElement {
     const {t} = useTranslation()
@@ -25,14 +26,17 @@ export default function DepsMissingWindows({firstRunSeen, depsState}: { firstRun
             navigate("/deps", {state: {firstRunSeen: firstRunSeen}})
     }
 
+    function downloadDeps(): void {
+        navigate('/deps-download')
+    }
+
+
     return (
         <div className="flex justify-center items-center h-dvh">
             <div className="flex flex-col p-4 border-4 m-4">
                 <div className="flex items-start">
-                    <button className="rounded-full hover:bg-gray-300 dark:hover:bg-gray-600" onClick={navigateBack}>
-                        <Previous height="3rem"/>
-                    </button>
-                    <h1 className="text-4xl ml-4 mb-4">{t('missing-deps-title')}</h1>
+                    {!firstRunSeen && <BackButton className="mr-4" onClick={navigateBack}/>}
+                    <h1 className="text-4xl mb-4">{t('missing-deps-title')}</h1>
                 </div>
                 <p>{t('missing-deps-windows-p1')}</p>
                 <div className="flex justify-evenly mt-8 mb-8">
@@ -53,7 +57,7 @@ export default function DepsMissingWindows({firstRunSeen, depsState}: { firstRun
                 <p>{t('missing-deps-windows-p3')}</p>
                 <div className="mt-8 flex justify-around">
                     <button className="btn-secondary" onClick={checkDepsAgain}>{t('missing-deps-check-again')}</button>
-                    <button className="btn-primary">{t('missing-deps-download-windows')}</button>
+                    <button className="btn-primary" onClick={downloadDeps}>{t('missing-deps-download-windows')}</button>
                 </div>
             </div>
         </div>

@@ -1,7 +1,6 @@
 use std::fmt::Display;
 use std::io;
-use std::sync::{PoisonError, RwLockWriteGuard};
-use crate::config::appdata;
+use std::sync::PoisonError;
 
 #[derive(thiserror::Error, Debug)]
 pub enum SyncmiruError {
@@ -20,6 +19,18 @@ pub enum SyncmiruError {
 
     #[error("Internal error")]
     InternalError(#[from] anyhow::Error),
+
+    #[error("Reqwest error")]
+    ReqwestError(#[from] reqwest::Error),
+
+    #[error("XML error")]
+    XmlError(#[from] roxmltree::Error),
+
+    #[error("XML missing tag error")]
+    XmlMissingTagError,
+
+    #[error("URL missing version error")]
+    VersionMissingUrl,
 
     #[error("Poison error")]
     PoisonError

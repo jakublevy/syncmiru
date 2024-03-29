@@ -6,6 +6,7 @@ mod constants;
 mod error;
 mod result;
 mod appstate;
+mod deps;
 
 #[macro_use]
 extern crate rust_i18n;
@@ -13,6 +14,8 @@ rust_i18n::i18n!("locales");
 
 use result::Result;
 use rust_i18n::t;
+use tauri::{Window, WindowEvent};
+use tauri::WindowEvent::CloseRequested;
 
 
 fn main() -> Result<()> {
@@ -29,6 +32,7 @@ fn main() -> Result<()> {
             config::frontend::get_target_family,
             config::frontend::set_home_srv,
         ])
+        .on_window_event(handle_window_event)
         .manage(appstate)
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_theme::init(ctx.config_mut()))
@@ -36,4 +40,13 @@ fn main() -> Result<()> {
         .expect(t!("tauri-app-error").as_ref());
 
     Ok(())
+}
+
+fn handle_window_event(window: &Window, event: &WindowEvent) {
+    match event {
+        CloseRequested {.. } => {
+            config::utils::delete_tmp().expect("Deleting tmp files failed")
+        }
+        _ => {}
+    }
 }

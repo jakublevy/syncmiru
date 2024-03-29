@@ -24,9 +24,12 @@ thiserror = "1.0.58"
 anyhow = "1.0.81"
 tauri-plugin-theme = "0.4.0"
 rust-i18n = "3.0.1"
+reqwest = "0.12.2"
+roxmltree = "0.19.0"
+tokio = { version = "1.37.0", features = ["rt-multi-thread", "macros"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
-winapi = { version = "0.3.9", features = ["winuser", "windef"] }
+windows-sys = "0.52.0"
 
 [target.'cfg(all(target_family = "unix", not(target_os = "macos")))'.dependencies]
 x11rb = { version = "0.13.0"}

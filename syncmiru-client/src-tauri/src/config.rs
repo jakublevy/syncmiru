@@ -1,9 +1,8 @@
 use anyhow::Context;
 use serde::{Deserializer, Serializer};
 use crate::config::Language::{Czech, English};
-//use crate::config::Theme::{Auto, Dark, Light};
 
-mod utils;
+pub mod utils;
 pub mod appdata;
 pub mod jwt;
 pub mod frontend;
@@ -42,28 +41,3 @@ impl<'de> serde::Deserialize<'de> for Language {
         Ok(Language::from(s.as_str()))
     }
 }
-
-// #[derive(Debug)]
-// pub enum Theme {
-//     Light,
-//     Dark,
-//     Auto,
-// }
-//
-// impl Theme {
-//     pub fn from(s: &str) -> Option<Self> {
-//         match s.to_lowercase().as_str() {
-//             "light" => Some(Light),
-//             "dark" => Some(Dark),
-//             "auto" => Some(Auto),
-//             _ => None
-//         }
-//     }
-//     pub fn as_str(&self) -> &'static str {
-//         match self {
-//             Light => "light",
-//             Dark => "dark",
-//             Auto => "auto"
-//         }
-//     }
-// }

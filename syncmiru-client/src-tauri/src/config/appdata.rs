@@ -8,16 +8,16 @@ use tauri_plugin_theme::Theme;
 use crate::appstate::AppState;
 use crate::config;
 use crate::result::Result;
+use crate::deps::utils::{mpv_dir, yt_dlp_dir};
 use crate::config::jwt::write_login_tkn;
 use crate::config::utils::{get_preferred_locale, ini_bool_to_string, ini_str_to_bool, syncmiru_config_ini, syncmiru_data_dir};
 
-#[derive(Debug)]
 pub struct AppData {
     pub first_run_seen: bool,
     pub home_srv: Option<String>,
     pub deps_managed: bool,
-    pub mpv_path: Option<PathBuf>,
-    pub yt_dlp_path: Option<PathBuf>,
+    pub mpv_version: Option<String>,
+    pub yt_dlp_version: Option<String>,
     pub lang: Language,
     pub theme: Theme,
     pub auto_ready: bool,
@@ -25,22 +25,12 @@ pub struct AppData {
 
 impl Default for AppData {
     fn default() -> Self {
-        let syncmiru_data_dir = syncmiru_data_dir();
-
-        let mut mpv_path: Option<PathBuf> = None;
-        let mut yt_dlp_path: Option<PathBuf> = None;
-        let mut deps_managed: bool = false;
-        if cfg!(target_family = "windows") {
-            deps_managed = true;
-            mpv_path = Some(syncmiru_data_dir.clone().join("mpv"));
-            yt_dlp_path = Some(syncmiru_data_dir.clone().join("yt-dlp"));
-        }
         AppData {
             first_run_seen: false,
             home_srv: None,
-            deps_managed,
-            mpv_path,
-            yt_dlp_path,
+            deps_managed: false,
+            mpv_version: None,
+            yt_dlp_version: None,
             theme: Theme::Auto,
             lang: get_preferred_locale(),
             auto_ready: false,
@@ -49,7 +39,7 @@ impl Default for AppData {
 }
 
 pub fn read_config() -> Result<AppData> {
-    let syncmiru_config = syncmiru_config_ini();
+    let syncmiru_config = syncmiru_config_ini()?;
     let mut appdata = AppData::default();
 
     if syncmiru_config.exists() {
@@ -62,7 +52,7 @@ pub fn read_config() -> Result<AppData> {
             }
 
             let home_srv = settings.get("home_srv");
-            appdata.home_srv = home_srv.map(|s|s.to_string());
+            appdata.home_srv = home_srv.map(|s| s.to_string());
 
             let lang_opt = settings.get("language");
             if let Some(lang_s) = lang_opt {
@@ -89,15 +79,23 @@ pub fn read_config() -> Result<AppData> {
                 let deps_managed_opt = windows.get("deps_managed");
                 if let Some(deps_managed) = deps_managed_opt {
                     appdata.deps_managed = ini_str_to_bool(deps_managed, true);
-                    let mpv_path_opt = windows.get("mpv_path").map(|s| PathBuf::from(s));
-                    let yt_dlp_path_opt = windows.get("yt-dlp_path").map(|s| PathBuf::from(s));
-                    appdata.mpv_path = mpv_path_opt;
-                    appdata.yt_dlp_path = yt_dlp_path_opt;
+                    if appdata.deps_managed {
+                        let mpv_version = windows
+                            .get("mpv_version")
+                            .context("mpv_version is missing")?;
+
+                        appdata.mpv_version = Some(mpv_version.to_string());
+
+                        let yt_dlp_version = windows
+                            .get("yt-dlp_version")
+                            .context("yt-dlp_version is missing")?;
+
+                        appdata.yt_dlp_version = Some(yt_dlp_version.to_string());
+                    }
                 }
             }
         }
     }
-
     Ok(appdata)
 }
 
@@ -116,25 +114,19 @@ pub fn write_config(config: &AppData) -> Result<()> {
         let mut windows = &mut ini.with_section(Some("Windows"));
         windows = windows.set("deps_managed", ini_bool_to_string(config.deps_managed));
         if config.deps_managed {
-            let mpv_path_cpy = config.mpv_path
+            let mpv_version = config.mpv_version
                 .clone()
-                .context("mpv_path is missing")?;
-            let mpv_str = mpv_path_cpy
-                .to_str()
-                .context("mpv_path is missing")?;
-            let yt_dlp_cpy = config.yt_dlp_path
+                .context("mpv_version is missing")?;
+            let yt_dlp_version = config.yt_dlp_version
                 .clone()
-                .context("yt-dlp_path is missing")?;
-            let yt_dlp_str = yt_dlp_cpy
-                .to_str()
-                .context("yt-dlp_path is missing")?;
+                .context("yt-dlp_version is missing")?;
 
-            windows = windows.set("mpv_path", mpv_str);
-            windows = windows.set("yt-dlp_path", yt_dlp_str);
+            windows = windows.set("mpv_version", mpv_version);
+            windows = windows.set("yt-dlp_version", yt_dlp_version);
         }
     }
 
-    let syncmiru_conf_ini = syncmiru_config_ini();
+    let syncmiru_conf_ini = syncmiru_config_ini()?;
     let parent = syncmiru_conf_ini.parent().context("conf.ini has no parent")?;
     if !parent.exists() {
         fs::create_dir_all(parent)?;
