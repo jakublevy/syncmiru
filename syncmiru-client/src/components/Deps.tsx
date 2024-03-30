@@ -1,5 +1,5 @@
-import {ReactElement, Suspense, useEffect} from "react";
-import {NavigateFunction, useLocation, useNavigate} from "react-router-dom";
+import {ReactElement, useEffect} from "react";
+import {useLocation, useNavigate} from "react-router-dom";
 import {DepsState} from "../models/config.tsx";
 import {useDepsState} from "../hooks/useDepsState.ts";
 import {useTargetFamily} from "../hooks/useTargetFamily.ts";
@@ -31,14 +31,4 @@ export default function Deps(): ReactElement {
         }
         </>
     )
-
-    // return (
-    //     <>
-    //         <button onClick={navigateBack}>Back</button>
-    //         <div>firstRunSeen: {String(firstRunSeen)}</div>
-    //         <div>mpv: {String(depsState.mpv)}</div>
-    //         <div>yt-dlp: {String(depsState.yt_dlp)}</div>
-    //         <div>Family: {targetFamily}</div>
-    //     </>
-    // )
 }

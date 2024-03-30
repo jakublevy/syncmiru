@@ -1,5 +1,8 @@
 use std::fs;
-use std::path::{PathBuf};
+use std::fs::File;
+use std::path::{Path, PathBuf};
+use tauri::Manager;
+use zip::ZipArchive;
 use crate::files::syncmiru_data_dir;
 use crate::result::Result;
 
@@ -16,7 +19,7 @@ pub fn mpv_exe() -> Result<PathBuf> {
 }
 
 pub fn yt_dlp_exe() -> Result<PathBuf> {
-    Ok(mpv_dir()?.join(format!("yt-dlp{}", exe_suffix())))
+    Ok(yt_dlp_dir()?.join(format!("yt-dlp{}", exe_suffix())))
 }
 
 pub(super) fn delete_mpv() -> Result<()> {
@@ -41,4 +44,31 @@ fn exe_suffix() -> String {
         suffix = ".exe"
     }
     suffix.to_string()
+}
+
+pub(super) fn decompress_7z(window: &tauri::Window, from: &Path, into: &Path, event_name_prefix: &str) -> Result<()> {
+    if !into.exists() {
+        fs::create_dir_all(into)?;
+    }
+    sevenz_rust::decompress_file(from, into)?;
+    window.emit(
+        &format!("{}extract-finished", event_name_prefix),
+        { }
+    )?;
+    Ok(())
+}
+
+pub(super) fn decompress_zip(window: &tauri::Window, from: &Path, into: &Path, event_name_prefix: &str) -> Result<()> {
+    if !into.exists() {
+        fs::create_dir_all(into)?;
+    }
+    let file = File::open(from)?;
+    let mut archive = ZipArchive::new(file)?;
+    archive.extract(into)?;
+
+    window.emit(
+        &format!("{}extract-finished", event_name_prefix),
+        { }
+    )?;
+    Ok(())
 }

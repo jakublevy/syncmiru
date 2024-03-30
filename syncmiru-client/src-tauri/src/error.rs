@@ -29,11 +29,14 @@ pub enum SyncmiruError {
     #[error("7z extract failed")]
     SevenzError(#[from] sevenz_rust::Error),
 
-    #[error("XML missing tag error")]
-    XmlMissingTagError,
+    #[error("Zip error")]
+    ZipError(#[from] zip::result::ZipError),
+
+    #[error("Github API error")]
+    OctocrabError(#[from] octocrab::Error),
 
     #[error("URL missing version error")]
-    VersionMissingUrl,
+    LatestVersionMissingError,
 
     #[error("Deps download failed")]
     DepsDownloadFailed,

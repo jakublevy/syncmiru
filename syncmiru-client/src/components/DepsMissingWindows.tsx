@@ -2,7 +2,6 @@ import {DepsState} from "../models/config.tsx";
 import Check from "./svg/Check.tsx";
 import Cross from "./svg/Cross.tsx";
 import {useTranslation} from "react-i18next";
-import Previous from "./svg/Previous.tsx";
 import {useLocation, useNavigate} from "react-router-dom";
 import {refresh} from "@mittwald/react-use-promise";
 import {ReactElement} from "react";
@@ -27,7 +26,7 @@ export default function DepsMissingWindows({firstRunSeen, depsState}: { firstRun
     }
 
     function downloadDeps(): void {
-        navigate('/deps-download')
+        navigate('/mpv-download')
     }
 
 

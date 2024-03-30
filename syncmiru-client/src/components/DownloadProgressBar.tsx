@@ -1,9 +1,8 @@
 import {ReactElement} from "react";
-import {Simulate} from "react-dom/test-utils";
 
 export default function DownloadProgressBar(
-    {title, downloadedBytes, totalSizeBytes, speedBytesPerSecond, error, finishedMsg} :
-        {title: string, downloadedBytes: number, totalSizeBytes: number, speedBytesPerSecond: number, error?: string, finishedMsg?: string }
+    {title, downloadedBytes, totalSizeBytes, speedBytesPerSecond, error, errorMsg, finishedMsg} :
+        {title: string, downloadedBytes: number, totalSizeBytes: number, speedBytesPerSecond: number, error: boolean, errorMsg: string, finishedMsg?: string }
 ): ReactElement {
 
     const percent = Math.round(downloadedBytes / totalSizeBytes * 100)
@@ -42,29 +41,26 @@ export default function DownloadProgressBar(
 
     return (
         <>
-            {/*<div>ALL: {totalSizeBytes}</div>*/}
-            {/*<div>RECV: {downloadedBytes}</div>*/}
-            <div className="flex justify-between items-end mb-1 w-[100%]">
-                <span className="text-sm font-medium">{title}</span>
-                {error == null
-                    ? <span className="text-base font-medium text-primary">{percent}%</span>
-                    : <span className="text-base font-medium text-danger">{percent}%</span>
-                }
-            </div>
+        <div className="flex justify-between items-end mb-1 w-[100%]">
+            <span className="text-sm font-medium">{title}</span>
+            {error
+                ? <span className="text-base font-medium text-danger">{percent}%</span>
+                : <span className="text-base font-medium text-primary">{percent}%</span>
+            }
+        </div>
             <div className="bg-gray-200 w-full rounded-full h-2.5 dark:bg-gray-700">
-                {error == null
-                    ? <div className="bg-primary h-2.5 rounded-full" style={{width: percent + "%"}}></div>
-                    : <div className="bg-danger h-2.5 rounded-full" style={{width: percent + "%"}}></div>
+                {error
+                    ? <div className="bg-danger h-2.5 rounded-full" style={{width: percent + "%"}}></div>
+                    : <div className="bg-primary h-2.5 rounded-full" style={{width: percent + "%"}}></div>
                 }
             </div>
-            {error == null
-                ? <div className="flex self-start mt-1 text-sm">
+            {error ? <div className={`flex self-start mt-1 text-sm text-danger`}>{error}</div>
+                : <div className="flex self-start mt-1 text-sm">
                     {finished() && finishedMsg != null
                         ? finishedMsg
                         : `${remTime()} – ${bytesPretty(downloadedBytes)} z ${bytesPretty(totalSizeBytes)} (${bytesPretty(speedBytesPerSecond)}/s)`
                     }
                 </div>
-                : <div className={`flex self-start mt-1 text-sm text-danger`}>{error}</div>
             }
         </>
     )

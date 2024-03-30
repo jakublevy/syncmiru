@@ -12,6 +12,7 @@ use reqwest::Client;
 use roxmltree::Node;
 use serde::Serialize;
 use tauri::Manager;
+use zip::ZipArchive;
 use crate::config::appdata::{AppData, write_config};
 use crate::constants;
 use crate::deps::frontend::{DownloadProgressFrontend, DownloadStartFrontend};
@@ -37,25 +38,20 @@ async fn latest_mpv_download_link() -> Result<DepRelease> {
     let mut response = client.get(api_url).send().await?;
     let xml_raw = response.text().await?;
     let doc = roxmltree::Document::parse(xml_raw.as_str())?;
-    let items = doc
+    let item = doc
         .descendants()
         .filter(|n|n.has_tag_name("item"))
         .take(1)
-        .collect::<Vec<Node>>();
-    if items.len() == 0 {
-        return Err(SyncmiruError::XmlMissingTagError)
-    }
-    let item = &items[0];
+        .next()
+        .context("xml missing tag")?;
 
-    let links = item
+    let link_node = item
         .descendants()
         .filter(|n|n.has_tag_name("link"))
         .take(1)
-        .collect::<Vec<Node>>();
-    if links.len() == 0 {
-        return Err(SyncmiruError::XmlMissingTagError)
-    }
-    let link_node = &links[0];
+        .next()
+        .context("xml missing tag")?;
+
     let link = link_node
         .text()
         .context("Link is missing")?;
@@ -65,14 +61,14 @@ async fn latest_mpv_download_link() -> Result<DepRelease> {
         .collect::<Vec<&str>>();
 
     if paths.len() < 8 {
-        return Err(SyncmiruError::VersionMissingUrl)
+        return Err(SyncmiruError::LatestVersionMissingError)
     }
     let filename_split = paths[7]
         .split("-")
         .collect::<Vec<&str>>();
 
     if filename_split.len() < 4 {
-        return Err(SyncmiruError::VersionMissingUrl)
+        return Err(SyncmiruError::LatestVersionMissingError)
     }
 
     let version = filename_split[3];
@@ -81,11 +77,25 @@ async fn latest_mpv_download_link() -> Result<DepRelease> {
 }
 
 async fn latest_yt_dlp_download_link() -> Result<DepRelease> {
-    //TODO:
-    Ok(DepRelease{ url: "".to_string(), version: "".to_string()})
+    let octocrab = octocrab::instance();
+    let page = octocrab.repos("yt-dlp", "yt-dlp")
+        .releases()
+        .list()
+        .per_page(1)
+        .send()
+        .await?;
+    let newest_release = page.items
+        .get(0)
+        .context("release missing")?;
+    for asset in &newest_release.assets {
+        if asset.name == "yt-dlp_win.zip" {
+            return Ok(DepRelease { url: asset.browser_download_url.to_string(), version: newest_release.tag_name.clone() })
+        }
+    }
+    Err(SyncmiruError::LatestVersionMissingError)
 }
 
-async fn download(window: &tauri::Window, release: &DepRelease, event_name_prefix: &str) -> Result<()> {
+async fn download(window: &tauri::Window, release: &DepRelease, dst: &str, event_name_prefix: &str) -> Result<()> {
     let client = Client::new();
     let mut response = client.get(&release.url).send().await?;
 
@@ -100,7 +110,7 @@ async fn download(window: &tauri::Window, release: &DepRelease, event_name_prefi
     )?;
 
     let mut downloaded_size: u64 = 0;
-    let mut file = File::create(syncmiru_data_dir()?.join("_mpv"))?;
+    let mut file = File::create(syncmiru_data_dir()?.join(dst))?;
 
     let mut last_emit_time = Instant::now();
     let mut last_print_downloaded_size: u64 = 0;
@@ -111,33 +121,18 @@ async fn download(window: &tauri::Window, release: &DepRelease, event_name_prefi
         let elapsed_seconds = last_emit_time.elapsed().as_secs_f64() - Instant::now().elapsed().as_secs_f64();
         if elapsed_seconds >= 1.0 {
             let speed = (((downloaded_size - last_print_downloaded_size) as f64) / elapsed_seconds).round() as u64;
-            //let progress = (downloaded_size as f64 / total_size as f64) * 100.0;
-            //let downloaded_since_last = downloaded_size - last_print_downloaded_size;
 
             window.emit(
                 &format!("{}download-progress", event_name_prefix),
                 DownloadProgressFrontend { speed, received: downloaded_size }
             )?;
 
-            //println!("Progress: {:.2}%, Speed: {:.2} KB/s", progress, speed);
             last_print_downloaded_size = downloaded_size;
             last_emit_time = Instant::now();
         }
     }
     window.emit(
         &format!("{}download-finished", event_name_prefix),
-        { }
-    )?;
-    Ok(())
-}
-
-fn decompress(window: &tauri::Window, from: &Path, into: &Path, event_name_prefix: &str) -> Result<()> {
-    if !into.exists() {
-        fs::create_dir_all(into)?;
-    }
-    sevenz_rust::decompress_file(from, into)?;
-    window.emit(
-        &format!("{}extract-finished", event_name_prefix),
         { }
     )?;
     Ok(())
@@ -206,6 +201,13 @@ mod tests {
         let mpv_release = latest_mpv_download_link().await.unwrap();
         assert_eq!(mpv_release.url, "https://sourceforge.net/projects/mpv-player-windows/files/64bit-v3/mpv-x86_64-v3-20240317-git-3afcaeb.7z/download");
         assert_eq!(mpv_release.version, "20240317");
+    }
+
+    #[tokio::test]
+    async fn latest_yt_dlp_url_test() {
+        let yt_dlp_release = latest_yt_dlp_download_link().await.unwrap();
+        assert_eq!(yt_dlp_release.url, "https://github.com/yt-dlp/yt-dlp/releases/download/2024.03.10/yt-dlp_win.zip");
+        assert_eq!(yt_dlp_release.version, "2024.03.10");
     }
 
     #[test]

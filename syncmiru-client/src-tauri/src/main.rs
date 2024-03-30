@@ -33,6 +33,7 @@ fn main() -> Result<()> {
             config::frontend::get_target_family,
             config::frontend::set_home_srv,
             deps::frontend::mpv_start_downloading,
+            deps::frontend::yt_dlp_start_downloading,
         ])
         .on_window_event(handle_window_event)
         .manage(appstate)
