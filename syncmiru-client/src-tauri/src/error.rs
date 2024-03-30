@@ -26,11 +26,17 @@ pub enum SyncmiruError {
     #[error("XML error")]
     XmlError(#[from] roxmltree::Error),
 
+    #[error("7z extract failed")]
+    SevenzError(#[from] sevenz_rust::Error),
+
     #[error("XML missing tag error")]
     XmlMissingTagError,
 
     #[error("URL missing version error")]
     VersionMissingUrl,
+
+    #[error("Deps download failed")]
+    DepsDownloadFailed,
 
     #[error("Poison error")]
     PoisonError

@@ -1,11 +1,12 @@
 import Welcome from "./Welcome.tsx";
-import React, {ReactElement, useEffect} from "react";
+import React, {ReactElement, Suspense, useEffect} from "react";
 import {useFirstRunSeen} from "../hooks/useFirstRunSeen.ts";
 import {Route, Routes, useNavigate} from "react-router-dom";
 import Main from "./Main.tsx";
 import Deps from "./Deps.tsx";
 import DepsAgain from "./DepsAgain.tsx";
-import DownloadDepsWindows from "./DownloadDepsWindows.tsx";
+import MpvDownloadWindows from "./MpvDownloadWindows.tsx";
+import DownloadProgressBar from "./DownloadProgressBar.tsx";
 
 function App(): ReactElement {
     const firstRunSeen: boolean = useFirstRunSeen()
@@ -24,7 +25,8 @@ function App(): ReactElement {
             <Route path="/main" element={<Main/>}/>
             <Route path="/deps" element={<Deps/>}/>
             <Route path="/deps-again" element={<DepsAgain/>}/>
-            <Route path="/deps-download" element={<DownloadDepsWindows/>}/>
+
+            <Route path="/deps-download" element={<MpvDownloadWindows/>}/>
         </Routes>
     )
 }

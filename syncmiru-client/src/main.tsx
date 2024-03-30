@@ -19,5 +19,5 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                 </ErrorBoundary>
             </MemoryRouter>
         </I18nextProvider>
-    </React.StrictMode>,
+    </React.StrictMode>
 );

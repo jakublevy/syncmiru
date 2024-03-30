@@ -1,7 +1,9 @@
-interface MpvDownloadInfo {
-    // size, co stahuju, ...
+interface DownloadStart {
+    url: string,
+    size: number,
 }
 
-interface MpvDownloadProgress {
-    // speed, kolik stazeno
+interface DownloadProgress {
+    speed: number,
+    received: number,
 }

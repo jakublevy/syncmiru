@@ -7,6 +7,7 @@ mod error;
 mod result;
 mod appstate;
 mod deps;
+mod files;
 
 #[macro_use]
 extern crate rust_i18n;
@@ -31,6 +32,7 @@ fn main() -> Result<()> {
             config::frontend::get_deps_state,
             config::frontend::get_target_family,
             config::frontend::set_home_srv,
+            deps::frontend::mpv_start_downloading,
         ])
         .on_window_event(handle_window_event)
         .manage(appstate)
@@ -45,7 +47,7 @@ fn main() -> Result<()> {
 fn handle_window_event(window: &Window, event: &WindowEvent) {
     match event {
         CloseRequested {.. } => {
-            config::utils::delete_tmp().expect("Deleting tmp files failed")
+            files::delete_tmp().expect("Deleting tmp files failed")
         }
         _ => {}
     }

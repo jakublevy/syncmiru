@@ -3,7 +3,7 @@ use std::time::Duration;
 use crate::appstate::AppState;
 use crate::config::appdata::write_config;
 use crate::config::{Language, utils};
-use crate::config::deps::{DepsStateFrontend};
+use crate::deps::{DepsAvailable};
 use crate::result::Result;
 
 #[tauri::command]
@@ -38,25 +38,25 @@ pub async fn set_language(state: tauri::State<'_, AppState>, language: Language)
 }
 
 #[tauri::command]
-pub async fn get_deps_state(state: tauri::State<'_, AppState>) -> Result<DepsStateFrontend> {
+pub async fn get_deps_state(state: tauri::State<'_, AppState>) -> Result<DepsAvailable> {
     //sleep(Duration::from_secs(3));
     let mut appdata = state.appdata.write()?;
     if cfg!(target_family = "windows") {
         if appdata.deps_managed {
-            let local = DepsStateFrontend::from_params(true)?;
-            if local.ok() {
+            let local = DepsAvailable::from_params(true)?;
+            if local.all_available() {
                 return Ok(local)
             }
         }
-        let global = DepsStateFrontend::from_params(false)?;
-        if global.ok() {
+        let global = DepsAvailable::from_params(false)?;
+        if global.all_available() {
             appdata.deps_managed = false;
             write_config(&appdata)?;
         }
         Ok(global)
     }
     else {
-        let di = DepsStateFrontend::from_params(appdata.deps_managed)?;
+        let di = DepsAvailable::from_params(appdata.deps_managed)?;
         Ok(di)
     }
 }

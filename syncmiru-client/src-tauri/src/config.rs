@@ -6,7 +6,6 @@ pub mod utils;
 pub mod appdata;
 pub mod jwt;
 pub mod frontend;
-mod deps;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Language {

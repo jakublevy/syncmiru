@@ -9,8 +9,9 @@ use crate::appstate::AppState;
 use crate::config;
 use crate::result::Result;
 use crate::deps::utils::{mpv_dir, yt_dlp_dir};
+use crate::files::syncmiru_config_ini;
 use crate::config::jwt::write_login_tkn;
-use crate::config::utils::{get_preferred_locale, ini_bool_to_string, ini_str_to_bool, syncmiru_config_ini, syncmiru_data_dir};
+use crate::config::utils::{get_preferred_locale, ini_bool_to_string, ini_str_to_bool};
 
 pub struct AppData {
     pub first_run_seen: bool,

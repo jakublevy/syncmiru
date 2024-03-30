@@ -23,6 +23,7 @@ export default function Welcome(): ReactElement {
                     <LanguageSelector />
                 </div>
                 <button className="btn-primary" onClick={navigateToDeps}>{t('continue')}</button>
+
             </div>
         </div>
     )
