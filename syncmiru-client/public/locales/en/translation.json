@@ -3,10 +3,22 @@
   "welcome-msg": "We noticed that you are launching Syncmiru for the first time. Choose the language in which you want the application to be displayed.",
   "language": "Language",
   "continue": "Continue",
+  "of": "of",
+
   "missing-deps-title": "Missing dependencies",
   "missing-deps-windows-p1": "You are missing dependencies in the PATH environment variable that are necessary for proper functionality of the Syncmiru application.",
   "missing-deps-windows-p2": "If you want the program to maintain its own copy of these dependencies automatically, click on the \"Download dependencies\" button.",
   "missing-deps-windows-p3": "Otherwise, ensure that all dependencies are present in the PATH environment variable and then click \"Check again\".",
   "missing-deps-check-again": "Check again",
-  "missing-deps-download-windows": "Download dependencies"
+  "missing-deps-download-windows": "Download dependencies",
+
+  "dep-download-failed-btn": "Download again",
+  "dep-extracting": "Extracting ...",
+
+  "yt-dlp-download-failed-title": "Error while downloading yt-dlp",
+  "yt-dlp-download-failed-reason": "Connection lost while downloading yt-dlp.",
+  "yt-dlp-downloading-title": "Downloading yt-dlp in progress",
+  "mpv-download-failed-title": "Error while downloading mpv",
+  "mpv-download-failed-reason": "Connection lost while downloading mpv.",
+  "mpv-downloading-title": "Downloading mpv in progress"
 }

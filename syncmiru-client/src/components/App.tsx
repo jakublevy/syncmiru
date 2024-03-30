@@ -3,15 +3,15 @@ import React, {ReactElement, useEffect} from "react";
 import {useFirstRunSeen} from "../hooks/useFirstRunSeen.ts";
 import {Route, Routes, useNavigate} from "react-router-dom";
 import Main from "./Main.tsx";
-import Deps from "./Deps.tsx";
-import DepsAgain from "./DepsAgain.tsx";
-import MpvDownloadWindows from "./MpvDownloadWindows.tsx";
-import YtDlpDownloadWindows from "./YtDlpDownloadWindows.tsx";
+import Deps from "./deps/Deps.tsx";
+import DepsAgain from "./deps/DepsAgain.tsx";
+import MpvDownloading from "./deps/windows/MpvDownloading.tsx";
+import YtDlpDownloading from "./deps/windows/YtDlpDownloading.tsx";
 import {ErrorBoundary} from "react-error-boundary";
-import MpvDownloadFailed from "./MpvDownloadFailed.tsx";
-import MpvDownloadAgainWindows from "./MpvDownloadAgainWindows.tsx";
-import YtDlpDownloadAgainWindows from "./YtDlpDownloadAgainWindows.tsx";
-import YtDlpDownloadFailed from "./YtDlpDownloadFailed.tsx";
+import MpvDownloadFailed from "./deps/windows/MpvDownloadFailed.tsx";
+import MpvDownloadingAgain from "./deps/windows/MpvDownloadingAgain.tsx";
+import YtDlpDownloadAgain from "./deps/windows/YtDlpDownloadAgain.tsx";
+import YtDlpDownloadFailed from "./deps/YtDlpDownloadFailed.tsx";
 
 function App(): ReactElement {
     const firstRunSeen: boolean = useFirstRunSeen()
@@ -33,24 +33,24 @@ function App(): ReactElement {
 
             <Route path="/mpv-download" element={
                 <ErrorBoundary fallback={<MpvDownloadFailed/>}>
-                    <MpvDownloadWindows/>
+                    <MpvDownloading/>
                 </ErrorBoundary>
             }/>
             <Route path="/mpv-download-again" element={
                 <ErrorBoundary fallback={<MpvDownloadFailed/>}>
-                    <MpvDownloadAgainWindows/>
+                    <MpvDownloadingAgain/>
                 </ErrorBoundary>
             }/>
 
             <Route path="/yt-dlp-download" element={
                 <ErrorBoundary fallback={<YtDlpDownloadFailed/>}>
-                    <YtDlpDownloadWindows/>
+                    <YtDlpDownloading/>
                 </ErrorBoundary>
             }/>
 
             <Route path="/yt-dlp-download-again" element={
                 <ErrorBoundary fallback={<YtDlpDownloadFailed/>}>
-                    <YtDlpDownloadAgainWindows/>
+                    <YtDlpDownloadAgain/>
                 </ErrorBoundary>
             }/>
         </Routes>

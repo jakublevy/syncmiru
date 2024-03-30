@@ -1,11 +1,13 @@
 import React, {ReactElement, useEffect, useState} from "react";
-import {useMpvStartDownloading} from "../hooks/useMpvStartDownloading.ts";
+import {useMpvStartDownloading} from "../../../hooks/useMpvStartDownloading.ts";
 import {Event, listen} from "@tauri-apps/api/event";
-import DownloadProgressBar from "./DownloadProgressBar.tsx";
-import Loading from "./Loading.tsx";
+import DownloadProgressBar from "../../DownloadProgressBar.tsx";
+import Loading from "../../Loading.tsx";
 import {useNavigate} from "react-router-dom";
+import {useTranslation} from "react-i18next";
 
-export default function MpvDownloadWindows(): ReactElement {
+export default function MpvDownloading(): ReactElement {
+    const {t} = useTranslation()
     const navigate = useNavigate()
     const [loading, setLoading] = useState<boolean>(true)
 
@@ -39,17 +41,16 @@ export default function MpvDownloadWindows(): ReactElement {
         return (
             <div className="flex justify-center items-center h-dvh">
                 <div className="flex flex-col items-center p-4 border-4 m-4 w-[40rem]">
-                    <h1 className="text-center text-4xl mb-4">Probíhá stahování mpv</h1>
+                    <h1 className="text-center text-4xl mb-4">{t('mpv-downloading-title')}</h1>
                     <DownloadProgressBar
                         title={mpvDownloadInfo.url}
                         downloadedBytes={mpvDownloadProgress.received}
                         totalSizeBytes={mpvDownloadInfo.size}
                         speedBytesPerSecond={mpvDownloadProgress.speed}
                         error={false}
-                        errorMsg="Chyba spojení"
-                        finishedMsg="Probíhá extrahování ..."
+                        errorMsg=""
+                        finishedMsg={t('dep-extracting')}
                     />
-                    <button className="btn-primary mt-4">Zkusit znovu</button>
                 </div>
             </div>
         )

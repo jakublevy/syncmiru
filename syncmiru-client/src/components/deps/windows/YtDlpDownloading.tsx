@@ -1,11 +1,13 @@
 import React, {ReactElement, useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {Event, listen} from "@tauri-apps/api/event";
-import Loading from "./Loading.tsx";
-import DownloadProgressBar from "./DownloadProgressBar.tsx";
-import {useYtDlpStartDownloading} from "../hooks/useYtDlpStartDownloading.ts";
+import Loading from "../../Loading.tsx";
+import DownloadProgressBar from "../../DownloadProgressBar.tsx";
+import {useYtDlpStartDownloading} from "../../../hooks/useYtDlpStartDownloading.ts";
+import {useTranslation} from "react-i18next";
 
-export default function YtDlpDownloadWindows(): ReactElement {
+export default function YtDlpDownloading(): ReactElement {
+    const {t} = useTranslation()
     const navigate = useNavigate()
     const [loading, setLoading] = useState<boolean>(true)
 
@@ -39,17 +41,16 @@ export default function YtDlpDownloadWindows(): ReactElement {
         return (
             <div className="flex justify-center items-center h-dvh">
                 <div className="flex flex-col items-center p-4 border-4 m-4 w-[40rem]">
-                    <h1 className="text-center text-4xl mb-4">Probíhá stahování yt-dlp</h1>
+                    <h1 className="text-center text-4xl mb-4">{t('yt-dlp-downloading-title')}</h1>
                     <DownloadProgressBar
                         title={ytDlpDownloadInfo.url}
                         downloadedBytes={ytDlpDownloadProgress.received}
                         totalSizeBytes={ytDlpDownloadInfo.size}
                         speedBytesPerSecond={ytDlpDownloadProgress.speed}
                         error={false}
-                        errorMsg="Chyba spojení"
-                        finishedMsg="Probíhá extrahování ..."
+                        errorMsg=""
+                        finishedMsg={t('dep-extracting')}
                     />
-                    <button className="btn-primary mt-4">Zkusit znovu</button>
                 </div>
             </div>
         )

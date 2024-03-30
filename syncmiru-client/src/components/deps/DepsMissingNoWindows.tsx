@@ -1,4 +1,4 @@
-import {DepsState} from "../models/config.tsx";
+import {DepsState} from "../../models/config.tsx";
 import {ReactElement} from "react";
 
 export default function DepsMissingNoWindows({firstRunSeen, depsState}: {firstRunSeen: boolean, depsState: DepsState}): ReactElement {

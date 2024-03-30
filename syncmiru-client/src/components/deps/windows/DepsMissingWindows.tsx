@@ -1,11 +1,11 @@
-import {DepsState} from "../models/config.tsx";
-import Check from "./svg/Check.tsx";
-import Cross from "./svg/Cross.tsx";
+import {DepsState} from "../../../models/config.tsx";
+import Check from "../../svg/Check.tsx";
+import Cross from "../../svg/Cross.tsx";
 import {useTranslation} from "react-i18next";
 import {useLocation, useNavigate} from "react-router-dom";
 import {refresh} from "@mittwald/react-use-promise";
 import {ReactElement} from "react";
-import BackButton from "./BackButton.tsx";
+import BackButton from "../../BackButton.tsx";
 
 export default function DepsMissingWindows({firstRunSeen, depsState}: { firstRunSeen: boolean, depsState: DepsState }): ReactElement {
     const {t} = useTranslation()

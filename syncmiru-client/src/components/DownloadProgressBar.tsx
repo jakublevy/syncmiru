@@ -1,13 +1,16 @@
 import {ReactElement} from "react";
+import {useTranslation} from "react-i18next";
 
 export default function DownloadProgressBar(
     {title, downloadedBytes, totalSizeBytes, speedBytesPerSecond, error, errorMsg, finishedMsg} :
         {title: string, downloadedBytes: number, totalSizeBytes: number, speedBytesPerSecond: number, error: boolean, errorMsg: string, finishedMsg?: string }
 ): ReactElement {
 
+    const {t} = useTranslation()
+
     const percent = Math.round(downloadedBytes / totalSizeBytes * 100)
 
-    const finished = () => downloadedBytes == totalSizeBytes
+    const finished = (): boolean => downloadedBytes == totalSizeBytes
 
     function bytesPretty(b: number): string {
         const kb = 1024
@@ -22,7 +25,7 @@ export default function DownloadProgressBar(
         return `${r} MB`
     }
 
-    function remTime() {
+    function remTime(): string {
         const upcoming = totalSizeBytes - downloadedBytes
         const s = upcoming / speedBytesPerSecond
         if(s < 60)
@@ -58,7 +61,7 @@ export default function DownloadProgressBar(
                 : <div className="flex self-start mt-1 text-sm">
                     {finished() && finishedMsg != null
                         ? finishedMsg
-                        : `${remTime()} – ${bytesPretty(downloadedBytes)} z ${bytesPretty(totalSizeBytes)} (${bytesPretty(speedBytesPerSecond)}/s)`
+                        : `${remTime()} – ${bytesPretty(downloadedBytes)} ${t('of')} ${bytesPretty(totalSizeBytes)} (${bytesPretty(speedBytesPerSecond)}/s)`
                     }
                 </div>
             }
