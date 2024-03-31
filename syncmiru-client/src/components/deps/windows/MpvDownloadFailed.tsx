@@ -13,10 +13,7 @@ export default function MpvDownloadFailed(): ReactElement {
     function downloadMpvAgain() {
         resetBoundary()
         refresh({error: true})
-        if(location.pathname === "/mpv-download")
-            navigate('/mpv-download-again')
-        else
-            navigate('/mpv-download')
+        navigate('/reload', {state: {to: location.pathname}})
     }
 
     return (

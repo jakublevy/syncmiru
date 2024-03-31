@@ -13,10 +13,7 @@ export default function YtDlpDownloadFailed(): ReactElement {
     function downloadYtDlpAgain() {
         resetBoundary()
         refresh({error: true})
-        if(location.pathname === "/yt-dlp-download")
-            navigate('/yt-dlp-download-again')
-        else
-            navigate('/yt-dlp-download')
+        navigate('/reload', {state: {to: location.pathname}})
     }
 
     return (

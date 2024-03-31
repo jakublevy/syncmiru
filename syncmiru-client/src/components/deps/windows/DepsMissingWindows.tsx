@@ -19,10 +19,7 @@ export default function DepsMissingWindows({firstRunSeen, depsState}: Props): Re
 
     function checkDepsAgain(): void {
         refresh({tag: "useDepsState"})
-        if(location.pathname == "/deps")
-            navigate("/deps-again", {state: {firstRunSeen: firstRunSeen}})
-        else
-            navigate("/deps", {state: {firstRunSeen: firstRunSeen}})
+        navigate("/reload", {state: {to: location.pathname, firstRunSeen: firstRunSeen}})
     }
 
     function downloadDeps(): void {
