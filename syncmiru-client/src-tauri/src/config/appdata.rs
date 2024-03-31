@@ -103,7 +103,7 @@ pub fn write_config(config: &AppData) -> Result<()> {
     }
     settings = settings.set("language", config.lang.as_str());
     settings = settings.set("theme", config.theme.to_string());
-    settings = settings.set("auto_ready", ini_bool_to_string(config.auto_ready));
+    settings.set("auto_ready", ini_bool_to_string(config.auto_ready));
 
     if cfg!(target_family = "windows") {
         let mut windows = &mut ini.with_section(Some("Windows"));
@@ -117,7 +117,7 @@ pub fn write_config(config: &AppData) -> Result<()> {
                 .context("yt-dlp_version is missing")?;
 
             windows = windows.set("mpv_version", mpv_version);
-            windows = windows.set("yt-dlp_version", yt_dlp_version);
+            windows.set("yt-dlp_version", yt_dlp_version);
         }
     }
 

@@ -5,7 +5,7 @@ import {useTranslation} from "react-i18next";
 import {useLocation, useNavigate} from "react-router-dom";
 import {refresh} from "@mittwald/react-use-promise";
 import {ReactElement} from "react";
-import BackButton from "@components/widgets/BackButton.tsx";
+import {BackButton, BtnPrimary} from "@components/widgets/Buttons.tsx";
 
 export default function DepsMissingNoWindows({firstRunSeen, depsState}: Props): ReactElement {
     const {t} = useTranslation()
@@ -50,7 +50,7 @@ export default function DepsMissingNoWindows({firstRunSeen, depsState}: Props): 
                 <p className="mb-4">{t('missing-deps-no-windows-msg2')}</p>
                 <code className="bg-gray-100 dark:bg-gray-700 rounded-md p-4">apt-get install mpv yt-dlp</code>
                 <div className="mt-8 flex justify-center">
-                    <button className="btn-secondary" onClick={checkDepsAgain}>{t('missing-deps-check-again')}</button>
+                    <BtnPrimary onClick={checkDepsAgain}>{t('missing-deps-check-again')}</BtnPrimary>
                 </div>
             </div>
         </div>

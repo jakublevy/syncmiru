@@ -6,7 +6,7 @@ import {useChangeLanguage, useLanguage} from '@hooks/useLanguage.ts'
 import {useTranslation} from "react-i18next";
 
 
-export default function LanguageSelector(): ReactElement {
+export default function LanguageSelector({className}: Props): ReactElement {
     const initLang: Language = useLanguage()
     const changeLang = useChangeLanguage()
     const {i18n} = useTranslation()
@@ -29,10 +29,14 @@ export default function LanguageSelector(): ReactElement {
             getOptionValue={(ls: LanguageSelectModel) => ls.id}
             value={LanguagesSelect.find(l => l.id === lang)}
             classNamePrefix="my-react-select"
-            className="w-52 my-react-select-container"
+            className={`w-52 my-react-select-container ${className}`}
             //@ts-ignore
             onChange={languageChanged}
             options={LanguagesSelect}
         />
     );
+}
+
+interface Props {
+    className?: string
 }

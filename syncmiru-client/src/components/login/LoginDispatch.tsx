@@ -1,10 +1,17 @@
-import {ReactElement} from "react";
-
-// TODO:
-// Based on JWT, filled home server dispatch to sign in component or show login dialog
+import {ReactElement, useEffect} from "react";
+import {useCanAutoLogin} from "@hooks/useCanAutoLogin.ts";
+import {useNavigate} from "react-router-dom";
 
 export default function LoginDispatch(): ReactElement {
-    return (
-        <div>This is main content</div>
-    )
+    const navigate = useNavigate()
+    const canAutoLogin = useCanAutoLogin()
+
+    useEffect(() => {
+        if(canAutoLogin)
+            navigate('/login-auto')
+        else
+            navigate('/login-form')
+    }, [canAutoLogin]);
+
+    return <></>
 }

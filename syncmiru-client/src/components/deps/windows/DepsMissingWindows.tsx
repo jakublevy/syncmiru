@@ -5,7 +5,7 @@ import {useTranslation} from "react-i18next";
 import {useLocation, useNavigate} from "react-router-dom";
 import {refresh} from "@mittwald/react-use-promise";
 import {ReactElement} from "react";
-import BackButton from "@components/widgets/BackButton.tsx";
+import {BackButton, BtnPrimary, BtnSecondary} from "@components/widgets/Buttons.tsx";
 
 export default function DepsMissingWindows({firstRunSeen, depsState}: Props): ReactElement {
     const {t} = useTranslation()
@@ -51,8 +51,8 @@ export default function DepsMissingWindows({firstRunSeen, depsState}: Props): Re
                 <p className="mb-4">{t('missing-deps-windows-msg2')}</p>
                 <p>{t('missing-deps-windows-msg3')}</p>
                 <div className="mt-8 flex justify-around">
-                    <button className="btn-secondary" onClick={checkDepsAgain}>{t('missing-deps-check-again')}</button>
-                    <button className="btn-primary" onClick={downloadDeps}>{t('missing-deps-download-windows')}</button>
+                    <BtnSecondary onClick={checkDepsAgain}>{t('missing-deps-check-again')}</BtnSecondary>
+                    <BtnPrimary onClick={downloadDeps}>{t('missing-deps-download-windows')}</BtnPrimary>
                 </div>
             </div>
         </div>

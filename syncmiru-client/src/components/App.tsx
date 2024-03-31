@@ -10,6 +10,8 @@ import {ErrorBoundary} from "react-error-boundary";
 import MpvDownloadFailed from "@components/deps/windows/MpvDownloadFailed.tsx";
 import YtDlpDownloadFailed from "@components/deps/YtDlpDownloadFailed.tsx";
 import Trampoline from "@components/Trampoline.tsx";
+import LoginAuto from "@components/login/LoginAuto.tsx";
+import LoginForm from "@components/login/LoginForm.tsx";
 
 function App(): ReactElement {
     const firstRunSeen: boolean = useFirstRunSeen()
@@ -24,10 +26,9 @@ function App(): ReactElement {
 
     return (
         <Routes>
-            <Route path="/welcome" element={<Welcome/>}/>
-            <Route path="/login-dispatch" element={<LoginDispatch/>}/>
-            <Route path="/deps" element={<Deps/>}/>
             <Route path="/reload" element={<Trampoline/>}/>
+            <Route path="/welcome" element={<Welcome/>}/>
+            <Route path="/deps" element={<Deps/>}/>
 
             <Route path="/mpv-download" element={
                 <ErrorBoundary fallback={<MpvDownloadFailed/>}>
@@ -40,6 +41,10 @@ function App(): ReactElement {
                     <YtDlpDownloading/>
                 </ErrorBoundary>
             }/>
+
+            <Route path="/login-dispatch" element={<LoginDispatch/>}/>
+            <Route path="/login-auto" element={<LoginAuto/>}/>
+            <Route path="/login-form" element={<LoginForm/>}/>
         </Routes>
     )
 }

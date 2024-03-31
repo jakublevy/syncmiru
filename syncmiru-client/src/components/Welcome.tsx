@@ -3,6 +3,7 @@ import {useTranslation} from "react-i18next";
 import {ReactElement} from "react";
 import {useNavigate} from "react-router-dom";
 import {refresh} from "@mittwald/react-use-promise";
+import {BtnPrimary} from "@components/widgets/Buttons.tsx";
 
 export default function Welcome(): ReactElement {
     const {t} = useTranslation()
@@ -22,7 +23,7 @@ export default function Welcome(): ReactElement {
                     <label>{t('language')}</label>
                     <LanguageSelector />
                 </div>
-                <button className="btn-primary" onClick={navigateToDeps}>{t('continue')}</button>
+                <BtnPrimary onClick={navigateToDeps}>{t('continue')}</BtnPrimary>
             </div>
         </div>
     )

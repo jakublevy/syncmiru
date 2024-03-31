@@ -55,7 +55,7 @@ export default function DownloadProgressBar(
                     : <div className="bg-primary h-2.5 rounded-full" style={{width: percent + "%"}}></div>
                 }
             </div>
-            {error ? <div className={`flex self-start mt-1 text-sm text-danger`}>{errorMsg}</div>
+            {error ? <div className="flex self-start mt-1 text-sm text-danger">{errorMsg}</div>
                 : <div className="flex self-start mt-1 text-sm">
                     {finished() && finishedMsg != null
                         ? finishedMsg

@@ -4,6 +4,7 @@ import {useLocation, useNavigate} from "react-router-dom";
 import {refresh} from "@mittwald/react-use-promise";
 import {useErrorBoundary} from "react-error-boundary";
 import {useTranslation} from "react-i18next";
+import {BtnPrimary} from "@components/widgets/Buttons.tsx";
 
 export default function MpvDownloadFailed(): ReactElement {
     const {t} = useTranslation()
@@ -22,7 +23,7 @@ export default function MpvDownloadFailed(): ReactElement {
                 <h1 className="text-center text-4xl mb-4">{t('mpv-download-failed-title')}</h1>
                 <p className="mb-8">{t('mpv-download-failed-reason')}</p>
                 <Danger width="5rem" />
-                <button className="btn-primary mt-8" onClick={downloadMpvAgain}>{t('dep-download-failed-btn')}</button>
+                <BtnPrimary className="mt-8" onClick={downloadMpvAgain}>{t('dep-download-failed-btn')}</BtnPrimary>
             </div>
         </div>
     )

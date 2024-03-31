@@ -28,7 +28,7 @@ html, body, #root {
         /* .my-react-select-container {
         } */
         .my-react-select-container .my-react-select__control {
-            @apply bg-white dark:bg-neutral-700 border-2 border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500;
+            @apply bg-white dark:bg-darkbg border-2 border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500;
         }
 
         .my-react-select-container .my-react-select__control--is-focused {
@@ -57,16 +57,4 @@ html, body, #root {
         }
     }
 
-}
-
-.btn-primary {
-    @apply bg-primary hover:bg-indigo-700 text-white font-bold py-2 px-4 border border-indigo-700 rounded
-}
-
-.btn-secondary {
-    @apply bg-secondary hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded
-}
-
-.btn-danger {
-    @apply bg-danger hover:bg-red-800 text-white font-bold py-2 px-4 border border-red-700 rounded
 }

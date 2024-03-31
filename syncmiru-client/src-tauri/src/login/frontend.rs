@@ -1,14 +1,16 @@
 use crate::appstate::AppState;
 use crate::config::appdata::write_config;
 use crate::result::Result;
+use crate::config::jwt::read_login_tkn;
 
 #[tauri::command]
-pub async fn can_auto_login(state: tauri::State<'_, AppState>) -> Result<()> {
+pub async fn can_auto_login(state: tauri::State<'_, AppState>) -> Result<bool> {
     let appdata = state.appdata.read()?;
     write_config(&appdata)?;
 
-
-    Ok(())
+    let jwt = read_login_tkn()?;
+    let login_possible = appdata.home_srv.is_some() && jwt.is_some();
+    Ok(login_possible)
 }
 
 #[tauri::command]
