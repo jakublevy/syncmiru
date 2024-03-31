@@ -45,7 +45,7 @@ pub enum SyncmiruError {
 }
 
 impl<T> From<PoisonError<T>> for SyncmiruError {
-    fn from(err: PoisonError<T>) -> Self {
+    fn from(_: PoisonError<T>) -> Self {
         Self::PoisonError
     }
 }

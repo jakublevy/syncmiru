@@ -2,7 +2,7 @@ import Welcome from "@components/Welcome.tsx";
 import React, {ReactElement, useEffect} from "react";
 import {useFirstRunSeen} from "@hooks/useFirstRunSeen.ts";
 import {Route, Routes, useNavigate} from "react-router-dom";
-import LoginDispatch from "@components/LoginDispatch.tsx";
+import LoginDispatch from "@components/login/LoginDispatch.tsx";
 import Deps from "@components/deps/Deps.tsx";
 import MpvDownloading from "@components/deps/windows/MpvDownloading.tsx";
 import YtDlpDownloading from "@components/deps/windows/YtDlpDownloading.tsx";

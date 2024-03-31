@@ -3,6 +3,15 @@ use crate::config::appdata::write_config;
 use crate::result::Result;
 
 #[tauri::command]
+pub async fn can_auto_login(state: tauri::State<'_, AppState>) -> Result<()> {
+    let appdata = state.appdata.read()?;
+    write_config(&appdata)?;
+
+
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn set_home_srv(state: tauri::State<'_, AppState>, home_srv: String) -> Result<()> {
     let mut appdata = state.appdata.write()?;
 

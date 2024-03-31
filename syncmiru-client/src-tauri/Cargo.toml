@@ -30,7 +30,7 @@ tokio = { version = "1.37.0", features = ["rt-multi-thread", "macros"] }
 sevenz-rust = "0.5.4"
 zip = "0.6.6"
 octocrab = "0.37.0"
-
+serial_test = "3.0.0"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 windows-sys = "0.52.0"
