@@ -29,7 +29,7 @@ export default function YtDlpDownloading(): ReactElement {
             setYtDlpDownloadProgress({...ytDlpDownloadProgress, received: ytDlpDownloadInfo.size})
         })
         listen<void>('yt-dlp-extract-finished', (e: Event<void>) => {
-            navigate('/main')
+            navigate('/login-dispatch')
         })
     }, [loading, ytDlpDownloadProgress, ytDlpDownloadInfo]);
 

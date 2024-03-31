@@ -1,10 +1,4 @@
-use std::fs;
-use std::path::PathBuf;
-use anyhow::Context;
-
 use crate::config::Language;
-use crate::constants;
-use crate::result::Result;
 
 pub(super) fn ini_str_to_bool(str: &str, default: bool) -> bool {
     let s = str.trim();

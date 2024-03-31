@@ -1,19 +1,11 @@
-use std::cmp::min;
 use std::fs::File;
-use std::{fs, io};
-use std::io::{Error, Write};
-use std::ops::Index;
-use std::path::Path;
+use std::io::{Write};
 use std::process::Command;
-use std::sync::RwLock;
 use std::time::Instant;
 use anyhow::Context;
 use reqwest::Client;
-use roxmltree::Node;
 use serde::Serialize;
 use tauri::Manager;
-use zip::ZipArchive;
-use crate::config::appdata::{AppData, write_config};
 use crate::constants;
 use crate::deps::frontend::{DownloadProgressFrontend, DownloadStartFrontend};
 use crate::deps::utils::{mpv_exe, yt_dlp_exe};
@@ -35,20 +27,18 @@ async fn latest_mpv_download_link() -> Result<DepRelease> {
         api_url = constants::MPV_AVX2_RELEASES_URL;
     }
     let client = Client::new();
-    let mut response = client.get(api_url).send().await?;
+    let response = client.get(api_url).send().await?;
     let xml_raw = response.text().await?;
     let doc = roxmltree::Document::parse(xml_raw.as_str())?;
     let item = doc
         .descendants()
         .filter(|n|n.has_tag_name("item"))
-        .take(1)
         .next()
         .context("xml missing tag")?;
 
     let link_node = item
         .descendants()
         .filter(|n|n.has_tag_name("link"))
-        .take(1)
         .next()
         .context("xml missing tag")?;
 

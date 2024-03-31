@@ -14,7 +14,7 @@ export default function Deps(): ReactElement {
     const targetFamily: string = useTargetFamily()
 
     function navigateForward() {
-        navigate("/main")
+        navigate("/login-dispatch")
     }
 
     useEffect(() => {

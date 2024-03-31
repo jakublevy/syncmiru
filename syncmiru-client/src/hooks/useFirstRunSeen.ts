@@ -8,9 +8,3 @@ export const useFirstRunSeen = (): boolean => {
 const firstRunSeenPromise = (): Promise<boolean> => {
     return invoke('get_first_run_seen', {})
 }
-
-export function useChangeFirstRunSeen(): () => Promise<void> {
-    return (): Promise<void> => {
-        return invoke('set_first_run_seen', {})
-    }
-}

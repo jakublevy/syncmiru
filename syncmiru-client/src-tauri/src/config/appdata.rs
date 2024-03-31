@@ -1,16 +1,10 @@
 use std::fs;
-use std::path::PathBuf;
-use std::thread::available_parallelism;
 use anyhow::Context;
 use ini::Ini;
 use crate::config::Language;
 use tauri_plugin_theme::Theme;
-use crate::appstate::AppState;
-use crate::config;
 use crate::result::Result;
-use crate::deps::utils::{mpv_dir, yt_dlp_dir};
 use crate::files::syncmiru_config_ini;
-use crate::config::jwt::write_login_tkn;
 use crate::config::utils::{get_preferred_locale, ini_bool_to_string, ini_str_to_bool};
 
 pub struct AppData {
