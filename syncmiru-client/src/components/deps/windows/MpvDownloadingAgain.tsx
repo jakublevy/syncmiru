@@ -1,6 +1,6 @@
 import React, {Suspense} from "react";
-import Loading from "../../Loading.tsx";
-import MpvDownloading from "./MpvDownloading.tsx";
+import Loading from "@components/Loading.tsx";
+import MpvDownloading from "@components/deps/windows/MpvDownloading.tsx";
 
 export default function MpvDownloadingAgain() {
     return (

@@ -2,7 +2,7 @@ import {ReactElement} from "react";
 
 // https://www.svgrepo.com/svg/459465/left-circle-2
 
-export default function Previous({width, height}: {width?: string, height?: string}): ReactElement {
+export default function Previous({width, height}: Props): ReactElement {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -24,4 +24,9 @@ export default function Previous({width, height}: {width?: string, height?: stri
             />
         </svg>
     )
+}
+
+interface Props {
+    width?: string,
+    height?: string
 }

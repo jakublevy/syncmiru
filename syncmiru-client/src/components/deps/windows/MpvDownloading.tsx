@@ -1,8 +1,8 @@
 import React, {ReactElement, useEffect, useState} from "react";
-import {useMpvStartDownloading} from "../../../hooks/useMpvStartDownloading.ts";
+import {useMpvStartDownloading} from "@hooks/useMpvStartDownloading.ts";
 import {Event, listen} from "@tauri-apps/api/event";
-import DownloadProgressBar from "../../DownloadProgressBar.tsx";
-import Loading from "../../Loading.tsx";
+import DownloadProgressBar from "@components/widgets/DownloadProgressBar.tsx";
+import Loading from "@components/Loading.tsx";
 import {useNavigate} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 

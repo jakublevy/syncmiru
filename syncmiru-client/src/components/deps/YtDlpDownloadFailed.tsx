@@ -1,5 +1,5 @@
 import React, {ReactElement} from "react";
-import Danger from "../svg/Danger.tsx";
+import Danger from "@components/svg/Danger.tsx";
 import {useLocation, useNavigate} from "react-router-dom";
 import {refresh} from "@mittwald/react-use-promise";
 import {useErrorBoundary} from "react-error-boundary";

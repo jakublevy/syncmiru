@@ -1,6 +1,8 @@
 import {ReactElement} from "react";
 
-export default function Danger({width, height}: {width?: string, height?: string}): ReactElement {
+// https://www.svgrepo.com/svg/489221/warning
+
+export default function Danger({width, height}: Props): ReactElement {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -19,4 +21,9 @@ export default function Danger({width, height}: {width?: string, height?: string
             <path d="M241 158.4H271V318.4H241z" fill="currentcolor" />
         </svg>
     )
+}
+
+interface Props {
+    width?: string,
+    height?: string
 }

@@ -2,7 +2,7 @@ import {ReactElement} from "react";
 
 // https://www.svgrepo.com/svg/522086/cross
 
-export default function Cross({width, height, fill}: {width?: string, height?: string, fill?: string}): ReactElement {
+export default function Cross({width, height, fill}: Props): ReactElement {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -22,4 +22,10 @@ export default function Cross({width, height, fill}: {width?: string, height?: s
             />
         </svg>
     )
+}
+
+interface Props {
+    width?: string,
+    height?: string,
+    fill?: string
 }

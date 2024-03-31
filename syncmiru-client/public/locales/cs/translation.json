@@ -6,9 +6,10 @@
   "of": "z",
 
   "missing-deps-title": "Chybějící závislosti",
-  "missing-deps-windows-p1": "V environmentální proměnné PATH vám chybí závislosti nutné pro správnou funkčnost aplikace Syncmiru.",
-  "missing-deps-windows-p2": "Pokud chcete, aby si program udržoval vlastní kopii těchto závislostí automaticky, klikněte na tlačítko \"Stáhnout závislosti\"",
-  "missing-deps-windows-p3": "V opačném případě zajistěte, aby se v environmentální proměnné PATH nacházely všechny závislosti a pokračujte kliknutím na tlačítko \"Znovu zkontrolovat\".",
+  "missing-deps-msg": "V environmentální proměnné PATH vám chybí závislosti nutné pro správnou funkčnost aplikace Syncmiru.",
+  "missing-deps-no-windows-msg2": "Na systémech založených na Debianu můžete tyto závislosti nainstalovat spuštěním:",
+  "missing-deps-windows-msg2": "Pokud chcete, aby si program udržoval vlastní kopii těchto závislostí automaticky, klikněte na tlačítko \"Stáhnout závislosti\"",
+  "missing-deps-windows-msg3": "V opačném případě zajistěte, aby se v environmentální proměnné PATH nacházely všechny závislosti a pokračujte kliknutím na tlačítko \"Znovu zkontrolovat\".",
   "missing-deps-check-again": "Znovu zkontrolovat",
   "missing-deps-download-windows": "Stáhnout závislosti",
 

@@ -45,7 +45,6 @@ pub async fn yt_dlp_start_downloading(window: tauri::Window, state: tauri::State
     let d = syncmiru_data_dir()?;
     decompress_zip(&window, d.join("_yt-dlp").as_path(), d.join("yt-dlp").as_path(), "yt-dlp-")?;
 
-
     delete_tmp()?;
     let mut appdata = state.appdata.write()?;
     appdata.yt_dlp_version = Some(yt_dlp_release.version);

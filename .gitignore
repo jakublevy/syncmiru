@@ -24,3 +24,4 @@ dist-ssr
 
 syncmiru-srv/target/
 syncmiru-client/src-tauri/gen
+syncmiru-client/src-tauri/target

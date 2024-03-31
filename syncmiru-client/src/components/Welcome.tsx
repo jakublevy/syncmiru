@@ -1,4 +1,4 @@
-import LanguageSelector from "./LanguageSelector.tsx";
+import LanguageSelector from "@components/widgets/LanguageSelector.tsx";
 import {useTranslation} from "react-i18next";
 import {ReactElement} from "react";
 import {useNavigate} from "react-router-dom";
@@ -23,7 +23,6 @@ export default function Welcome(): ReactElement {
                     <LanguageSelector />
                 </div>
                 <button className="btn-primary" onClick={navigateToDeps}>{t('continue')}</button>
-
             </div>
         </div>
     )

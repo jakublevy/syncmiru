@@ -1,5 +1,5 @@
 import {invoke} from "@tauri-apps/api/core";
-import {Language} from "../models/config.tsx";
+import {Language} from "@models/config.tsx";
 import {usePromise} from "@mittwald/react-use-promise";
 
 export const useLanguage = (): Language => {

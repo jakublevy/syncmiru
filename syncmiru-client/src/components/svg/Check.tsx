@@ -2,7 +2,7 @@ import {ReactElement} from "react";
 
 // https://www.svgrepo.com/svg/404945/check-mark
 
-export default function Check({width, height, fill}: {width?: string, height?: string, fill?: string}): ReactElement {
+export default function Check({width, height, fill}: Props): ReactElement {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -21,3 +21,8 @@ export default function Check({width, height, fill}: {width?: string, height?: s
     )
 }
 
+interface Props {
+    width?: string,
+    height?: string,
+    fill?: string
+}

@@ -1,8 +1,8 @@
 import {ReactElement, useEffect, useState} from 'react'
 
 import Select from 'react-select';
-import {LanguagesSelect, LanguageSelectModel, Language} from "../models/config.tsx";
-import {useChangeLanguage, useLanguage} from '../hooks/useLanguage.ts'
+import {LanguagesSelect, LanguageSelectModel, Language} from "@models/config.tsx";
+import {useChangeLanguage, useLanguage} from '@hooks/useLanguage.ts'
 import {useTranslation} from "react-i18next";
 
 

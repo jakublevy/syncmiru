@@ -1,17 +1,17 @@
-import Welcome from "./Welcome.tsx";
+import Welcome from "@components/Welcome.tsx";
 import React, {ReactElement, useEffect} from "react";
-import {useFirstRunSeen} from "../hooks/useFirstRunSeen.ts";
+import {useFirstRunSeen} from "@hooks/useFirstRunSeen.ts";
 import {Route, Routes, useNavigate} from "react-router-dom";
-import Main from "./Main.tsx";
-import Deps from "./deps/Deps.tsx";
-import DepsAgain from "./deps/DepsAgain.tsx";
-import MpvDownloading from "./deps/windows/MpvDownloading.tsx";
-import YtDlpDownloading from "./deps/windows/YtDlpDownloading.tsx";
+import Main from "@components/Main.tsx";
+import Deps from "@components/deps/Deps.tsx";
+import DepsAgain from "@components/deps/DepsAgain.tsx";
+import MpvDownloading from "@components/deps/windows/MpvDownloading.tsx";
+import YtDlpDownloading from "@components/deps/windows/YtDlpDownloading.tsx";
 import {ErrorBoundary} from "react-error-boundary";
-import MpvDownloadFailed from "./deps/windows/MpvDownloadFailed.tsx";
-import MpvDownloadingAgain from "./deps/windows/MpvDownloadingAgain.tsx";
-import YtDlpDownloadAgain from "./deps/windows/YtDlpDownloadAgain.tsx";
-import YtDlpDownloadFailed from "./deps/YtDlpDownloadFailed.tsx";
+import MpvDownloadFailed from "@components/deps/windows/MpvDownloadFailed.tsx";
+import MpvDownloadingAgain from "@components/deps/windows/MpvDownloadingAgain.tsx";
+import YtDlpDownloadAgain from "@components/deps/windows/YtDlpDownloadAgain.tsx";
+import YtDlpDownloadFailed from "@components/deps/YtDlpDownloadFailed.tsx";
 
 function App(): ReactElement {
     const firstRunSeen: boolean = useFirstRunSeen()

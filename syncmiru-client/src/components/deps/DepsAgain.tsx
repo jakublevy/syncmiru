@@ -1,6 +1,6 @@
 import {ReactElement, Suspense} from "react";
-import Loading from "../Loading.tsx";
-import Deps from "./Deps.tsx";
+import Loading from "@components/Loading.tsx";
+import Deps from "@components/deps/Deps.tsx";
 
 export default function DepsAgain(): ReactElement {
     return (

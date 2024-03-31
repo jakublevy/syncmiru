@@ -2,9 +2,7 @@ import {ReactElement} from "react";
 import {useTranslation} from "react-i18next";
 
 export default function DownloadProgressBar(
-    {title, downloadedBytes, totalSizeBytes, speedBytesPerSecond, error, errorMsg, finishedMsg} :
-        {title: string, downloadedBytes: number, totalSizeBytes: number, speedBytesPerSecond: number, error: boolean, errorMsg: string, finishedMsg?: string }
-): ReactElement {
+    {title, downloadedBytes, totalSizeBytes, speedBytesPerSecond, error, errorMsg, finishedMsg}: Props): ReactElement {
 
     const {t} = useTranslation()
 
@@ -57,7 +55,7 @@ export default function DownloadProgressBar(
                     : <div className="bg-primary h-2.5 rounded-full" style={{width: percent + "%"}}></div>
                 }
             </div>
-            {error ? <div className={`flex self-start mt-1 text-sm text-danger`}>{error}</div>
+            {error ? <div className={`flex self-start mt-1 text-sm text-danger`}>{errorMsg}</div>
                 : <div className="flex self-start mt-1 text-sm">
                     {finished() && finishedMsg != null
                         ? finishedMsg
@@ -67,4 +65,14 @@ export default function DownloadProgressBar(
             }
         </>
     )
+}
+
+interface Props {
+    title: string,
+    downloadedBytes: number,
+    totalSizeBytes: number,
+    speedBytesPerSecond: number,
+    error: boolean,
+    errorMsg: string,
+    finishedMsg?: string
 }

@@ -6,9 +6,10 @@
   "of": "of",
 
   "missing-deps-title": "Missing dependencies",
-  "missing-deps-windows-p1": "You are missing dependencies in the PATH environment variable that are necessary for proper functionality of the Syncmiru application.",
-  "missing-deps-windows-p2": "If you want the program to maintain its own copy of these dependencies automatically, click on the \"Download dependencies\" button.",
-  "missing-deps-windows-p3": "Otherwise, ensure that all dependencies are present in the PATH environment variable and then click \"Check again\".",
+  "missing-deps-msg": "You are missing dependencies in the PATH environment variable that are necessary for proper functionality of the Syncmiru application.",
+  "missing-deps-no-windows-msg2": "On Debian-based systems, you can install these dependencies by running:",
+  "missing-deps-windows-msg2": "If you want the program to maintain its own copy of these dependencies automatically, click on the \"Download dependencies\" button.",
+  "missing-deps-windows-msg3": "Otherwise, ensure that all dependencies are present in the PATH environment variable and then click \"Check again\".",
   "missing-deps-check-again": "Check again",
   "missing-deps-download-windows": "Download dependencies",
 
