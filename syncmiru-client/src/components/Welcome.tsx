@@ -1,13 +1,13 @@
 import LanguageSelector from "@components/widgets/LanguageSelector.tsx";
 import {useTranslation} from "react-i18next";
 import {ReactElement} from "react";
-import {useNavigate} from "react-router-dom";
+import {useLocation} from "wouter";
 import {refresh} from "@mittwald/react-use-promise";
 import {BtnPrimary} from "@components/widgets/Buttons.tsx";
 
 export default function Welcome(): ReactElement {
     const {t} = useTranslation()
-    const navigate = useNavigate()
+    const [location, navigate] = useLocation()
 
     function navigateToDeps(): void {
         refresh({tag: "useDepsState"})

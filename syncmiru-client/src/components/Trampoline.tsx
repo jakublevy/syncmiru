@@ -1,14 +1,15 @@
 import {ReactElement, useEffect} from "react";
-import {useLocation, useNavigate} from "react-router-dom";
+import {useLocation} from "wouter";
+import {useHistoryState} from 'wouter/use-browser-location'
 
 export default function Trampoline(): ReactElement {
-    const navigate = useNavigate()
-    const location = useLocation()
+    const [_, navigate] = useLocation()
+    const historyState = useHistoryState()
 
     useEffect(() => {
-        let sendState = Object.assign({}, location.state)
+        let sendState = Object.assign({}, historyState)
         delete sendState['to']
-        navigate(location.state.to, {state: sendState})
+        navigate(historyState.to, {state: sendState})
     }, [navigate]);
 
     return <></>

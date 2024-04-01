@@ -1,14 +1,14 @@
 import React, {ReactElement, useEffect, useState} from "react";
-import {useNavigate} from "react-router-dom";
 import {Event, listen} from "@tauri-apps/api/event";
 import Loading from "@components/Loading.tsx";
 import DownloadProgressBar from "@components/widgets/DownloadProgressBar.tsx";
 import {useYtDlpStartDownloading} from "@hooks/useYtDlpStartDownloading.ts";
 import {useTranslation} from "react-i18next";
+import {useLocation} from "wouter";
 
 export default function YtDlpDownloading(): ReactElement {
     const {t} = useTranslation()
-    const navigate = useNavigate()
+    const [_, navigate] = useLocation()
     const [loading, setLoading] = useState<boolean>(true)
 
     const [ytDlpDownloadProgress, setYtDlpDownloadProgress]

@@ -1,15 +1,16 @@
 import {ReactElement, useEffect} from "react";
-import {useLocation, useNavigate} from "react-router-dom";
 import {DepsState} from "@models/config.tsx";
 import {useDepsState} from "@hooks/useDepsState.ts";
 import {useTargetFamily} from "@hooks/useTargetFamily.ts";
 import DepsMissingNoWindows from "@components/deps/DepsMissingNoWindows.tsx";
 import DepsMissingWindows from "@components/deps/windows/DepsMissingWindows.tsx";
+import {useLocation} from "wouter";
+import {useHistoryState} from 'wouter/use-browser-location'
 
 export default function Deps(): ReactElement {
-    const navigate = useNavigate()
-    const {state} = useLocation()
-    const {firstRunSeen}: { firstRunSeen: boolean } = state
+    const historyState = useHistoryState()
+    const [_, navigate] = useLocation()
+    const {firstRunSeen}: { firstRunSeen: boolean } = historyState;
     const depsState: DepsState = useDepsState()
     const targetFamily: string = useTargetFamily()
 

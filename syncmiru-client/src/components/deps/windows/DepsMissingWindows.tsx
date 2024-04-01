@@ -2,15 +2,14 @@ import {DepsState} from "@models/config.tsx";
 import Check from "@components/svg/Check.tsx";
 import Cross from "@components/svg/Cross.tsx";
 import {useTranslation} from "react-i18next";
-import {useLocation, useNavigate} from "react-router-dom";
 import {refresh} from "@mittwald/react-use-promise";
 import {ReactElement} from "react";
 import {BackButton, BtnPrimary, BtnSecondary} from "@components/widgets/Buttons.tsx";
+import {useLocation} from "wouter";
 
 export default function DepsMissingWindows({firstRunSeen, depsState}: Props): ReactElement {
     const {t} = useTranslation()
-    const navigate = useNavigate()
-    const location = useLocation()
+    const [location, navigate] = useLocation()
 
     function navigateBack(): void {
         refresh({tag: "useLanguage"})
@@ -19,7 +18,7 @@ export default function DepsMissingWindows({firstRunSeen, depsState}: Props): Re
 
     function checkDepsAgain(): void {
         refresh({tag: "useDepsState"})
-        navigate("/reload", {state: {to: location.pathname, firstRunSeen: firstRunSeen}})
+        navigate("/reload", {state: {to: location, firstRunSeen: firstRunSeen}})
     }
 
     function downloadDeps(): void {

@@ -11,6 +11,6 @@ const homeSrvPromise = (): Promise<string> => {
 
 export function useChangeHomeServer(): (l: string) => Promise<void> {
     return (srv: string): Promise<void> => {
-        return invoke('set_language', {homeSrv: srv})
+        return invoke('set_home_srv', {homeSrv: srv})
     }
 }

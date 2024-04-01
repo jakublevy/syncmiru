@@ -21,5 +21,19 @@
   "yt-dlp-downloading-title": "Probíhá stahování yt-dlp",
   "mpv-download-failed-title": "Chyba při stahování mpv",
   "mpv-download-failed-reason": "Při stahování mpv došlo ke ztrátě spojení.",
-  "mpv-downloading-title": "Probíhá stahování mpv"
+  "mpv-downloading-title": "Probíhá stahování mpv",
+
+  "login-title": "Přihlášení",
+  "home-srv": "Domovský server",
+  "home-srv-edit-btn": "Editovat",
+  "home-srv-login-help": "URL adresa Syncmiru serveru,<br>pro úpravu stiskněte tlačítko Editovat.",
+  "login-label": "Email nebo uživatelské jméno",
+  "password": "Heslo",
+  "forgotten-password-btn": "Zapomenuté heslo?",
+  "login-btn": "Přihlásit se",
+  "no-account-msg": "Nemáte účet?",
+  "register-btn": "Registrovat",
+
+  "home-srv-desc": "Syncmiru vyžaduje pro svůj běh instanci serveru. Vyplňte do následujícího políčka jeho adresu, nezávisle na tom, zda již účet vlastníte, nebo si ho hodláte vytvořit.",
+  "home-srv-edit-help": "URL adresa Syncmiru serveru."
 }

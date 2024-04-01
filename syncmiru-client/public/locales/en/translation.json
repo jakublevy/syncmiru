@@ -21,5 +21,19 @@
   "yt-dlp-downloading-title": "Downloading yt-dlp in progress",
   "mpv-download-failed-title": "Error while downloading mpv",
   "mpv-download-failed-reason": "Connection lost while downloading mpv.",
-  "mpv-downloading-title": "Downloading mpv in progress"
+  "mpv-downloading-title": "Downloading mpv in progress",
+
+  "login-title": "Log in",
+  "home-srv": "Home server",
+  "home-srv-edit-btn": "Edit",
+  "home-srv-login-help": "URL address of Syncmiru server,<br>click the Edit button for edit.",
+  "login-label": "Email or user name",
+  "password": "Password",
+  "forgotten-password-btn": "Forgotten password?",
+  "login-btn": "Log in",
+  "no-account-msg": "Don't have an account?",
+  "register-btn": "Register",
+
+  "home-srv-desc": "Syncmiru requires a server instance to run. Fill in its address in the following field, regardless of whether you already have an account or plan to create one.",
+  "home-srv-edit-help": "URL address of Syncmiru server."
 }

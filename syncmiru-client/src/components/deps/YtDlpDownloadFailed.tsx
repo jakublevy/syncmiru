@@ -1,20 +1,19 @@
 import React, {ReactElement} from "react";
 import Danger from "@components/svg/Danger.tsx";
-import {useLocation, useNavigate} from "react-router-dom";
 import {refresh} from "@mittwald/react-use-promise";
 import {useErrorBoundary} from "react-error-boundary";
 import {useTranslation} from "react-i18next";
 import {BtnPrimary} from "@components/widgets/Buttons.tsx";
+import {useLocation} from "wouter";
 
 export default function YtDlpDownloadFailed(): ReactElement {
     const {t} = useTranslation()
-    const navigate = useNavigate()
-    const location = useLocation()
+    const [location, navigate] = useLocation()
     const { resetBoundary } = useErrorBoundary();
     function downloadYtDlpAgain() {
         resetBoundary()
         refresh({error: true})
-        navigate('/reload', {state: {to: location.pathname}})
+        navigate('/reload', {state: {to: location}})
     }
 
     return (

@@ -1,9 +1,10 @@
 import {ReactElement, useEffect, useState} from 'react'
 
-import Select from 'react-select';
+import Select from "react-select";
 import {LanguagesSelect, LanguageSelectModel, Language} from "@models/config.tsx";
 import {useChangeLanguage, useLanguage} from '@hooks/useLanguage.ts'
 import {useTranslation} from "react-i18next";
+import {refresh} from "@mittwald/react-use-promise";
 
 
 export default function LanguageSelector({className}: Props): ReactElement {
@@ -15,11 +16,15 @@ export default function LanguageSelector({className}: Props): ReactElement {
     useEffect(() => {
         setLang(initLang)
         i18n.changeLanguage(initLang)
+
+        return () => refresh({tag: "useLanguage"})
     }, [initLang]);
 
     const languageChanged = async (ls: LanguageSelectModel) => {
-        await changeLang(ls.id).then(() => setLang(ls.id))
-        await i18n.changeLanguage(ls.id)
+        await changeLang(ls.id).then(() => {
+            setLang(ls.id)
+            i18n.changeLanguage(ls.id)
+        })
     }
 
     return (

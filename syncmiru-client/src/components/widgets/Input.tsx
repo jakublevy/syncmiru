@@ -1,12 +1,13 @@
-import {ChangeEvent, ReactElement} from "react";
+import {ChangeEvent, KeyboardEvent, ReactElement} from "react";
 
-export default function Input({type, className, required, disabled, readonly, id, name, value, onChange}: Props): ReactElement {
+export default function Input({type, className, required, disabled, readonly, id, name, value, onChange, onKeyDown}: Props): ReactElement {
     return <input
         type={type}
         required={required}
         disabled={disabled}
         readOnly={readonly}
         onChange={onChange}
+        onKeyDown={onKeyDown}
         id={id}
         name={name}
         value={value}
@@ -25,7 +26,8 @@ interface Props {
     id?: string,
     name?: string,
     value?: string,
-    onChange?: (e: ChangeEvent<HTMLInputElement>) => void
+    onChange?: (e: ChangeEvent<HTMLInputElement>) => void,
+    onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void
 
 }
 
