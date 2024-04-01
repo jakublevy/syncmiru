@@ -20,7 +20,7 @@ pub struct AppData {
 
 impl Default for AppData {
     fn default() -> Self {
-        AppData {
+        Self {
             first_run_seen: false,
             home_srv: None,
             deps_managed: false,

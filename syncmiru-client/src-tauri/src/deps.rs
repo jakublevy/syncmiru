@@ -173,7 +173,7 @@ impl DepsAvailable {
             yt_dlp_res = yt_dlp_version.len() == 10;
         }
 
-        Ok(DepsAvailable { mpv: mpv_res, yt_dlp: yt_dlp_res })
+        Ok(Self { mpv: mpv_res, yt_dlp: yt_dlp_res })
     }
     pub fn all_available(&self) -> bool {
         self.mpv && self.yt_dlp
