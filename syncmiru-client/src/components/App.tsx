@@ -12,6 +12,8 @@ import YtDlpDownloadFailed from "@components/deps/YtDlpDownloadFailed.tsx";
 import Trampoline from "@components/Trampoline.tsx";
 import LoginAuto from "@components/login/LoginAuto.tsx";
 import LoginForm from "@components/login/LoginForm.tsx";
+import HomeServer from "@components/login/HomeServer.tsx";
+import TestComponent from "@components/TestComponent.tsx";
 
 function App(): ReactElement {
     const firstRunSeen: boolean = useFirstRunSeen()
@@ -21,7 +23,7 @@ function App(): ReactElement {
         if (firstRunSeen)
             navigate("/deps", {state: {firstRunSeen: true}})
         else
-            navigate("/welcome")
+            navigate("/welcome", )
     }, [firstRunSeen]);
 
     return (
@@ -44,7 +46,9 @@ function App(): ReactElement {
 
             <Route path="/login-dispatch" element={<LoginDispatch/>}/>
             <Route path="/login-auto" element={<LoginAuto/>}/>
-            <Route path="/login-form" element={<LoginForm/>}/>
+            <Route path="/login-form" element={<LoginForm/>}>
+                <Route path="home-server" element={<HomeServer/>}/>
+            </Route>
         </Routes>
     )
 }

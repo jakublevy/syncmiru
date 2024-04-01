@@ -33,8 +33,10 @@ fn main() -> Result<()> {
             config::frontend::get_target_family,
             deps::frontend::mpv_start_downloading,
             deps::frontend::yt_dlp_start_downloading,
+            login::frontend::get_home_srv,
             login::frontend::set_home_srv,
-            login::frontend::can_auto_login
+            login::frontend::can_auto_login,
+            login::frontend::test_command
         ])
         .on_window_event(handle_window_event)
         .manage(appstate)
