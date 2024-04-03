@@ -27,7 +27,7 @@
   "home-srv": "Home server",
   "home-srv-edit-btn": "Edit",
   "home-srv-login-help": "URL address of Syncmiru server,<br>click the Edit button for edit.",
-  "login-label": "Email or user name",
+  "email-label": "Email",
   "password": "Password",
   "forgotten-password-btn": "Forgotten password?",
   "login-btn": "Log in",

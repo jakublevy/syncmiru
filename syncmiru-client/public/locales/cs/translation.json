@@ -27,7 +27,7 @@
   "home-srv": "Domovský server",
   "home-srv-edit-btn": "Editovat",
   "home-srv-login-help": "URL adresa Syncmiru serveru,<br>pro úpravu stiskněte tlačítko Editovat.",
-  "login-label": "Email nebo uživatelské jméno",
+  "email-label": "Email",
   "password": "Heslo",
   "forgotten-password-btn": "Zapomenuté heslo?",
   "login-btn": "Přihlásit se",

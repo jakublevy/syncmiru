@@ -9,8 +9,6 @@ use tauri::Manager;
 #[tauri::command]
 pub async fn can_auto_login(state: tauri::State<'_, AppState>) -> Result<bool> {
     let appdata = state.appdata.read()?;
-    write_config(&appdata)?;
-
     let jwt = read_login_tkn()?;
     let login_possible = appdata.home_srv.is_some() && jwt.is_some();
     Ok(login_possible)

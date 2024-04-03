@@ -6,6 +6,7 @@ mod error;
 mod result;
 mod args;
 mod config;
+mod srvstate;
 
 fn main() {
    let args = Args::parse();

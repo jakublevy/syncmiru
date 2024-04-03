@@ -1,3 +1,4 @@
+use std::thread::available_parallelism;
 use crate::appstate::AppState;
 use crate::config::appdata::write_config;
 use crate::config::{Language};
@@ -8,6 +9,14 @@ use crate::result::Result;
 pub async fn get_first_run_seen(state: tauri::State<'_, AppState>) -> Result<bool> {
     let appdata = state.appdata.read()?;
     Ok(appdata.first_run_seen)
+}
+
+#[tauri::command]
+pub async fn set_first_run_seen(state: tauri::State<'_, AppState>) -> Result<()> {
+    let mut appdata = state.appdata.write()?;
+    appdata.first_run_seen = true;
+    write_config(&appdata)?;
+    Ok(())
 }
 
 #[tauri::command]

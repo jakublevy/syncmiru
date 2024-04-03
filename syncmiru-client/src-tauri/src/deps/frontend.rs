@@ -46,7 +46,6 @@ pub async fn yt_dlp_start_downloading(window: tauri::Window, state: tauri::State
     delete_tmp()?;
     let mut appdata = state.appdata.write()?;
     appdata.yt_dlp_version = Some(yt_dlp_release.version);
-    appdata.first_run_seen = true;
     appdata.deps_managed = true;
     Ok(())
 }

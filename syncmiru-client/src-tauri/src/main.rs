@@ -27,6 +27,7 @@ fn main() -> Result<()> {
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             config::frontend::get_first_run_seen,
+            config::frontend::set_first_run_seen,
             config::frontend::get_language,
             config::frontend::set_language,
             config::frontend::get_deps_state,
