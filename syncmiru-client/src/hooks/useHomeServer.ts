@@ -1,16 +1,14 @@
 import {invoke} from "@tauri-apps/api/core";
-import {usePromise} from "@mittwald/react-use-promise";
+import useSWR from "swr";
+import useSWRMutation from "swr/mutation";
 
-export const useHomeServer = (): string => {
-    return usePromise(homeSrvPromise, [], {tags: ["useHomeServer"]})
+export const useHomeServer = () =>
+    useSWR('get_home_srv', cmd => invoke<string>(cmd, {}), {suspense: true})
+
+async function updateHomeServer(cmd: string, { arg }: {arg: string}): Promise<void> {
+    await invoke<void>(cmd, {homeSrv: arg})
 }
 
-const homeSrvPromise = (): Promise<string> => {
-    return invoke('get_home_srv', {})
-}
-
-export function useChangeHomeServer(): (l: string) => Promise<void> {
-    return (srv: string): Promise<void> => {
-        return invoke('set_home_srv', {homeSrv: srv})
-    }
+export const useChangeHomeServer = () => {
+    return useSWRMutation('set_home_srv', updateHomeServer)
 }

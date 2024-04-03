@@ -1,18 +1,17 @@
 import {ReactElement, useEffect} from "react";
-import {DepsState} from "@models/config.tsx";
-import {useDepsState} from "@hooks/useDepsState.ts";
 import {useTargetFamily} from "@hooks/useTargetFamily.ts";
 import DepsMissingNoWindows from "@components/deps/DepsMissingNoWindows.tsx";
 import DepsMissingWindows from "@components/deps/windows/DepsMissingWindows.tsx";
 import {useLocation} from "wouter";
 import {useHistoryState} from 'wouter/use-browser-location'
+import {useDepsState} from "@hooks/useDepsState.ts";
 
 export default function Deps(): ReactElement {
     const historyState = useHistoryState()
     const [_, navigate] = useLocation()
     const {firstRunSeen}: { firstRunSeen: boolean } = historyState;
-    const depsState: DepsState = useDepsState()
-    const targetFamily: string = useTargetFamily()
+    const {data: depsState} = useDepsState()
+    const {data: targetFamily} = useTargetFamily()
 
     function navigateForward() {
         navigate("/login-dispatch")

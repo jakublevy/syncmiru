@@ -1,28 +1,22 @@
-import {ReactElement, useEffect, useState} from 'react'
+import {ReactElement, useEffect} from 'react'
 
 import Select from "react-select";
-import {LanguagesSelect, LanguageSelectModel, Language} from "@models/config.tsx";
+import {LanguagesSelect, LanguageSelectModel} from "@models/config.tsx";
 import {useChangeLanguage, useLanguage} from '@hooks/useLanguage.ts'
 import {useTranslation} from "react-i18next";
-import {refresh} from "@mittwald/react-use-promise";
-
 
 export default function LanguageSelector({className}: Props): ReactElement {
-    const initLang: Language = useLanguage()
-    const changeLang = useChangeLanguage()
+    const {data: lang, mutate: mutateLang} = useLanguage()
+    const {trigger: changeLang} = useChangeLanguage()
     const {i18n} = useTranslation()
-    const [lang, setLang] = useState<Language>(initLang)
 
     useEffect(() => {
-        setLang(initLang)
-        i18n.changeLanguage(initLang)
-
-        return () => refresh({tag: "useLanguage"})
-    }, [initLang]);
+        i18n.changeLanguage(lang)
+    }, [lang]);
 
     const languageChanged = async (ls: LanguageSelectModel) => {
         await changeLang(ls.id).then(() => {
-            setLang(ls.id)
+            mutateLang(ls.id)
             i18n.changeLanguage(ls.id)
         })
     }

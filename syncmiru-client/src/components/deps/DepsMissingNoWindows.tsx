@@ -2,26 +2,26 @@ import {DepsState} from "@models/config.tsx";
 import Check from "@components/svg/Check.tsx";
 import Cross from "@components/svg/Cross.tsx";
 import {useTranslation} from "react-i18next";
-import {refresh} from "@mittwald/react-use-promise";
 import {ReactElement} from "react";
 import {BackButton, BtnPrimary} from "@components/widgets/Buttons.tsx";
 import {useLocation} from "wouter";
+import {mutate} from "swr";
 
 export default function DepsMissingNoWindows({firstRunSeen, depsState}: Props): ReactElement {
     const {t} = useTranslation()
     const [location, navigate] = useLocation()
 
     function navigateBack(): void {
-        refresh({tag: "useLanguage"})
-        navigate("/welcome")
+        mutate('useLanguage').then(() => navigate('/welcome'))
     }
 
     function checkDepsAgain(): void {
-        refresh({tag: "useDepsState"})
-        if(location == "/deps")
-            navigate("/deps-again", {state: {firstRunSeen: firstRunSeen}})
-        else
-            navigate("/deps", {state: {firstRunSeen: firstRunSeen}})
+        mutate('useDepsState').then(() => {
+            if(location == "/deps")
+                navigate("/deps-again", {state: {firstRunSeen: firstRunSeen}})
+            else
+                navigate("/deps", {state: {firstRunSeen: firstRunSeen}})
+        })
     }
 
     return (

@@ -1,10 +1,5 @@
 import {invoke} from "@tauri-apps/api/core";
-import {usePromise} from "@mittwald/react-use-promise";
+import useSWR from "swr";
 
-export const useCanAutoLogin = (): boolean => {
-    return usePromise(autoLoginPromise, [], {tags: ["useCanAutoLogin"]})
-}
-
-const autoLoginPromise = (): Promise<boolean> => {
-    return invoke('can_auto_login', {})
-}
+export const useCanAutoLogin = () =>
+    useSWR('can_auto_login', cmd => invoke<boolean>(cmd, {}), {suspense: true})

@@ -6,7 +6,7 @@ import {useSetFirstRunSeen} from "@hooks/useFirstRunSeen.ts";
 export default function LoginDispatch(): ReactElement {
     useSetFirstRunSeen()
     const [_, navigate] = useLocation()
-    const canAutoLogin = useCanAutoLogin()
+    const {data: canAutoLogin} = useCanAutoLogin()
 
     useEffect(() => {
         if(canAutoLogin)

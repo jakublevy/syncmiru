@@ -2,17 +2,16 @@ import LanguageSelector from "@components/widgets/LanguageSelector.tsx";
 import {useTranslation} from "react-i18next";
 import {ReactElement} from "react";
 import {useLocation} from "wouter";
-import {refresh} from "@mittwald/react-use-promise";
 import {BtnPrimary} from "@components/widgets/Buttons.tsx";
 import Card from "@components/widgets/Card.tsx";
+import {mutate} from "swr";
 
 export default function Welcome(): ReactElement {
     const {t} = useTranslation()
-    const [location, navigate] = useLocation()
+    const [_, navigate] = useLocation()
 
     function navigateToDeps(): void {
-        refresh({tag: "useDepsState"})
-        navigate("/deps", {state: {firstRunSeen: false}})
+        mutate('useDepsState').then(() => navigate("/deps", {state: {firstRunSeen: false}}))
     }
 
     return (

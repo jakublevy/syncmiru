@@ -30,14 +30,3 @@ pub async fn set_home_srv(state: tauri::State<'_, AppState>, home_srv: String) -
     write_config(&appdata)?;
     Ok(())
 }
-
-#[tauri::command]
-pub async fn test_command(window: tauri::Window, state: tauri::State<'_, AppState>) -> Result<()> {
-    thread::spawn(move || {
-        for i in 0..10 {
-            window.emit("msg", {});
-            thread::sleep(Duration::from_secs(3));
-        }
-    });
-    Ok(())
-}

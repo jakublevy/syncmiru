@@ -1,17 +1,15 @@
 import {invoke} from "@tauri-apps/api/core";
 import {Language} from "@models/config.tsx";
-import {usePromise} from "@mittwald/react-use-promise";
+import useSWR from "swr";
+import useSWRMutation from "swr/mutation";
 
-export const useLanguage = (): Language => {
-    return usePromise(languagePromise, [], {tags: ["useLanguage"]})
+export const useLanguage = () =>
+    useSWR('get_language', cmd => invoke<Language>(cmd, {}), {suspense: true})
+
+async function updateLanguage(cmd: string, { arg }: {arg: Language}): Promise<void> {
+    await invoke<void>(cmd, {language: arg})
 }
 
-const languagePromise = (): Promise<Language> => {
-    return invoke('get_language', {})
-}
-
-export function useChangeLanguage(): (l: Language) => Promise<void> {
-    return (l: Language): Promise<void> => {
-        return invoke('set_language', {language: l})
-    }
+export const useChangeLanguage = () => {
+    return useSWRMutation('set_language', updateLanguage)
 }

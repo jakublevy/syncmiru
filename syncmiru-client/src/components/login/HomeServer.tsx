@@ -3,7 +3,6 @@ import Input from "@components/widgets/Input.tsx";
 import {BackButton} from "@components/widgets/Buttons.tsx";
 import {useChangeHomeServer, useHomeServer} from "@hooks/useHomeServer.ts";
 import {useLocation} from "wouter";
-import {refresh} from "@mittwald/react-use-promise";
 import Help from "@components/widgets/Help.tsx";
 import {useTranslation} from "react-i18next";
 import Card from "@components/widgets/Card.tsx";
@@ -11,13 +10,13 @@ import Card from "@components/widgets/Card.tsx";
 export default function HomeServer(): ReactElement {
     const [location, navigate] = useLocation()
     const {t} = useTranslation()
+    const {data: homeSrvSaved, mutate: mutateHomeSrvSaved} = useHomeServer()
     const [homeSrv, setHomeSrv] = useState<string>('')
-    const initHomeSrv = useHomeServer()
-    const changeHomeSrv = useChangeHomeServer()
+    const {trigger: changeHomeSrv} = useChangeHomeServer()
 
     useEffect(() => {
-        setHomeSrv(initHomeSrv)
-    }, [initHomeSrv]);
+        setHomeSrv(homeSrvSaved)
+    }, [homeSrvSaved]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent): any => {
@@ -26,15 +25,12 @@ export default function HomeServer(): ReactElement {
         };
 
         document.addEventListener('keydown', handleKeyDown);
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
+        return () => document.removeEventListener('keydown', handleKeyDown);
     }, [homeSrv]);
 
     function backButtonClicked() {
         changeHomeSrv(homeSrv).then(() => {
-            refresh({tag: "useHomeServer"})
-            navigate("/login-form/main")
+            mutateHomeSrvSaved(homeSrv).then(() => navigate("/login-form/main"))
         })
     }
 

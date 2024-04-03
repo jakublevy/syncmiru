@@ -33,7 +33,11 @@ export default function MpvDownloading(): ReactElement {
         })
     }, [loading, mpvDownloadProgress, mpvDownloadInfo]);
 
-    useMpvStartDownloading()
+    const {error} = useMpvStartDownloading()
+
+    if(error !== undefined) {
+        throw new Error('MPV downloading failed')
+    }
 
     if (loading) {
         return <Loading/>

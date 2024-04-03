@@ -1,11 +1,6 @@
 import {invoke} from "@tauri-apps/api/core";
 import {DepsState} from "@models/config.tsx";
-import {usePromise} from "@mittwald/react-use-promise";
+import useSWR from "swr";
 
-export const useDepsState = (): DepsState => {
-    return usePromise(depsStatePromise, [], {tags: ["useDepsState"]})
-}
-
-const depsStatePromise = (): Promise<DepsState> => {
-    return invoke('get_deps_state', {})
-}
+export const useDepsState = () =>
+    useSWR('get_deps_state', cmd => invoke<DepsState>(cmd, {}), {suspense: true})

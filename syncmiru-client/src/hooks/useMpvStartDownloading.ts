@@ -1,17 +1,5 @@
 import {invoke} from "@tauri-apps/api/core";
-import {usePromise} from "@mittwald/react-use-promise";
+import useSWR from "swr";
 
-export const useMpvStartDownloading = () => {
-    return usePromise(
-        mpvStartDownloadingPromise,
-        [],
-        {
-            useSuspense: false,
-            tags: ["useMpvStartDownloading"]
-        }
-    )
-}
-
-const mpvStartDownloadingPromise = (): Promise<void> => {
-    return invoke('mpv_start_downloading', {})
-}
+export const useMpvStartDownloading = () =>
+    useSWR('mpv_start_downloading', cmd => invoke<void>(cmd, {}), {suspense: false, errorRetryCount: 5})

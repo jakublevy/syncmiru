@@ -13,7 +13,7 @@ import Card from "@components/widgets/Card.tsx";
 export default function LoginFormMain(): ReactElement {
     const [location, navigate] = useLocation()
     const {t} = useTranslation()
-    const homeSrv = useHomeServer()
+    const {data: homeSrv} = useHomeServer()
     const [formState, setFormState]
         = useState<FormState>({email: '', password: ''})
 
