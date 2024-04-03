@@ -39,3 +39,28 @@ impl<'de> serde::Deserialize<'de> for Language {
         Ok(Language::from(s.as_str()))
     }
 }
+
+// #[derive(Debug)]
+// pub enum Theme {
+//     Light,
+//     Dark,
+//     System,
+// }
+//
+// impl Theme {
+//     pub fn from(s: &str) -> Option<Self> {
+//         match s.to_lowercase().as_str() {
+//             "light" => Some(Light),
+//             "dark" => Some(Dark),
+//             "system" => Some(System),
+//             _ => None
+//         }
+//     }
+//     pub fn as_str(&self) -> &'static str {
+//         match self {
+//             Light => "light",
+//             Dark => "dark",
+//             System => "system"
+//         }
+//     }
+// }

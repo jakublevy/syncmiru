@@ -1,3 +1,4 @@
+use std::fs;
 use std::path::PathBuf;
 use clap::Parser;
 use crate::result::Result;
@@ -10,9 +11,11 @@ pub struct Args {
 impl Args {
     pub fn parse() -> Result<Self> {
         let cli = Cli::parse();
-        let config_file = PathBuf::from(cli.config);
+        let config_file = PathBuf::from(fs::canonicalize(cli.config)?);
         if !config_file.exists() {
-            return Err(SyncmiruError::CliParseFailed)
+            return Err(SyncmiruError::CliParseFailed(
+                format!("{} does not appear to be a valid file", config_file.to_string_lossy()))
+            )
         }
         Ok(Self { config_file })
     }
