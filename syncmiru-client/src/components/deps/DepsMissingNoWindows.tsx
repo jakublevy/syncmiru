@@ -6,6 +6,7 @@ import {refresh} from "@mittwald/react-use-promise";
 import {ReactElement} from "react";
 import {BackButton, BtnPrimary} from "@components/widgets/Buttons.tsx";
 import {useLocation} from "wouter";
+import Card from "@components/widgets/Card.tsx";
 
 export default function DepsMissingNoWindows({firstRunSeen, depsState}: Props): ReactElement {
     const {t} = useTranslation()
@@ -18,7 +19,7 @@ export default function DepsMissingNoWindows({firstRunSeen, depsState}: Props): 
 
     function checkDepsAgain(): void {
         refresh({tag: "useDepsState"})
-        if(location == "/deps")
+        if (location == "/deps")
             navigate("/deps-again", {state: {firstRunSeen: firstRunSeen}})
         else
             navigate("/deps", {state: {firstRunSeen: firstRunSeen}})
@@ -26,7 +27,7 @@ export default function DepsMissingNoWindows({firstRunSeen, depsState}: Props): 
 
     return (
         <div className="flex justify-center items-center h-dvh">
-            <div className="flex flex-col p-4 border-4 m-4">
+            <Card className="m-8">
                 <div className="flex items-start">
                     {!firstRunSeen && <BackButton className="mr-4" onClick={navigateBack}/>}
                     <h1 className="text-4xl mb-4">{t('missing-deps-title')}</h1>
@@ -51,7 +52,7 @@ export default function DepsMissingNoWindows({firstRunSeen, depsState}: Props): 
                 <div className="mt-8 flex justify-center">
                     <BtnPrimary onClick={checkDepsAgain}>{t('missing-deps-check-again')}</BtnPrimary>
                 </div>
-            </div>
+            </Card>
         </div>
     )
 }

@@ -6,6 +6,7 @@ import {refresh} from "@mittwald/react-use-promise";
 import {ReactElement} from "react";
 import {BackButton, BtnPrimary, BtnSecondary} from "@components/widgets/Buttons.tsx";
 import {useLocation} from "wouter";
+import Card from "@components/widgets/Card.tsx";
 
 export default function DepsMissingWindows({firstRunSeen, depsState}: Props): ReactElement {
     const {t} = useTranslation()
@@ -27,7 +28,7 @@ export default function DepsMissingWindows({firstRunSeen, depsState}: Props): Re
 
     return (
         <div className="flex justify-center items-center h-dvh">
-            <div className="flex flex-col p-4 border-4 m-4">
+            <Card className="m-8">
                 <div className="flex items-start">
                     {!firstRunSeen && <BackButton className="mr-4" onClick={navigateBack}/>}
                     <h1 className="text-4xl mb-4">{t('missing-deps-title')}</h1>
@@ -53,7 +54,7 @@ export default function DepsMissingWindows({firstRunSeen, depsState}: Props): Re
                     <BtnSecondary onClick={checkDepsAgain}>{t('missing-deps-check-again')}</BtnSecondary>
                     <BtnPrimary onClick={downloadDeps}>{t('missing-deps-download-windows')}</BtnPrimary>
                 </div>
-            </div>
+            </Card>
         </div>
     )
 }

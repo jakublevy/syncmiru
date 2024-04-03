@@ -8,7 +8,7 @@ import Card from "@components/widgets/Card.tsx";
 
 export default function Welcome(): ReactElement {
     const {t} = useTranslation()
-    const [location, navigate] = useLocation()
+    const [_, navigate] = useLocation()
 
     function navigateToDeps(): void {
         refresh({tag: "useDepsState"})

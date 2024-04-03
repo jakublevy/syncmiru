@@ -1,5 +1,7 @@
 import {ReactElement} from "react";
 
+// https://www.svgrepo.com/svg/500665/question-filled
+
 export default function Question({width, height, tooltipId}: QuestionProps): ReactElement {
     return (
         <svg

@@ -1,6 +1,5 @@
 import {invoke} from "@tauri-apps/api/core";
 import {usePromise} from "@mittwald/react-use-promise";
-import {Language} from "@models/config.tsx";
 
 export const useFirstRunSeen = (): boolean => {
     return usePromise(firstRunSeenPromise, [], {tags: ["useFirstRunSeen"]})

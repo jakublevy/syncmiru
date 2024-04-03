@@ -45,8 +45,8 @@ export default function DownloadProgressBar(
         <div className="flex justify-between items-end mb-1 w-[100%]">
             <span className="text-sm font-medium">{title}</span>
             {error
-                ? <span className="text-base font-medium text-danger">{percent}%</span>
-                : <span className="text-base font-medium text-primary">{percent}%</span>
+                ? <span className="text-base text-right font-medium text-danger ml-4 w-14">{percent}%</span>
+                : <span className="text-base text-right font-medium text-primary ml-4 w-14">{percent}%</span>
             }
         </div>
             <div className="bg-gray-200 w-full rounded-full h-2.5 dark:bg-gray-700">

@@ -5,6 +5,7 @@ import DownloadProgressBar from "@components/widgets/DownloadProgressBar.tsx";
 import Loading from "@components/Loading.tsx";
 import {useTranslation} from "react-i18next";
 import {useLocation} from "wouter";
+import Card from "@components/widgets/Card.tsx";
 
 export default function MpvDownloading(): ReactElement {
     const {t} = useTranslation()
@@ -40,7 +41,7 @@ export default function MpvDownloading(): ReactElement {
     } else {
         return (
             <div className="flex justify-center items-center h-dvh">
-                <div className="flex flex-col items-center p-4 border-4 m-4 w-[40rem]">
+                <Card className="m-8 w-[40rem]">
                     <h1 className="text-center text-4xl mb-4">{t('mpv-downloading-title')}</h1>
                     <DownloadProgressBar
                         title={mpvDownloadInfo.url}
@@ -51,7 +52,7 @@ export default function MpvDownloading(): ReactElement {
                         errorMsg=""
                         finishedMsg={t('dep-extracting')}
                     />
-                </div>
+                </Card>
             </div>
         )
     }

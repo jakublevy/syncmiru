@@ -5,6 +5,7 @@ import DownloadProgressBar from "@components/widgets/DownloadProgressBar.tsx";
 import {useYtDlpStartDownloading} from "@hooks/useYtDlpStartDownloading.ts";
 import {useTranslation} from "react-i18next";
 import {useLocation} from "wouter";
+import Card from "@components/widgets/Card.tsx";
 
 export default function YtDlpDownloading(): ReactElement {
     const {t} = useTranslation()
@@ -40,7 +41,7 @@ export default function YtDlpDownloading(): ReactElement {
     } else {
         return (
             <div className="flex justify-center items-center h-dvh">
-                <div className="flex flex-col items-center p-4 border-4 m-4 w-[40rem]">
+                <Card className="m-8 w-[40rem]">
                     <h1 className="text-center text-4xl mb-4">{t('yt-dlp-downloading-title')}</h1>
                     <DownloadProgressBar
                         title={ytDlpDownloadInfo.url}
@@ -51,7 +52,7 @@ export default function YtDlpDownloading(): ReactElement {
                         errorMsg=""
                         finishedMsg={t('dep-extracting')}
                     />
-                </div>
+                </Card>
             </div>
         )
     }

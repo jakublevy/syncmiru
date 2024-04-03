@@ -54,6 +54,7 @@ export default function LoginFormMain(): ReactElement {
                                        required
                                        readOnly
                                        disabled
+                                       value={homeSrv}
                                 />
                             </div>
                             <BtnTextPrimary
