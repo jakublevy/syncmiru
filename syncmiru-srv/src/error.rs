@@ -23,6 +23,9 @@ pub enum SyncmiruError {
     #[error("Yaml invalid")]
     YamlInvalid(String),
 
+    #[error("Auth error")]
+    AuthError,
+
     #[error("Internal error")]
     InternalError(#[from] anyhow::Error),
 }
