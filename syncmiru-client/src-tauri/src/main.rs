@@ -21,7 +21,7 @@ use tauri::WindowEvent::CloseRequested;
 
 
 fn main() -> Result<()> {
-    let appstate = appstate::AppState { appdata: config::appdata::read_config()?.into() };
+    let appstate = appstate::AppState { appdata: config::appdata::read()?.into() };
     let mut ctx = tauri::generate_context!();
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())

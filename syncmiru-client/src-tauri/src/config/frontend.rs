@@ -1,6 +1,6 @@
 use std::thread::available_parallelism;
 use crate::appstate::AppState;
-use crate::config::appdata::write_config;
+use crate::config::appdata;
 use crate::config::{Language};
 use crate::deps::{DepsAvailable};
 use crate::result::Result;
@@ -15,7 +15,7 @@ pub async fn get_first_run_seen(state: tauri::State<'_, AppState>) -> Result<boo
 pub async fn set_first_run_seen(state: tauri::State<'_, AppState>) -> Result<()> {
     let mut appdata = state.appdata.write()?;
     appdata.first_run_seen = true;
-    write_config(&appdata)?;
+    appdata::write(&appdata)?;
     Ok(())
 }
 
@@ -30,7 +30,7 @@ pub async fn set_language(state: tauri::State<'_, AppState>, language: Language)
     let mut appdata = state.appdata.write()?;
     appdata.lang = language;
     rust_i18n::set_locale(appdata.lang.as_str());
-    write_config(&appdata)?;
+    appdata::write(&appdata)?;
     Ok(())
 }
 
@@ -47,7 +47,7 @@ pub async fn get_deps_state(state: tauri::State<'_, AppState>) -> Result<DepsAva
         let global = DepsAvailable::from_params(false)?;
         if global.all_available() {
             appdata.deps_managed = false;
-            write_config(&appdata)?;
+            appdata::write(&appdata)?;
         }
         Ok(global)
     }

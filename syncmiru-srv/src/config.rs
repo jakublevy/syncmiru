@@ -2,51 +2,121 @@ use std::fs::File;
 use std::io::{Read};
 use std::path::{Path, PathBuf};
 use anyhow::Context;
+use log::{debug, info, warn};
 use yaml_rust2::{Yaml, YamlLoader};
 use crate::config::LogOutput::{StdErr, Stdout};
 use crate::error::SyncmiruError;
 use crate::result::Result;
 
-pub fn read_config(config_file: impl AsRef<Path>) -> Result<Config> {
+pub fn read(config_file: impl AsRef<Path> + Copy) -> Result<Config> {
+    let cf_print = &config_file.as_ref().to_string_lossy();
+    debug!("Parsing {}", cf_print);
     let mut yaml_str: String = Default::default();
     File::open(config_file)?.read_to_string(&mut yaml_str)?;
     let docs = YamlLoader::load_from_str(&yaml_str)?;
     let doc = &docs[0];
 
-    let reg_allowed = doc["registration_allowed"]
-        .as_bool()
-        .context("registration_allowed is missing")?;
-
     let port = doc["port"]
         .as_i64()
         .context("port is missing")? as u16;
 
-    let db_connection_str = doc["db_connection_str"]
-        .as_str()
-        .context("db_connection_str is missing")?
-        .to_string();
-
+    let reg_pub = RegConfig::from(&doc["registration_public"])?;
+    let db = DbConfig::from(&doc["db"])?;
     let log = LogConfig::from(&doc["log"])?;
     let rates = Rates::from(&doc["rates"])?;
     let login_jwt_cert = LoginJwtCert::from(&doc["login_jwt_cert"])?;
 
+    info!("{} parsed", cf_print);
     Ok(
-        Config { reg_allowed, port, db_connection_str, log, rates, login_jwt_cert }
+        Config { reg_pub, port, db, log, rates, login_jwt_cert }
     )
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Config {
-    pub reg_allowed: bool,
+    pub reg_pub: RegConfig,
     pub port: u16,
-    pub db_connection_str: String,
+    pub db: DbConfig,
     pub log: LogConfig,
     pub rates: Rates,
     pub login_jwt_cert: LoginJwtCert,
     //sources: Vec<Source>
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+pub struct DbConfig {
+    pub name: String,
+    pub host: String,
+    pub user: String,
+    pub password: String,
+    pub port: u16
+}
+
+impl DbConfig {
+    pub fn from(db_yaml: &Yaml) -> Result<Self> {
+        let name = db_yaml["name"]
+            .as_str()
+            .context("name is missing in db section")?
+            .to_string();
+        let host = db_yaml["host"]
+            .as_str()
+            .context("host is missing in db section")?
+            .to_string();
+        let user = db_yaml["user"]
+            .as_str()
+            .context("user is missing in db section")?
+            .to_string();
+        let password = db_yaml["password"]
+            .as_str()
+            .context("password is missing in db section")?
+            .to_string();
+        let mut port = 5432u16;
+        if !db_yaml["port"].is_badvalue() {
+            port = db_yaml["port"]
+                .as_i64()
+                .context("port in db section is not integral value")? as u16;
+        }
+        else {
+            warn!("No port value defined, assuming psql default 5432");
+        }
+
+        Ok(
+            DbConfig { name, host, user, password, port }
+        )
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct RegConfig {
+    pub allowed: bool,
+    pub hcaptcha_secret: Option<String>,
+}
+
+impl RegConfig {
+    pub fn from(reg_yaml: &Yaml) -> Result<Self> {
+        let mut hcaptcha_secret: Option<String> = None;
+        let allowed = reg_yaml["allowed"]
+            .as_bool()
+            .context("allowed is missing in registration_public section")?;
+
+        let hs = &reg_yaml["hcaptcha_secret"];
+        if allowed {
+            if !hs.is_badvalue() {
+                hcaptcha_secret = Some(hs.as_str()
+                    .context("hcaptcha_secret is missing inside registration_public")?
+                    .to_string());
+            }
+            else {
+                warn!("Public registration allowed but hcaptcha disabled");
+            }
+        }
+        Ok(
+            RegConfig { allowed, hcaptcha_secret }
+        )
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct LogConfig {
     pub output: LogOutput,
     pub level: LogLevel,
@@ -86,14 +156,14 @@ impl LogConfig {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum LogOutput {
     File(PathBuf),
     Stdout,
     StdErr
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum LogLevel {
     Error, Warn, Info, Debug, Trace
 }
@@ -123,7 +193,7 @@ impl From<LogLevel> for simplelog::LevelFilter {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct EmailConf {
     smtp_host: String,
     smtp_port: u16,
@@ -133,7 +203,7 @@ struct EmailConf {
     security: String
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 struct Rates {
     forgotten_password: Option<Rate>,
     display_name_change: Option<Rate>
@@ -148,11 +218,17 @@ impl Rates {
             let (fp_max, fp_per) = parse_rate(fp_yaml)?;
             rates.forgotten_password = Some(Rate { max: fp_max, per: fp_per });
         }
+        else {
+            warn!("Rate limiting for forgotten_password is disabled")
+        }
 
         let dnc_yaml = &rates_yaml["display_name_change"];
         if !dnc_yaml.is_badvalue() {
             let (dnc_max, dnc_per) = parse_rate(&dnc_yaml)?;
             rates.display_name_change = Some(Rate { max: dnc_max, per: dnc_per });
+        }
+        else {
+            warn!("Rate limiting for display_name_change is disabled")
         }
         Ok(rates)
     }
@@ -164,13 +240,13 @@ fn parse_rate(rate_yaml: &Yaml) -> Result<(u32, u32)> {
     return Ok((max, per))
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 struct Rate {
     max: u32,
     per: u32
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Source {
     dir_read_url: String,
     dir_format: DirFormat,
@@ -179,12 +255,12 @@ struct Source {
     client_acc_priv_key_file: PathBuf
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 enum DirFormat {
     NginxJson, NginxHtml, Apache2Html
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct LoginJwtCert {
     priv_key_file: PathBuf,
     pub_key_file: PathBuf

@@ -1,7 +1,7 @@
 use crate::appstate::AppState;
-use crate::config::appdata::write_config;
+use crate::config::appdata;
 use crate::result::Result;
-use crate::config::jwt::read_login_tkn;
+use crate::config::jwt;
 use std::thread;
 use std::time::Duration;
 use tauri::Manager;
@@ -9,7 +9,7 @@ use tauri::Manager;
 #[tauri::command]
 pub async fn can_auto_login(state: tauri::State<'_, AppState>) -> Result<bool> {
     let appdata = state.appdata.read()?;
-    let jwt = read_login_tkn()?;
+    let jwt = jwt::read()?;
     let login_possible = appdata.home_srv.is_some() && jwt.is_some();
     Ok(login_possible)
 }
@@ -27,7 +27,7 @@ pub async fn set_home_srv(state: tauri::State<'_, AppState>, home_srv: String) -
     //TODO: check url
 
     appdata.home_srv = Some(home_srv);
-    write_config(&appdata)?;
+    appdata::write(&appdata)?;
     Ok(())
 }
 

@@ -14,6 +14,12 @@ pub enum SyncmiruError {
     #[error("Error while scanning YAML")]
     YamlScanError(#[from] yaml_rust2::ScanError),
 
+    #[error("DB error")]
+    SqlxError(#[from] sqlx::error::Error),
+
+    #[error("DB migration error")]
+    MigrationError(#[from] sqlx::migrate::MigrateError),
+
     #[error("Yaml invalid")]
     YamlInvalid(String),
 

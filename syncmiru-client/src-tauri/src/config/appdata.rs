@@ -2,9 +2,9 @@ use std::fs;
 use anyhow::Context;
 use ini::Ini;
 use crate::config::Language;
-use tauri_plugin_theme::Theme;
 use crate::result::Result;
 use crate::files::syncmiru_config_ini;
+use crate::config::Theme;
 use crate::config::utils::{get_preferred_locale, ini_bool_to_string, ini_str_to_bool};
 
 pub struct AppData {
@@ -26,14 +26,14 @@ impl Default for AppData {
             deps_managed: false,
             mpv_version: None,
             yt_dlp_version: None,
-            theme: Theme::Auto,
+            theme: Theme::System,
             lang: get_preferred_locale(),
             auto_ready: false,
         }
     }
 }
 
-pub fn read_config() -> Result<AppData> {
+pub fn read() -> Result<AppData> {
     let syncmiru_config = syncmiru_config_ini()?;
     let mut appdata = AppData::default();
 
@@ -58,7 +58,7 @@ pub fn read_config() -> Result<AppData> {
 
             let theme_opt = settings.get("theme");
             if let Some(theme_s) = theme_opt {
-                let theme = Theme::from(theme_s.to_string());
+                let theme = Theme::from(theme_s);
                 appdata.theme = theme;
             }
 
@@ -94,7 +94,7 @@ pub fn read_config() -> Result<AppData> {
     Ok(appdata)
 }
 
-pub fn write_config(config: &AppData) -> Result<()> {
+pub fn write(config: &AppData) -> Result<()> {
     let mut ini = Ini::new();
     let mut settings = &mut ini.with_section(Some("Settings"));
     settings = settings.set("first_run_seen", ini_bool_to_string(config.first_run_seen));
@@ -102,7 +102,7 @@ pub fn write_config(config: &AppData) -> Result<()> {
         settings = settings.set("home_srv", srv);
     }
     settings = settings.set("language", config.lang.as_str());
-    settings = settings.set("theme", config.theme.to_string());
+    settings = settings.set("theme", config.theme.as_str());
     settings.set("auto_ready", ini_bool_to_string(config.auto_ready));
 
     if cfg!(target_family = "windows") {

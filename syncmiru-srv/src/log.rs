@@ -3,8 +3,8 @@ use simplelog::{ColorChoice, Config, TerminalMode, TermLogger, WriteLogger};
 use crate::config::{LogConfig, LogOutput};
 use crate::result::Result;
 
-pub fn setup_logger(log_conf: LogConfig) -> Result<()> {
-    if let LogOutput::File(f) = log_conf.output {
+pub fn setup(log_conf: &LogConfig) -> Result<()> {
+    if let LogOutput::File(f) = &log_conf.output {
         let log_file = OpenOptions::new()
             .write(true)
             .append(true)

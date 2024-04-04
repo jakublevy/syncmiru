@@ -4,7 +4,7 @@ use crate::result::Result;
 use crate::error::SyncmiruError;
 use keyring::error::Error as keyring_err;
 
-pub fn read_login_tkn() -> Result<Option<String>> {
+pub fn read() -> Result<Option<String>> {
     let entry = Entry::new(constants::KEYRING_SERVICE, constants::KEYRING_LOGIN_JWT_USER)?;
     let jwt = entry.get_password();
     Ok(match jwt {
@@ -13,13 +13,13 @@ pub fn read_login_tkn() -> Result<Option<String>> {
     })
 }
 
-pub fn write_login_tkn(jwt: &str) -> Result<()> {
+pub fn write(jwt: &str) -> Result<()> {
     let entry = Entry::new(constants::KEYRING_SERVICE, constants::KEYRING_LOGIN_JWT_USER)?;
     entry.set_password(jwt)?;
     Ok(())
 }
 
-pub fn clear_login_tkn() -> Result<()> {
+pub fn clear() -> Result<()> {
     let entry = Entry::new(constants::KEYRING_SERVICE, constants::KEYRING_LOGIN_JWT_USER)?;
     match entry.delete_password() {
         Ok(_) => Ok(()),
@@ -36,8 +36,8 @@ mod tests {
     #[test]
     #[serial]
     fn read_login_tkn_no_value_test() {
-        clear_login_tkn().unwrap();
-        let tkn = read_login_tkn().unwrap();
+        clear().unwrap();
+        let tkn = read().unwrap();
         assert_eq!(None, tkn);
     }
 
@@ -45,9 +45,9 @@ mod tests {
     #[serial]
     fn read_write_login_tkn_test() {
         let jwt = "ahoj svete";
-        write_login_tkn(jwt).unwrap();
-        let tkn = read_login_tkn().unwrap();
-        clear_login_tkn().unwrap();
+        write(jwt).unwrap();
+        let tkn = read().unwrap();
+        clear().unwrap();
         assert_eq!(Some(jwt.to_string()), tkn);
     }
 }
