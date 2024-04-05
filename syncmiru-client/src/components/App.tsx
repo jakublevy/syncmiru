@@ -15,6 +15,7 @@ import LoginForm from "@components/login/LoginForm.tsx";
 import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
 import {useTranslation} from "react-i18next";
+import Register from "@components/login/Register.tsx";
 
 
 function App(): ReactElement {
@@ -55,6 +56,8 @@ function App(): ReactElement {
             <Route path="/login-dispatch" component={LoginDispatch}/>
             <Route path="/login-auto" component={LoginAuto}/>
             <Route path="/login-form/*" component={LoginForm}/>
+
+            <Route path="/register" component={Register}/>
         </Router>
     )
 }

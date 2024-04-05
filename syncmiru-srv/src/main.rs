@@ -65,11 +65,11 @@ async fn main() -> Result<()> {
 }
 
 async fn index(secure_ip: SecureClientIp) -> &'static str {
-   info!("Req / from ip {}", secure_ip.0);
+   info!("Req / from {}", secure_ip.0);
    "Syncmiru server"
 }
 
 async fn service(State(state): State<WebState>, secure_ip: SecureClientIp) -> Json<WebState> {
-   info!("Req /service from ip {}", secure_ip.0);
+   info!("Req /service from {}", secure_ip.0);
    Json(state)
 }

@@ -5,6 +5,8 @@ use crate::config::jwt;
 use std::thread;
 use std::time::Duration;
 use tauri::Manager;
+use crate::error::SyncmiruError;
+use crate::login::{ServiceStatus, service_status};
 
 #[tauri::command]
 pub async fn can_auto_login(state: tauri::State<'_, AppState>) -> Result<bool> {
@@ -26,9 +28,19 @@ pub async fn set_home_srv(state: tauri::State<'_, AppState>, home_srv: String) -
 
     //TODO: check url
 
-    appdata.home_srv = Some(home_srv);
+    appdata.home_srv = Some(home_srv.trim().to_string());
     appdata::write(&appdata)?;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn get_service_status(state: tauri::State<'_, AppState>) -> Result<ServiceStatus> {
+    let mut home_srv: String;
+    {
+        let appdata = state.appdata.read()?;
+        home_srv = appdata.home_srv.clone().unwrap_or("".to_string());
+    }
+     Ok(service_status(home_srv.as_str()).await?)
 }
 
 #[tauri::command]

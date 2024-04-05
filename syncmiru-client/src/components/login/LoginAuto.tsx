@@ -4,5 +4,5 @@ export default function LoginAuto(): ReactElement {
 
     //TODO: this will attempt to login
 
-    return <></>
+    return <>Login auto</>
 }

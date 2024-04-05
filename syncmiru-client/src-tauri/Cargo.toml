@@ -24,7 +24,7 @@ thiserror = "1.0.58"
 anyhow = "1.0.81"
 tauri-plugin-theme = "0.4.0"
 rust-i18n = "3.0.1"
-reqwest = "0.12.2"
+reqwest = { version = "0.12.2", features = ["json"] }
 roxmltree = "0.19.0"
 tokio = { version = "1.37.0", features = ["rt-multi-thread", "macros"] }
 sevenz-rust = "0.5.4"

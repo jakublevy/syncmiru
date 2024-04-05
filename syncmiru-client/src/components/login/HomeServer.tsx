@@ -7,6 +7,7 @@ import {refresh} from "@mittwald/react-use-promise";
 import Help from "@components/widgets/Help.tsx";
 import {useTranslation} from "react-i18next";
 import Card from "@components/widgets/Card.tsx";
+import {mutate} from "swr";
 
 export default function HomeServer(): ReactElement {
     const [location, navigate] = useLocation()
@@ -33,6 +34,7 @@ export default function HomeServer(): ReactElement {
 
     function backButtonClicked() {
         changeHomeSrv(homeSrv).then(() => {
+            mutate('get_service_status', undefined)
             refresh({tag: "useHomeServer"})
             navigate("/login-form/main")
         })
@@ -56,7 +58,7 @@ export default function HomeServer(): ReactElement {
                             <label htmlFor="srv" className="block mb-1 text-sm font-medium">{t('home-srv')}*</label>
                             <Help
                                 tooltipId="srv-help"
-                                width="1rem"
+                                className="w-4"
                                 content={t('home-srv-edit-help')}
                             />
                         </div>

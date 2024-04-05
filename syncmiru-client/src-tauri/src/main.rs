@@ -37,6 +37,7 @@ fn main() -> Result<()> {
             login::frontend::get_home_srv,
             login::frontend::set_home_srv,
             login::frontend::can_auto_login,
+            login::frontend::get_service_status,
             login::frontend::test_command
         ])
         .on_window_event(handle_window_event)

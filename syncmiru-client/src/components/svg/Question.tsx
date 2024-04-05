@@ -2,7 +2,7 @@ import {ReactElement} from "react";
 
 // https://www.svgrepo.com/svg/500665/question-filled
 
-export default function Question({width, height, tooltipId}: QuestionProps): ReactElement {
+export default function Question({width, height, tooltipId, className}: QuestionProps): ReactElement {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -10,8 +10,7 @@ export default function Question({width, height, tooltipId}: QuestionProps): Rea
             y="0px"
             viewBox="0 0 700 700"
             xmlSpace="preserve"
-            width={width}
-            height={height}
+            className={className}
             data-tooltip-id={tooltipId}
             fill="currentColor"
         >
@@ -23,5 +22,6 @@ export default function Question({width, height, tooltipId}: QuestionProps): Rea
 export interface QuestionProps {
     width?: string,
     height?: string,
-    tooltipId?: string
+    tooltipId?: string,
+    className?: string,
 }
