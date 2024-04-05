@@ -1,4 +1,4 @@
-import {ReactElement, useEffect, useState} from "react";
+import {ChangeEvent, ReactElement, useState} from "react";
 import LanguageSelector from "@components/widgets/LanguageSelector.tsx";
 import {BtnPrimary, BtnTextPrimary} from "@components/widgets/Buttons.tsx";
 import Input from "@components/widgets/Input.tsx";
@@ -9,8 +9,6 @@ import {useLocation} from "wouter";
 import {useTranslation} from "react-i18next";
 import Card from "@components/widgets/Card.tsx";
 import {useServiceStatus} from "@hooks/useServiceStatus.ts";
-import {sleep} from 'src/utils.ts'
-import usePasswordValidate from "@hooks/usePasswordValidate.ts";
 import useEmailValidate from "@hooks/useEmailValidate.tsx";
 
 
@@ -20,70 +18,80 @@ export default function LoginFormMain(): ReactElement {
 
     const homeSrv = useHomeServer()
     const {
-        data: homeSrvServiceStatus,
         isLoading: homeSrvServiceIsLoading,
         error: homeSrvServiceError
     } = useServiceStatus()
 
-    const [highlightInvalidSrv, setHighlightInvalidSrv] = useState<boolean>(false);
-    const [isSrvBlinking, setIsSrvBlinking] = useState<boolean>(false);
-
     const [formData, setFormData]
         = useState<FormData>({email: '', password: ''})
 
-    const passwordValidate = usePasswordValidate()
+    const [formErrors, setFormErrors]
+        = useState<FormErrors>({email: FieldError.None, password: FieldError.None})
+
+    const [formShowError, setFormShowError]
+        = useState<FormShowError>({email: false, srv: false, password: false})
+
     const emailValidate = useEmailValidate()
-
-    useEffect(() => {
-        setFormData({...formData})
-    }, [homeSrv]);
-
-    useEffect(() => {
-        setHighlightInvalidSrv(false)
-    }, [homeSrvServiceStatus]);
-
 
     function editClicked() {
         navigate('/login-form/home-server')
-        setHighlightInvalidSrv(false)
     }
 
-    function displayInvalidHomeSrv() {
-        if (highlightInvalidSrv) {
-            setIsSrvBlinking(true)
-            setHighlightInvalidSrv(false)
-            sleep(200).then(() => {
-                setHighlightInvalidSrv(true)
-                setIsSrvBlinking(false)
-            })
-        } else
-            setHighlightInvalidSrv(true)
+    function checkFields(): FormErrors {
+        let ret: FormErrors = {email: FieldError.None, password: FieldError.None}
+
+        if(formData.email === "")
+            ret.email = FieldError.Missing
+        else if(!emailValidate(formData.email))
+            ret.email = FieldError.InvalidFormat
+
+        if(formData.password === "")
+            ret.password = FieldError.Missing
+
+        return ret
     }
 
     function checkHomeServer() {
-        const error = homeSrvServiceError || homeSrv === ""
-        if(error) {
-            displayInvalidHomeSrv()
-            return false
-        }
-        return true
+        return !homeSrvServiceError && homeSrv !== ""
     }
 
-    async function regBtnClicked() {
+    function regBtnClicked() {
+        const fieldsError = checkFields()
+        setFormErrors(fieldsError)
+
+        setFormShowError({srv: true, email: false, password: false})
         if(!checkHomeServer())
             return
 
         navigate('/register')
     }
 
-    async function loginBtnClicked() {
-        if(!checkHomeServer())
+    function loginBtnClicked() {
+        const fieldsError = checkFields()
+        setFormErrors(fieldsError)
+
+        setFormShowError({srv: true, email: true, password: true})
+        if(fieldsError.password !== FieldError.None || fieldsError.email !== FieldError.None || !checkHomeServer())
             return
     }
 
-    async function forgottenPasswordBtnClicked() {
-        if(!checkHomeServer())
+    function forgottenPasswordBtnClicked() {
+        const fieldsError = checkFields()
+        setFormErrors(fieldsError)
+
+        setFormShowError({srv: true, email: true, password: false})
+        if(fieldsError.email !== FieldError.None || !checkHomeServer())
             return
+    }
+
+    function emailChanged(e: ChangeEvent<HTMLInputElement>) {
+        setFormData({...formData, email: e.target.value})
+        setFormShowError({...formShowError, email: false})
+    }
+
+    function passwordChanged(e: ChangeEvent<HTMLInputElement>) {
+        setFormData({...formData, password: e.target.value})
+        setFormShowError({...formShowError, password: false})
     }
 
     if (location === '/login-form/main')
@@ -96,7 +104,7 @@ export default function LoginFormMain(): ReactElement {
                     </div>
                     <div className="mb-5 relative">
                         <div className="flex justify-between">
-                            <Label htmlFor="srv">{t('home-srv')}*</Label>
+                            <Label htmlFor="srv">{t('home-srv')}</Label>
                             <Help
                                 tooltipId="srv-help"
                                 className="w-4"
@@ -104,7 +112,7 @@ export default function LoginFormMain(): ReactElement {
                             />
                         </div>
                         <div
-                            className={`${highlightInvalidSrv ? "border-2 border-danger -mt-0.5 -ml-0.5 -mr-0.5 -mb-[1px]" : "border-b border-gray-300 dark:border-gray-600"} w-full p-2.5 bg-white dark:bg-darkbg dark:placeholder-gray-400 dark:text-darkread`}>
+                            className="w-full p-2.5 border-b border-gray-300 dark:border-gray-600 bg-white dark:bg-darkbg dark:placeholder-gray-400 dark:text-darkread">
                             <input type="text" id="srv"
                                    className="w-[85%] text-gray-900 dark:text-darkread bg-white dark:bg-darkbg text-sm focus:ring-primary focus:border-primary block"
                                    required
@@ -119,7 +127,7 @@ export default function LoginFormMain(): ReactElement {
 
                         {homeSrv === "" ?
                             <>
-                                {highlightInvalidSrv || isSrvBlinking
+                                {formShowError.srv
                                     ? <p className="text-danger font-semibold">Toto pole musí být vyplněno</p>
                                     : <p className="invisible">L</p>
                                 }
@@ -137,7 +145,7 @@ export default function LoginFormMain(): ReactElement {
                     </div>
                     <div className="mb-5">
                         <div className="flex justify-between">
-                            <Label htmlFor="email">{t('email-label')}*</Label>
+                            <Label htmlFor="email">{t('email-label')}</Label>
                             <Help
                                 tooltipId="email-help"
                                 className="w-4"
@@ -149,22 +157,55 @@ export default function LoginFormMain(): ReactElement {
                             id="email"
                             required
                             value={formData.email}
-                            onChange={e => setFormData({...formData, email: e.target.value})}
+                            onChange={emailChanged}
                         />
-                        <p className="text-danger invisible font-semibold">Špatný email / uživatelské jméno</p>
+                        {formShowError.email
+                            ? <>
+                                {formErrors.email === FieldError.Missing
+                                    ? <p className="text-danger font-semibold">Toto pole musí být vyplněno</p>
+                                    : <>
+                                        {formErrors.email == FieldError.InvalidFormat
+                                            ? <p className="text-danger font-semibold">Toto není email</p>
+                                            : <>
+                                                {formErrors.email == FieldError.InvalidResponse
+                                                    ? <p className="text-danger font-semibold">Špatný email / heslo</p>
+                                                    : <p className="invisible">L</p>
+                                                }
+                                            </>
+                                        }
+                                    </>
+                                }
+                              </>
+                            : <p className="invisible">L</p>
+                        }
                     </div>
                     <div className="mb-1">
                         <label htmlFor="password"
-                               className="block mb-1 text-sm font-medium text-gray-900 dark:text-darkread">{t('password')}*</label>
+                               className="block mb-1 text-sm font-medium text-gray-900 dark:text-darkread">{t('password')}</label>
                         <Input
                             type="password"
                             id="password"
                             className="mb-1"
                             required
                             value={formData.password}
-                            onChange={e => setFormData({...formData, password: e.target.value})}/>
+                            onChange={passwordChanged}/>
+
                         <div className="flex flex-row justify-between items-start mb-5">
-                            <p className="text-danger invisible font-semibold">Špatné heslo</p>
+                            {formShowError.password
+                                ? <>
+                                    {formErrors.password === FieldError.Missing
+                                        ? <p className="text-danger font-semibold">Toto pole musí být vyplněno</p>
+                                        : <>
+                                            {formErrors.password == FieldError.InvalidResponse
+                                                ? <p className="text-danger font-semibold">Špatný email / heslo</p>
+                                                : <p className="invisible">L</p>
+                                            }
+                                        </>
+                                    }
+                                </>
+                                : <p className="invisible">L</p>
+                            }
+
                             <BtnTextPrimary className="text-sm" onClick={forgottenPasswordBtnClicked}>{t('forgotten-password-btn')}</BtnTextPrimary>
                         </div>
 
@@ -183,4 +224,22 @@ export default function LoginFormMain(): ReactElement {
 interface FormData {
     email: string,
     password: string
+}
+
+interface FormErrors {
+    email: FieldError,
+    password: FieldError
+}
+
+enum FieldError {
+    None,
+    Missing,
+    InvalidFormat,
+    InvalidResponse
+}
+
+interface FormShowError {
+    srv: boolean,
+    email: boolean,
+    password: boolean
 }

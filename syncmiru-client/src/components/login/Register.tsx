@@ -12,11 +12,8 @@ export default function Register(): ReactElement {
     } = useServiceStatus()
 
     useEffect(() => {
-        if(homeSrvServiceError) {
-            console.log('error, do something')
-            return;
-        }
-
+        console.log('error, do something')
+        //TODO: error return back to main login
     }, [homeSrvServiceError]);
 
     return (
@@ -29,7 +26,6 @@ export default function Register(): ReactElement {
                         : <RegisterToken/>
                     }
                   </>
-
             }
         </>
     )
