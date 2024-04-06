@@ -1,6 +1,6 @@
 import {invoke} from "@tauri-apps/api/core";
 import useSWR from "swr";
-import {usePromise} from "@mittwald/react-use-promise";
+import {ServiceStatus} from "@models/serviceStatus.ts";
 
 export const useServiceStatus = () =>
     useSWR('get_service_status', cmd => invoke<ServiceStatus>(cmd, {}), {suspense: false})

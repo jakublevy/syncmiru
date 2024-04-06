@@ -1,9 +1,9 @@
-interface DownloadStart {
+export interface DownloadStart {
     url: string,
     size: number,
 }
 
-interface DownloadProgress {
+export interface DownloadProgress {
     speed: number,
     received: number,
 }

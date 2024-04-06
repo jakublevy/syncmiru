@@ -56,7 +56,7 @@ interface BtnProps {
 export function BackButton({onClick, className}: BackButtonProps): ReactElement {
     return (
         <button className={`rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 ${className}`} onClick={onClick}>
-            <Previous height="3rem"/>
+            <Previous className="h-12" />
         </button>
     )
 }

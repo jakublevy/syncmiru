@@ -16,6 +16,7 @@ import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
 import {useTranslation} from "react-i18next";
 import Register from "@components/login/Register.tsx";
+import {DepsHistoryState} from "@models/historyState.ts";
 
 
 function App(): ReactElement {
@@ -30,7 +31,7 @@ function App(): ReactElement {
 
     useEffect(() => {
         if (firstRunSeen)
-            navigate('/deps', {state: {firstRunSeen: true}})
+            navigate('/deps', {state: {firstRunSeen: true} as DepsHistoryState})
         else
             navigate('/welcome')
     }, [firstRunSeen]);

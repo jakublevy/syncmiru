@@ -3,8 +3,11 @@ import {useServiceStatus} from "@hooks/useServiceStatus.ts";
 import RegisterCaptcha from "@components/login/RegisterCaptcha.tsx";
 import RegisterToken from "@components/login/RegisterToken.tsx";
 import Loading from "@components/Loading.tsx";
+import {useLocation} from "wouter";
+import {LoginFormHistoryState} from "@models/historyState.ts";
 
 export default function Register(): ReactElement {
+    const [_, navigate] = useLocation()
     const {
         data: homeSrvServiceStatus,
         isLoading: homeSrvServiceLoading,
@@ -12,8 +15,8 @@ export default function Register(): ReactElement {
     } = useServiceStatus()
 
     useEffect(() => {
-        console.log('error, do something')
-        //TODO: error return back to main login
+        if(homeSrvServiceError)
+            navigate("/login-form/main", {state: { homeSrvError: true } as LoginFormHistoryState})
     }, [homeSrvServiceError]);
 
     return (

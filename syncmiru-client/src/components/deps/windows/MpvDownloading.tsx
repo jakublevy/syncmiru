@@ -6,6 +6,7 @@ import Loading from "@components/Loading.tsx";
 import {useTranslation} from "react-i18next";
 import {useLocation} from "wouter";
 import Card from "@components/widgets/Card.tsx";
+import {DownloadProgress, DownloadStart} from "@models/depsDownload.ts";
 
 export default function MpvDownloading(): ReactElement {
     const {t} = useTranslation()

@@ -5,6 +5,7 @@ import {useLocation} from "wouter";
 import {refresh} from "@mittwald/react-use-promise";
 import {BtnPrimary} from "@components/widgets/Buttons.tsx";
 import Card from "@components/widgets/Card.tsx";
+import {DepsHistoryState} from "@models/historyState.ts";
 
 export default function Welcome(): ReactElement {
     const {t} = useTranslation()
@@ -12,7 +13,7 @@ export default function Welcome(): ReactElement {
 
     function navigateToDeps(): void {
         refresh({tag: "useDepsState"})
-        navigate("/deps", {state: {firstRunSeen: false}})
+        navigate("/deps", {state: {firstRunSeen: false} as DepsHistoryState})
     }
 
     return (

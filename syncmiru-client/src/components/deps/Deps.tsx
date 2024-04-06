@@ -6,11 +6,11 @@ import DepsMissingNoWindows from "@components/deps/DepsMissingNoWindows.tsx";
 import DepsMissingWindows from "@components/deps/windows/DepsMissingWindows.tsx";
 import {useLocation} from "wouter";
 import {useHistoryState} from 'wouter/use-browser-location'
+import {DepsHistoryState} from "@models/historyState.ts";
 
 export default function Deps(): ReactElement {
-    const historyState = useHistoryState()
+    const {firstRunSeen}: DepsHistoryState = useHistoryState()
     const [_, navigate] = useLocation()
-    const {firstRunSeen}: { firstRunSeen: boolean } = historyState;
     const depsState: DepsState = useDepsState()
     const targetFamily: string = useTargetFamily()
 

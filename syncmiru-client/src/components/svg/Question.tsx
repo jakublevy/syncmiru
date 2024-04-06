@@ -2,7 +2,7 @@ import {ReactElement} from "react";
 
 // https://www.svgrepo.com/svg/500665/question-filled
 
-export default function Question({width, height, tooltipId, className}: QuestionProps): ReactElement {
+export default function Question({tooltipId, className}: QuestionProps): ReactElement {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -20,8 +20,6 @@ export default function Question({width, height, tooltipId, className}: Question
 }
 
 export interface QuestionProps {
-    width?: string,
-    height?: string,
     tooltipId?: string,
     className?: string,
 }

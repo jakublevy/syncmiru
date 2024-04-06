@@ -7,6 +7,7 @@ import {ReactElement} from "react";
 import {BackButton, BtnPrimary} from "@components/widgets/Buttons.tsx";
 import {useLocation} from "wouter";
 import Card from "@components/widgets/Card.tsx";
+import {TrampolineHistoryState} from "@models/historyState.ts";
 
 export default function DepsMissingNoWindows({firstRunSeen, depsState}: Props): ReactElement {
     const {t} = useTranslation()
@@ -19,10 +20,7 @@ export default function DepsMissingNoWindows({firstRunSeen, depsState}: Props): 
 
     function checkDepsAgain(): void {
         refresh({tag: "useDepsState"})
-        if (location == "/deps")
-            navigate("/deps-again", {state: {firstRunSeen: firstRunSeen}})
-        else
-            navigate("/deps", {state: {firstRunSeen: firstRunSeen}})
+        navigate("/reload", {state: {to: location, firstRunSeen: firstRunSeen} as TrampolineHistoryState})
     }
 
     return (
@@ -37,14 +35,14 @@ export default function DepsMissingNoWindows({firstRunSeen, depsState}: Props): 
                     <div className="flex flex-col justify-center items-center">
                         <code>mpv</code>
                         {depsState.mpv
-                            ? <Check width="1rem" fill="#1c7f21"/>
-                            : <Cross width="1rem" fill="#ee1e40"/>}
+                            ? <Check className="w-4" fill="#1c7f21"/>
+                            : <Cross className="w-4" fill="#ee1e40"/>}
                     </div>
                     <div className="flex flex-col justify-center items-center">
                         <code>yt-dlp</code>
                         {depsState.yt_dlp
-                            ? <Check width="1rem" fill="#1c7f21"/>
-                            : <Cross width="1rem" fill="#ee1e40"/>}
+                            ? <Check className="w-4" fill="#1c7f21"/>
+                            : <Cross className="w-4" fill="#ee1e40"/>}
                     </div>
                 </div>
                 <p className="mb-4">{t('missing-deps-no-windows-msg2')}</p>
