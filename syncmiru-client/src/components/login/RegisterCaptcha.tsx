@@ -9,7 +9,6 @@ import {useLocation} from "wouter";
 import useFormValidate from "@hooks/useFormValidate.ts";
 import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
-import {listen} from "@tauri-apps/api/event";
 
 export default function RegisterCaptcha(): ReactElement {
     const [location, navigate] = useLocation()
@@ -278,6 +277,7 @@ export default function RegisterCaptcha(): ReactElement {
                                     id="username"
                                     required
                                     onChange={usernameChanged}
+                                    tabIndex={1}
                                 />
                                 {formShowError.username
                                 ? <>
@@ -303,6 +303,7 @@ export default function RegisterCaptcha(): ReactElement {
                                     id="email"
                                     required
                                     onChange={emailChanged}
+                                    tabIndex={3}
                                 />
                                 {formShowError.email
                                     ? <>
@@ -330,6 +331,7 @@ export default function RegisterCaptcha(): ReactElement {
                                     id="password"
                                     required
                                     onChange={passwordChanged}
+                                    tabIndex={5}
                                 />
                                 {formShowError.password
                                     ? <>
@@ -358,6 +360,7 @@ export default function RegisterCaptcha(): ReactElement {
                                     id="displayname"
                                     required
                                     onChange={displaynameChanged}
+                                    tabIndex={2}
                                 />
                                 {formShowError.displayname
                                     ? <>
@@ -382,6 +385,7 @@ export default function RegisterCaptcha(): ReactElement {
                                     id="email-confirm"
                                     required
                                     onChange={emailConfirmChanged}
+                                    tabIndex={4}
                                 />
                                 {formShowError.email
                                     ? <>
@@ -409,6 +413,7 @@ export default function RegisterCaptcha(): ReactElement {
                                     id="password-confirm"
                                     onChange={passwordConfirmChanged}
                                     required
+                                    tabIndex={6}
                                 />
                                 {formShowError.password
                                     ? <>

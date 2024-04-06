@@ -12,6 +12,7 @@ export function Input({
         pattern,
         maxLength,
         onChange,
+        tabIndex,
         onKeyDown,
         onInput
 }: Props): ReactElement {
@@ -24,6 +25,7 @@ export function Input({
         onKeyDown={onKeyDown}
         onInput={onInput}
         maxLength={maxLength}
+        tabIndex={tabIndex}
         id={id}
         name={name}
         value={value}
@@ -42,6 +44,7 @@ export function UsernameInput({
                                   id,
                                   name,
                                   value,
+                                  tabIndex,
                                   onChange,
                                   onKeyDown,
                               }: Props): ReactElement {
@@ -59,6 +62,7 @@ export function UsernameInput({
         onChange={onChange}
         onKeyDown={onKeyDown}
         onInput={usernameOnInput}
+        tabIndex={tabIndex}
         id={id}
         name={name}
         value={value}
@@ -78,6 +82,7 @@ export function EmailInput({
                           id,
                           name,
                           value,
+                          tabIndex,
                           pattern,
                           onChange,
                           onKeyDown,
@@ -92,6 +97,7 @@ export function EmailInput({
         onKeyDown={onKeyDown}
         onInput={onInput}
         maxLength={320}
+        tabIndex={tabIndex}
         id={id}
         name={name}
         value={value}
@@ -103,7 +109,7 @@ export function EmailInput({
 }
 
 interface Props {
-    type?: InputType
+    type?: InputType,
     className?: string,
     required?: boolean,
     disabled?: boolean,
@@ -112,8 +118,9 @@ interface Props {
     name?: string,
     value?: string,
     pattern?: string,
-    maxLength?: number
-    onInput?: (e: ChangeEvent<HTMLInputElement>) => void
+    maxLength?: number,
+    tabIndex?: number,
+    onInput?: (e: ChangeEvent<HTMLInputElement>) => void,
     onChange?: (e: ChangeEvent<HTMLInputElement>) => void,
     onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void
 
