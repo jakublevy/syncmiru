@@ -24,7 +24,7 @@ export default function Register(): ReactElement {
             {homeSrvServiceLoading
                 ? <Loading/>
                 : <>
-                    {homeSrvServiceStatus?.reg_public_allowed
+                    {homeSrvServiceStatus?.reg_pub_allowed
                         ? <RegisterCaptcha/>
                         : <RegisterToken/>
                     }

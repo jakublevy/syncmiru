@@ -1,7 +1,7 @@
 import {ChangeEvent, ReactElement, useEffect, useState} from "react";
 import LanguageSelector from "@components/widgets/LanguageSelector.tsx";
 import {BtnPrimary, BtnTextPrimary} from "@components/widgets/Buttons.tsx";
-import Input from "@components/widgets/Input.tsx";
+import {EmailInput, Input} from "@components/widgets/Input.tsx";
 import {useHomeServer} from "@hooks/useHomeServer.ts";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
@@ -9,9 +9,9 @@ import {useLocation} from "wouter";
 import {useTranslation} from "react-i18next";
 import Card from "@components/widgets/Card.tsx";
 import {useServiceStatus} from "@hooks/useServiceStatus.ts";
-import useEmailValidate from "@hooks/useEmailValidate.tsx";
 import {useHistoryState} from "wouter/use-browser-location";
 import {LoginFormHistoryState} from "@models/historyState.ts";
+import useFormValidate from "@hooks/useFormValidate.ts";
 
 
 export default function LoginFormMain(): ReactElement {
@@ -35,7 +35,7 @@ export default function LoginFormMain(): ReactElement {
     const [formShowError, setFormShowError]
         = useState<FormShowError>({email: false, srv: false, password: false})
 
-    const emailValidate = useEmailValidate()
+    const {emailValidate} = useFormValidate()
 
     useEffect(() => {
         if (historyState != null) {
@@ -96,24 +96,35 @@ export default function LoginFormMain(): ReactElement {
     function loginBtnClicked() {
         const fieldsError = checkFields()
         setFormErrors(fieldsError)
-
         setFormShowError({srv: true, email: true, password: true})
-        if (fieldsError.password !== FieldError.None || fieldsError.email !== FieldError.None || !checkHomeServer())
-            return
+
+        if(
+            checkHomeServer()
+            && [FieldError.None, FieldError.InvalidResponse].includes(fieldsError.password)
+            && [FieldError.None, FieldError.InvalidResponse].includes(fieldsError.email)
+        ) {
+            // TODO: continue login
+            console.log('continue login')
+        }
     }
 
     function forgottenPasswordBtnClicked() {
         const fieldsError = checkFields()
         setFormErrors(fieldsError)
-
         setFormShowError({srv: true, email: true, password: false})
-        if (fieldsError.email !== FieldError.None || !checkHomeServer())
-            return
+
+        if(
+            checkHomeServer()
+            && [FieldError.None, FieldError.InvalidResponse].includes(fieldsError.email)
+        ) {
+            // TODO: continue forgotten password
+            console.log('continue forgotten password')
+        }
     }
 
     function emailChanged(e: ChangeEvent<HTMLInputElement>) {
         setFormData((p: FormData): FormData => {
-            return {email: e.target.value, password: p.password}
+            return {email: e.target.value.trim(), password: p.password}
         })
         setFormShowError((p: FormShowError) => {
             return {email: false, password: p.password, srv: p.srv}
@@ -187,8 +198,7 @@ export default function LoginFormMain(): ReactElement {
                                 content="Váš email, který jste použili pro registraci.<br>Toto pole vyplňte i v případě, kdy si chcete obnovit heslo."
                             />
                         </div>
-                        <Input
-                            type="email"
+                        <EmailInput
                             id="email"
                             required
                             value={formData.email}
@@ -196,13 +206,13 @@ export default function LoginFormMain(): ReactElement {
                         />
                         {formShowError.email
                             ? <>
-                                {formErrors.email == FieldError.Missing &&
+                                {formErrors.email === FieldError.Missing &&
                                     <p className="text-danger font-semibold">Toto pole musí být vyplněno</p>}
-                                {formErrors.email == FieldError.InvalidFormat &&
+                                {formErrors.email === FieldError.InvalidFormat &&
                                     <p className="text-danger font-semibold">Toto není email</p>}
-                                {formErrors.email == FieldError.InvalidResponse &&
+                                {formErrors.email === FieldError.InvalidResponse &&
                                     <p className="text-danger font-semibold">Špatný email / heslo</p>}
-                                {formErrors.email == FieldError.None &&
+                                {formErrors.email === FieldError.None &&
                                     <p className="text-danger font-semibold invisible">L</p>}
                             </>
                             : <p className="invisible">L</p>
@@ -222,11 +232,11 @@ export default function LoginFormMain(): ReactElement {
                         <div className="flex flex-row justify-between items-start mb-5">
                             {formShowError.password
                                 ? <>
-                                    {formErrors.password == FieldError.Missing &&
+                                    {formErrors.password === FieldError.Missing &&
                                         <p className="text-danger font-semibold">Toto pole musí být vyplněno</p>}
-                                    {formErrors.password == FieldError.InvalidResponse &&
+                                    {formErrors.password === FieldError.InvalidResponse &&
                                         <p className="text-danger font-semibold">Špatný email / heslo</p>}
-                                    {formErrors.password == FieldError.None &&
+                                    {formErrors.password === FieldError.None &&
                                         <p className="text-danger font-semibold invisible">L</p>}
                                 </>
                                 : <p className="invisible">L</p>

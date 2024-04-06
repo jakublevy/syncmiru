@@ -25,7 +25,7 @@ mod tests {
     use super::*;
     #[tokio::test]
     async fn service_status_test() {
-        let s = service_status("http://127.0.0.1/service").await.unwrap();
+        let s = service_status("http://127.0.0.1").await.unwrap();
         assert_eq!(s.reg_pub_allowed, false);
     }
 

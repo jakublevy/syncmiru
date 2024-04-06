@@ -1,16 +1,101 @@
 import {ChangeEvent, KeyboardEvent, ReactElement} from "react";
 
-export default function Input({type, className, required, disabled, readonly, id, name, value, onChange, onKeyDown}: Props): ReactElement {
+export function Input({
+        type,
+        className,
+        required,
+        disabled,
+        readOnly,
+        id,
+        name,
+        value,
+        pattern,
+        maxLength,
+        onChange,
+        onKeyDown,
+        onInput
+}: Props): ReactElement {
     return <input
-        type={type}
+        type={type === undefined ? "text": type}
         required={required}
         disabled={disabled}
-        readOnly={readonly}
+        readOnly={readOnly}
         onChange={onChange}
         onKeyDown={onKeyDown}
+        onInput={onInput}
+        maxLength={maxLength}
         id={id}
         name={name}
         value={value}
+        pattern={pattern}
+        className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
+                    focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700 
+                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${className}`}
+    />
+}
+
+export function UsernameInput({
+                                  className,
+                                  required,
+                                  disabled,
+                                  readOnly,
+                                  id,
+                                  name,
+                                  value,
+                                  onChange,
+                                  onKeyDown,
+                              }: Props): ReactElement {
+
+    function usernameOnInput(e: ChangeEvent<HTMLInputElement>) {
+        e.target.value = e.target.value.toLowerCase()
+        e.target.value = e.target.value.replace(/[^a-z]/g, '')
+    }
+
+    return <Input
+        type="text"
+        required={required}
+        disabled={disabled}
+        readOnly={readOnly}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+        onInput={usernameOnInput}
+        id={id}
+        name={name}
+        value={value}
+        maxLength={16}
+        pattern="[a-z]{4,16}"
+        className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
+                    focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700 
+                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${className}`}
+    />
+}
+
+export function EmailInput({
+                          className,
+                          required,
+                          disabled,
+                          readOnly,
+                          id,
+                          name,
+                          value,
+                          pattern,
+                          onChange,
+                          onKeyDown,
+                          onInput
+                      }: Props): ReactElement {
+    return <Input
+        type="email"
+        required={required}
+        disabled={disabled}
+        readOnly={readOnly}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+        onInput={onInput}
+        maxLength={320}
+        id={id}
+        name={name}
+        value={value}
+        pattern={pattern}
         className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
                     focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700 
                     dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${className}`}
@@ -18,14 +103,17 @@ export default function Input({type, className, required, disabled, readonly, id
 }
 
 interface Props {
-    type: InputType
+    type?: InputType
     className?: string,
     required?: boolean,
     disabled?: boolean,
-    readonly?: boolean,
+    readOnly?: boolean,
     id?: string,
     name?: string,
     value?: string,
+    pattern?: string,
+    maxLength?: number
+    onInput?: (e: ChangeEvent<HTMLInputElement>) => void
     onChange?: (e: ChangeEvent<HTMLInputElement>) => void,
     onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void
 

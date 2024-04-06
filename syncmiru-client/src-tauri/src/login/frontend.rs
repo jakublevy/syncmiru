@@ -5,7 +5,6 @@ use crate::config::jwt;
 use std::thread;
 use std::time::Duration;
 use tauri::Manager;
-use crate::error::SyncmiruError;
 use crate::login::{ServiceStatus, service_status};
 
 #[tauri::command]

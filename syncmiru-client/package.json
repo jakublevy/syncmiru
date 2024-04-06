@@ -26,7 +26,8 @@
     "react-spinners": "^0.13.8",
     "react-tooltip": "^5.26.3",
     "swr": "^2.2.5",
-    "multiform-validator": "^1.0.40"
+    "multiform-validator": "^1.0.40",
+    "@hcaptcha/react-hcaptcha": "^1.10.1"
 
   },
   "devDependencies": {

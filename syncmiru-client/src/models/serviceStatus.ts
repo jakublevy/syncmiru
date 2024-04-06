@@ -1,3 +1,3 @@
 export interface ServiceStatus {
-    reg_public_allowed: boolean
+    reg_pub_allowed: boolean
 }

@@ -6,7 +6,7 @@ export default function Help({className, tooltipId, content}: Props): ReactEleme
     return (
         <div>
             <a data-tooltip-id={tooltipId} data-tooltip-html={content}>
-                <Question className={className} tooltipId={tooltipId} />
+                <Question className={className} tooltipId={tooltipId} tabIndex={-1} />
             </a>
             <Tooltip
                 id={tooltipId}

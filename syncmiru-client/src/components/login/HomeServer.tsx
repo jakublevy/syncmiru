@@ -1,5 +1,5 @@
 import {ChangeEvent, ReactElement, useEffect, useState} from "react";
-import Input from "@components/widgets/Input.tsx";
+import {Input} from "@components/widgets/Input.tsx";
 import {BackButton} from "@components/widgets/Buttons.tsx";
 import {useChangeHomeServer, useHomeServer} from "@hooks/useHomeServer.ts";
 import {useLocation} from "wouter";
@@ -55,7 +55,7 @@ export default function HomeServer(): ReactElement {
                     <p>{t('home-srv-desc')}</p>
                     <div className="mt-4">
                         <div className="flex justify-between">
-                            <label htmlFor="srv" className="block mb-1 text-sm font-medium">{t('home-srv')}*</label>
+                            <label htmlFor="srv" className="block mb-1 text-sm font-medium">{t('home-srv')}</label>
                             <Help
                                 tooltipId="srv-help"
                                 className="w-4"
