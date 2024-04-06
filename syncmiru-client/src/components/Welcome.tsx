@@ -17,8 +17,8 @@ export default function Welcome(): ReactElement {
     }
 
     return (
-        <div className="flex justify-center items-center h-dvh">
-            <Card className="flex flex-col items-center p-4 m-8">
+        <div className="flex justify-center items-center mt-3 mb-3 ml-8 mr-8">
+            <Card className="flex flex-col items-center p-4">
                 <h1 className="text-center text-4xl mb-4">{t('welcome')}</h1>
                 <p className="mb-8">{t('welcome-msg')}</p>
                 <div className="mb-12">

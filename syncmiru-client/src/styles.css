@@ -12,6 +12,8 @@ html {
 
 html, body, #root {
     min-height: 100dvh;
+    display: flex;
+    justify-content: center
 }
 
 @media (prefers-color-scheme: dark) {

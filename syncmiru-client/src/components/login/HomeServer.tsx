@@ -46,7 +46,7 @@ export default function HomeServer(): ReactElement {
 
     if (location === '/login-form/home-server')
         return (
-            <div className="flex justify-center items-center h-dvh">
+            <div className="flex justify-center items-center m-3">
                 <Card className="w-[40rem]">
                     <div className="flex items-start">
                         <BackButton onClick={backButtonClicked} className="mr-4"/>

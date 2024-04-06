@@ -17,6 +17,7 @@ import {useLanguage} from "@hooks/useLanguage.ts";
 import {useTranslation} from "react-i18next";
 import Register from "@components/login/Register.tsx";
 import {DepsHistoryState} from "@models/historyState.ts";
+import DepsMissingWindows from "@components/deps/windows/DepsMissingWindows.tsx";
 
 
 function App(): ReactElement {

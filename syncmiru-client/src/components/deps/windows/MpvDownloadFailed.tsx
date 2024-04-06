@@ -20,8 +20,8 @@ export default function MpvDownloadFailed(): ReactElement {
     }
 
     return (
-        <div className="flex justify-center items-center h-dvh">
-            <Card className="flex flex-col items-center m-8">
+        <div className="flex justify-center items-center m-3">
+            <Card className="flex flex-col items-center">
                 <h1 className="text-center text-4xl mb-4">{t('mpv-download-failed-title')}</h1>
                 <p className="mb-8">{t('mpv-download-failed-reason')}</p>
                 <Danger className="w-20"/>

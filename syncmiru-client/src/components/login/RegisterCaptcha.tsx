@@ -255,8 +255,8 @@ export default function RegisterCaptcha(): ReactElement {
     }
 
     return (
-        <div className="flex justify-center items-center h-dvh">
-            <Card className="m-8 min-w-[22rem] w-[40rem]">
+        <div className="flex justify-center items-center m-3">
+            <Card className="min-w-[22rem] w-[40rem]">
                 <div className="flex items-start mb-6">
                     <h1 className="text-4xl">Registrace</h1>
                 </div>
