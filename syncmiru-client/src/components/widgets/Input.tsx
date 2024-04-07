@@ -1,53 +1,16 @@
-import {ChangeEvent, KeyboardEvent, ReactElement} from "react";
+import {ChangeEvent, forwardRef, KeyboardEvent, ReactElement} from "react";
 
-export function Input({
-        type,
-        className,
-        required,
-        disabled,
-        readOnly,
-        id,
-        name,
-        value,
-        pattern,
-        maxLength,
-        onChange,
-        tabIndex,
-        onKeyDown,
-        onInput
-}: Props): ReactElement {
-    return <input
-        type={type === undefined ? "text": type}
-        required={required}
-        disabled={disabled}
-        readOnly={readOnly}
-        onChange={onChange}
-        onKeyDown={onKeyDown}
-        onInput={onInput}
-        maxLength={maxLength}
-        tabIndex={tabIndex}
-        id={id}
-        name={name}
-        value={value}
-        pattern={pattern}
-        className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700 
-                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${className}`}
-    />
-}
+export const Input
+    = forwardRef<HTMLInputElement, Props>((p, ref) => {
+    return <input {...p}
+                ref={ref}
+                className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+                    focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700
+                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className}`}
+         />
+})
 
-export function UsernameInput({
-                                  className,
-                                  required,
-                                  disabled,
-                                  readOnly,
-                                  id,
-                                  name,
-                                  value,
-                                  tabIndex,
-                                  onChange,
-                                  onKeyDown,
-                              }: Props): ReactElement {
+export function UsernameInput(p: Props): ReactElement {
 
     function usernameOnInput(e: ChangeEvent<HTMLInputElement>) {
         e.target.value = e.target.value.toLowerCase()
@@ -55,56 +18,36 @@ export function UsernameInput({
     }
 
     return <Input
+        {...p}
         type="text"
-        required={required}
-        disabled={disabled}
-        readOnly={readOnly}
-        onChange={onChange}
-        onKeyDown={onKeyDown}
         onInput={usernameOnInput}
-        tabIndex={tabIndex}
-        id={id}
-        name={name}
-        value={value}
         maxLength={16}
         pattern="[a-z]{4,16}"
         className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
                     focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700 
-                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${className}`}
+                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className}`}
     />
 }
 
-export function EmailInput({
-                          className,
-                          required,
-                          disabled,
-                          readOnly,
-                          id,
-                          name,
-                          value,
-                          tabIndex,
-                          pattern,
-                          onChange,
-                          onKeyDown,
-                          onInput
-                      }: Props): ReactElement {
+export function DisplaynameInput(p: Props): ReactElement {
     return <Input
-        type="email"
-        required={required}
-        disabled={disabled}
-        readOnly={readOnly}
-        onChange={onChange}
-        onKeyDown={onKeyDown}
-        onInput={onInput}
-        maxLength={320}
-        tabIndex={tabIndex}
-        id={id}
-        name={name}
-        value={value}
-        pattern={pattern}
+        {...p}
+        type="text"
+        maxLength={24}
         className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
                     focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700 
-                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${className}`}
+                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className}`}
+    />
+}
+
+export function EmailInput(p: Props): ReactElement {
+    return <Input
+        {...p}
+        type="email"
+        maxLength={320}
+        className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
+                    focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700 
+                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className}`}
     />
 }
 

@@ -142,8 +142,8 @@ export default function LoginFormMain(): ReactElement {
 
     if (location === '/login-form/main')
         return (
-            <div className="flex m-3 justify-center items-center">
-                <Card className="w-[30rem]">
+            <div className="flex justify-centersafe items-center w-dvw">
+                <Card className="min-w-[24rem] w-[30rem] m-3">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-4xl">{t('login-title')}</h1>
                         <LanguageSelector className="w-40 ml-4"/>
@@ -161,7 +161,6 @@ export default function LoginFormMain(): ReactElement {
                             className="w-full p-2.5 border-b border-gray-300 dark:border-gray-600 bg-white dark:bg-darkbg dark:placeholder-gray-400 dark:text-darkread">
                             <input type="text" id="srv"
                                    className="w-[85%] text-gray-900 dark:text-darkread bg-white dark:bg-darkbg text-sm focus:ring-primary focus:border-primary block"
-                                   required
                                    readOnly
                                    disabled
                                    value={homeSrv}
@@ -200,7 +199,6 @@ export default function LoginFormMain(): ReactElement {
                         </div>
                         <EmailInput
                             id="email"
-                            required
                             value={formData.email}
                             onChange={emailChanged}
                         />
@@ -225,7 +223,6 @@ export default function LoginFormMain(): ReactElement {
                             type="password"
                             id="password"
                             className="mb-1"
-                            required
                             value={formData.password}
                             onChange={passwordChanged}/>
 
