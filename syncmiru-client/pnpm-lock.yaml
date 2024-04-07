@@ -29,9 +29,6 @@ dependencies:
   joi:
     specifier: ^17.12.3
     version: 17.12.3
-  multiform-validator:
-    specifier: ^1.0.40
-    version: 1.0.40
   react:
     specifier: ^18.2.0
     version: 18.2.0
@@ -1695,10 +1692,6 @@ packages:
   /ms@2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
     dev: true
-
-  /multiform-validator@1.0.40:
-    resolution: {integrity: sha512-hUUu/c9lvoZXUBzO/euzk7zD2wTPbnCGhvSekY5SuuyPAGsv4ExlUALAdQl5dyAWpBDmsTg7UTG3zpijUbd2mw==}
-    dev: false
 
   /mz@2.7.0:
     resolution: {integrity: sha512-z81GNO7nnYMEhrGh9LeymoE4+Yr0Wn5McHIZMK5cfQCl+NDX08sCZgUc9/6MHni9IWuFLm1Z3HTCXu2z9fN62Q==}

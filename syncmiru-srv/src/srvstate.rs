@@ -6,9 +6,3 @@ pub struct SrvState {
     pub config: Config,
     pub db: PgPool,
 }
-
-
-#[derive(Debug, Copy, Clone, serde::Serialize)]
-pub struct WebState {
-    pub reg_pub_allowed: bool
-}

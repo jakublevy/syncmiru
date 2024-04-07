@@ -1,18 +1,9 @@
-import {validateEmail, validatePassword} from "multiform-validator";
-
 const emailValidate = (email: string): boolean => {
-    const {isValid} = validateEmail(email, null, null, null, false)
-    return isValid
+    return true
 }
 
 const passwordValidate = (password: string): boolean => {
-    const {isValid} = validatePassword(password, 8, null, {
-        requireNumber: true,
-        requireString: true,
-        requireUppercase: true,
-        requireSpecialChar: true,
-    })
-    return isValid
+    return password.length >= 8
 }
 
 const usernameValidate = (username: string): boolean => {
@@ -20,7 +11,10 @@ const usernameValidate = (username: string): boolean => {
 }
 
 const displaynameValidate = (displayname: string): boolean => {
-    return displayname.length >= 4 && displayname.length <= 24
+    return displayname.length >= 4
+        && displayname.length <= 24
+        && !/^\s$/.test(displayname[0])
+        && !/^\s$/.test(displayname[displayname.length - 1])
 }
 
 export default function useFormValidate() {

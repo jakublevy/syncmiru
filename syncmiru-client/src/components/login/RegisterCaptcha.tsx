@@ -22,13 +22,9 @@ export default function RegisterCaptcha(): ReactElement {
     const formSchema: Joi.ObjectSchema<FormFields> = Joi.object({
         email: Joi
             .string()
+            .email({tlds: false})
             .required()
-            .messages({"string.empty": 'Toto pole musí být vyplněno'})
-            .custom((v: string, h) => {
-                if (!emailValidate(v))
-                    return h.message({custom: "Toto není platný email"})
-                return v
-            }),
+            .messages({"string.empty": 'Toto pole musí být vyplněno', "string.email": "Toto není platný email"}),
         password: Joi
             .string()
             .required()
@@ -92,6 +88,7 @@ export default function RegisterCaptcha(): ReactElement {
     }
 
     function captchaVerified(tkn: string) {
+        console.log(tkn)
         setValue('captcha', tkn)
         trigger('captcha')
     }
@@ -195,7 +192,7 @@ export default function RegisterCaptcha(): ReactElement {
                                 <Help
                                     tooltipId="password-help"
                                     className="w-4"
-                                    content="Heslo musí obsahovat alespoň 8 znaků, z čehož musí být alespoň<br>jedna číslice, jedno velké písmeno a jeden speciální znak"
+                                    content="Heslo musí obsahovat alespoň 8 znaků"
                                 />
                             </div>
                             <Input

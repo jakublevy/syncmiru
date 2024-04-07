@@ -19,3 +19,5 @@ clap = { version = "4.5.4", features = ["derive"] }
 simplelog = "0.12.2"
 tokio = { version = "1.37.0", features = ["rt-multi-thread"] }
 serde = "1.0.197"
+validator = { version = "0.17.0", features = ["derive"] }
+hcaptcha = "2.3.1"
