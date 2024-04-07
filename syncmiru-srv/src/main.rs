@@ -1,6 +1,7 @@
 use std::env::set_var;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Duration;
 use ::log::{debug, info};
 use axum::extract::State;
 use axum::handler::Handler;
@@ -39,7 +40,7 @@ async fn main() -> Result<()> {
    db::run_migrations(&pool).await?;
 
    let srvstate = SrvState { db: pool.clone(), config: config.clone() };
-   let (layer, io) = SocketIo::builder()
+   let (socketio_layer, io) = SocketIo::builder()
        .with_state(srvstate)
        .build_layer();
    io.ns("/", handlers::ns_callback.with(middleware::auth));
@@ -49,7 +50,9 @@ async fn main() -> Result<()> {
        .route("/", get(handlers::web::index))
        .route("/service", get(handlers::web::service))
        .route("/register", post(handlers::web::register))
-       .layer(layer)
+       .route("/username-unique", get(handlers::web::username_unique))
+       .route("/email-unique", get(handlers::web::email_unique))
+       .layer(socketio_layer)
        .layer(SecureClientIpSource::ConnectInfo.into_extension())
        .with_state(srvstate);
 

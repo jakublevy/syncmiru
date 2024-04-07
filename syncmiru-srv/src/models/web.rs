@@ -4,7 +4,9 @@ use validator::Validate;
 #[derive(Debug, Clone)]
 pub enum ResponseCode {
     Ok,
-    Err
+    Err,
+    Yes,
+    No,
 }
 
 impl serde::Serialize for ResponseCode {
@@ -14,7 +16,9 @@ impl serde::Serialize for ResponseCode {
     {
         match self {
             ResponseCode::Ok => serializer.serialize_i8(0),
-            ResponseCode::Err => serializer.serialize_i8(1)
+            ResponseCode::Err => serializer.serialize_i8(1),
+            ResponseCode::Yes => serializer.serialize_i8(2),
+            ResponseCode::No => serializer.serialize_i8(3),
         }
     }
 }
@@ -48,4 +52,19 @@ pub struct RegForm {
     pub captcha: String,
 
     pub reg_tkn: String,
+}
+
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct Username {
+    pub username: String,
+}
+
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct Email {
+    pub email: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct UsernameEmailUniqueResponse {
+    pub code: ResponseCode,
 }
