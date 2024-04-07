@@ -9,6 +9,7 @@ import {useLocation} from "wouter";
 import useFormValidate from "@hooks/useFormValidate.ts";
 import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
+import HCaptchaThemeAware from "@components/widgets/HCaptchaThemeAware.tsx";
 
 export default function RegisterCaptcha(): ReactElement {
     const [location, navigate] = useLocation()
@@ -429,7 +430,7 @@ export default function RegisterCaptcha(): ReactElement {
                         </div>
                     </div>
                     <div className="mt-3 mb-3">
-                        <HCaptcha
+                        <HCaptchaThemeAware
                             sitekey="f407df07-d0ab-4d1c-bd1e-f0e8adc19dbc"
                             onVerify={hcaptchaVerified}
                             onExpire={hcaptchaExpired}

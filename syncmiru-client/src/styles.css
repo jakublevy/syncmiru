@@ -11,9 +11,12 @@ html {
 }
 
 html, body, #root {
+    /*height: 100dvh;*/
+    /*min-height: 100dvh;*/
+    min-width: 100dvw;
     min-height: 100dvh;
     display: flex;
-    justify-content: center
+    justify-content: safe center;
 }
 
 @media (prefers-color-scheme: dark) {

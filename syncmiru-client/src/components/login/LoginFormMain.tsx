@@ -98,7 +98,7 @@ export default function LoginFormMain(): ReactElement {
         setFormErrors(fieldsError)
         setFormShowError({srv: true, email: true, password: true})
 
-        if(
+        if (
             checkHomeServer()
             && [FieldError.None, FieldError.InvalidResponse].includes(fieldsError.password)
             && [FieldError.None, FieldError.InvalidResponse].includes(fieldsError.email)
@@ -113,7 +113,7 @@ export default function LoginFormMain(): ReactElement {
         setFormErrors(fieldsError)
         setFormShowError({srv: true, email: true, password: false})
 
-        if(
+        if (
             checkHomeServer()
             && [FieldError.None, FieldError.InvalidResponse].includes(fieldsError.email)
         ) {
@@ -142,7 +142,7 @@ export default function LoginFormMain(): ReactElement {
 
     if (location === '/login-form/main')
         return (
-            <div className="flex justify-center items-center m-3">
+            <div className="flex m-3 justify-center items-center">
                 <Card className="w-[30rem]">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-4xl">{t('login-title')}</h1>

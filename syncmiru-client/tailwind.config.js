@@ -14,5 +14,15 @@ export default {
       }
     },
   },
+  plugins: [
+    function ({ addUtilities }) {
+      const newUtilities = {
+        '.justify-centersafe': {
+          justifyContent: 'safe center',
+        },
+      };
+      addUtilities(newUtilities, []);
+    },
+  ]
 }
 
