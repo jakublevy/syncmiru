@@ -42,7 +42,6 @@ fn main() -> Result<()> {
         ])
         .on_window_event(handle_window_event)
         .manage(appstate)
-        //.plugin(tauri_plugin_cors_fetch::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_theme::init(ctx.config_mut()))
         .run(ctx)

@@ -43,6 +43,7 @@ pub async fn register(
                 if let Err(_) = hcaptcha_r {
                     return Json(RegResponse { code: ResponseCode::Err, error_fields: vec!["captcha".to_string()] })
                 }
+
             }
             else {
                 // TODO: check reg_tkn

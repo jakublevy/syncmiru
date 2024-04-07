@@ -1,6 +1,5 @@
 pub mod frontend;
 
-use std::fmt::format;
 use reqwest::Client;
 use crate::error::SyncmiruError::ServiceCheckingFailed;
 use crate::result::Result;

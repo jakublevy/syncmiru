@@ -20,6 +20,9 @@ pub enum SyncmiruError {
     #[error("DB migration error")]
     MigrationError(#[from] sqlx::migrate::MigrateError),
 
+    #[error("Join error")]
+    JoinError(#[from] tokio::task::JoinError),
+
     #[error("Yaml invalid")]
     YamlInvalid(String),
 

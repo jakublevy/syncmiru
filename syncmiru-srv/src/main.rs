@@ -28,6 +28,7 @@ mod middleware;
 mod validators;
 mod models;
 mod query;
+mod crypto;
 
 #[tokio::main]
 async fn main() -> Result<()> {

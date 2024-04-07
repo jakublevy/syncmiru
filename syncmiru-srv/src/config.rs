@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::{Read};
 use std::path::{Path, PathBuf};
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use log::{debug, info, warn};
 use yaml_rust2::{Yaml, YamlLoader};
 use crate::config::LogOutput::{StdErr, Stdout};
