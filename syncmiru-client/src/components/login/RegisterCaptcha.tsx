@@ -1,4 +1,4 @@
-import {ReactElement, useRef} from "react";
+import {ReactElement} from "react";
 import Card from "@components/widgets/Card.tsx";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
@@ -10,19 +10,78 @@ import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
 import HCaptchaThemeAware from "@components/widgets/HCaptchaThemeAware.tsx";
 import {useForm} from "react-hook-form";
+import Joi from 'joi'
+import {joiResolver} from "@hookform/resolvers/joi";
 
 export default function RegisterCaptcha(): ReactElement {
-    const [location, navigate] = useLocation()
+    const [_, navigate] = useLocation()
     const lang: Language = useLanguage()
     const {passwordValidate, usernameValidate, emailValidate, displaynameValidate}
         = useFormValidate()
 
+    const formSchema: Joi.ObjectSchema<FormFields> = Joi.object({
+        email: Joi
+            .string()
+            .required()
+            .messages({"string.empty": 'Toto pole musí být vyplněno'})
+            .custom((v: string, h) => {
+                if (!emailValidate(v))
+                    return h.message({custom: "Toto není platný email"})
+                return v
+            }),
+        password: Joi
+            .string()
+            .required()
+            .messages({"string.empty": 'Toto pole musí být vyplněno'})
+            .custom((v: string, h) => {
+                if(!passwordValidate(v))
+                    return h.message({custom: "Toto není dostatečně silné heslo"})
+                return v
+            }),
+        username: Joi
+            .string()
+            .required()
+            .messages({"string.empty": 'Toto pole musí být vyplněno'})
+            .custom((v: string, h) => {
+                if (!usernameValidate(v))
+                    return h.message({custom: "Toto není platné uživatelské jméno"})
+                return v
+            }),
+        displayname: Joi
+            .string()
+            .required()
+            .messages({"string.empty": 'Toto pole musí být vyplněno'})
+            .custom((v: string, h) => {
+                if (!displaynameValidate(v))
+                    return h.message({custom: "Toto není platné zobrazené jméno"})
+            }),
+        cpassword: Joi
+            .string()
+            .valid(Joi.ref('password'))
+            .required()
+            .empty('')
+            .messages({"any.only": "Hesla nejsou stejná", "any.required": "Toto pole musí být vyplněno"}),
+
+        cemail: Joi
+            .string()
+            .valid(Joi.ref("email"))
+            .required()
+            .empty('')
+            .messages({"any.only": "Emaily nejsou stejné", "any.required": "Toto pole musí být vyplněno"}),
+
+        captcha: Joi
+            .string()
+            .required()
+            .messages({"string.empty": 'Captcha musí být vyplněna'})
+    })
+
     const {
         register,
         handleSubmit,
-        watch,
+        setValue ,
+        trigger,
         formState: {errors}
-    } = useForm<FormFields>()
+    } = useForm<FormFields>({resolver: joiResolver(formSchema)});
 
     function navigateBack() {
         navigate("/login-form/main")
@@ -30,6 +89,15 @@ export default function RegisterCaptcha(): ReactElement {
 
     function createAccount(data: FormFields) {
         console.log(JSON.stringify(data))
+    }
+
+    function captchaVerified(tkn: string) {
+        setValue('captcha', tkn)
+        trigger('captcha')
+    }
+
+    function captchaExpired() {
+        setValue('captcha', '')
     }
 
     return (
@@ -53,14 +121,7 @@ export default function RegisterCaptcha(): ReactElement {
                                 type="text"
                                 id="username"
                                 required
-                                {...register("username", {
-                                    required: "Toto pole musí být vyplněno",
-                                    validate: (v: string) => {
-                                        if (!usernameValidate(v))
-                                            return "Neplatné uživatelské jméno"
-                                        return true
-                                    }
-                                })}
+                                {...register('username')}
                             />
                             {errors.username
                                 ? <p className="text-danger font-semibold">{errors.username.message}</p>
@@ -79,14 +140,7 @@ export default function RegisterCaptcha(): ReactElement {
                                 type="text"
                                 id="displayname"
                                 required
-                                {...register("displayname", {
-                                    required: "Toto pole musí být vyplněno",
-                                    validate: (v: string) => {
-                                        if (!displaynameValidate(v))
-                                            return "Neplatné zobrazené jméno"
-                                        return true
-                                    }
-                                })}
+                                {...register('displayname')}
                             />
                             {errors.displayname
                                 ? <p className="text-danger font-semibold">{errors.displayname.message}</p>
@@ -107,14 +161,7 @@ export default function RegisterCaptcha(): ReactElement {
                             <EmailInput
                                 id="email"
                                 required
-                                {...register("email", {
-                                    required: "Toto pole musí být vyplněno",
-                                    validate: (v: string) => {
-                                        if (!emailValidate(v))
-                                            return "Neplatný email"
-                                        return true
-                                    }
-                                })}
+                                {...register('email')}
                             />
 
                             {errors.email
@@ -133,14 +180,7 @@ export default function RegisterCaptcha(): ReactElement {
                             <EmailInput
                                 id="email-confirm"
                                 required
-                                {...register("cemail", {
-                                    required: "Toto pole musí být vyplněno",
-                                    validate: (v: string) => {
-                                        if (watch('email') !== v)
-                                            return "Emaily nejsou stejné"
-                                        return true
-                                    }
-                                })}
+                                {...register('cemail')}
                             />
                             {errors.cemail
                                 ? <p className="text-danger font-semibold">{errors.cemail.message}</p>
@@ -162,14 +202,7 @@ export default function RegisterCaptcha(): ReactElement {
                                 type="password"
                                 id="password"
                                 required
-                                {...register("password", {
-                                    required: "Toto pole musí být vyplněno",
-                                    validate: (v: string) => {
-                                        if (!passwordValidate(v))
-                                            return "Nedostatečně silné heslo"
-                                        return true
-                                    }
-                                })}
+                                {...register('password')}
                             />
                             {errors.password
                                 ? <p className="text-danger font-semibold">{errors.password.message}</p>
@@ -188,24 +221,29 @@ export default function RegisterCaptcha(): ReactElement {
                                 type="password"
                                 id="password-confirm"
                                 required
-                                {...register("cpassword", {
-                                    required: "Toto pole musí být vyplněno",
-                                    validate: (v: string) => {
-                                        if (watch('password') !== v)
-                                            return "Hesla nejsou stejná"
-                                        return true
-                                    }
-                                })}
+                                {...register('cpassword')}
                             />
                             {errors.cpassword
                                 ? <p className="text-danger font-semibold">{errors.cpassword.message}</p>
                                 : <p className="text-danger invisible font-semibold">L</p>}
                         </div>
                     </div>
-                    <div className="flex justify-center mb-6">
+                    <div className="flex items-center mb-3 flex-col">
                         <HCaptchaThemeAware
                             sitekey="f407df07-d0ab-4d1c-bd1e-f0e8adc19dbc"
-                            languageOverride={lang}/>
+                            languageOverride={lang}
+                            onVerify={captchaVerified}
+                            onChalExpired={captchaExpired}
+                            onExpire={captchaExpired}
+                        />
+                        {errors.captcha
+                            ? <p className="text-danger font-semibold">{errors.captcha.message}</p>
+                            : <p className="text-danger invisible font-semibold">L</p>}
+
+                        <input
+                            type="hidden"
+                            {...register('captcha')}
+                        />
                     </div>
                     <div className="w-full">
                         <BtnPrimary

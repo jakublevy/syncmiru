@@ -20,7 +20,7 @@ const usernameValidate = (username: string): boolean => {
 }
 
 const displaynameValidate = (displayname: string): boolean => {
-    return displayname.length > 4 && displayname.length <= 24
+    return displayname.length >= 4 && displayname.length <= 24
 }
 
 export default function useFormValidate() {
