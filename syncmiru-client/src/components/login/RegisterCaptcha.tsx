@@ -9,7 +9,7 @@ import useFormValidate from "@hooks/useFormValidate.ts";
 import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
 import HCaptchaThemeAware from "@components/widgets/HCaptchaThemeAware.tsx";
-import {SubmitHandler, useForm} from "react-hook-form";
+import {useForm} from "react-hook-form";
 
 export default function RegisterCaptcha(): ReactElement {
     const [location, navigate] = useLocation()
@@ -17,10 +17,12 @@ export default function RegisterCaptcha(): ReactElement {
     const {passwordValidate, usernameValidate, emailValidate, displaynameValidate}
         = useFormValidate()
 
-    const {register, handleSubmit} = useForm<FormFields>()
-
-    //const registerFieldRef = useRef(null)
-    const { ref: emailRef, ...registerEmailRest } = register('email')
+    const {
+        register,
+        handleSubmit,
+        watch,
+        formState: {errors}
+    } = useForm<FormFields>()
 
     function navigateBack() {
         navigate("/login-form/main")
@@ -37,7 +39,7 @@ export default function RegisterCaptcha(): ReactElement {
                     <h1 className="text-4xl">Registrace</h1>
                 </div>
                 <form onSubmit={handleSubmit(createAccount)} noValidate>
-                    <div className="flex gap-8 mb-3">
+                    <div className="flex gap-8">
                         <div className="mb-3 flex-1">
                             <div className="flex justify-between">
                                 <Label htmlFor="username">Uživatelské jméno</Label>
@@ -51,7 +53,18 @@ export default function RegisterCaptcha(): ReactElement {
                                 type="text"
                                 id="username"
                                 required
+                                {...register("username", {
+                                    required: "Toto pole musí být vyplněno",
+                                    validate: (v: string) => {
+                                        if (!usernameValidate(v))
+                                            return "Neplatné uživatelské jméno"
+                                        return true
+                                    }
+                                })}
                             />
+                            {errors.username
+                                ? <p className="text-danger font-semibold">{errors.username.message}</p>
+                                : <p className="text-danger invisible font-semibold">L</p>}
                         </div>
                         <div className="mb-3 flex-1">
                             <div className="flex justify-between">
@@ -66,11 +79,22 @@ export default function RegisterCaptcha(): ReactElement {
                                 type="text"
                                 id="displayname"
                                 required
+                                {...register("displayname", {
+                                    required: "Toto pole musí být vyplněno",
+                                    validate: (v: string) => {
+                                        if (!displaynameValidate(v))
+                                            return "Neplatné zobrazené jméno"
+                                        return true
+                                    }
+                                })}
                             />
+                            {errors.displayname
+                                ? <p className="text-danger font-semibold">{errors.displayname.message}</p>
+                                : <p className="text-danger invisible font-semibold">L</p>}
                         </div>
                     </div>
 
-                    <div className="flex gap-8 mb-3">
+                    <div className="flex gap-8">
                         <div className="mb-3 flex-1">
                             <div className="flex justify-between">
                                 <Label htmlFor="email">Email</Label>
@@ -80,13 +104,22 @@ export default function RegisterCaptcha(): ReactElement {
                                     content="Váš email, vyplňte ho pravdivě. Budete ho potřebovat<br>pro ověření účtu a může se hodit pro obnovu hesla"
                                 />
                             </div>
-                            {/*<EmailInput*/}
-                            {/*    {...registerEmailRest}*/}
-                            {/*    id="email"*/}
-                            {/*    required*/}
-                            {/*/>*/}
-                            <Input type="text" id="email" {...registerEmailRest} ref={emailRef} />
-                            {/*<input type="text" id="email" {...registerEmailRest} ref={emailRef} />*/}
+                            <EmailInput
+                                id="email"
+                                required
+                                {...register("email", {
+                                    required: "Toto pole musí být vyplněno",
+                                    validate: (v: string) => {
+                                        if (!emailValidate(v))
+                                            return "Neplatný email"
+                                        return true
+                                    }
+                                })}
+                            />
+
+                            {errors.email
+                                ? <p className="text-danger font-semibold">{errors.email.message}</p>
+                                : <p className="text-danger invisible font-semibold">L</p>}
                         </div>
                         <div className="mb-3 flex-1">
                             <div className="flex justify-between">
@@ -100,11 +133,22 @@ export default function RegisterCaptcha(): ReactElement {
                             <EmailInput
                                 id="email-confirm"
                                 required
+                                {...register("cemail", {
+                                    required: "Toto pole musí být vyplněno",
+                                    validate: (v: string) => {
+                                        if (watch('email') !== v)
+                                            return "Emaily nejsou stejné"
+                                        return true
+                                    }
+                                })}
                             />
+                            {errors.cemail
+                                ? <p className="text-danger font-semibold">{errors.cemail.message}</p>
+                                : <p className="text-danger invisible font-semibold">L</p>}
                         </div>
                     </div>
 
-                    <div className="flex gap-8 mb-3">
+                    <div className="flex gap-8">
                         <div className="mb-3 flex-1">
                             <div className="flex justify-between">
                                 <Label htmlFor="email">Heslo</Label>
@@ -118,7 +162,18 @@ export default function RegisterCaptcha(): ReactElement {
                                 type="password"
                                 id="password"
                                 required
+                                {...register("password", {
+                                    required: "Toto pole musí být vyplněno",
+                                    validate: (v: string) => {
+                                        if (!passwordValidate(v))
+                                            return "Nedostatečně silné heslo"
+                                        return true
+                                    }
+                                })}
                             />
+                            {errors.password
+                                ? <p className="text-danger font-semibold">{errors.password.message}</p>
+                                : <p className="text-danger invisible font-semibold">L</p>}
                         </div>
                         <div className="mb-6 flex-1">
                             <div className="flex justify-between">
@@ -133,7 +188,18 @@ export default function RegisterCaptcha(): ReactElement {
                                 type="password"
                                 id="password-confirm"
                                 required
+                                {...register("cpassword", {
+                                    required: "Toto pole musí být vyplněno",
+                                    validate: (v: string) => {
+                                        if (watch('password') !== v)
+                                            return "Hesla nejsou stejná"
+                                        return true
+                                    }
+                                })}
                             />
+                            {errors.cpassword
+                                ? <p className="text-danger font-semibold">{errors.cpassword.message}</p>
+                                : <p className="text-danger invisible font-semibold">L</p>}
                         </div>
                     </div>
                     <div className="flex justify-center mb-6">
@@ -158,6 +224,8 @@ type FormFields = {
     username: string,
     displayname: string,
     email: string,
+    cemail: string
     password: string
+    cpassword: string
     captcha: string
 }
