@@ -3,23 +3,11 @@ use validator::Validate;
 use serde::{Serialize, Deserialize};
 use serde_repr::Serialize_repr;
 
-// #[derive(Debug, Clone, serde::Serialize)]
-// #[repr(u8)]
-// pub enum ResponseCode {
-//     Ok,
-//     Err,
-// }
 
 #[derive(Debug, Copy, Clone, Serialize)]
 pub struct ServiceStatus {
     pub reg_pub_allowed: bool
 }
-
-// #[derive(Debug, Clone, serde::Serialize)]
-// pub struct RegResponse {
-//     pub code: ResponseCode,
-//     pub error_fields: Vec<String>,
-// }
 
 #[derive(Debug, Clone, Deserialize, Validate, Hcaptcha)]
 pub struct RegForm {

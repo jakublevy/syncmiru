@@ -7,9 +7,9 @@ use sqlx::PgPool;
 
 pub async fn create_connection_pool(db_config: &DbConfig) -> Result<PgPool> {
     let opts = PgConnectOptions::new()
-        .host(db_config.host.as_str())
+        .host(&db_config.host)
         .application_name("syncmiru-srv")
-        .username(db_config.user.as_str())
+        .username(&db_config.user)
         .password(&db_config.password)
         .port(db_config.port)
         .database(&db_config.name);

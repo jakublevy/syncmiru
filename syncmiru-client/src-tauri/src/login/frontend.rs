@@ -2,10 +2,9 @@ use crate::appstate::AppState;
 use crate::config::appdata;
 use crate::result::Result;
 use crate::config::jwt;
-use std::thread;
-use std::time::Duration;
 use tauri::Manager;
-use crate::login::{ServiceStatus, service_status};
+use crate::login::{ServiceStatus, service_status, username_unique, email_unique, YN};
+use crate::utils;
 
 #[tauri::command]
 pub async fn can_auto_login(state: tauri::State<'_, AppState>) -> Result<bool> {
@@ -17,16 +16,13 @@ pub async fn can_auto_login(state: tauri::State<'_, AppState>) -> Result<bool> {
 
 #[tauri::command]
 pub async fn get_home_srv(state: tauri::State<'_, AppState>) -> Result<String> {
-    let appdata = state.appdata.read()?;
-    Ok(appdata.home_srv.clone().unwrap_or("".to_string()))
+    let srv = utils::extract_home_srv(&state.appdata)?;
+    Ok(srv)
 }
 
 #[tauri::command]
 pub async fn set_home_srv(state: tauri::State<'_, AppState>, home_srv: String) -> Result<()> {
     let mut appdata = state.appdata.write()?;
-
-    //TODO: check url
-
     appdata.home_srv = Some(home_srv.trim().to_string());
     appdata::write(&appdata)?;
     Ok(())
@@ -34,21 +30,18 @@ pub async fn set_home_srv(state: tauri::State<'_, AppState>, home_srv: String) -
 
 #[tauri::command]
 pub async fn get_service_status(state: tauri::State<'_, AppState>) -> Result<ServiceStatus> {
-    let mut home_srv: String;
-    {
-        let appdata = state.appdata.read()?;
-        home_srv = appdata.home_srv.clone().unwrap_or("".to_string());
-    }
-     Ok(service_status(home_srv.as_str()).await?)
+    let home_srv = utils::extract_home_srv(&state.appdata)?;
+     Ok(service_status(&home_srv).await?)
 }
 
 #[tauri::command]
-pub async fn test_command(window: tauri::Window, state: tauri::State<'_, AppState>) -> Result<()> {
-    thread::spawn(move || {
-        for i in 0..10 {
-            window.emit("msg", {});
-            thread::sleep(Duration::from_secs(3));
-        }
-    });
-    Ok(())
+pub async fn get_username_unique(state: tauri::State<'_, AppState>, username: String) -> Result<bool> {
+    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    Ok(username_unique(&home_srv, &username).await?)
+}
+
+#[tauri::command]
+pub async fn get_email_unique(state: tauri::State<'_, AppState>, email: String) -> Result<bool> {
+    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    Ok(email_unique(&home_srv, &email).await?)
 }

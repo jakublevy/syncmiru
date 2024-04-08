@@ -29,7 +29,7 @@ async fn latest_mpv_download_link() -> Result<DepRelease> {
     let client = Client::new();
     let response = client.get(api_url).send().await?;
     let xml_raw = response.text().await?;
-    let doc = roxmltree::Document::parse(xml_raw.as_str())?;
+    let doc = roxmltree::Document::parse(&xml_raw)?;
     let item = doc
         .descendants()
         .filter(|n|n.has_tag_name("item"))

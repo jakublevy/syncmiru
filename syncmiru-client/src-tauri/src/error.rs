@@ -41,7 +41,7 @@ pub enum SyncmiruError {
     DepsDownloadFailed,
 
     #[error("Service checking failed")]
-    ServiceCheckingFailed,
+    HttpResponseFailed,
 
     #[error("Poison error")]
     PoisonError

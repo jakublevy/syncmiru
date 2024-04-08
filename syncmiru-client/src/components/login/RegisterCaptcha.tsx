@@ -1,4 +1,4 @@
-import {ReactElement} from "react";
+import {ReactElement, useState} from "react";
 import Card from "@components/widgets/Card.tsx";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
@@ -16,6 +16,10 @@ import {joiResolver} from "@hookform/resolvers/joi";
 export default function RegisterCaptcha(): ReactElement {
     const [_, navigate] = useLocation()
     const lang: Language = useLanguage()
+
+    const [unique, setUnique]
+        = useState<Unique>({email: true, username: true})
+
     const {passwordValidate, usernameValidate, displaynameValidate}
         = useFormValidate()
 
@@ -76,7 +80,7 @@ export default function RegisterCaptcha(): ReactElement {
         handleSubmit,
         setValue ,
         trigger,
-        formState: {errors}
+        formState: {errors, dirtyFields}
     } = useForm<FormFields>({resolver: joiResolver(formSchema)});
 
     function navigateBack() {
@@ -94,6 +98,13 @@ export default function RegisterCaptcha(): ReactElement {
 
     function captchaExpired() {
         setValue('captcha', '')
+    }
+
+    function usernameUniqueChanged(unique: boolean) {
+        setUnique((p) => { return {
+            email: p.email,
+            username: unique
+        }})
     }
 
     return (
@@ -114,14 +125,19 @@ export default function RegisterCaptcha(): ReactElement {
                                 />
                             </div>
                             <UsernameInput
-                                type="text"
                                 id="username"
+                                onUniqueChanged={usernameUniqueChanged}
                                 required
                                 {...register('username')}
                             />
                             {errors.username
                                 ? <p className="text-danger font-semibold">{errors.username.message}</p>
-                                : <p className="text-danger invisible font-semibold">L</p>}
+                                : <>
+                                    {!unique.username
+                                        ? <p className="text-danger font-semibold">Již obsazeno</p>
+                                        : <p className="text-danger invisible font-semibold">L</p>}
+                                  </>
+                            }
                         </div>
                         <div className="mb-3 flex-1">
                             <div className="flex justify-between">
@@ -133,7 +149,6 @@ export default function RegisterCaptcha(): ReactElement {
                                 />
                             </div>
                             <DisplaynameInput
-                                type="text"
                                 id="displayname"
                                 required
                                 {...register('displayname')}
@@ -262,4 +277,9 @@ type FormFields = {
     password: string
     cpassword: string
     captcha: string
+}
+
+interface Unique {
+    email?: boolean,
+    username?: boolean
 }

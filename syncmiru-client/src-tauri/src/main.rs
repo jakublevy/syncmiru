@@ -9,6 +9,7 @@ mod appstate;
 mod deps;
 mod files;
 mod login;
+mod utils;
 
 #[macro_use]
 extern crate rust_i18n;
@@ -38,7 +39,8 @@ fn main() -> Result<()> {
             login::frontend::set_home_srv,
             login::frontend::can_auto_login,
             login::frontend::get_service_status,
-            login::frontend::test_command
+            login::frontend::get_username_unique,
+            login::frontend::get_email_unique,
         ])
         .on_window_event(handle_window_event)
         .manage(appstate)

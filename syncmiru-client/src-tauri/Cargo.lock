@@ -4663,6 +4663,7 @@ dependencies = [
  "rust-ini",
  "serde",
  "serde_json",
+ "serde_repr",
  "serial_test",
  "sevenz-rust",
  "sys-locale",
