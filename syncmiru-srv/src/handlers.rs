@@ -1,7 +1,7 @@
 use socketioxide::extract::SocketRef;
 use crate::handlers;
 
-pub mod web;
+pub mod http;
 pub mod login;
 
 pub fn ns_callback(s: SocketRef) {

@@ -1,7 +1,3 @@
-const emailValidate = (email: string): boolean => {
-    return true
-}
-
 const passwordValidate = (password: string): boolean => {
     return password.length >= 8
 }
@@ -19,7 +15,6 @@ const displaynameValidate = (displayname: string): boolean => {
 
 export default function useFormValidate() {
     return {
-        emailValidate: emailValidate,
         passwordValidate: passwordValidate,
         usernameValidate: usernameValidate,
         displaynameValidate: displaynameValidate,

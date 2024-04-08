@@ -29,3 +29,14 @@ pub async fn verify(password: String, hash: String) -> Result<bool> {
         }
     }).await?
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[tokio::test]
+    async fn hash_test() {
+        let h = hash("pa$$word".to_string()).await.unwrap();
+        let b = verify("pa$$word".to_string(), h).await.unwrap();
+        assert!(b)
+    }
+}

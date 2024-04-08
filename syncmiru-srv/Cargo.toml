@@ -10,7 +10,8 @@ thiserror = "1.0.58"
 anyhow = "1.0.81"
 sqlx = { version = "0.7", features = [ "runtime-tokio", "postgres", "migrate" ] }
 axum = { version = "0.7.5", features = ["macros"] }
-axum-client-ip = "0.5.1"
+tower = { version = "0.4.13", features = ["timeout", "load-shed", "limit"] }
+tower-http = { version = "0.5.2", features = ["trace"] }
 socketioxide = { version = "0.12.0", features = ["state"] }
 log = "0.4.21"
 sys-locale = "0.3.1"
@@ -19,6 +20,8 @@ clap = { version = "4.5.4", features = ["derive"] }
 simplelog = "0.12.2"
 tokio = { version = "1.37.0", features = ["rt-multi-thread"] }
 serde = "1.0.197"
+serde_repr = "0.1.18"
+serde_with = "3.7.0"
 validator = { version = "0.17.0", features = ["derive"] }
 hcaptcha = "2.3.1"
 argon2 = "0.5.3"

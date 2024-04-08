@@ -1,4 +1,6 @@
+use sqlx::PgPool;
 use validator::ValidationError;
+use crate::query;
 
 pub fn check_username_format(username: &str) -> Result<(), ValidationError> {
     if username.len() < 4 || username.len() > 16 {
@@ -11,6 +13,14 @@ pub fn check_username_format(username: &str) -> Result<(), ValidationError> {
         }
     }
     Ok(())
+}
+
+async fn check_username_unique(username: &str, db: &PgPool) -> Result<(), ValidationError> {
+    match query::username_unique(db, username).await {
+        Ok(true) => Ok(()),
+        Ok(false) => Err(ValidationError::new("not unique")),
+        _ => Err(ValidationError::new("internal error"))
+    }
 }
 
 pub fn check_displayname_format(displayname: &str) -> Result<(), ValidationError> {

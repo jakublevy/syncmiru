@@ -16,7 +16,7 @@ import {joiResolver} from "@hookform/resolvers/joi";
 export default function RegisterCaptcha(): ReactElement {
     const [_, navigate] = useLocation()
     const lang: Language = useLanguage()
-    const {passwordValidate, usernameValidate, emailValidate, displaynameValidate}
+    const {passwordValidate, usernameValidate, displaynameValidate}
         = useFormValidate()
 
     const formSchema: Joi.ObjectSchema<FormFields> = Joi.object({
@@ -88,7 +88,6 @@ export default function RegisterCaptcha(): ReactElement {
     }
 
     function captchaVerified(tkn: string) {
-        console.log(tkn)
         setValue('captcha', tkn)
         trigger('captcha')
     }

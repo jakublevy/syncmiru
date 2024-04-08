@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::env::set_var;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -6,13 +7,17 @@ use ::log::{debug, info};
 use axum::extract::State;
 use axum::handler::Handler;
 use axum::{Json, Router};
+use axum::error_handling::HandleErrorLayer;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use axum::routing::{get, post};
-use axum_client_ip::{SecureClientIp, SecureClientIpSource};
 use clap::Parser;
+use tower_http::trace::TraceLayer;
 use socketioxide::extract::SocketRef;
 use socketioxide::handler::ConnectHandler;
 use socketioxide::SocketIo;
 use sqlx::Executor;
+use tower::{BoxError, ServiceBuilder};
 use crate::args::Args;
 use crate::result::Result;
 use crate::srvstate::{SrvState};
@@ -47,13 +52,20 @@ async fn main() -> Result<()> {
 
    let srvstate = SrvState { db: pool, config: config.clone() };
    let app = Router::new()
-       .route("/", get(handlers::web::index))
-       .route("/service", get(handlers::web::service))
-       .route("/register", post(handlers::web::register))
-       .route("/username-unique", get(handlers::web::username_unique))
-       .route("/email-unique", get(handlers::web::email_unique))
+       .route("/", get(handlers::http::index))
+       .route("/service", get(handlers::http::service))
+       .route("/register", post(handlers::http::register))
+       .route("/username-unique", get(handlers::http::username_unique))
+       .route("/email-unique", get(handlers::http::email_unique))
        .layer(socketio_layer)
-       .layer(SecureClientIpSource::ConnectInfo.into_extension())
+       .layer(
+          ServiceBuilder::new()
+              .layer(HandleErrorLayer::new(handlers::http::error))
+              .load_shed()
+              .concurrency_limit(128)
+              .timeout(Duration::from_secs(5))
+              .layer(TraceLayer::new_for_http()),
+       )
        .with_state(srvstate);
 
    debug!("Staring listener");

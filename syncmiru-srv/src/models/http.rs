@@ -1,0 +1,81 @@
+use hcaptcha::Hcaptcha;
+use validator::Validate;
+use serde::{Serialize, Deserialize};
+use serde_repr::Serialize_repr;
+
+// #[derive(Debug, Clone, serde::Serialize)]
+// #[repr(u8)]
+// pub enum ResponseCode {
+//     Ok,
+//     Err,
+// }
+
+#[derive(Debug, Copy, Clone, Serialize)]
+pub struct ServiceStatus {
+    pub reg_pub_allowed: bool
+}
+
+// #[derive(Debug, Clone, serde::Serialize)]
+// pub struct RegResponse {
+//     pub code: ResponseCode,
+//     pub error_fields: Vec<String>,
+// }
+
+#[derive(Debug, Clone, Deserialize, Validate, Hcaptcha)]
+pub struct RegForm {
+    #[validate(custom(function = "crate::validators::check_username_format"))]
+    pub username: String,
+
+    #[validate(custom(function = "crate::validators::check_displayname_format"))]
+    pub displayname: String,
+
+    #[validate(email, length(max = 320))]
+    pub email: String,
+
+    #[validate(length(min = 8))]
+    pub password: String,
+
+    #[captcha]
+    pub captcha: String,
+
+    pub reg_tkn: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct Username {
+    #[validate(custom(function = "crate::validators::check_username_format"))]
+    pub username: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct Email {
+    #[validate(email, length(max = 320))]
+    pub email: String,
+}
+
+#[derive(Debug, Copy, Clone, Serialize_repr)]
+#[repr(u8)]
+enum YN {
+    Yes,
+    No
+}
+
+impl YN {
+    pub fn from(b: bool) -> Self {
+        match b {
+            true => Self::Yes,
+            false => Self::No
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, Serialize)]
+pub struct ResourceUniqueResponse {
+    pub code: YN,
+}
+
+impl ResourceUniqueResponse {
+    pub fn from(b: bool) -> Self {
+        Self { code: YN::from(b) }
+    }
+}
