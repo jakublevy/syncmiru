@@ -2,7 +2,10 @@ import {ReactElement, useState} from "react";
 import Card from "@components/widgets/Card.tsx";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
-import {DisplaynameInput, EmailInput, Input, UsernameInput} from "@components/widgets/Input.tsx";
+import {Input} from "@components/widgets/Input.tsx";
+import {DisplaynameInput} from "@components/widgets/DisplaynameInput.tsx";
+import {EmailInput, EmailInputUnique} from "@components/widgets/EmailInput.tsx";
+import {UsernameInput} from "@components/widgets/UsernameInput.tsx";
 import {BtnPrimary, BtnTextPrimary} from "@components/widgets/Buttons.tsx";
 import {useLocation} from "wouter";
 import useFormValidate from "@hooks/useFormValidate.ts";
@@ -107,6 +110,13 @@ export default function RegisterCaptcha(): ReactElement {
         }})
     }
 
+    function emailUniqueChanged(unique: boolean) {
+        setUnique((p) => {return {
+            email: unique,
+            username: p.username
+        }})
+    }
+
     return (
         <div className="flex justify-centersafe items-center w-dvw">
             <Card className="min-w-[25rem] w-[40rem] m-3">
@@ -126,7 +136,7 @@ export default function RegisterCaptcha(): ReactElement {
                             </div>
                             <UsernameInput
                                 id="username"
-                                onUniqueChanged={usernameUniqueChanged}
+                                onReportUnique={usernameUniqueChanged}
                                 required
                                 {...register('username')}
                             />
@@ -169,15 +179,20 @@ export default function RegisterCaptcha(): ReactElement {
                                     content="Váš email, vyplňte ho pravdivě. Budete ho potřebovat<br>pro ověření účtu a může se hodit pro obnovu hesla"
                                 />
                             </div>
-                            <EmailInput
+                            <EmailInputUnique
                                 id="email"
+                                onReportUnique={emailUniqueChanged}
                                 required
                                 {...register('email')}
                             />
 
                             {errors.email
                                 ? <p className="text-danger font-semibold">{errors.email.message}</p>
-                                : <p className="text-danger invisible font-semibold">L</p>}
+                                : <>
+                                    {!unique.email
+                                        ? <p className="text-danger font-semibold">Již registrován</p>
+                                        : <p className="text-danger invisible font-semibold">L</p>}
+                                </>}
                         </div>
                         <div className="mb-3 flex-1">
                             <div className="flex justify-between">

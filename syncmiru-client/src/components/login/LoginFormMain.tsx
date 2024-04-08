@@ -1,7 +1,8 @@
 import {ChangeEvent, ReactElement, useEffect, useState} from "react";
 import LanguageSelector from "@components/widgets/LanguageSelector.tsx";
 import {BtnPrimary, BtnTextPrimary} from "@components/widgets/Buttons.tsx";
-import {EmailInput, Input} from "@components/widgets/Input.tsx";
+import {Input} from "@components/widgets/Input.tsx";
+import {EmailInput} from "@components/widgets/EmailInput.tsx";
 import {useHomeServer} from "@hooks/useHomeServer.ts";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
@@ -26,6 +27,8 @@ export default function LoginFormMain(): ReactElement {
         error: homeSrvServiceError
     } = useServiceStatusSWR()
 
+    const {emailValidate} = useFormValidate()
+
     const [formData, setFormData]
         = useState<FormData>({email: '', password: ''})
 
@@ -34,8 +37,6 @@ export default function LoginFormMain(): ReactElement {
 
     const [formShowError, setFormShowError]
         = useState<FormShowError>({email: false, srv: false, password: false})
-
-    const {emailValidate} = useFormValidate()
 
     useEffect(() => {
         if (historyState != null) {
