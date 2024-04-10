@@ -1,8 +1,10 @@
 pub mod frontend;
 
+use std::time::Duration;
 use anyhow::{anyhow, bail};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use crate::constants;
 use crate::error::SyncmiruError;
 use crate::error::SyncmiruError::HttpResponseFailed;
 use crate::result::Result;
@@ -15,7 +17,11 @@ pub struct ServiceStatus {
 async fn service_status(home_url: &str) -> Result<ServiceStatus> {
     let service_url = home_url.to_string() + "/service";
     let client = Client::new();
-    let response = client.get(service_url).send().await?;
+    let response = client
+        .get(service_url)
+        .timeout(Duration::from_secs(constants::HTTP_TIMEOUT))
+        .send()
+        .await?;
     if !response.status().is_success() {
         return Err(HttpResponseFailed)
     }
@@ -48,6 +54,7 @@ async fn username_unique(home_url: &str, username: &str) -> Result<bool> {
     let payload = serde_json::json!({"username": username});
     let response = Client::new()
         .get(url)
+        .timeout(Duration::from_secs(constants::HTTP_TIMEOUT))
         .json(&payload)
         .send().await?;
     if !response.status().is_success() {
@@ -62,6 +69,7 @@ async fn email_unique(home_url: &str, email: &str) -> Result<bool> {
     let payload = serde_json::json!({"email": email});
     let response = Client::new()
         .get(url)
+        .timeout(Duration::from_secs(constants::HTTP_TIMEOUT))
         .json(&payload)
         .send().await?;
     if !response.status().is_success() {
@@ -85,6 +93,7 @@ async fn register(home_url: &str, data: &RegData) -> Result<()> {
     let url = home_url.to_string() + "/register";
     let response = Client::new()
         .post(url)
+        .timeout(Duration::from_secs(constants::HTTP_TIMEOUT))
         .json(data)
         .send().await
         .map_err(reqwest::Error::from)?;
