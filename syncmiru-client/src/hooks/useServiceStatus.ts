@@ -2,7 +2,7 @@ import {invoke} from "@tauri-apps/api/core";
 import useSWR from "swr";
 import {ServiceStatus} from "@models/serviceStatus.ts";
 
-export const useServiceStatusSWR = () =>
+export const useServiceStatusWatch = () =>
     useSWR('get_service_status', cmd => invoke<ServiceStatus>(cmd, {}))
 
 export const useServiceStatus = () =>

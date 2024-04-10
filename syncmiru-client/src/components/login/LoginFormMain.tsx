@@ -9,7 +9,7 @@ import Help from "@components/widgets/Help.tsx";
 import {useLocation} from "wouter";
 import {useTranslation} from "react-i18next";
 import Card from "@components/widgets/Card.tsx";
-import {useServiceStatusSWR} from "@hooks/useServiceStatus.ts";
+import {useServiceStatusWatch} from "@hooks/useServiceStatus.ts";
 import {useHistoryState} from "wouter/use-browser-location";
 import {LoginFormHistoryState} from "@models/historyState.ts";
 import useFormValidate from "@hooks/useFormValidate.ts";
@@ -25,7 +25,7 @@ export default function LoginFormMain(): ReactElement {
     const {
         isLoading: homeSrvServiceIsLoading,
         error: homeSrvServiceError
-    } = useServiceStatusSWR()
+    } = useServiceStatusWatch()
 
     const {emailValidate} = useFormValidate()
 

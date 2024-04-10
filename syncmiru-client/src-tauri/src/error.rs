@@ -34,6 +34,9 @@ pub enum SyncmiruError {
     #[error("Github API error")]
     OctocrabError(#[from] octocrab::Error),
 
+    #[error("Serde JSON error")]
+    SerdeJsonError(#[from] serde_json::Error),
+
     #[error("URL missing version error")]
     LatestVersionMissingError,
 

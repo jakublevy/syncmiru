@@ -1,4 +1,4 @@
-import {ReactElement, useEffect, useState} from "react";
+import {ReactElement, useState} from "react";
 import Card from "@components/widgets/Card.tsx";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
@@ -15,6 +15,8 @@ import {useForm} from "react-hook-form";
 import Joi from 'joi'
 import {joiResolver} from "@hookform/resolvers/joi";
 import Loading from "@components/Loading.tsx";
+import {invoke} from "@tauri-apps/api/core";
+import {StatusAlertService} from "react-status-alert";
 
 export default function RegisterCaptcha(): ReactElement {
     const [_, navigate] = useLocation()
@@ -27,10 +29,6 @@ export default function RegisterCaptcha(): ReactElement {
 
     const {passwordValidate, usernameValidate, displaynameValidate, emailValidate}
         = useFormValidate()
-
-    useEffect(() => {
-
-    }, []);
 
     const formSchema: Joi.ObjectSchema<FormFields> = Joi.object({
         email: Joi
@@ -67,6 +65,7 @@ export default function RegisterCaptcha(): ReactElement {
             .custom((v: string, h) => {
                 if (!displaynameValidate(v))
                     return h.message({custom: "Toto není platné zobrazené jméno"})
+                return v
             }),
         cpassword: Joi
             .string()
@@ -104,17 +103,26 @@ export default function RegisterCaptcha(): ReactElement {
         if(!unique.email || !unique.username)
             return
 
-        const send: SendFields = {
+        const send: RegData = {
             email: data.email,
             username: data.username,
             captcha: data.captcha,
             displayname: data.displayname,
-            password: data.password
+            password: data.password,
+            reg_tkn: ''
         }
-        setValue('captcha', '')
 
-
-        console.log(JSON.stringify(data))
+        setLoading(true)
+        invoke<void>('send_registration', {data: JSON.stringify(send)})
+            .then(() => {
+                setLoading(false)
+                navigate('/email-verify')
+            })
+            .catch((e) => {
+                setValue('captcha', '')
+                setLoading(false)
+                StatusAlertService.showError(`Chyba: ${e}`)
+            })
     }
 
     function captchaVerified(tkn: string) {
@@ -321,20 +329,16 @@ interface FormFields {
     captcha: string
 }
 
-interface SendFields {
+interface RegData {
     username: string,
     displayname: string,
     email: string,
     password: string,
-    captcha: string
+    captcha: string,
+    reg_tkn: String
 }
 
 interface Unique {
-    email: boolean,
-    username: boolean
-}
-
-interface UniqueLoading {
     email: boolean,
     username: boolean
 }

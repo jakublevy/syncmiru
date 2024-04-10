@@ -41,6 +41,7 @@ fn main() -> Result<()> {
             login::frontend::get_service_status,
             login::frontend::get_username_unique,
             login::frontend::get_email_unique,
+            login::frontend::send_registration,
         ])
         .on_window_event(handle_window_event)
         .manage(appstate)

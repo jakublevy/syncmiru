@@ -1,7 +1,9 @@
 pub mod frontend;
 
+use anyhow::{anyhow, bail};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use crate::error::SyncmiruError;
 use crate::error::SyncmiruError::HttpResponseFailed;
 use crate::result::Result;
 
@@ -44,8 +46,7 @@ impl From<YN> for bool {
 async fn username_unique(home_url: &str, username: &str) -> Result<bool> {
     let url = home_url.to_string() + "/username-unique";
     let payload = serde_json::json!({"username": username});
-    let client = Client::new();
-    let response = client
+    let response = Client::new()
         .get(url)
         .json(&payload)
         .send().await?;
@@ -59,8 +60,7 @@ async fn username_unique(home_url: &str, username: &str) -> Result<bool> {
 async fn email_unique(home_url: &str, email: &str) -> Result<bool> {
     let url = home_url.to_string() + "/email-unique";
     let payload = serde_json::json!({"email": email});
-    let client = Client::new();
-    let response = client
+    let response = Client::new()
         .get(url)
         .json(&payload)
         .send().await?;
@@ -69,6 +69,29 @@ async fn email_unique(home_url: &str, email: &str) -> Result<bool> {
     }
     let resource_unique: ResourceUnique = response.json().await?;
     Ok(resource_unique.code.into())
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct RegData {
+    username: String,
+    displayname: String,
+    email: String,
+    password: String,
+    captcha: String,
+    reg_tkn: String,
+}
+
+async fn register(home_url: &str, data: &RegData) -> Result<()> {
+    let url = home_url.to_string() + "/register";
+    let response = Client::new()
+        .post(url)
+        .json(data)
+        .send().await
+        .map_err(reqwest::Error::from)?;
+    if !response.status().is_success() {
+        return Err(SyncmiruError::from(anyhow!(response.text().await?)))
+    }
+    Ok(())
 }
 
 #[cfg(test)]
