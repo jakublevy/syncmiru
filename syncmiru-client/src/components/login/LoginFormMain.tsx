@@ -2,7 +2,7 @@ import {ChangeEvent, ReactElement, useEffect, useState} from "react";
 import LanguageSelector from "@components/widgets/LanguageSelector.tsx";
 import {BtnPrimary, BtnTextPrimary} from "@components/widgets/Buttons.tsx";
 import {Input} from "@components/widgets/Input.tsx";
-import {EmailInput} from "@components/widgets/EmailInput.tsx";
+import {EmailInput} from "@components/widgets/Input.tsx";
 import {useHomeServer} from "@hooks/useHomeServer.ts";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";

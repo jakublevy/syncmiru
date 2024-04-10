@@ -2,10 +2,9 @@ import {ReactElement, useState} from "react";
 import Card from "@components/widgets/Card.tsx";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
-import {Input} from "@components/widgets/Input.tsx";
-import {DisplaynameInput} from "@components/widgets/DisplaynameInput.tsx";
-import {EmailInput, EmailInputUnique} from "@components/widgets/EmailInput.tsx";
-import {UsernameInputUnique} from "@components/widgets/UsernameInput.tsx";
+import {EmailInput, Input} from "@components/widgets/Input.tsx";
+import {DisplaynameInput} from "@components/widgets/Input.tsx";
+import {EmailInputUnique, UsernameInputUnique} from "@components/widgets/InputUnique.tsx";
 import {BtnPrimary, BtnTextPrimary} from "@components/widgets/Buttons.tsx";
 import {useLocation} from "wouter";
 import useFormValidate from "@hooks/useFormValidate.ts";
@@ -23,15 +22,19 @@ export default function RegisterCaptcha(): ReactElement {
     const [unique, setUnique]
         = useState<Unique>({email: true, username: true})
 
-    const {passwordValidate, usernameValidate, displaynameValidate}
+    const {passwordValidate, usernameValidate, displaynameValidate, emailValidate}
         = useFormValidate()
 
     const formSchema: Joi.ObjectSchema<FormFields> = Joi.object({
         email: Joi
             .string()
-            .email({tlds: false})
             .required()
-            .messages({"string.empty": 'Toto pole musí být vyplněno', "string.email": "Toto není platný email"}),
+            .messages({"string.empty": 'Toto pole musí být vyplněno'})
+            .custom((v: string, h) => {
+                if(!emailValidate(v))
+                    return h.message({custom: "Toto není platný email"})
+                return v
+            }),
         password: Joi
             .string()
             .required()
@@ -91,6 +94,9 @@ export default function RegisterCaptcha(): ReactElement {
     }
 
     function createAccount(data: FormFields) {
+        if(!unique.email || !unique.username)
+            return
+
         console.log(JSON.stringify(data))
     }
 
@@ -205,6 +211,7 @@ export default function RegisterCaptcha(): ReactElement {
                             </div>
                             <EmailInput
                                 id="email-confirm"
+                                autocomplete="off"
                                 required
                                 {...register('cemail')}
                             />
