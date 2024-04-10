@@ -5,7 +5,7 @@ import Help from "@components/widgets/Help.tsx";
 import {Input} from "@components/widgets/Input.tsx";
 import {DisplaynameInput} from "@components/widgets/DisplaynameInput.tsx";
 import {EmailInput, EmailInputUnique} from "@components/widgets/EmailInput.tsx";
-import {UsernameInput} from "@components/widgets/UsernameInput.tsx";
+import {UsernameInputUnique} from "@components/widgets/UsernameInput.tsx";
 import {BtnPrimary, BtnTextPrimary} from "@components/widgets/Buttons.tsx";
 import {useLocation} from "wouter";
 import useFormValidate from "@hooks/useFormValidate.ts";
@@ -134,9 +134,9 @@ export default function RegisterCaptcha(): ReactElement {
                                     content="Uživatelské jméno je vaším identifikátorem na serveru,<br>je neměnné a musí obsahovat 4-16 znaků malých písmen a-z"
                                 />
                             </div>
-                            <UsernameInput
+                            <UsernameInputUnique
                                 id="username"
-                                onReportUnique={usernameUniqueChanged}
+                                onUniqueChanged={usernameUniqueChanged}
                                 required
                                 {...register('username')}
                             />
@@ -181,7 +181,7 @@ export default function RegisterCaptcha(): ReactElement {
                             </div>
                             <EmailInputUnique
                                 id="email"
-                                onReportUnique={emailUniqueChanged}
+                                onUniqueChanged={emailUniqueChanged}
                                 required
                                 {...register('email')}
                             />

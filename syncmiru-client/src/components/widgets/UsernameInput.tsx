@@ -2,15 +2,19 @@ import React, {ChangeEvent, forwardRef, useEffect, useState} from "react";
 import useSWR from "swr";
 import {invoke} from "@tauri-apps/api/core";
 import {Input, InputProps} from "@components/widgets/Input.tsx";
+import useFormValidate from "@hooks/useFormValidate.ts";
 
-export const UsernameInput
+export const UsernameInputUnique
     = forwardRef<HTMLInputElement, UsernameProps>((p, ref) => {
-    const {onReportUnique, onChange, onInput, ...passParams} = p
+    const {onUniqueChanged, onChange, onInput, ...passParams} = p
     const [username, setUsername] = useState<string>('')
+    const {usernameValidate} = useFormValidate()
 
     const {data: isUnique}
         = useSWR(["get_username_unique", username], ([cmd, username]) => {
-        return invoke<boolean>(cmd, {username: username})
+            if(usernameValidate(username))
+                return invoke<boolean>(cmd, {username: username})
+            return true
     }, {
         revalidateOnFocus: false,
         revalidateOnMount: false,
@@ -21,9 +25,7 @@ export const UsernameInput
 
     useEffect(() => {
         if (isUnique !== undefined)
-            onReportUnique(isUnique)
-        else
-            onReportUnique(true)
+            onUniqueChanged(isUnique)
     }, [isUnique]);
 
     function usernameOnChange(e: ChangeEvent<HTMLInputElement>) {
@@ -57,5 +59,5 @@ export const UsernameInput
 type UsernamePropsOmitted = Omit<InputProps, "type" | "maxLength" | "pattern">
 
 interface UsernameProps extends UsernamePropsOmitted {
-    onReportUnique: (b: boolean) => void
+    onUniqueChanged: (b: boolean) => void
 }

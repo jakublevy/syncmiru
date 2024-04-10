@@ -1,4 +1,4 @@
-import React, {ChangeEvent, forwardRef, useEffect, useRef, useState} from "react";
+import React, {ChangeEvent, forwardRef, useEffect, useState} from "react";
 import useSWR from "swr";
 import {invoke} from "@tauri-apps/api/core";
 import {Input, InputProps} from "@components/widgets/Input.tsx";
@@ -21,17 +21,20 @@ export const EmailInputUnique
     = forwardRef<HTMLInputElement, EmailPropsUnique>((p, ref) => {
 
     const {
-        onReportUnique,
+        onUniqueChanged,
         onChange,
         onInput,
         className,
         ...passParams} = p
 
     const [email, setEmail] = useState<string>('')
+    const {emailValidate} = useFormValidate()
 
     const {data: isUnique}
         = useSWR(["get_email_unique", email], ([cmd, email]) => {
-        return invoke<boolean>(cmd, {email: email})
+            if(emailValidate(email))
+                return invoke<boolean>(cmd, {email: email})
+            return true
     }, {
         revalidateOnFocus: false,
         revalidateOnMount: false,
@@ -42,9 +45,7 @@ export const EmailInputUnique
 
     useEffect(() => {
         if (isUnique !== undefined)
-            onReportUnique(isUnique)
-        else
-            onReportUnique(true)
+            onUniqueChanged(isUnique)
     }, [isUnique]);
 
     function emailOnChange(e: ChangeEvent<HTMLInputElement>) {
@@ -64,5 +65,5 @@ export const EmailInputUnique
 type EmailProps = Omit<InputProps, "type" | "maxLength">
 
 interface EmailPropsUnique extends EmailProps {
-    onReportUnique: (b: boolean) => void
+    onUniqueChanged: (b: boolean) => void
 }
