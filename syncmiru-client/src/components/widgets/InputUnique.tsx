@@ -70,7 +70,7 @@ interface UniqueConf {
 }
 
 interface UniqueProps {
-    onUniqueChanged: (b: boolean) => void
+    onUniqueChanged: (b: boolean) => void,
 }
 
 

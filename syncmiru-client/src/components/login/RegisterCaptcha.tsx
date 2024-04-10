@@ -1,4 +1,4 @@
-import {ReactElement, useState} from "react";
+import {ReactElement, useEffect, useState} from "react";
 import Card from "@components/widgets/Card.tsx";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
@@ -14,16 +14,23 @@ import HCaptchaThemeAware from "@components/widgets/HCaptchaThemeAware.tsx";
 import {useForm} from "react-hook-form";
 import Joi from 'joi'
 import {joiResolver} from "@hookform/resolvers/joi";
+import Loading from "@components/Loading.tsx";
 
 export default function RegisterCaptcha(): ReactElement {
     const [_, navigate] = useLocation()
     const lang: Language = useLanguage()
+
+    const [loading, setLoading] = useState<boolean>(false);
 
     const [unique, setUnique]
         = useState<Unique>({email: true, username: true})
 
     const {passwordValidate, usernameValidate, displaynameValidate, emailValidate}
         = useFormValidate()
+
+    useEffect(() => {
+
+    }, []);
 
     const formSchema: Joi.ObjectSchema<FormFields> = Joi.object({
         email: Joi
@@ -97,6 +104,16 @@ export default function RegisterCaptcha(): ReactElement {
         if(!unique.email || !unique.username)
             return
 
+        const send: SendFields = {
+            email: data.email,
+            username: data.username,
+            captcha: data.captcha,
+            displayname: data.displayname,
+            password: data.password
+        }
+        setValue('captcha', '')
+
+
         console.log(JSON.stringify(data))
     }
 
@@ -122,6 +139,9 @@ export default function RegisterCaptcha(): ReactElement {
             username: p.username
         }})
     }
+
+    if(loading)
+        return <Loading/>
 
     return (
         <div className="flex justify-centersafe items-center w-dvw">
@@ -211,7 +231,7 @@ export default function RegisterCaptcha(): ReactElement {
                             </div>
                             <EmailInput
                                 id="email-confirm"
-                                autocomplete="off"
+                                autoComplete="off"
                                 required
                                 {...register('cemail')}
                             />
@@ -291,7 +311,7 @@ export default function RegisterCaptcha(): ReactElement {
     )
 }
 
-type FormFields = {
+interface FormFields {
     username: string,
     displayname: string,
     email: string,
@@ -301,7 +321,20 @@ type FormFields = {
     captcha: string
 }
 
+interface SendFields {
+    username: string,
+    displayname: string,
+    email: string,
+    password: string,
+    captcha: string
+}
+
 interface Unique {
-    email?: boolean,
-    username?: boolean
+    email: boolean,
+    username: boolean
+}
+
+interface UniqueLoading {
+    email: boolean,
+    username: boolean
 }

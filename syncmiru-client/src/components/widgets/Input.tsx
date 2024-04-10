@@ -83,7 +83,7 @@ export interface InputProps {
     pattern?: string,
     maxLength?: number,
     tabIndex?: number,
-    autocomplete?: AutocompleteType,
+    autoComplete?: AutocompleteType,
     onBlur?: (e: FocusEvent<HTMLInputElement>) => void,
     onInput?: (e: ChangeEvent<HTMLInputElement>) => void,
     onChange?: (e: ChangeEvent<HTMLInputElement>) => void,
