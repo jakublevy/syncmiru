@@ -6,7 +6,8 @@ CREATE TABLE "users" (
                          "avatar" bytea,
                          "hash" varchar(128) NOT NULL,
                          "reg_at" timestamptz NOT NULL DEFAULT (now()),
-                         "reg_tkn_id" integer
+                         "reg_tkn_id" integer,
+                         "verified" bool NOT NULL
 );
 
 CREATE TABLE "reg_tkn" (

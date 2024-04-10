@@ -24,7 +24,7 @@ pub async fn new_user(
     email: &str,
     hash: &str
 ) -> Result<()> {
-    sqlx::query("INSERT INTO public.users(username, display_name, email, hash, reg_tkn_id) VALUES ($1, $2, $3, $4, NULL)")
+    sqlx::query("INSERT INTO public.users(username, display_name, email, hash, reg_tkn_id, verified) VALUES ($1, $2, $3, $4, NULL, FALSE)")
         .bind(username)
         .bind(displayname)
         .bind(email)

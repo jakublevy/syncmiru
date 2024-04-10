@@ -15,11 +15,8 @@ import LoginForm from "@components/login/LoginForm.tsx";
 import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
 import {useTranslation} from "react-i18next";
-import Register from "@components/login/Register.tsx";
+import RegisterDispatch from "@components/login/RegisterDispatch.tsx";
 import {DepsHistoryState} from "@models/historyState.ts";
-import DepsMissingWindows from "@components/deps/windows/DepsMissingWindows.tsx";
-import Loading from "@components/Loading.tsx";
-import {EmailInput} from "@components/widgets/Input.tsx";
 import EmailVerify from "@components/login/EmailVerify.tsx";
 
 
@@ -61,7 +58,7 @@ function App(): ReactElement {
             <Route path="/login-dispatch" component={LoginDispatch}/>
             <Route path="/login-auto" component={LoginAuto}/>
             <Route path="/login-form/*" component={LoginForm}/>
-            <Route path="/register" component={Register}/>
+            <Route path="/register" component={RegisterDispatch}/>
             <Route path="/email-verify" component={EmailVerify}/>
         </Router>
     )
