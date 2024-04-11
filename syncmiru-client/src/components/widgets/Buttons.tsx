@@ -42,7 +42,7 @@ export function BtnDanger(p: BtnProps): ReactElement {
 
 export function BtnTextPrimary(p: BtnProps): ReactElement {
     return <Btn
-        className={`text-indigo-500 hover:text-indigo-900 font-semibold ${p.className}`}
+        className={`text-indigo-500 hover:text-indigo-900 dark:hover:text-indigo-700 font-semibold ${p.className}`}
         onClick={p.onClick}
         formNoValidate={p.formNoValidate}
         type={p.type}>
