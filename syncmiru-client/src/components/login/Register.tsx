@@ -2,9 +2,8 @@ import {ReactElement, useState} from "react";
 import Card from "@components/widgets/Card.tsx";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
-import {EmailInput, Input} from "@components/widgets/Input.tsx";
+import {EmailInput, EmailInputSrvValidate, Input, UsernameInputSrvValidate} from "@components/widgets/Input.tsx";
 import {DisplaynameInput} from "@components/widgets/Input.tsx";
-import {EmailInputUnique, UsernameInputUnique} from "@components/widgets/InputUnique.tsx";
 import {BtnPrimary, BtnTextPrimary} from "@components/widgets/Buttons.tsx";
 import {useLocation} from "wouter";
 import {Language} from "@models/config.tsx";
@@ -141,9 +140,9 @@ export default function Register({regPubAllowed}: Props): ReactElement {
                                     content="Uživatelské jméno je vaším identifikátorem na serveru,<br>je neměnné a musí obsahovat 4-16 znaků malých písmen a-z"
                                 />
                             </div>
-                            <UsernameInputUnique
+                            <UsernameInputSrvValidate
                                 id="username"
-                                onUniqueChanged={usernameUniqueChanged}
+                                onSrvValidationChanged={usernameUniqueChanged}
                                 required
                                 {...register('username')}
                             />
@@ -186,9 +185,9 @@ export default function Register({regPubAllowed}: Props): ReactElement {
                                     content="Váš email, vyplňte ho pravdivě. Budete ho potřebovat<br>pro ověření účtu a může se hodit pro obnovu hesla"
                                 />
                             </div>
-                            <EmailInputUnique
+                            <EmailInputSrvValidate
                                 id="email"
-                                onUniqueChanged={emailUniqueChanged}
+                                onSrvValidationChanged={emailUniqueChanged}
                                 required
                                 {...register('email')}
                             />

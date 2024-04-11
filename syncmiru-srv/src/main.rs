@@ -43,6 +43,7 @@ async fn main() -> Result<()> {
    log::setup(&config.log)?;
    let pool = db::create_connection_pool(&config.db).await?;
    db::run_migrations(&pool).await?;
+   println!("{:?}", config.email);
 
    let srvstate = SrvState { db: pool.clone(), config: config.clone() };
    let (socketio_layer, io) = SocketIo::builder()

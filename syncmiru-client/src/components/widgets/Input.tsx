@@ -4,6 +4,10 @@ import React, {
     KeyboardEvent,
     FocusEvent,
 } from "react";
+import useFormValidate from "@hooks/useFormValidate.ts";
+import useSWR from "swr";
+import {invoke} from "@tauri-apps/api/core";
+import {withSrvValidate} from "@components/hoc/withSrvValidate.tsx";
 
 export const Input
     = forwardRef<HTMLInputElement, InputProps>((p, ref) => {
@@ -70,6 +74,48 @@ export const UsernameInput
 })
 
 type UsernameProps = Omit<InputProps, "type" | "maxLength" | "pattern">
+
+export const EmailInputSrvValidate = withSrvValidate(EmailInput,
+    {
+        validate: useFormValidate().emailValidate,
+        swr:
+            (value: string, validate: (v: string) => boolean) => {
+                return useSWR(["get_email_unique", value], ([cmd, value]) => {
+                    const send = {email: value}
+                    if (validate(value))
+                        return invoke<boolean>(cmd, send)
+                    return true
+                }, {
+                    revalidateOnFocus: false,
+                    revalidateOnMount: false,
+                    revalidateOnReconnect: true,
+                    refreshWhenOffline: false,
+                    refreshWhenHidden: false,
+                })
+            }
+    }
+)
+
+export const UsernameInputSrvValidate = withSrvValidate(UsernameInput,
+    {
+        validate: useFormValidate().usernameValidate,
+        swr:
+            (value: string, validate: (v: string) => boolean) => {
+                return useSWR(["get_username_unique", value], ([cmd, value]) => {
+                    const send = {username: value}
+                    if (validate(value))
+                        return invoke<boolean>(cmd, send)
+                    return true
+                }, {
+                    revalidateOnFocus: false,
+                    revalidateOnMount: false,
+                    revalidateOnReconnect: true,
+                    refreshWhenOffline: false,
+                    refreshWhenHidden: false,
+                })
+            }
+    }
+)
 
 export interface InputProps {
     type?: InputType,

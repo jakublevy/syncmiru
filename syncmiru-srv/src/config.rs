@@ -2,6 +2,8 @@ use std::fs::File;
 use std::io::{Read};
 use std::path::{Path, PathBuf};
 use anyhow::{anyhow, Context};
+use lettre::SmtpTransport;
+use lettre::transport::smtp::authentication::Credentials;
 use log::{debug, info, warn};
 use yaml_rust2::{Yaml, YamlLoader};
 use crate::config::LogOutput::{StdErr, Stdout};
@@ -23,12 +25,12 @@ pub fn read(config_file: impl AsRef<Path> + Copy) -> Result<Config> {
     let reg_pub = RegConfig::from(&doc["registration_public"])?;
     let db = DbConfig::from(&doc["db"])?;
     let log = LogConfig::from(&doc["log"])?;
-    let rates = Rates::from(&doc["rates"])?;
+    let email = EmailConf::from(&doc["email"])?;
     let login_jwt_cert = LoginJwtCert::from(&doc["login_jwt_cert"])?;
 
     info!("{} parsed", cf_print);
     Ok(
-        Config { reg_pub, port, db, log, rates, login_jwt_cert }
+        Config { reg_pub, port, db, log, email, login_jwt_cert }
     )
 }
 
@@ -38,7 +40,7 @@ pub struct Config {
     pub port: u16,
     pub db: DbConfig,
     pub log: LogConfig,
-    pub rates: Rates,
+    pub email: EmailConf,
     pub login_jwt_cert: LoginJwtCert,
     //sources: Vec<Source>
 }
@@ -194,24 +196,71 @@ impl From<LogLevel> for simplelog::LevelFilter {
 }
 
 #[derive(Debug, Clone)]
-struct EmailConf {
-    smtp_host: String,
-    smtp_port: u16,
-    username: String,
-    password: String,
-    from_mail: String,
-    security: String
+pub struct EmailConf {
+    pub smtp_host: String,
+    pub smtp_port: u16,
+    pub credentials: Credentials,
+    pub from_mail: String,
+    pub tls: bool,
+    pub rates: Option<EmailRates>
+}
+
+impl EmailConf {
+    pub fn from(email: &Yaml) -> Result<Self> {
+        let smtp_host = email["smtp_host"]
+            .as_str()
+            .context("smtp_host is missing inside email section")?
+            .to_string();
+        let smtp_port = email["smtp_port"]
+            .as_i64()
+            .context("smtp_port is missing inside email section")? as u16;
+
+
+        let username = email["username"]
+            .as_str()
+            .context("username is missing inside email section")?
+            .to_string();
+        let password = email["password"]
+            .as_str()
+            .context("password is missing inside email section")?
+            .to_string();
+        let credentials = Credentials::new(username, password);
+
+
+        let from_mail = email["from_email"]
+            .as_str()
+            .context("from_email is missing inside email section")?
+            .to_string();
+        let tls = email["tls"]
+            .as_bool()
+            .context("tls is missing inside email section")?;
+        let mut rates: Option<EmailRates> = None;
+        if !email["rates"].is_badvalue() {
+            rates = Some(EmailRates::from(&email["rates"])?);
+        }
+        else {
+            warn!("Email rate limiting is disabled")
+        }
+        Ok(Self {
+            smtp_host,
+            smtp_port,
+            credentials,
+            from_mail,
+            tls,
+            rates
+        })
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
-struct Rates {
+struct EmailRates {
     forgotten_password: Option<Rate>,
-    display_name_change: Option<Rate>
+    verification: Option<Rate>
 }
 
-impl Rates {
+impl EmailRates {
     pub fn from(rates_yaml: &Yaml) -> Result<Self> {
-        let mut rates = Self { forgotten_password: None, display_name_change: None };
+        let mut rates = Self { forgotten_password: None, verification: None };
 
         let fp_yaml = &rates_yaml["forgotten_password"];
         if !fp_yaml.is_badvalue() {
@@ -219,16 +268,16 @@ impl Rates {
             rates.forgotten_password = Some(Rate { max: fp_max, per: fp_per });
         }
         else {
-            warn!("Rate limiting for forgotten_password is disabled")
+            warn!("Rate limiting for forgotten_password emails is disabled")
         }
 
-        let dnc_yaml = &rates_yaml["display_name_change"];
-        if !dnc_yaml.is_badvalue() {
-            let (dnc_max, dnc_per) = parse_rate(&dnc_yaml)?;
-            rates.display_name_change = Some(Rate { max: dnc_max, per: dnc_per });
+        let ver_yaml = &rates_yaml["verification"];
+        if !ver_yaml.is_badvalue() {
+            let (ver_max, ver_per) = parse_rate(&ver_yaml)?;
+            rates.verification = Some(Rate { max: ver_max, per: ver_per });
         }
         else {
-            warn!("Rate limiting for display_name_change is disabled")
+            warn!("Rate limiting for verification emails is disabled")
         }
         Ok(rates)
     }
