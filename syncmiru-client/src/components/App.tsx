@@ -17,7 +17,7 @@ import {useLanguage} from "@hooks/useLanguage.ts";
 import {useTranslation} from "react-i18next";
 import RegisterDispatch from "@components/login/RegisterDispatch.tsx";
 import {DepsHistoryState} from "@models/historyState.ts";
-import EmailVerify from "@components/login/EmailVerify.tsx";
+import EmailVerifyDispatch from "@components/login/EmailVerifyDispatch.tsx";
 
 
 function App(): ReactElement {
@@ -59,7 +59,7 @@ function App(): ReactElement {
             <Route path="/login-auto" component={LoginAuto}/>
             <Route path="/login-form/*" component={LoginForm}/>
             <Route path="/register" component={RegisterDispatch}/>
-            <Route path="/email-verify" component={EmailVerify}/>
+            <Route path="/email-verify" component={EmailVerifyDispatch}/>
         </Router>
     )
 }

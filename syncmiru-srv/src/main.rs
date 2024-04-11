@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::env::set_var;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -35,6 +34,12 @@ mod validators;
 mod models;
 mod query;
 mod crypto;
+mod email;
+
+
+#[macro_use]
+extern crate rust_i18n;
+rust_i18n::i18n!("locales");
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -43,7 +48,6 @@ async fn main() -> Result<()> {
    log::setup(&config.log)?;
    let pool = db::create_connection_pool(&config.db).await?;
    db::run_migrations(&pool).await?;
-   println!("{:?}", config.email);
 
    let srvstate = SrvState { db: pool.clone(), config: config.clone() };
    let (socketio_layer, io) = SocketIo::builder()
@@ -58,6 +62,7 @@ async fn main() -> Result<()> {
        .route("/register", post(handlers::http::register))
        .route("/username-unique", get(handlers::http::username_unique))
        .route("/email-unique", get(handlers::http::email_unique))
+       .route("/email-verify-send", post(handlers::http::email_verify_send))
        .layer(socketio_layer)
        .layer(
           ServiceBuilder::new()

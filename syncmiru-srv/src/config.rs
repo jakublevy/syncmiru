@@ -200,8 +200,9 @@ pub struct EmailConf {
     pub smtp_host: String,
     pub smtp_port: u16,
     pub credentials: Credentials,
-    pub from_mail: String,
-    pub tls: bool,
+    pub from: String,
+    pub wait_before_resend: i64,
+    pub token_valid_time: i64,
     pub rates: Option<EmailRates>
 }
 
@@ -227,13 +228,16 @@ impl EmailConf {
         let credentials = Credentials::new(username, password);
 
 
-        let from_mail = email["from_email"]
+        let from = email["from"]
             .as_str()
-            .context("from_email is missing inside email section")?
+            .context("from is missing inside email section")?
             .to_string();
-        let tls = email["tls"]
-            .as_bool()
-            .context("tls is missing inside email section")?;
+        let wait_before_resend = email["wait_before_resend"]
+            .as_i64()
+            .context("wait_before_resend in missing inside email section")?;
+        let token_valid_time = email["token_valid_time"]
+            .as_i64()
+            .context("token_valid_time is missing inside email section")?;
         let mut rates: Option<EmailRates> = None;
         if !email["rates"].is_badvalue() {
             rates = Some(EmailRates::from(&email["rates"])?);
@@ -245,17 +249,18 @@ impl EmailConf {
             smtp_host,
             smtp_port,
             credentials,
-            from_mail,
-            tls,
+            from,
+            wait_before_resend,
+            token_valid_time,
             rates
         })
     }
 }
 
 #[derive(Debug, Copy, Clone)]
-struct EmailRates {
-    forgotten_password: Option<Rate>,
-    verification: Option<Rate>
+pub struct EmailRates {
+    pub forgotten_password: Option<Rate>,
+    pub verification: Option<Rate>
 }
 
 impl EmailRates {
@@ -283,16 +288,16 @@ impl EmailRates {
     }
 }
 
-fn parse_rate(rate_yaml: &Yaml) -> Result<(u32, u32)> {
-    let max = rate_yaml["max"].as_i64().context("rate is missing max value")? as u32;
-    let per = rate_yaml["per"].as_i64().context("rate is missing per value")? as u32;
+fn parse_rate(rate_yaml: &Yaml) -> Result<(i64, i64)> {
+    let max = rate_yaml["max"].as_i64().context("rate is missing max value")?;
+    let per = rate_yaml["per"].as_i64().context("rate is missing per value")?;
     return Ok((max, per))
 }
 
 #[derive(Debug, Copy, Clone)]
-struct Rate {
-    max: u32,
-    per: u32
+pub struct Rate {
+    pub max: i64,
+    pub per: i64
 }
 
 #[derive(Debug, Clone)]

@@ -35,3 +35,10 @@ pub fn check_displayname_format(displayname: &str) -> Result<(), ValidationError
     }
     Ok(())
 }
+
+pub fn check_lang(lang: &str) -> Result<(), ValidationError> {
+    if lang != "cs" && lang != "en" {
+        return Err(ValidationError::new("unknown language"))
+    }
+    Ok(())
+}

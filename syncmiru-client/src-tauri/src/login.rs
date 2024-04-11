@@ -11,7 +11,8 @@ use crate::result::Result;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct ServiceStatus {
-    reg_pub_allowed: bool
+    reg_pub_allowed: bool,
+    wait_before_resend: i64
 }
 
 async fn service_status(home_url: &str) -> Result<ServiceStatus> {

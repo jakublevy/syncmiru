@@ -37,6 +37,15 @@ pub enum SyncmiruError {
     #[error("HCaptcha invalid")]
     HCaptchaInvalid(#[from] hcaptcha::HcaptchaError),
 
+    #[error("Lettre email address error")]
+    LettreAddressError(#[from] lettre::address::AddressError),
+
+    #[error("Lettre error")]
+    LettreError(#[from] lettre::error::Error),
+
+    #[error("Lettre SMTP error")]
+    LettreSmtpError(#[from] lettre::transport::smtp::Error),
+
     #[error("Internal error")]
     InternalError(#[from] anyhow::Error),
 
