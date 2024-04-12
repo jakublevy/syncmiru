@@ -21,7 +21,7 @@ import EmailVerifyDispatch from "@components/login/EmailVerifyDispatch.tsx";
 import EmailVerified from "@components/login/EmailVerified.tsx";
 
 
-function App(): ReactElement {
+export default function App(): ReactElement {
     const {i18n} = useTranslation()
     const lang: Language = useLanguage()
     const firstRunSeen: boolean = useFirstRunSeen()
@@ -65,5 +65,3 @@ function App(): ReactElement {
         </Router>
     )
 }
-
-export default App;

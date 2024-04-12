@@ -14,7 +14,7 @@ pub fn ok_verified(lang: &str) -> Html<String> {
             <h1>{}</h1>
         </body>
         </html>
-    ", t!("account-verify-ok-content", locale = lang)
+    ", t!("email-verify-ok-content", locale = lang)
         )
     )
 }

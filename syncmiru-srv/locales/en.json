@@ -1,5 +1,6 @@
 {
   "html-err-title": "Error",
   "email-verify-subject": "Email verification",
-  "email-verify-body": "Hi,<br/>your email verification link is:"
+  "email-verify-body": "Hi,<br/>your email verification link is:",
+  "email-verify-ok-content": "Your email has been verified and your account has been activated."
 }

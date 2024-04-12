@@ -1,5 +1,6 @@
 {
   "html-err-title": "Chyba",
   "email-verify-subject": "Ověření emailu",
-  "email-verify-body": "Ahoj,<br/>tvůj odkaz k ověření emailu je:"
+  "email-verify-body": "Ahoj,<br/>tvůj odkaz k ověření emailu je:",
+  "email-verify-ok-content": "Váš email byl ověřen a účet byl aktivován."
 }

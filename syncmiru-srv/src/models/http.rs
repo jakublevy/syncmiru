@@ -64,31 +64,13 @@ pub struct EmailVerify {
     pub lang: String
 }
 
-
-
-#[derive(Debug, Copy, Clone, Serialize_repr)]
-#[repr(u8)]
-enum YN {
-    Yes,
-    No
-}
-
-impl YN {
-    pub fn from(b: bool) -> Self {
-        match b {
-            true => Self::Yes,
-            false => Self::No
-        }
-    }
-}
-
 #[derive(Debug, Copy, Clone, Serialize)]
-pub struct YNResponse {
-    pub code: YN,
+pub struct BooleanResp {
+    pub resp: bool,
 }
 
-impl YNResponse {
+impl BooleanResp {
     pub fn from(b: bool) -> Self {
-        Self { code: YN::from(b) }
+        Self { resp: b }
     }
 }

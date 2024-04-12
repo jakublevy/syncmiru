@@ -5,12 +5,11 @@ use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{Html, IntoResponse};
 use hcaptcha::Hcaptcha;
-use rand::Rng;
 use tower::BoxError;
 use crate::srvstate::SrvState;
 use validator::{Validate};
 use crate::error::SyncmiruError;
-use crate::models::http::{Email, RegForm, ServiceStatus, Username, YNResponse, EmailWithLang, EmailVerify};
+use crate::models::http::{Email, RegForm, ServiceStatus, Username, BooleanResp, EmailWithLang, EmailVerify};
 use crate::query;
 use crate::result::{Result};
 use crate::crypto;
@@ -68,19 +67,19 @@ pub async fn register(
 pub async fn username_unique(
     axum::extract::State(state): axum::extract::State<SrvState>,
     Json(payload): Json<Username>
-) -> Result<Json<YNResponse>> {
+) -> Result<Json<BooleanResp>> {
     payload.validate()?;
     let unique = query::username_unique(&state.db, &payload.username).await?;
-    Ok(Json(YNResponse::from(unique)))
+    Ok(Json(BooleanResp::from(unique)))
 }
 
 pub async fn email_unique(
     axum::extract::State(state): axum::extract::State<SrvState>,
     Json(payload): Json<Email>
-) -> Result<Json<YNResponse>> {
+) -> Result<Json<BooleanResp>> {
     payload.validate()?;
     let unique = query::email_unique(&state.db, &payload.email).await?;
-    Ok(Json(YNResponse::from(unique)))
+    Ok(Json(BooleanResp::from(unique)))
 }
 
 pub async fn email_verify(
@@ -149,12 +148,13 @@ pub async fn email_verify_send(
 pub async fn email_verified(
     axum::extract::State(state): axum::extract::State<SrvState>,
     Json(payload): Json<Email>
-) -> Result<Json<YNResponse>> {
+) -> Result<Json<BooleanResp>> {
     payload.validate()?;
     let verified = query::email_verified(&state.db, &payload.email)
         .await?
         .unwrap_or(false);
-    Ok(Json(YNResponse::from(verified)))
+    println!("VERIFIED = {}", verified);
+    Ok(Json(BooleanResp::from(verified)))
 }
 
 pub async fn error(error: BoxError) -> impl IntoResponse {
