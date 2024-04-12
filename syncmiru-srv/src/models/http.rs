@@ -57,6 +57,9 @@ pub struct EmailVerify {
     #[validate(length(equal = 24))]
     pub tkn: String,
 
+    #[validate(range(min = 1))]
+    pub uid: i32,
+
     #[validate(custom(function = "validators::check_lang"))]
     pub lang: String
 }

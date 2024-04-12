@@ -3,7 +3,7 @@ use crate::models::query::EmailTknType;
 use crate::result::Result;
 
 pub async fn username_unique(db: &PgPool, username: &str) -> Result<bool> {
-    let unique: (bool, ) = sqlx::query_as("select COUNT(*) = 0 from users where username = $1")
+    let unique: (bool, ) = sqlx::query_as("select COUNT(*) = 0 from users where username = $1 limit 1")
         .bind(username.to_string())
         .fetch_one(db).await?;
 
@@ -11,7 +11,7 @@ pub async fn username_unique(db: &PgPool, username: &str) -> Result<bool> {
 }
 
 pub async fn email_unique(db: &PgPool, email: &str) -> Result<bool> {
-    let unique: (bool, ) = sqlx::query_as("select COUNT(*) = 0 from users where email = $1")
+    let unique: (bool, ) = sqlx::query_as("select COUNT(*) = 0 from users where email = $1 limit 1")
         .bind(email.to_string())
         .fetch_one(db).await?;
 
@@ -35,15 +35,29 @@ pub async fn new_account(
 }
 
 pub async fn unverified_account_exist(db: &PgPool, email: &str) -> Result<bool> {
-    let unverified: (bool,) = sqlx::query_as("select COUNT(*) = 1 from users where email = $1 and verified = FALSE")
+    let unverified: (bool,) = sqlx::query_as("select COUNT(*) = 1 from users where email = $1 and verified = FALSE limit 1")
         .bind(email)
         .fetch_one(db).await?;
     Ok(unverified.0)
 }
 
+pub async fn user_id_from_email(
+    db: &PgPool,
+    email: &str
+) -> Result<Option<i32>> {
+    if let Some(user_id) = sqlx::query_as::<_, (i32,)>("select id from users where email = $1 limit 1")
+        .bind(email)
+        .fetch_optional(db).await? {
+        Ok(Some(user_id.0))
+    }
+    else {
+        Ok(None)
+    }
+}
+
 pub async fn out_of_email_quota(
     db: &PgPool,
-    email: &str,
+    user_id: i32,
     email_type: EmailTknType,
     max: i64,
     interval: i64,
@@ -52,13 +66,14 @@ pub async fn out_of_email_quota(
         select COUNT(*) > $1 from email_tkn_log
         inner join users on users.id = email_tkn_log.user_id
         where
-        users.email = $2
+        users.id = $2
         and email_tkn_log.reason = $3
         and email_tkn_log.sent_at > now() - interval '1 seconds' * $4
+        limit 1
     "#;
     let out_of_quota: (bool,) = sqlx::query_as(query)
         .bind(max)
-        .bind(email)
+        .bind(user_id)
         .bind(email_type)
         .bind(interval)
         .fetch_one(db).await?;
@@ -67,19 +82,52 @@ pub async fn out_of_email_quota(
 
 pub async fn new_email_tkn(
     db: &PgPool,
-    email: &str,
+    uid: i32,
     email_type: EmailTknType,
     hash: &str,
 ) -> Result<()> {
-    let user_id: (i32, ) = sqlx::query_as("select id from users where email = $1")
-        .bind(email)
-        .fetch_one(db).await?;
-
     sqlx::query(r#"insert into email_tkn_log (reason, hash, user_id)
-                       values ($1, $2, $3)"#)
+                       values ($1, $2, $3) limit 1"#)
         .bind(email_type)
         .bind(hash)
-        .bind(user_id.0)
+        .bind(uid)
         .execute(db).await?;
     Ok(())
+}
+
+pub async fn get_valid_hashed_tkn(
+    db: &PgPool,
+    uid: i32,
+    email_type: EmailTknType,
+    valid_time: i64
+) -> Result<Option<String>> {
+    let query = r#"
+        select hash from email_tkn_log
+        where
+        user_id = $1
+        and reason = $2
+        and sent_at > now() - interval '1 seconds' * $3
+        order by sent_at desc
+        limit 1
+    "#;
+    if let Some(hash) = sqlx::query_as::<_, (String,)>(query)
+        .bind(uid)
+        .bind(email_type)
+        .bind(valid_time)
+        .fetch_optional(db).await? {
+        Ok(Some(hash.0))
+    }
+    else {
+        Ok(None)
+    }
+}
+
+pub async fn get_verified_unsafe(
+    db: &PgPool,
+    uid: i32
+) -> Result<bool> {
+    let is_verified: (bool,) = sqlx::query_as("select verified from users where id = $1")
+        .bind(uid)
+        .fetch_one(db).await?;
+    Ok(is_verified.0)
 }

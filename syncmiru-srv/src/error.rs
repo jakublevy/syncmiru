@@ -7,9 +7,6 @@ use validator::ValidationErrors;
 
 #[derive(thiserror::Error, Debug)]
 pub enum SyncmiruError {
-    #[error("Parsing CLI args failed {0}")]
-    CliParseFailed(String),
-
     #[error("io error occurred")]
     IoError(#[from] io::Error),
 
@@ -27,12 +24,6 @@ pub enum SyncmiruError {
 
     #[error("Join error")]
     JoinError(#[from] tokio::task::JoinError),
-
-    #[error("Yaml invalid {0}")]
-    YamlInvalid(String),
-
-    #[error("Auth error")]
-    AuthError,
 
     #[error("HCaptcha invalid")]
     HCaptchaInvalid(#[from] hcaptcha::HcaptchaError),
@@ -52,11 +43,20 @@ pub enum SyncmiruError {
     #[error("validation error in request body")]
     InvalidEntity(#[from] ValidationErrors),
 
+    #[error("Parsing CLI args failed {0}")]
+    CliParseFailed(String),
+
+    #[error("Yaml invalid {0}")]
+    YamlInvalid(String),
+
     #[error("{0}")]
     UnprocessableEntity(String),
 
     #[error("{0}")]
     Conflict(String),
+
+    #[error("Auth error")]
+    AuthError,
 }
 
 

@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use anyhow::Context;
 use axum::extract::Query;
 use axum::http::StatusCode;
 use axum::Json;
@@ -86,10 +87,32 @@ pub async fn email_verify(
     Query(payload): Query<EmailVerify>
 ) -> Result<Html<String>> {
     payload.validate()?;
-
-    //
-
+    let hashed_tkn_opt = query::get_valid_hashed_tkn(
+        &state.db,
+        payload.uid,
+        EmailTknType::Verify,
+        state.config.email.token_valid_time
+    ).await?
+     .context("invalid or expired token")?;
     Ok(html::ok_verified(&payload.lang))
+
+    // if let Some(hashed_tkn) = hashed_tkn_opt {
+    //     if !query::get_verified_unsafe(&state.db, payload.uid).await? {
+    //         if crypto::verify(payload.tkn, hashed_tkn).await? {
+    //             // TODO: set verified to true
+    //             Ok(html::ok_verified(&payload.lang))
+    //         }
+    //         else {
+    //             Ok(html::err_verify_expired_invalid(&payload.lang))
+    //         }
+    //     }
+    //     else {
+    //         Ok(html::err_verify_already_verified(&payload.lang))
+    //     }
+    // }
+    // else {
+    //     Ok(html::err_verify_expired_invalid(&payload.lang))
+    // }
 }
 
 pub async fn email_verify_send(
@@ -98,13 +121,17 @@ pub async fn email_verify_send(
 ) -> Result<()> {
     payload.validate()?;
 
+    let uid = query::user_id_from_email(&state.db, &payload.email)
+        .await?
+        .context("user does not exist")?;
+
     let mut out_of_quota = false;
     if state.config.email.rates.is_some()
         && state.config.email.rates.unwrap().verification.is_some() {
         let rates = state.config.email.rates.unwrap().verification.unwrap();
         out_of_quota = query::out_of_email_quota(
             &state.db,
-            &payload.email,
+            uid,
             EmailTknType::Verify,
             rates.max,
             rates.per
@@ -117,11 +144,12 @@ pub async fn email_verify_send(
 
     let tkn = crypto::gen_tkn();
     let tkn_hash = crypto::hash(tkn.clone()).await?;
-    query::new_email_tkn(&state.db, &payload.email, EmailTknType::Verify, &tkn_hash).await?;
+    query::new_email_tkn(&state.db, uid, EmailTknType::Verify, &tkn_hash).await?;
     email::send_verification_email(
         &state.config.email,
         &payload.email,
         &tkn,
+        uid,
         &state.config.srv.url,
         &payload.lang
     ).await?;

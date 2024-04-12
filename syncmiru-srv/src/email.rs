@@ -9,11 +9,12 @@ pub async fn send_verification_email(
     email_conf: &EmailConf,
     to: &str,
     tkn: &str,
+    uid: i32,
     srv_url: &str,
     lang: &str
 ) -> Result<()> {
     let mut url = join_url(srv_url, "email-verify");
-    url = format!("{}?tkn={}&lang={}", url, tkn, lang);
+    url = format!("{}?tkn={}&uid={}&lang={}", url, tkn, uid, lang);
     let a = format!("<a href=\"{}\">{}</a>", url, url);
     send_email(
         &email_conf,

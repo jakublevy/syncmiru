@@ -30,7 +30,7 @@ pub fn err_verify_expired_invalid(lang: &str) -> Html<String> {
             <h1>{}</h1>
         </body>
         </html>
-    ", t!("account-verify-err-title", locale = lang)
+    ", t!("html-err-title", locale = lang)
      , t!("account-verify-err-content", locale = lang)
     )
     )
