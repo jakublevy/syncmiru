@@ -16,6 +16,7 @@ import Loading from "@components/Loading.tsx";
 import {invoke} from "@tauri-apps/api/core";
 import {StatusAlertService} from "react-status-alert";
 import {RegFormFields, useRegFormSchema} from "@hooks/useRegFormSchema.ts";
+import {VerifyEmailHistoryState} from "@models/historyState.ts";
 
 export default function Register({regPubAllowed}: Props): ReactElement {
     const [_, navigate] = useLocation()
@@ -61,7 +62,7 @@ export default function Register({regPubAllowed}: Props): ReactElement {
         invoke<void>('send_registration', {data: JSON.stringify(send)})
             .then(() => {
                 setLoading(false)
-                navigate('/email-verify')
+                navigate('/email-verify', {state: {email: data.email} as VerifyEmailHistoryState})
             })
             .catch((e) => {
                 setValue('captcha', '')

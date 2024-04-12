@@ -1,6 +1,7 @@
 import {ReactElement} from "react";
 
-// https://www.svgrepo.com/svg/489221/warning
+// Source: https://www.svgrepo.com/svg/489221/warning
+// License: Public Domain
 
 export default function Danger({className}: Props): ReactElement {
     return (

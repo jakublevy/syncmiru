@@ -1,6 +1,7 @@
 import {ReactElement} from "react";
 
-// https://www.svgrepo.com/svg/522086/cross
+// Source: https://www.svgrepo.com/svg/522086/cross
+// License: CC Attribution
 
 export default function Cross({className, fill}: Props): ReactElement {
     return (

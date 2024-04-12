@@ -1,6 +1,7 @@
 import {ReactElement} from "react";
 
-// https://www.svgrepo.com/svg/404945/check-mark
+// Source: https://www.svgrepo.com/svg/404945/check-mark
+// License: MIT
 
 export default function Check({className, fill}: Props): ReactElement {
     return (

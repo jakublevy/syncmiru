@@ -1,6 +1,7 @@
 import {ReactElement} from "react";
 
-// https://www.svgrepo.com/svg/500665/question-filled
+// Source: https://www.svgrepo.com/svg/500665/question-filled
+// License: MIT
 
 export default function Question({tooltipId, className, tabIndex}: QuestionProps): ReactElement {
     return (

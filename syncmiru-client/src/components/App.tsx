@@ -18,6 +18,7 @@ import {useTranslation} from "react-i18next";
 import RegisterDispatch from "@components/login/RegisterDispatch.tsx";
 import {DepsHistoryState} from "@models/historyState.ts";
 import EmailVerifyDispatch from "@components/login/EmailVerifyDispatch.tsx";
+import EmailVerified from "@components/login/EmailVerified.tsx";
 
 
 function App(): ReactElement {
@@ -60,6 +61,7 @@ function App(): ReactElement {
             <Route path="/login-form/*" component={LoginForm}/>
             <Route path="/register" component={RegisterDispatch}/>
             <Route path="/email-verify" component={EmailVerifyDispatch}/>
+            <Route path="/email-verified" component={EmailVerified}/>
         </Router>
     )
 }

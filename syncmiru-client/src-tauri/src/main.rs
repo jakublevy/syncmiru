@@ -42,6 +42,7 @@ fn main() -> Result<()> {
             login::frontend::get_username_unique,
             login::frontend::get_email_unique,
             login::frontend::send_registration,
+            login::frontend::get_email_verified
         ])
         .on_window_event(handle_window_event)
         .manage(appstate)

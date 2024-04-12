@@ -12,3 +12,7 @@ export interface TrampolineHistoryState {
 export interface DepsHistoryState {
     firstRunSeen: boolean
 }
+
+export interface VerifyEmailHistoryState {
+    email: string
+}

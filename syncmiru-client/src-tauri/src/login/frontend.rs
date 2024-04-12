@@ -3,7 +3,7 @@ use crate::config::appdata;
 use crate::result::Result;
 use crate::config::jwt;
 use tauri::Manager;
-use crate::login::{ServiceStatus, service_status, username_unique, email_unique, YN, RegData, register};
+use crate::login::{ServiceStatus, service_status, username_unique, RegData, register, email_YN};
 use crate::utils;
 
 #[tauri::command]
@@ -43,7 +43,7 @@ pub async fn get_username_unique(state: tauri::State<'_, AppState>, username: St
 #[tauri::command]
 pub async fn get_email_unique(state: tauri::State<'_, AppState>, email: String) -> Result<bool> {
     let home_srv = utils::extract_home_srv(&state.appdata)?;
-    Ok(email_unique(&home_srv, &email).await?)
+    Ok(email_YN(&home_srv, &email, "/email-unique").await?)
 }
 
 #[tauri::command]
@@ -53,3 +53,10 @@ pub async fn send_registration(state: tauri::State<'_, AppState>, data: String) 
     register(&home_srv, &reg_data).await?;
     Ok(())
 }
+
+#[tauri::command]
+pub async fn get_email_verified(state: tauri::State<'_, AppState>, email: String) -> Result<bool> {
+    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    Ok(email_YN(&home_srv, &email, "/email-verified").await?)
+}
+

@@ -30,7 +30,7 @@ async fn service_status(home_url: &str) -> Result<ServiceStatus> {
 }
 
 #[derive(Debug, Copy, Clone, Deserialize)]
-pub struct ResourceUnique {
+pub struct YNResponse {
     pub code: YN,
 }
 
@@ -61,12 +61,12 @@ async fn username_unique(home_url: &str, username: &str) -> Result<bool> {
     if !response.status().is_success() {
         return Err(HttpResponseFailed)
     }
-    let resource_unique: ResourceUnique = response.json().await?;
+    let resource_unique: YNResponse = response.json().await?;
     Ok(resource_unique.code.into())
 }
 
-async fn email_unique(home_url: &str, email: &str) -> Result<bool> {
-    let url = home_url.to_string() + "/email-unique";
+async fn email_YN(home_url: &str, email: &str, url_req: &str) -> Result<bool> {
+    let url = home_url.to_string() + url_req;
     let payload = serde_json::json!({"email": email});
     let response = Client::new()
         .get(url)
@@ -76,7 +76,7 @@ async fn email_unique(home_url: &str, email: &str) -> Result<bool> {
     if !response.status().is_success() {
         return Err(HttpResponseFailed)
     }
-    let resource_unique: ResourceUnique = response.json().await?;
+    let resource_unique: YNResponse = response.json().await?;
     Ok(resource_unique.code.into())
 }
 
@@ -116,12 +116,18 @@ mod tests {
     #[tokio::test]
     async fn username_unique_test() {
         let b = username_unique("http://127.0.0.1", "sunidd").await.unwrap();
-        assert_eq!(YN::Yes, b);
+        assert_eq!(true, b);
     }
 
     #[tokio::test]
     async fn email_unique_test() {
-        let b = email_unique("http://127.0.0.1", "ahoj@testtest.cz").await.unwrap();
-        assert_eq!(YN::Yes, b);
+        let b = email_YN("http://127.0.0.1", "ahoj@testtest.cz", "/email-unique").await.unwrap();
+        assert_eq!(true, b);
+    }
+
+    #[tokio::test]
+    async fn verified_test() {
+        let b = email_YN("http://127.0.0.1", "ahoj@testtest.cz", "/email-verified").await.unwrap();
+        assert_eq!(false, b);
     }
 }

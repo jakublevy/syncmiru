@@ -5,6 +5,7 @@ use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{Html, IntoResponse};
 use hcaptcha::Hcaptcha;
+use rand::Rng;
 use tower::BoxError;
 use crate::srvstate::SrvState;
 use validator::{Validate};
@@ -150,7 +151,9 @@ pub async fn email_verified(
     Json(payload): Json<Email>
 ) -> Result<Json<YNResponse>> {
     payload.validate()?;
-    let verified = query::email_verified(&state.db, &payload.email).await?.unwrap_or(false);
+    let verified = query::email_verified(&state.db, &payload.email)
+        .await?
+        .unwrap_or(false);
     Ok(Json(YNResponse::from(verified)))
 }
 
