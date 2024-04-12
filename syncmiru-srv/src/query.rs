@@ -126,8 +126,26 @@ pub async fn get_verified_unsafe(
     db: &PgPool,
     uid: i32
 ) -> Result<bool> {
-    let is_verified: (bool,) = sqlx::query_as("select verified from users where id = $1")
+    let is_verified: (bool,) = sqlx::query_as("select verified from users where id = $1 limit 1")
         .bind(uid)
         .fetch_one(db).await?;
     Ok(is_verified.0)
+}
+
+pub async fn set_verified(db: &PgPool, uid: i32) -> Result<()> {
+    sqlx::query("update users set verified = TRUE where id = $1")
+        .bind(uid)
+        .execute(db).await?;
+    Ok(())
+}
+
+pub async fn email_verified(db: &PgPool, email: &str) -> Result<Option<bool>> {
+    if let Some(verified) = sqlx::query_as::<_, (bool,)>("select verified from users where email = $1 limit 1")
+        .bind(email)
+        .fetch_optional(db).await? {
+        Ok(Some(verified.0))
+    }
+    else {
+        Ok(None)
+    }
 }

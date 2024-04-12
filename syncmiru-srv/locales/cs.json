@@ -1,8 +1,5 @@
 {
   "html-err-title": "Chyba",
   "email-verify-subject": "Ověření emailu",
-  "email-verify-body": "Ahoj,<br/>tvůj odkaz k ověření emailu je:",
-  "account-verify-ok-content": "Váš email byl ověřen a účet byl aktivován.",
-  "account-verify-err-content": "Chyba, token není platný nebo již expiroval.",
-  "account-already-verified-content": "Chyba, váš účet je již aktivní."
+  "email-verify-body": "Ahoj,<br/>tvůj odkaz k ověření emailu je:"
 }

@@ -83,11 +83,11 @@ impl YN {
 }
 
 #[derive(Debug, Copy, Clone, Serialize)]
-pub struct ResourceUniqueResponse {
+pub struct YNResponse {
     pub code: YN,
 }
 
-impl ResourceUniqueResponse {
+impl YNResponse {
     pub fn from(b: bool) -> Self {
         Self { code: YN::from(b) }
     }

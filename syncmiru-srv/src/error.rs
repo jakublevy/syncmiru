@@ -7,10 +7,10 @@ use validator::ValidationErrors;
 
 #[derive(thiserror::Error, Debug)]
 pub enum SyncmiruError {
-    #[error("io error occurred")]
+    #[error("Io error occurred")]
     IoError(#[from] io::Error),
 
-    #[error("logger error")]
+    #[error("Logger error")]
     LoggerError(#[from] log::SetLoggerError),
 
     #[error("Error while scanning YAML")]
@@ -40,8 +40,11 @@ pub enum SyncmiruError {
     #[error("Internal error")]
     InternalError(#[from] anyhow::Error),
 
-    #[error("validation error in request body")]
+    #[error("Validation error in request body")]
     InvalidEntity(#[from] ValidationErrors),
+
+    #[error("URL encoding error")]
+    SerdeUrlSerError(#[from] serde_urlencoded::ser::Error),
 
     #[error("Parsing CLI args failed {0}")]
     CliParseFailed(String),
@@ -49,10 +52,10 @@ pub enum SyncmiruError {
     #[error("Yaml invalid {0}")]
     YamlInvalid(String),
 
-    #[error("{0}")]
+    #[error("Unprocessable entity")]
     UnprocessableEntity(String),
 
-    #[error("{0}")]
+    #[error("Conflict")]
     Conflict(String),
 
     #[error("Auth error")]
@@ -66,27 +69,31 @@ impl IntoResponse for SyncmiruError {
         #[serde_with::skip_serializing_none]
         #[derive(serde::Serialize)]
         struct ErrorResponse<'a> {
-            // Serialize the `Display` output as the error message
             #[serde_as(as = "DisplayFromStr")]
             message: &'a SyncmiruError,
 
-            errors: Option<&'a ValidationErrors>,
+            desc: Option<String>,
         }
 
-        let errors = match &self {
-            SyncmiruError::InvalidEntity(errors) => Some(errors),
-            _ => None,
+        let mut errors: Option<String> = None;
+        if let SyncmiruError::InvalidEntity(e) = &self {
+            errors = Some(e.to_string())
+        }
+        else if let SyncmiruError::InternalError(e) = &self {
+            errors = Some(e.to_string())
+        }
+        errors = match &self {
+            SyncmiruError::UnprocessableEntity(e)
+            | SyncmiruError::Conflict(e)
+            => Some(e.to_string()),
+            _ => None
         };
-
-        // Normally you wouldn't just print this, but it's useful for debugging without
-        // using a logging framework.
-        println!("API error: {self:?}");
 
         (
             self.status_code(),
             Json(ErrorResponse {
                 message: &self,
-                errors,
+                desc: errors,
             }),
         )
             .into_response()

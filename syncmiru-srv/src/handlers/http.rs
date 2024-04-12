@@ -9,7 +9,7 @@ use tower::BoxError;
 use crate::srvstate::SrvState;
 use validator::{Validate};
 use crate::error::SyncmiruError;
-use crate::models::http::{Email, RegForm, ServiceStatus, Username, ResourceUniqueResponse, EmailWithLang, EmailVerify};
+use crate::models::http::{Email, RegForm, ServiceStatus, Username, YNResponse, EmailWithLang, EmailVerify};
 use crate::query;
 use crate::result::{Result};
 use crate::crypto;
@@ -67,19 +67,19 @@ pub async fn register(
 pub async fn username_unique(
     axum::extract::State(state): axum::extract::State<SrvState>,
     Json(payload): Json<Username>
-) -> Result<Json<ResourceUniqueResponse>> {
+) -> Result<Json<YNResponse>> {
     payload.validate()?;
     let unique = query::username_unique(&state.db, &payload.username).await?;
-    Ok(Json(ResourceUniqueResponse::from(unique)))
+    Ok(Json(YNResponse::from(unique)))
 }
 
 pub async fn email_unique(
     axum::extract::State(state): axum::extract::State<SrvState>,
     Json(payload): Json<Email>
-) -> Result<Json<ResourceUniqueResponse>> {
+) -> Result<Json<YNResponse>> {
     payload.validate()?;
     let unique = query::email_unique(&state.db, &payload.email).await?;
-    Ok(Json(ResourceUniqueResponse::from(unique)))
+    Ok(Json(YNResponse::from(unique)))
 }
 
 pub async fn email_verify(
@@ -87,32 +87,21 @@ pub async fn email_verify(
     Query(payload): Query<EmailVerify>
 ) -> Result<Html<String>> {
     payload.validate()?;
-    let hashed_tkn_opt = query::get_valid_hashed_tkn(
+    let hashed_tkn = query::get_valid_hashed_tkn(
         &state.db,
         payload.uid,
         EmailTknType::Verify,
         state.config.email.token_valid_time
     ).await?
      .context("invalid or expired token")?;
-    Ok(html::ok_verified(&payload.lang))
 
-    // if let Some(hashed_tkn) = hashed_tkn_opt {
-    //     if !query::get_verified_unsafe(&state.db, payload.uid).await? {
-    //         if crypto::verify(payload.tkn, hashed_tkn).await? {
-    //             // TODO: set verified to true
-    //             Ok(html::ok_verified(&payload.lang))
-    //         }
-    //         else {
-    //             Ok(html::err_verify_expired_invalid(&payload.lang))
-    //         }
-    //     }
-    //     else {
-    //         Ok(html::err_verify_already_verified(&payload.lang))
-    //     }
-    // }
-    // else {
-    //     Ok(html::err_verify_expired_invalid(&payload.lang))
-    // }
+    if crypto::verify(payload.tkn, hashed_tkn).await? {
+        query::set_verified(&state.db, payload.uid).await?;
+        Ok(html::ok_verified(&payload.lang))
+    }
+    else {
+        Err(SyncmiruError::UnprocessableEntity("invalid token".to_string()))
+    }
 }
 
 pub async fn email_verify_send(
@@ -154,6 +143,15 @@ pub async fn email_verify_send(
         &payload.lang
     ).await?;
     Ok(())
+}
+
+pub async fn email_verified(
+    axum::extract::State(state): axum::extract::State<SrvState>,
+    Json(payload): Json<Email>
+) -> Result<Json<YNResponse>> {
+    payload.validate()?;
+    let verified = query::email_verified(&state.db, &payload.email).await?.unwrap_or(false);
+    Ok(Json(YNResponse::from(verified)))
 }
 
 pub async fn error(error: BoxError) -> impl IntoResponse {

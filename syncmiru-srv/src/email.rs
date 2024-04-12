@@ -13,8 +13,17 @@ pub async fn send_verification_email(
     srv_url: &str,
     lang: &str
 ) -> Result<()> {
+    #[derive(serde::Serialize)]
+    struct Params {
+        tkn: String,
+        uid: i32,
+        lang: String
+    }
+    let params = Params { tkn: tkn.to_string(), uid, lang: lang.to_string() };
+    let encoded_params = serde_urlencoded::to_string(params)?;
+
     let mut url = join_url(srv_url, "email-verify");
-    url = format!("{}?tkn={}&uid={}&lang={}", url, tkn, uid, lang);
+    url += &format!("?{}", encoded_params);
     let a = format!("<a href=\"{}\">{}</a>", url, url);
     send_email(
         &email_conf,
