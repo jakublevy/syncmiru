@@ -1,4 +1,8 @@
 {
+  "html-err-title": "Error",
   "email-verify-subject": "Email verification",
-  "email-verify-body": "Hi,\r\nyour verification code is:"
+  "email-verify-body": "Hi,<br/>your email verification link is:",
+  "account-verify-ok-content": "Your email has been verified and your account has been activated.",
+  "account-verify-err-content": "Error, the token is not valid or has already expired.",
+  "account-already-verified-content": "Error, your account is already activated."
 }

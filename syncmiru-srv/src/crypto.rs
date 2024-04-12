@@ -1,6 +1,9 @@
 use anyhow::{anyhow, Context};
 use argon2::{Argon2, password_hash, PasswordHash, PasswordHasher, PasswordVerifier};
+use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
+use base64::Engine;
+use rand::RngCore;
 use tokio::task;
 use crate::error::SyncmiruError;
 use crate::result::Result;
@@ -28,6 +31,15 @@ pub async fn verify(password: String, hash: String) -> Result<bool> {
             Err(e) => Err(SyncmiruError::from(anyhow!(e)))
         }
     }).await?
+}
+
+pub fn gen_tkn() -> String {
+    let mut random_bytes = [0u8; 16];
+    let mut rnd = OsRng::default();
+    rnd.fill_bytes(&mut random_bytes);
+
+    let engine = base64::engine::general_purpose::STANDARD;
+    engine.encode(random_bytes)
 }
 
 #[cfg(test)]

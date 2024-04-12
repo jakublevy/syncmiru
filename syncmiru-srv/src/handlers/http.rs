@@ -1,18 +1,20 @@
 use std::borrow::Cow;
+use axum::extract::Query;
 use axum::http::StatusCode;
 use axum::Json;
-use axum::response::IntoResponse;
+use axum::response::{Html, IntoResponse};
 use hcaptcha::Hcaptcha;
 use tower::BoxError;
 use crate::srvstate::SrvState;
 use validator::{Validate};
 use crate::error::SyncmiruError;
-use crate::models::http::{Email, RegForm, ServiceStatus, Username, ResourceUniqueResponse, EmailWithLang};
+use crate::models::http::{Email, RegForm, ServiceStatus, Username, ResourceUniqueResponse, EmailWithLang, EmailVerify};
 use crate::query;
 use crate::result::{Result};
 use crate::crypto;
 use crate::email;
-use crate::models::query::TokenEmailType;
+use crate::models::query::EmailTknType;
+use crate::html;
 
 pub async fn index() -> &'static str {
     "Syncmiru server"
@@ -79,6 +81,17 @@ pub async fn email_unique(
     Ok(Json(ResourceUniqueResponse::from(unique)))
 }
 
+pub async fn email_verify(
+    axum::extract::State(state): axum::extract::State<SrvState>,
+    Query(payload): Query<EmailVerify>
+) -> Result<Html<String>> {
+    payload.validate()?;
+
+    //
+
+    Ok(html::ok_verified(&payload.lang))
+}
+
 pub async fn email_verify_send(
     axum::extract::State(state): axum::extract::State<SrvState>,
     Json(payload): Json<EmailWithLang>
@@ -92,7 +105,7 @@ pub async fn email_verify_send(
         out_of_quota = query::out_of_email_quota(
             &state.db,
             &payload.email,
-            TokenEmailType::Verify,
+            EmailTknType::Verify,
             rates.max,
             rates.per
         ).await?;
@@ -102,10 +115,16 @@ pub async fn email_verify_send(
         return Err(SyncmiruError::UnprocessableEntity("too many requests".to_string()))
     }
 
-    let tkn = email::gen_tkn();
+    let tkn = crypto::gen_tkn();
     let tkn_hash = crypto::hash(tkn.clone()).await?;
-    query::new_token_email(&state.db, &payload.email, TokenEmailType::Verify, &tkn_hash).await?;
-    email::send_verification_email(&state.config.email, &payload.email, &tkn, &payload.lang).await?;
+    query::new_email_tkn(&state.db, &payload.email, EmailTknType::Verify, &tkn_hash).await?;
+    email::send_verification_email(
+        &state.config.email,
+        &payload.email,
+        &tkn,
+        &state.config.srv.url,
+        &payload.lang
+    ).await?;
     Ok(())
 }
 

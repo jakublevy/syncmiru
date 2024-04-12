@@ -52,6 +52,15 @@ pub struct EmailWithLang {
     pub lang: String
 }
 
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct EmailVerify {
+    #[validate(length(equal = 24))]
+    pub tkn: String,
+
+    #[validate(custom(function = "validators::check_lang"))]
+    pub lang: String
+}
+
 
 
 #[derive(Debug, Copy, Clone, Serialize_repr)]

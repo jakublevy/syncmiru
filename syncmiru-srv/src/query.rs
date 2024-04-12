@@ -1,5 +1,5 @@
 use sqlx::PgPool;
-use crate::models::query::TokenEmailType;
+use crate::models::query::EmailTknType;
 use crate::result::Result;
 
 pub async fn username_unique(db: &PgPool, username: &str) -> Result<bool> {
@@ -25,7 +25,7 @@ pub async fn new_account(
     email: &str,
     hash: &str
 ) -> Result<()> {
-    sqlx::query("INSERT INTO public.users(username, display_name, email, hash, reg_tkn_id, verified) VALUES ($1, $2, $3, $4, NULL, FALSE)")
+    sqlx::query("INSERT INTO public.users(username, display_name, email, hash, reg_tkn_id) VALUES ($1, $2, $3, $4, NULL)")
         .bind(username)
         .bind(displayname)
         .bind(email)
@@ -44,17 +44,17 @@ pub async fn unverified_account_exist(db: &PgPool, email: &str) -> Result<bool> 
 pub async fn out_of_email_quota(
     db: &PgPool,
     email: &str,
-    email_type: TokenEmailType,
+    email_type: EmailTknType,
     max: i64,
     interval: i64,
 ) -> Result<bool> {
     let query = r#"
-        select COUNT(*) > $1 from token_email_sent_log
-        inner join users on users.id = token_email_sent_log.user_id
+        select COUNT(*) > $1 from email_tkn_log
+        inner join users on users.id = email_tkn_log.user_id
         where
         users.email = $2
-        and token_email_sent_log.reason = $3
-        and token_email_sent_log.sent_at > now() - interval '1 seconds' * $4
+        and email_tkn_log.reason = $3
+        and email_tkn_log.sent_at > now() - interval '1 seconds' * $4
     "#;
     let out_of_quota: (bool,) = sqlx::query_as(query)
         .bind(max)
@@ -65,17 +65,17 @@ pub async fn out_of_email_quota(
     Ok(out_of_quota.0)
 }
 
-pub async fn new_token_email(
+pub async fn new_email_tkn(
     db: &PgPool,
     email: &str,
-    email_type: TokenEmailType,
+    email_type: EmailTknType,
     hash: &str,
 ) -> Result<()> {
     let user_id: (i32, ) = sqlx::query_as("select id from users where email = $1")
         .bind(email)
         .fetch_one(db).await?;
 
-    sqlx::query(r#"insert into token_email_sent_log (reason, hash, user_id)
+    sqlx::query(r#"insert into email_tkn_log (reason, hash, user_id)
                        values ($1, $2, $3)"#)
         .bind(email_type)
         .bind(hash)

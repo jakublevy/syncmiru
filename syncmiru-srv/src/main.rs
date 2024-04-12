@@ -35,6 +35,7 @@ mod models;
 mod query;
 mod crypto;
 mod email;
+mod html;
 
 
 #[macro_use]
@@ -63,6 +64,7 @@ async fn main() -> Result<()> {
        .route("/username-unique", get(handlers::http::username_unique))
        .route("/email-unique", get(handlers::http::email_unique))
        .route("/email-verify-send", post(handlers::http::email_verify_send))
+       .route("/email-verify", get(handlers::http::email_verify))
        .layer(socketio_layer)
        .layer(
           ServiceBuilder::new()
@@ -76,9 +78,9 @@ async fn main() -> Result<()> {
 
    debug!("Staring listener");
    let listener = tokio::net::TcpListener::bind(
-      format!("127.0.0.1:{}", config.port)
+      format!("127.0.0.1:{}", config.srv.port)
    ).await?;
-   info!("Listening on {}", config.port);
+   info!("Listening on {}", config.srv.port);
    axum::serve(
       listener,
       app.into_make_service_with_connect_info::<SocketAddr>(),

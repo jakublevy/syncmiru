@@ -18,10 +18,7 @@ pub fn read(config_file: impl AsRef<Path> + Copy) -> Result<Config> {
     let docs = YamlLoader::load_from_str(&yaml_str)?;
     let doc = &docs[0];
 
-    let port = doc["port"]
-        .as_i64()
-        .context("port is missing")? as u16;
-
+    let srv = SrvConfig::from(&doc["srv"])?;
     let reg_pub = RegConfig::from(&doc["registration_public"])?;
     let db = DbConfig::from(&doc["db"])?;
     let log = LogConfig::from(&doc["log"])?;
@@ -30,19 +27,40 @@ pub fn read(config_file: impl AsRef<Path> + Copy) -> Result<Config> {
 
     info!("{} parsed", cf_print);
     Ok(
-        Config { reg_pub, port, db, log, email, login_jwt_cert }
+        Config { srv, reg_pub, db, log, email, login_jwt_cert }
     )
 }
 
 #[derive(Debug, Clone)]
 pub struct Config {
+    pub srv: SrvConfig,
     pub reg_pub: RegConfig,
-    pub port: u16,
     pub db: DbConfig,
     pub log: LogConfig,
     pub email: EmailConf,
     pub login_jwt_cert: LoginJwtCert,
     //sources: Vec<Source>
+}
+
+#[derive(Debug, Clone)]
+pub struct SrvConfig {
+    pub url: String,
+    pub port: u16
+}
+
+impl SrvConfig {
+    pub fn from(srv_yaml: &Yaml) -> Result<Self> {
+        let url = srv_yaml["url"]
+            .as_str()
+            .context("url is missing in section srv")?
+            .to_string();
+
+        let port = srv_yaml["port"]
+            .as_i64()
+            .context("port is missing in section srv")? as u16;
+
+        Ok(Self { url, port })
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -83,7 +101,7 @@ impl DbConfig {
         }
 
         Ok(
-            DbConfig { name, host, user, password, port }
+            Self { name, host, user, password, port }
         )
     }
 }
@@ -113,7 +131,7 @@ impl RegConfig {
             }
         }
         Ok(
-            RegConfig { allowed, hcaptcha_secret }
+            Self { allowed, hcaptcha_secret }
         )
     }
 }
@@ -332,6 +350,6 @@ impl LoginJwtCert {
                 .as_str()
                 .context("pub_key_file is missing inside login_jwt_cert")?
         );
-        Ok(LoginJwtCert { priv_key_file, pub_key_file })
+        Ok(Self { priv_key_file, pub_key_file })
     }
 }
