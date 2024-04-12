@@ -95,6 +95,11 @@ pub async fn email_verify(
     ).await?
      .context("invalid or expired token")?;
 
+    let verified = query::get_verified_unsafe(&state.db, payload.uid).await?;
+    if verified {
+        return Err(SyncmiruError::UnprocessableEntity("user already verified".to_string()))
+    }
+
     if crypto::verify(payload.tkn, hashed_tkn).await? {
         query::set_verified(&state.db, payload.uid).await?;
         Ok(html::ok_verified(&payload.lang))
@@ -153,7 +158,6 @@ pub async fn email_verified(
     let verified = query::email_verified(&state.db, &payload.email)
         .await?
         .unwrap_or(false);
-    println!("VERIFIED = {}", verified);
     Ok(Json(BooleanResp::from(verified)))
 }
 

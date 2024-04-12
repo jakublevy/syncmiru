@@ -72,7 +72,7 @@ async fn main() -> Result<()> {
               .layer(HandleErrorLayer::new(handlers::http::error))
               .load_shed()
               .concurrency_limit(128)
-              .timeout(Duration::from_secs(5))
+              .timeout(Duration::from_secs(10))
               .layer(TraceLayer::new_for_http()),
        )
        .with_state(srvstate);
