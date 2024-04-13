@@ -1,4 +1,4 @@
-import {ReactElement, useEffect, useState} from "react";
+import {ReactElement, useState} from "react";
 import Card from "@components/widgets/Card.tsx";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
@@ -15,11 +15,10 @@ import {joiResolver} from "@hookform/resolvers/joi";
 import Loading from "@components/Loading.tsx";
 import {invoke} from "@tauri-apps/api/core";
 import {RegFormFields, useRegFormSchema} from "@hooks/useRegFormSchema.ts";
-import {LoginFormHistoryState, VerifyEmailHistoryState} from "@models/historyState.ts";
+import {VerifyEmailHistoryState} from "@models/historyState.ts";
 import {showErrorAlert} from "src/utils/alert.ts";
-import {useServiceStatusSuspense} from "@hooks/useServiceStatus.ts";
 
-export default function Register(): ReactElement {
+export default function Register({regPubAllowed}: Props): ReactElement {
     const [_, navigate] = useLocation()
     const lang: Language = useLanguage()
 
@@ -28,18 +27,7 @@ export default function Register(): ReactElement {
     const [unique, setUnique]
         = useState<Unique>({email: true, username: true})
 
-    const {
-        data: {reg_pub_allowed},
-        isLoading: homeSrvServiceLoading,
-        error: homeSrvServiceError
-    } = useServiceStatusSuspense()
-
-    useEffect(() => {
-        if(homeSrvServiceError)
-            navigate("/login-form/main", {state: { homeSrvError: true } as LoginFormHistoryState})
-    }, [homeSrvServiceError]);
-
-    const formSchema: Joi.ObjectSchema<RegFormFields> = useRegFormSchema(reg_pub_allowed)
+    const formSchema: Joi.ObjectSchema<RegFormFields> = useRegFormSchema(regPubAllowed)
 
     const {
         register,
@@ -65,7 +53,7 @@ export default function Register(): ReactElement {
             captcha: '',
             reg_tkn: ''
         }
-        if(reg_pub_allowed)
+        if(regPubAllowed)
             send.captcha = data.captcha
         else
             send.reg_tkn = data.regTkn
@@ -116,7 +104,7 @@ export default function Register(): ReactElement {
                     <h1 className="text-4xl">Registrace</h1>
                 </div>
                 <form onSubmit={handleSubmit(createAccount)} noValidate>
-                    {!reg_pub_allowed
+                    {!regPubAllowed
                         && <div className="flex flex-col">
                             <div className="mb-3 flex-1">
                                 <p>Volné registrace jsou momentálně uzavřeny. Registrovat se můžete pouze se znalostí
@@ -274,7 +262,7 @@ export default function Register(): ReactElement {
                                 : <p className="text-danger invisible font-semibold">L</p>}
                         </div>
                     </div>
-                    {reg_pub_allowed
+                    {regPubAllowed
                         && <div className="flex items-center mb-3 flex-col">
                             <HCaptchaThemeAware
                                 sitekey="f407df07-d0ab-4d1c-bd1e-f0e8adc19dbc"
@@ -304,6 +292,10 @@ export default function Register(): ReactElement {
             </Card>
         </div>
     )
+}
+
+interface Props {
+    regPubAllowed: boolean
 }
 
 interface RegData {

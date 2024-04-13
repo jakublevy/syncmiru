@@ -13,12 +13,14 @@ import {useServiceStatusWatch} from "@hooks/useServiceStatus.ts";
 import {useHistoryState} from "wouter/use-browser-location";
 import {ForgottenPasswordHistoryState, LoginFormHistoryState} from "@models/historyState.ts";
 import useFormValidate from "@hooks/useFormValidate.ts";
+import {useQueryClient} from "@tanstack/react-query";
 
 
 export default function LoginFormMain(): ReactElement {
     const [location, navigate] = useLocation()
     const historyState: LoginFormHistoryState | undefined = useHistoryState()
     const {t} = useTranslation()
+    const queryClient = useQueryClient();
 
     const [homeSrvResponseError, setHomeSrvResponseError] = useState<boolean>(false);
     const homeSrv = useHomeServer()
@@ -39,7 +41,7 @@ export default function LoginFormMain(): ReactElement {
         = useState<FormShowError>({email: false, srv: false, password: false})
 
     useEffect(() => {
-        if(homeSrvServiceError === undefined)
+        if(homeSrvServiceError == null)
             setHomeSrvResponseError(false)
         else
             setHomeSrvResponseError(true)
@@ -98,6 +100,7 @@ export default function LoginFormMain(): ReactElement {
         if (!checkHomeServer())
             return
 
+        queryClient.removeQueries({queryKey: ["get_service_status"]})
         navigate('/register')
     }
 
@@ -125,6 +128,7 @@ export default function LoginFormMain(): ReactElement {
             checkHomeServer()
             && [FieldError.None, FieldError.InvalidResponse].includes(fieldsError.email)
         ) {
+            queryClient.removeQueries({queryKey: ["get_service_status"]})
             navigate('/forgotten-password', {state: {email: formData.email} as ForgottenPasswordHistoryState})
         }
     }

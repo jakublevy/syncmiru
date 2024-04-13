@@ -3,14 +3,12 @@ import Card from "@components/widgets/Card.tsx";
 import BtnTimeout from "@components/widgets/BtnTimeout.tsx";
 import Help from "@components/widgets/Help.tsx";
 import {Input} from "@components/widgets/Input.tsx";
-import {ForgottenPasswordHistoryState, LoginFormHistoryState} from "@models/historyState.ts";
-import {useHistoryState} from "wouter/use-browser-location";
+import {LoginFormHistoryState} from "@models/historyState.ts";
 import {BackButton} from "@components/widgets/Buttons.tsx";
 import {useLocation} from "wouter";
 
-export default function ForgottenPassword(): ReactElement {
+export default function ForgottenPassword({email}: Props): ReactElement {
     const [_, navigate] = useLocation()
-    const {email}: ForgottenPasswordHistoryState = useHistoryState()
 
     function backButtonClicked() {
         navigate("/login-form/main", {state: {email: email} as LoginFormHistoryState})
@@ -46,4 +44,8 @@ export default function ForgottenPassword(): ReactElement {
             </Card>
         </div>
     )
+}
+
+interface Props {
+    email: string
 }
