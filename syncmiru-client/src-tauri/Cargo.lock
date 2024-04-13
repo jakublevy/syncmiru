@@ -4664,6 +4664,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_repr",
+ "serde_with",
  "serial_test",
  "sevenz-rust",
  "sys-locale",

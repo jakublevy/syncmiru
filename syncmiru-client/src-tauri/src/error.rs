@@ -1,3 +1,4 @@
+use serde_with::DisplayFromStr;
 use std::io;
 use std::sync::PoisonError;
 
@@ -43,9 +44,6 @@ pub enum SyncmiruError {
     #[error("Deps download failed")]
     DepsDownloadFailed,
 
-    #[error("Service checking failed")]
-    HttpResponseFailed,
-
     #[error("Poison error")]
     PoisonError
 }
@@ -61,6 +59,23 @@ impl serde::Serialize for SyncmiruError {
         where
             S: serde::ser::Serializer,
     {
-        serializer.serialize_str(self.to_string().as_ref())
+        #[serde_with::serde_as]
+        #[serde_with::skip_serializing_none]
+        #[derive(serde::Serialize, Debug)]
+        struct ErrorResponse<'a> {
+            #[serde_as(as = "DisplayFromStr")]
+            message: &'a SyncmiruError,
+
+            desc: Option<String>,
+        }
+
+        let mut errors: Option<String> = None;
+        if let SyncmiruError::ReqwestError(e) = &self {
+            errors = Some(e.to_string());
+        } else if let SyncmiruError::InternalError(e) = &self {
+            errors = Some(e.to_string());
+        }
+        let out = format!("{} {}", self.to_string(), errors.unwrap_or("".to_string()));
+        serializer.serialize_str(&out)
     }
 }

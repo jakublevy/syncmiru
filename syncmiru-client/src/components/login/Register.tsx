@@ -14,9 +14,9 @@ import Joi from 'joi'
 import {joiResolver} from "@hookform/resolvers/joi";
 import Loading from "@components/Loading.tsx";
 import {invoke} from "@tauri-apps/api/core";
-import {StatusAlertService} from "react-status-alert";
 import {RegFormFields, useRegFormSchema} from "@hooks/useRegFormSchema.ts";
 import {VerifyEmailHistoryState} from "@models/historyState.ts";
+import {showErrorAlert} from "src/utils/alert.ts";
 
 export default function Register({regPubAllowed}: Props): ReactElement {
     const [_, navigate] = useLocation()
@@ -67,7 +67,7 @@ export default function Register({regPubAllowed}: Props): ReactElement {
             .catch((e) => {
                 setValue('captcha', '')
                 setLoading(false)
-                StatusAlertService.showError(`Chyba: ${e}`)
+                showErrorAlert(e)
             })
     }
 

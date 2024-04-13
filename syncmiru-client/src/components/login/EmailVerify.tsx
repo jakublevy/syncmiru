@@ -6,7 +6,7 @@ import {useHistoryState} from "wouter/use-browser-location";
 import {VerifyEmailHistoryState} from "@models/historyState.ts";
 import {useWatchVerify} from "@hooks/useWatchVerify.tsx";
 import {useReqVerificationEmail} from "@hooks/useReqVerificationEmail.ts";
-import {StatusAlertService} from "react-status-alert";
+import {showErrorAlert} from "src/utils/alert.ts";
 
 export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
     const [_, navigate] = useLocation()
@@ -21,7 +21,7 @@ export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
 
     useEffect(() => {
         if(verEmailError !== undefined)
-            StatusAlertService.showError(`Chyba: ${verEmailError}`)
+            showErrorAlert(verEmailError)
     }, [verEmailError]);
 
     return (
