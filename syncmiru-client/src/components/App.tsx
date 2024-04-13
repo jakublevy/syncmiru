@@ -19,6 +19,7 @@ import RegisterDispatch from "@components/login/RegisterDispatch.tsx";
 import {DepsHistoryState} from "@models/historyState.ts";
 import EmailVerifyDispatch from "@components/login/EmailVerifyDispatch.tsx";
 import EmailVerified from "@components/login/EmailVerified.tsx";
+import ForgottenPassword from "@components/login/ForgottenPassword.tsx";
 
 
 export default function App(): ReactElement {
@@ -62,6 +63,7 @@ export default function App(): ReactElement {
             <Route path="/register" component={RegisterDispatch}/>
             <Route path="/email-verify" component={EmailVerifyDispatch}/>
             <Route path="/email-verified" component={EmailVerified}/>
+            <Route path="/forgotten-password" component={ForgottenPassword}/>
         </Router>
     )
 }

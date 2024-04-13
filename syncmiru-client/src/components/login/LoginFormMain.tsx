@@ -11,7 +11,7 @@ import {useTranslation} from "react-i18next";
 import Card from "@components/widgets/Card.tsx";
 import {useServiceStatusWatch} from "@hooks/useServiceStatus.ts";
 import {useHistoryState} from "wouter/use-browser-location";
-import {LoginFormHistoryState} from "@models/historyState.ts";
+import {ForgottenPasswordHistoryState, LoginFormHistoryState} from "@models/historyState.ts";
 import useFormValidate from "@hooks/useFormValidate.ts";
 
 
@@ -118,8 +118,7 @@ export default function LoginFormMain(): ReactElement {
             checkHomeServer()
             && [FieldError.None, FieldError.InvalidResponse].includes(fieldsError.email)
         ) {
-            // TODO: continue forgotten password
-            console.log('continue forgotten password')
+            navigate('/forgotten-password', {state: {email: formData.email} as ForgottenPasswordHistoryState})
         }
     }
 

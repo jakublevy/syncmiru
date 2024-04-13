@@ -16,3 +16,7 @@ export interface DepsHistoryState {
 export interface VerifyEmailHistoryState {
     email: string
 }
+
+export interface ForgottenPasswordHistoryState {
+    email: string
+}
