@@ -39,6 +39,13 @@ export default function LoginFormMain(): ReactElement {
         = useState<FormShowError>({email: false, srv: false, password: false})
 
     useEffect(() => {
+        if(homeSrvServiceError === undefined)
+            setHomeSrvResponseError(false)
+        else
+            setHomeSrvResponseError(true)
+    }, [homeSrvServiceError]);
+
+    useEffect(() => {
         if (historyState != null) {
             if (historyState.email !== undefined)
                 setFormData((p: FormData) => {
@@ -76,7 +83,7 @@ export default function LoginFormMain(): ReactElement {
     }
 
     function homeServerError(): boolean {
-        return homeSrvServiceError || homeSrvResponseError
+        return homeSrvResponseError
     }
 
     function checkHomeServer() {

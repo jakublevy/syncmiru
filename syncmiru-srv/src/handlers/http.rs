@@ -136,7 +136,6 @@ pub async fn email_verify_send(
         return Err(SyncmiruError::UnprocessableEntity("too many requests".to_string()))
     }
 
-    // TODO: waited before last email
     let waited = query::waited_before_last_email_tkn(
         &state.db,
         uid,

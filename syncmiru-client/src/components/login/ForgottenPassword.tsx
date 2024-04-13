@@ -3,18 +3,28 @@ import Card from "@components/widgets/Card.tsx";
 import BtnTimeout from "@components/widgets/BtnTimeout.tsx";
 import Help from "@components/widgets/Help.tsx";
 import {Input} from "@components/widgets/Input.tsx";
-import {ForgottenPasswordHistoryState} from "@models/historyState.ts";
+import {ForgottenPasswordHistoryState, LoginFormHistoryState} from "@models/historyState.ts";
 import {useHistoryState} from "wouter/use-browser-location";
+import {BackButton} from "@components/widgets/Buttons.tsx";
+import {useLocation} from "wouter";
 
 export default function ForgottenPassword(): ReactElement {
+    const [_, navigate] = useLocation()
     const {email}: ForgottenPasswordHistoryState = useHistoryState()
+
+    function backButtonClicked() {
+        navigate("/login-form/main", {state: {email: email} as LoginFormHistoryState})
+    }
 
     return (
         <div className="flex justify-centersafe items-center w-dvw">
             <Card className="min-w-[25rem] w-[40rem] m-3">
-                <h1 className="text-4xl mb-4">Ověření emailu</h1>
-                <p>Váš účet byl vytvořen. Na uvedenou emailovou adresu <b>{email}</b> byl odeslán ověřující email
-                    obsahující 24 místný kód, který pro dokončení registrace vložte níže.</p>
+                <div className="flex items-start">
+                    <BackButton onClick={backButtonClicked} className="mr-4"/>
+                    <h1 className="text-4xl mb-4">Ověření emailu</h1>
+                </div>
+                <p>Pokud byl nalezen účet, tak na uvedenou emailovou adresu <b>{email}</b> byl odeslán ověřující email
+                    obsahující 24 místný kód, který pro změnu hesla vložte níže.</p>
                 <div className="mt-4 mb-4">
                     <BtnTimeout text="Email nepřišel?" timeout={600}/>
                 </div>

@@ -2,21 +2,34 @@ import {ReactElement, useEffect, useState} from "react";
 import Card from "@components/widgets/Card.tsx";
 import {useLocation} from "wouter";
 import {useHistoryState} from "wouter/use-browser-location";
-import {VerifyEmailHistoryState} from "@models/historyState.ts";
+import {LoginFormHistoryState, VerifyEmailHistoryState} from "@models/historyState.ts";
 import {useWatchVerify} from "@hooks/useWatchVerify.tsx";
 import {useReqVerificationEmail} from "@hooks/useReqVerificationEmail.ts";
 import {showErrorAlert, showSuccessAlert} from "src/utils/alert.ts";
 import BtnTimeout from "@components/widgets/BtnTimeout.tsx";
 import {invoke} from "@tauri-apps/api/core";
 import Loading from "@components/Loading.tsx";
+import {useServiceStatusSuspense} from "@hooks/useServiceStatus.ts";
 
-export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
+export default function EmailVerify(): ReactElement {
     const [_, navigate] = useLocation()
     const {email}: VerifyEmailHistoryState = useHistoryState()
     const {error: verEmailError} = useReqVerificationEmail(email)
+
+    const {
+        data: {wait_before_resend},
+        error: homeSrvServiceError
+    } = useServiceStatusSuspense()
+
+    useEffect(() => {
+        if(homeSrvServiceError)
+            navigate("/login-form/main", {state: { homeSrvError: true } as LoginFormHistoryState})
+    }, [homeSrvServiceError]);
+
     const {data: isVerified} = useWatchVerify(email)
     const [loading, setLoading] = useState<boolean>(false)
-    const [resendTimeout , setResendTimeout] = useState<number>(waitBeforeResend)
+    const [resendTimeout , setResendTimeout] = useState<number>(wait_before_resend)
+
 
     useEffect(() => {
         if(isVerified)
@@ -33,7 +46,7 @@ export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
         invoke<void>('req_verification_email', {email: email})
             .then(() => {
                 setLoading(false)
-                setResendTimeout(waitBeforeResend)
+                setResendTimeout(wait_before_resend)
                 showSuccessAlert("Nový email byl odeslán")
             })
             .catch((e) => {
@@ -58,8 +71,4 @@ export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
             </Card>
         </div>
     )
-}
-
-interface Props {
-    waitBeforeResend: number
 }
