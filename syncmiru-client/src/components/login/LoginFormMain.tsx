@@ -218,15 +218,20 @@ export default function LoginFormMain(): ReactElement {
                         }
                     </div>
                     <div className="mb-1">
-                        <label htmlFor="password"
-                               className="block mb-1 text-sm font-medium text-gray-900 dark:text-darkread">{t('password')}</label>
-                        <Input
-                            type="password"
-                            id="password"
-                            className="mb-1"
-                            value={formData.password}
-                            onChange={passwordChanged}/>
-
+                        <div className="flex justify-between">
+                            <Label htmlFor="password">{t('password')}</Label>
+                            <Help
+                                tooltipId="password-help"
+                                className="w-4"
+                                content="Vaše heslo, pokud si ho nepamatujete,<br>můžete si ho nechat obnovit tlačítkem níže."
+                            />
+                        </div>
+                            <Input
+                                type="password"
+                                id="password"
+                                className="mb-1"
+                                value={formData.password}
+                                onChange={passwordChanged}/>
                         <div className="flex flex-row justify-between items-start mb-5">
                             {formShowError.password
                                 ? <>

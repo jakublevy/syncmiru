@@ -45,19 +45,19 @@ pub async fn user_id_from_email(
     db: &PgPool,
     email: &str
 ) -> Result<Option<i32>> {
-    if let Some(user_id) = sqlx::query_as::<_, (i32,)>("select id from users where email = $1 limit 1")
+    if let Some(uid) = sqlx::query_as::<_, (i32,)>("select id from users where email = $1 limit 1")
         .bind(email)
         .fetch_optional(db).await? {
-        Ok(Some(user_id.0))
+        Ok(Some(uid.0))
     }
     else {
         Ok(None)
     }
 }
 
-pub async fn out_of_email_quota(
+pub async fn out_of_email_tkn_quota(
     db: &PgPool,
-    user_id: i32,
+    uid: i32,
     email_type: EmailTknType,
     max: i64,
     interval: i64,
@@ -73,11 +73,34 @@ pub async fn out_of_email_quota(
     "#;
     let out_of_quota: (bool,) = sqlx::query_as(query)
         .bind(max)
-        .bind(user_id)
+        .bind(uid)
         .bind(email_type)
         .bind(interval)
         .fetch_one(db).await?;
     Ok(out_of_quota.0)
+}
+
+pub async fn waited_before_last_email_tkn(
+    db: &PgPool,
+    uid: i32,
+    email_type: EmailTknType,
+    wait_before_resend: i64
+) -> Result<bool> {
+    let query = r#"
+        select count(*) = 0 from email_tkn_log
+        where
+        user_id = $1
+        and reason = $2
+        and sent_at >= now() - interval '1 seconds' * $3
+        limit 1
+    "#;
+    let waited: (bool, ) = sqlx::query_as(query)
+        .bind(uid)
+        .bind(email_type)
+        .bind(wait_before_resend)
+        .fetch_one(db)
+        .await?;
+    Ok(waited.0)
 }
 
 pub async fn new_email_tkn(

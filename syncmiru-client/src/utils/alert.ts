@@ -5,3 +5,7 @@ export const showErrorAlert = (message: string) => {
       autoHide: false
     })
 }
+
+export const showSuccessAlert = (message: string) => {
+    StatusAlertService.showSuccess(message)
+}

@@ -8,6 +8,7 @@ import Help from "@components/widgets/Help.tsx";
 import {useTranslation} from "react-i18next";
 import Card from "@components/widgets/Card.tsx";
 import {mutate} from "swr";
+import Label from "@components/widgets/Label.tsx";
 
 export default function HomeServer(): ReactElement {
     const [location, navigate] = useLocation()
@@ -55,7 +56,7 @@ export default function HomeServer(): ReactElement {
                     <p>{t('home-srv-desc')}</p>
                     <div className="mt-4">
                         <div className="flex justify-between">
-                            <label htmlFor="srv" className="block mb-1 text-sm font-medium">{t('home-srv')}</label>
+                            <Label htmlFor="srv">{t('home-srv')}</Label>
                             <Help
                                 tooltipId="srv-help"
                                 className="w-4"

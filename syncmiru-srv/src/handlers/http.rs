@@ -123,7 +123,7 @@ pub async fn email_verify_send(
     if state.config.email.rates.is_some()
         && state.config.email.rates.unwrap().verification.is_some() {
         let rates = state.config.email.rates.unwrap().verification.unwrap();
-        out_of_quota = query::out_of_email_quota(
+        out_of_quota = query::out_of_email_tkn_quota(
             &state.db,
             uid,
             EmailTknType::Verify,
@@ -134,6 +134,18 @@ pub async fn email_verify_send(
 
     if out_of_quota {
         return Err(SyncmiruError::UnprocessableEntity("too many requests".to_string()))
+    }
+
+    // TODO: waited before last email
+    let waited = query::waited_before_last_email_tkn(
+        &state.db,
+        uid,
+        EmailTknType::Verify,
+        state.config.email.wait_before_resend
+    ).await?;
+
+    if !waited {
+        return Err(SyncmiruError::UnprocessableEntity("did not wait the minimum time before resending".to_string()))
     }
 
     let tkn = crypto::gen_tkn();
