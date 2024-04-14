@@ -120,19 +120,23 @@ export const UsernameInputSrvValidate = withSrvValidate(UsernameInput,
 export const ForgottenPasswordTknSrvValidate = withSrvValidate(Input,
     {
         validate: useFormValidate().tknValidate,
-        swr: (value: string, validate: (v: string) => boolean) => {
-            return useSWR(["get_forgotten_password_tkn_valid", value], ([cmd, value]) => {
-                const send = {tkn: value,}
-                if (validate(value))
-                    return invoke<boolean>(cmd, send)
-                return false
-            }, {
-                revalidateOnFocus: false,
-                revalidateOnMount: false,
-                revalidateOnReconnect: true,
-                refreshWhenOffline: false,
-                refreshWhenHidden: false,
-            })
+        swr: (value: string, validate: (v: string) => boolean, validationArgs: Record<string, unknown> | undefined) => {
+            if (validationArgs !== undefined) {
+                return useSWR(["get_forgotten_password_tkn_valid", value], ([cmd, value]) => {
+                    const send = {tkn: value, email: validationArgs['email']}
+                    if (validate(value))
+                        return invoke<boolean>(cmd, {data: JSON.stringify(send)})
+
+                    return false
+                }, {
+                    revalidateOnFocus: false,
+                    revalidateOnMount: false,
+                    revalidateOnReconnect: true,
+                    refreshWhenOffline: false,
+                    refreshWhenHidden: false,
+                })
+            }
+            throw new Error("Missing opts['email']")
         }
     })
 

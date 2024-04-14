@@ -120,13 +120,13 @@ pub async fn req_forgotten_password_email(state: tauri::State<'_, AppState>, ema
 }
 
 #[tauri::command]
-pub async fn get_forgotten_password_tkn_valid(state: tauri::State<'_, AppState>, data: String) -> Result<()> {
+pub async fn get_forgotten_password_tkn_valid(state: tauri::State<'_, AppState>, data: String) -> Result<bool> {
     let home_srv = utils::extract_home_srv(&state.appdata)?;
     let tkn_email: TknEmail = serde_json::from_str(&data)?;
-    super::req(
+    let tkn_valid: BooleanResp = serde_json::from_value(super::req_json(
         &(home_srv + "/forgotten-password-tkn-valid"),
         HttpMethod::Get,
         Some(serde_json::to_value(tkn_email)?)
-    ).await?;
-    Ok(())
+    ).await?)?;
+    Ok(tkn_valid.resp)
 }

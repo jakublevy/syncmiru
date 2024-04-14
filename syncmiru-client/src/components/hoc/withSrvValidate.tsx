@@ -18,12 +18,19 @@ export const withSrvValidate = (
             onSrvValidationChanged,
             onChange,
             className,
+            validationArgs,
+            onSrvValidationError,
             ...passParams
         } = p
 
         const [value, setValue] = useState<string>('')
 
-        const {data: isValid} = conf.swr(value, conf.validate)
+        const {data: isValid, error} = conf.swr(value, conf.validate, validationArgs)
+
+        useEffect(() => {
+            if(error !== undefined && onSrvValidationError !== undefined)
+                onSrvValidationError(error)
+        }, [error]);
 
         useEffect(() => {
             if (isValid !== undefined)
@@ -49,9 +56,11 @@ export const withSrvValidate = (
 
 interface UniqueProps {
     onSrvValidationChanged: (b: boolean) => void,
+    onSrvValidationError?: (error: any) => void
+    validationArgs?: Record<string, unknown>
 }
 
 interface withSrvValidateProps {
-    swr: (value: string, validate: (v: string) => boolean) => SWRResponse<boolean, any, any>
+    swr: (value: string, validate: (v: string) => boolean, opts: Record<string, unknown> | undefined) => SWRResponse<boolean, any, any>
     validate: (v: string) => boolean
 }

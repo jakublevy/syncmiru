@@ -1,10 +1,10 @@
-import useSWR from "swr";
 import {invoke} from "@tauri-apps/api/core";
 import useSWRImmutable from "swr/immutable";
 
 export const useReqForgottenPasswordEmail = (email: string) =>
     useSWRImmutable('req_forgotten_password_email', cmd => invoke<void>(cmd, {email: email}), {
         suspense: false,
+        shouldRetryOnError: false,
     })
 
 

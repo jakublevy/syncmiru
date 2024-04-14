@@ -180,10 +180,11 @@ pub async fn forgotten_password_send(
     Ok(())
 }
 
+#[axum::debug_handler]
 pub async fn forgotten_password_tkn_valid(
     axum::extract::State(state): axum::extract::State<SrvState>,
     Json(payload): Json<TknEmail>
-) -> Result<()> {
+) -> Result<Json<BooleanResp>> {
     payload.validate()?;
     let uid = query::user_id_from_email(&state.db, &payload.email)
         .await?
@@ -192,17 +193,13 @@ pub async fn forgotten_password_tkn_valid(
     let hashed_tkn = query::get_valid_hashed_tkn(
         &state.db,
         uid,
-        EmailTknType::Verify,
+        EmailTknType::ForgottenPassword,
         state.config.email.token_valid_time)
         .await?
         .context("invalid or expired token")?;
 
-    if crypto::verify(payload.tkn, hashed_tkn).await? {
-        Ok(())
-    }
-    else {
-        Err(SyncmiruError::UnprocessableEntity("invalid token".to_string()))
-    }
+    let tkn_valid = crypto::verify(payload.tkn, hashed_tkn).await?;
+    Ok(Json(BooleanResp{ resp: tkn_valid }))
 }
 
 pub async fn error(error: BoxError) -> impl IntoResponse {

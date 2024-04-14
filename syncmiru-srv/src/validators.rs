@@ -48,9 +48,15 @@ pub fn check_tkn(tkn: &str) -> Result<(), ValidationError> {
         return Err(ValidationError::new("invalid token length"))
     }
     let alphabet = base64::alphabet::STANDARD.as_str();
+    let mut padding = false;
     for c in tkn.chars() {
         if !alphabet.contains(c) {
-            return Err(ValidationError::new("invalid symbol inside token"))
+            if c == '=' {
+                padding = true
+            }
+            else if padding {
+                return Err(ValidationError::new("invalid symbol inside token"))
+            }
         }
     }
     Ok(())

@@ -21,10 +21,18 @@ const displaynameValidate = (displayname: string): boolean => {
 }
 
 const tknValidate = (tkn: string): boolean => {
+    if(tkn.length !== 24)
+        return false
+
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-    for(let i = 0; i< tkn.length; ++i) {
-        if(!alphabet.includes(tkn[i]))
-            return false
+    let padding = false
+    for (let i = 0; i < tkn.length; ++i) {
+        if (!alphabet.includes(tkn[i])) {
+            if (tkn[i] === '=')
+                padding = true
+            else if(padding)
+                return false
+        }
     }
     return true
 }
