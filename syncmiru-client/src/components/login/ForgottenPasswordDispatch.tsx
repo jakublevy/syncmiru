@@ -25,7 +25,7 @@ export default function ForgottenPasswordDispatch(): ReactElement {
         <>
             {homeSrvServiceLoading || homeSrvServiceStatus === undefined
                 ? <Loading/>
-                : <ForgottenPassword email={email}/>
+                : <ForgottenPassword email={email} waitBeforeResend={homeSrvServiceStatus.wait_before_resend}/>
             }
         </>
     )

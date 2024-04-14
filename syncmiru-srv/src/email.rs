@@ -26,7 +26,7 @@ pub async fn send_verification_email(
     url += &format!("?{}", encoded_params);
     let a = format!("<a href=\"{}\">{}</a>", url, url);
     send_email(
-        &email_conf,
+        email_conf,
         to,
         srv_url,
         &t!("email-verify-subject", locale = lang),
@@ -35,6 +35,23 @@ pub async fn send_verification_email(
     Ok(())
 }
 
+
+pub async fn send_forgotten_password_email(
+    email_conf: &EmailConf,
+    to: &str,
+    tkn: &str,
+    srv_url: &str,
+    lang: &str
+) -> Result<()> {
+    send_email(
+        email_conf,
+        to,
+        srv_url,
+        &t!("forgotten-password-subject", locale = lang),
+        &format!("{} {}", t!("forgotten-password-body", locale = lang), tkn)
+    ).await?;
+    Ok(())
+}
 
 
 async fn send_email(

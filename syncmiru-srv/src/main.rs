@@ -66,6 +66,7 @@ async fn main() -> Result<()> {
        .route("/email-verify-send", post(handlers::http::email_verify_send))
        .route("/email-verify", get(handlers::http::email_verify))
        .route("/email-verified", get(handlers::http::email_verified))
+       .route("/forgotten-password-send", post(handlers::http::forgotten_password_send))
        .layer(socketio_layer)
        .layer(
           ServiceBuilder::new()

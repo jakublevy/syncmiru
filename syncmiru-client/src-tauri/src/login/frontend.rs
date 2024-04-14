@@ -105,3 +105,16 @@ pub async fn get_email_verified(state: tauri::State<'_, AppState>, email: String
     ).await?)?;
     Ok(verified.resp)
 }
+
+#[tauri::command]
+pub async fn req_forgotten_password_email(state: tauri::State<'_, AppState>, email: String) -> Result<()> {
+    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    let lang = utils::extract_lang(&state.appdata)?.as_str();
+    let payload = serde_json::json!({"email": email, "lang": lang});
+    super::req(
+        &(home_srv + "/forgotten-password-send"),
+        HttpMethod::Post,
+        Some(payload)
+    ).await?;
+    Ok(())
+}

@@ -8,18 +8,6 @@ export const useServiceStatusWatch = () =>
             refreshInterval: 30000
     })
 
-// export const useServiceStatusWatch = () =>
-//     useQuery({
-//         queryKey: ['get_service_status'], queryFn: () => invoke<ServiceStatus>('get_service_status', {}),
-//         refetchOnMount: true,
-//         refetchOnWindowFocus: true,
-//         refetchOnReconnect: true,
-//         refetchInterval: 30000,
-//         staleTime: 5000,
-//         behavior
-//     }
-//     );
-
 export const useServiceStatus = () =>
         useQuery({
             queryKey: ['get_service_status'], queryFn: () => invoke<ServiceStatus>('get_service_status', {}),
@@ -29,14 +17,3 @@ export const useServiceStatus = () =>
             refetchInterval: 0,
             staleTime: 0,
 })
-
-// export const useServiceStatus = () =>
-//     useSWR('get_service_status', cmd => invoke<ServiceStatus>(cmd, {}), {
-//             suspense: false,
-//             revalidateOnFocus: false,
-//             revalidateOnMount:false,
-//             revalidateOnReconnect: false,
-//             refreshWhenOffline: false,
-//             refreshWhenHidden: false,
-//             refreshInterval: 0,
-//     })

@@ -1,3 +1,5 @@
+mod utils;
+
 use std::borrow::Cow;
 use anyhow::Context;
 use axum::extract::Query;
@@ -5,6 +7,7 @@ use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{Html, IntoResponse};
 use hcaptcha::Hcaptcha;
+use rand::Rng;
 use tower::BoxError;
 use crate::srvstate::SrvState;
 use validator::{Validate};
@@ -26,24 +29,24 @@ pub async fn service(
 ) -> Json<ServiceStatus> {
     Json(ServiceStatus {
         reg_pub_allowed: state.config.reg_pub.allowed,
-        wait_before_resend: state.config.email.wait_before_resend
+        wait_before_resend: state.config.email.wait_before_resend,
     })
 }
 
 
 pub async fn register(
     axum::extract::State(state): axum::extract::State<SrvState>,
-    Json(payload): Json<RegForm>
+    Json(payload): Json<RegForm>,
 ) -> Result<()> {
     payload.validate()?;
     let username_unique = query::username_unique(&state.db, &payload.username).await?;
     if !username_unique {
-        return Err(SyncmiruError::UnprocessableEntity("username".to_string()))
+        return Err(SyncmiruError::UnprocessableEntity("username".to_string()));
     }
 
     let email_unique = query::email_unique(&state.db, &payload.email).await?;
     if !email_unique {
-        return Err(SyncmiruError::UnprocessableEntity("email".to_string()))
+        return Err(SyncmiruError::UnprocessableEntity("email".to_string()));
     }
 
     let hashed_password = crypto::hash(payload.password.clone()).await?;
@@ -54,10 +57,9 @@ pub async fn register(
             &payload.username,
             &payload.displayname,
             &payload.email,
-            &hashed_password
+            &hashed_password,
         ).await?;
-    }
-    else {
+    } else {
         // TODO: check reg_tkn
         // TODO: update DB using transaction
     }
@@ -66,7 +68,7 @@ pub async fn register(
 
 pub async fn username_unique(
     axum::extract::State(state): axum::extract::State<SrvState>,
-    Json(payload): Json<Username>
+    Json(payload): Json<Username>,
 ) -> Result<Json<BooleanResp>> {
     payload.validate()?;
     let unique = query::username_unique(&state.db, &payload.username).await?;
@@ -75,7 +77,7 @@ pub async fn username_unique(
 
 pub async fn email_unique(
     axum::extract::State(state): axum::extract::State<SrvState>,
-    Json(payload): Json<Email>
+    Json(payload): Json<Email>,
 ) -> Result<Json<BooleanResp>> {
     payload.validate()?;
     let unique = query::email_unique(&state.db, &payload.email).await?;
@@ -84,68 +86,46 @@ pub async fn email_unique(
 
 pub async fn email_verify(
     axum::extract::State(state): axum::extract::State<SrvState>,
-    Query(payload): Query<EmailVerify>
+    Query(payload): Query<EmailVerify>,
 ) -> Result<Html<String>> {
     payload.validate()?;
     let hashed_tkn = query::get_valid_hashed_tkn(
         &state.db,
         payload.uid,
         EmailTknType::Verify,
-        state.config.email.token_valid_time
+        state.config.email.token_valid_time,
     ).await?
-     .context("invalid or expired token")?;
+        .context("invalid or expired token")?;
 
     let verified = query::get_verified_unsafe(&state.db, payload.uid).await?;
     if verified {
-        return Err(SyncmiruError::UnprocessableEntity("user already verified".to_string()))
+        return Err(SyncmiruError::UnprocessableEntity("user already verified".to_string()));
     }
 
     if crypto::verify(payload.tkn, hashed_tkn).await? {
         query::set_verified(&state.db, payload.uid).await?;
         Ok(html::ok_verified(&payload.lang))
-    }
-    else {
+    } else {
         Err(SyncmiruError::UnprocessableEntity("invalid token".to_string()))
     }
 }
 
+
 pub async fn email_verify_send(
     axum::extract::State(state): axum::extract::State<SrvState>,
-    Json(payload): Json<EmailWithLang>
+    Json(payload): Json<EmailWithLang>,
 ) -> Result<()> {
     payload.validate()?;
 
     let uid = query::user_id_from_email(&state.db, &payload.email)
-        .await?
-        .context("user does not exist")?;
-
-    let mut out_of_quota = false;
-    if state.config.email.rates.is_some()
-        && state.config.email.rates.unwrap().verification.is_some() {
-        let rates = state.config.email.rates.unwrap().verification.unwrap();
-        out_of_quota = query::out_of_email_tkn_quota(
-            &state.db,
-            uid,
-            EmailTknType::Verify,
-            rates.max,
-            rates.per
-        ).await?;
+        .await?;
+    if let None = uid {
+        utils::random_sleep(100, 500).await;
+        return Ok(())
     }
+    let uid = uid.unwrap();
 
-    if out_of_quota {
-        return Err(SyncmiruError::UnprocessableEntity("too many requests".to_string()))
-    }
-
-    let waited = query::waited_before_last_email_tkn(
-        &state.db,
-        uid,
-        EmailTknType::Verify,
-        state.config.email.wait_before_resend
-    ).await?;
-
-    if !waited {
-        return Err(SyncmiruError::UnprocessableEntity("did not wait the minimum time before resending".to_string()))
-    }
+    utils::check_email_tkn_out_of_quota(&state, uid, EmailTknType::Verify).await?;
 
     let tkn = crypto::gen_tkn();
     let tkn_hash = crypto::hash(tkn.clone()).await?;
@@ -156,20 +136,47 @@ pub async fn email_verify_send(
         &tkn,
         uid,
         &state.config.srv.url,
-        &payload.lang
+        &payload.lang,
     ).await?;
     Ok(())
 }
 
 pub async fn email_verified(
     axum::extract::State(state): axum::extract::State<SrvState>,
-    Json(payload): Json<Email>
+    Json(payload): Json<Email>,
 ) -> Result<Json<BooleanResp>> {
     payload.validate()?;
     let verified = query::email_verified(&state.db, &payload.email)
         .await?
         .unwrap_or(false);
     Ok(Json(BooleanResp::from(verified)))
+}
+
+pub async fn forgotten_password_send(
+    axum::extract::State(state): axum::extract::State<SrvState>,
+    Json(payload): Json<EmailWithLang>,
+) -> Result<()> {
+    payload.validate()?;
+    let uid = query::user_id_from_email(&state.db, &payload.email).await?;
+    if let None = uid {
+        utils::random_sleep(100, 500).await;
+        return Ok(())
+    }
+    let uid = uid.unwrap();
+
+    utils::check_email_tkn_out_of_quota(&state, uid, EmailTknType::ForgottenPassword).await?;
+    let tkn = crypto::gen_tkn();
+    let tkn_hash = crypto::hash(tkn.clone()).await?;
+    query::new_email_tkn(&state.db, uid, EmailTknType::ForgottenPassword, &tkn_hash).await?;
+    println!("Email sending {}", tkn);
+    // email::send_forgotten_password_email(
+    //     &state.config.email,
+    //     &payload.email,
+    //     &tkn,
+    //     &state.config.srv.url,
+    //     &payload.lang
+    // ).await?;
+    Ok(())
 }
 
 pub async fn error(error: BoxError) -> impl IntoResponse {

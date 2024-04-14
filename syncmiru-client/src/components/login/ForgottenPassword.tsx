@@ -1,4 +1,4 @@
-import {ReactElement} from "react";
+import {ReactElement, useEffect} from "react";
 import Card from "@components/widgets/Card.tsx";
 import BtnTimeout from "@components/widgets/BtnTimeout.tsx";
 import Help from "@components/widgets/Help.tsx";
@@ -6,9 +6,17 @@ import {Input} from "@components/widgets/Input.tsx";
 import {LoginFormHistoryState} from "@models/historyState.ts";
 import {BackButton} from "@components/widgets/Buttons.tsx";
 import {useLocation} from "wouter";
+import {useReqForgottenPasswordEmail} from "@hooks/useReqForgottenPasswordEmail.ts";
+import {showErrorAlert} from "../../utils/alert.ts";
 
-export default function ForgottenPassword({email}: Props): ReactElement {
+export default function ForgottenPassword({email, waitBeforeResend}: Props): ReactElement {
     const [_, navigate] = useLocation()
+    const {error: forgottenPasswordEmailError} = useReqForgottenPasswordEmail(email)
+
+    useEffect(() => {
+        if(forgottenPasswordEmailError !== undefined)
+            showErrorAlert(forgottenPasswordEmailError)
+    }, [forgottenPasswordEmailError]);
 
     function backButtonClicked() {
         navigate("/login-form/main", {state: {email: email} as LoginFormHistoryState})
@@ -24,7 +32,7 @@ export default function ForgottenPassword({email}: Props): ReactElement {
                 <p>Pokud byl nalezen účet, tak na uvedenou emailovou adresu <b>{email}</b> byl odeslán ověřující email
                     obsahující 24 místný kód, který pro změnu hesla vložte níže.</p>
                 <div className="mt-4 mb-4">
-                    <BtnTimeout text="Email nepřišel?" timeout={600}/>
+                    <BtnTimeout text="Email nepřišel?" timeout={waitBeforeResend}/>
                 </div>
                 <div className="mt-4">
                     <div className="flex justify-between">
@@ -48,4 +56,5 @@ export default function ForgottenPassword({email}: Props): ReactElement {
 
 interface Props {
     email: string
+    waitBeforeResend: number
 }

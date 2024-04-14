@@ -58,7 +58,7 @@ pub async fn user_id_from_email(
 pub async fn out_of_email_tkn_quota(
     db: &PgPool,
     uid: i32,
-    email_type: EmailTknType,
+    email_type: &EmailTknType,
     max: i64,
     interval: i64,
 ) -> Result<bool> {
@@ -83,7 +83,7 @@ pub async fn out_of_email_tkn_quota(
 pub async fn waited_before_last_email_tkn(
     db: &PgPool,
     uid: i32,
-    email_type: EmailTknType,
+    email_type: &EmailTknType,
     wait_before_resend: i64
 ) -> Result<bool> {
     let query = r#"

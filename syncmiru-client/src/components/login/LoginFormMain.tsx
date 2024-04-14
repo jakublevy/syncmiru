@@ -100,6 +100,7 @@ export default function LoginFormMain(): ReactElement {
         if (!checkHomeServer())
             return
 
+        // noinspection Annotator
         queryClient.removeQueries({queryKey: ["get_service_status"]})
         navigate('/register')
     }
@@ -128,6 +129,7 @@ export default function LoginFormMain(): ReactElement {
             checkHomeServer()
             && [FieldError.None, FieldError.InvalidResponse].includes(fieldsError.email)
         ) {
+            // noinspection Annotator
             queryClient.removeQueries({queryKey: ["get_service_status"]})
             navigate('/forgotten-password', {state: {email: formData.email} as ForgottenPasswordHistoryState})
         }
