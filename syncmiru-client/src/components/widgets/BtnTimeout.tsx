@@ -1,5 +1,5 @@
 import {MouseEvent, ReactElement, useEffect, useRef, useState} from "react";
-import {Btn, BtnProps} from "@components/widgets/Buttons.tsx";
+import {Btn, BtnProps} from "@components/widgets/Button.tsx";
 
 export default function BtnTimeout(p: BtnTimeoutProps): ReactElement {
     const wasCalled = useRef(false);

@@ -74,3 +74,9 @@ pub struct RegData {
     captcha: String,
     reg_tkn: String,
 }
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct TknEmail {
+    pub tkn: String,
+    pub email: String
+}

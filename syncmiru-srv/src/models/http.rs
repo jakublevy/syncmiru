@@ -54,7 +54,7 @@ pub struct EmailWithLang {
 
 #[derive(Debug, Clone, Deserialize, Validate)]
 pub struct EmailVerify {
-    #[validate(length(equal = 24))]
+    #[validate(custom(function = "validators::check_tkn"))]
     pub tkn: String,
 
     #[validate(range(min = 1))]
@@ -67,6 +67,15 @@ pub struct EmailVerify {
 #[derive(Debug, Copy, Clone, Serialize)]
 pub struct BooleanResp {
     pub resp: bool,
+}
+
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct TknEmail {
+    #[validate(custom(function = "validators::check_tkn"))]
+    pub tkn: String,
+
+    #[validate(email, length(max = 320))]
+    pub email: String
 }
 
 impl BooleanResp {

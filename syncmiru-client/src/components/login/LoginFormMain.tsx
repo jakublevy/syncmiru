@@ -1,6 +1,6 @@
 import {ChangeEvent, ReactElement, useEffect, useState} from "react";
 import LanguageSelector from "@components/widgets/LanguageSelector.tsx";
-import {BtnPrimary, BtnTextPrimary} from "@components/widgets/Buttons.tsx";
+import {BtnPrimary, BtnTextPrimary} from "@components/widgets/Button.tsx";
 import {Input} from "@components/widgets/Input.tsx";
 import {EmailInput} from "@components/widgets/Input.tsx";
 import {useHomeServer} from "@hooks/useHomeServer.ts";
@@ -13,14 +13,13 @@ import {useServiceStatusWatch} from "@hooks/useServiceStatus.ts";
 import {useHistoryState} from "wouter/use-browser-location";
 import {ForgottenPasswordHistoryState, LoginFormHistoryState} from "@models/historyState.ts";
 import useFormValidate from "@hooks/useFormValidate.ts";
-import {useQueryClient} from "@tanstack/react-query";
+import {mutate} from "swr";
 
 
 export default function LoginFormMain(): ReactElement {
     const [location, navigate] = useLocation()
     const historyState: LoginFormHistoryState | undefined = useHistoryState()
     const {t} = useTranslation()
-    const queryClient = useQueryClient();
 
     const [homeSrvResponseError, setHomeSrvResponseError] = useState<boolean>(false);
     const homeSrv = useHomeServer()
@@ -92,7 +91,7 @@ export default function LoginFormMain(): ReactElement {
         return !homeServerError() && homeSrv !== ""
     }
 
-    function regBtnClicked() {
+    async function regBtnClicked() {
         const fieldsError = checkFields()
         setFormErrors(fieldsError)
 
@@ -100,8 +99,7 @@ export default function LoginFormMain(): ReactElement {
         if (!checkHomeServer())
             return
 
-        // noinspection Annotator
-        queryClient.removeQueries({queryKey: ["get_service_status"]})
+        await mutate('get_service_status', undefined)
         navigate('/register')
     }
 
@@ -120,7 +118,7 @@ export default function LoginFormMain(): ReactElement {
         }
     }
 
-    function forgottenPasswordBtnClicked() {
+    async function forgottenPasswordBtnClicked() {
         const fieldsError = checkFields()
         setFormErrors(fieldsError)
         setFormShowError({srv: true, email: true, password: false})
@@ -129,8 +127,8 @@ export default function LoginFormMain(): ReactElement {
             checkHomeServer()
             && [FieldError.None, FieldError.InvalidResponse].includes(fieldsError.email)
         ) {
-            // noinspection Annotator
-            queryClient.removeQueries({queryKey: ["get_service_status"]})
+            await mutate('get_service_status', undefined)
+            await mutate('req_forgotten_password_email', undefined)
             navigate('/forgotten-password', {state: {email: formData.email} as ForgottenPasswordHistoryState})
         }
     }

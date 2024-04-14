@@ -1,6 +1,6 @@
 import {ChangeEvent, ReactElement, useEffect, useState} from "react";
 import {Input} from "@components/widgets/Input.tsx";
-import {BackButton} from "@components/widgets/Buttons.tsx";
+import {BackButton} from "@components/widgets/Button.tsx";
 import {useChangeHomeServer, useHomeServer} from "@hooks/useHomeServer.ts";
 import {useLocation} from "wouter";
 import {refresh} from "@mittwald/react-use-promise";

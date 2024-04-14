@@ -3,7 +3,7 @@ import {useTranslation} from "react-i18next";
 import {ReactElement} from "react";
 import {useLocation} from "wouter";
 import {refresh} from "@mittwald/react-use-promise";
-import {BtnPrimary} from "@components/widgets/Buttons.tsx";
+import {BtnPrimary} from "@components/widgets/Button.tsx";
 import Card from "@components/widgets/Card.tsx";
 import {DepsHistoryState} from "@models/historyState.ts";
 

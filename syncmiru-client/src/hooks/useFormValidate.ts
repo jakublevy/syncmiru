@@ -20,11 +20,21 @@ const displaynameValidate = (displayname: string): boolean => {
         && !/^\s$/.test(displayname[displayname.length - 1])
 }
 
+const tknValidate = (tkn: string): boolean => {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+    for(let i = 0; i< tkn.length; ++i) {
+        if(!alphabet.includes(tkn[i]))
+            return false
+    }
+    return true
+}
+
 export default function useFormValidate() {
     return {
         emailValidate: emailValidate,
         passwordValidate: passwordValidate,
         usernameValidate: usernameValidate,
         displaynameValidate: displaynameValidate,
+        tknValidate: tknValidate,
     }
 }

@@ -12,7 +12,7 @@ use tower::BoxError;
 use crate::srvstate::SrvState;
 use validator::{Validate};
 use crate::error::SyncmiruError;
-use crate::models::http::{Email, RegForm, ServiceStatus, Username, BooleanResp, EmailWithLang, EmailVerify};
+use crate::models::http::{Email, RegForm, ServiceStatus, Username, BooleanResp, EmailWithLang, EmailVerify, TknEmail};
 use crate::query;
 use crate::result::{Result};
 use crate::crypto;
@@ -120,7 +120,7 @@ pub async fn email_verify_send(
     let uid = query::user_id_from_email(&state.db, &payload.email)
         .await?;
     if let None = uid {
-        utils::random_sleep(100, 500).await;
+        utils::random_sleep(2000, 3000).await;
         return Ok(())
     }
     let uid = uid.unwrap();
@@ -130,14 +130,15 @@ pub async fn email_verify_send(
     let tkn = crypto::gen_tkn();
     let tkn_hash = crypto::hash(tkn.clone()).await?;
     query::new_email_tkn(&state.db, uid, EmailTknType::Verify, &tkn_hash).await?;
-    email::send_verification_email(
-        &state.config.email,
-        &payload.email,
-        &tkn,
-        uid,
-        &state.config.srv.url,
-        &payload.lang,
-    ).await?;
+    println!("Email sending tkn: {}", tkn);
+    // email::send_verification_email(
+    //     &state.config.email,
+    //     &payload.email,
+    //     &tkn,
+    //     uid,
+    //     &state.config.srv.url,
+    //     &payload.lang,
+    // ).await?;
     Ok(())
 }
 
@@ -159,7 +160,7 @@ pub async fn forgotten_password_send(
     payload.validate()?;
     let uid = query::user_id_from_email(&state.db, &payload.email).await?;
     if let None = uid {
-        utils::random_sleep(100, 500).await;
+        utils::random_sleep(2000, 3000).await;
         return Ok(())
     }
     let uid = uid.unwrap();
@@ -177,6 +178,31 @@ pub async fn forgotten_password_send(
     //     &payload.lang
     // ).await?;
     Ok(())
+}
+
+pub async fn forgotten_password_tkn_valid(
+    axum::extract::State(state): axum::extract::State<SrvState>,
+    Json(payload): Json<TknEmail>
+) -> Result<()> {
+    payload.validate()?;
+    let uid = query::user_id_from_email(&state.db, &payload.email)
+        .await?
+        .context("invalid or expired token")?;
+
+    let hashed_tkn = query::get_valid_hashed_tkn(
+        &state.db,
+        uid,
+        EmailTknType::Verify,
+        state.config.email.token_valid_time)
+        .await?
+        .context("invalid or expired token")?;
+
+    if crypto::verify(payload.tkn, hashed_tkn).await? {
+        Ok(())
+    }
+    else {
+        Err(SyncmiruError::UnprocessableEntity("invalid token".to_string()))
+    }
 }
 
 pub async fn error(error: BoxError) -> impl IntoResponse {

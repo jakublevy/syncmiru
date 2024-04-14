@@ -4,7 +4,7 @@ import Cross from "@components/svg/Cross.tsx";
 import {useTranslation} from "react-i18next";
 import {refresh} from "@mittwald/react-use-promise";
 import {ReactElement} from "react";
-import {BackButton, BtnPrimary, BtnSecondary} from "@components/widgets/Buttons.tsx";
+import {BackButton, BtnPrimary, BtnSecondary} from "@components/widgets/Button.tsx";
 import {useLocation} from "wouter";
 import Card from "@components/widgets/Card.tsx";
 import {TrampolineHistoryState} from "@models/historyState.ts";

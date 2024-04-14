@@ -117,6 +117,25 @@ export const UsernameInputSrvValidate = withSrvValidate(UsernameInput,
     }
 )
 
+export const ForgottenPasswordTknSrvValidate = withSrvValidate(Input,
+    {
+        validate: useFormValidate().tknValidate,
+        swr: (value: string, validate: (v: string) => boolean) => {
+            return useSWR(["get_forgotten_password_tkn_valid", value], ([cmd, value]) => {
+                const send = {tkn: value,}
+                if (validate(value))
+                    return invoke<boolean>(cmd, send)
+                return false
+            }, {
+                revalidateOnFocus: false,
+                revalidateOnMount: false,
+                revalidateOnReconnect: true,
+                refreshWhenOffline: false,
+                refreshWhenHidden: false,
+            })
+        }
+    })
+
 export interface InputProps {
     type?: InputType,
     className?: string,

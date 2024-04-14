@@ -42,3 +42,16 @@ pub fn check_lang(lang: &str) -> Result<(), ValidationError> {
     }
     Ok(())
 }
+
+pub fn check_tkn(tkn: &str) -> Result<(), ValidationError> {
+    if tkn.len() != 24 {
+        return Err(ValidationError::new("invalid token length"))
+    }
+    let alphabet = base64::alphabet::STANDARD.as_str();
+    for c in tkn.chars() {
+        if !alphabet.contains(c) {
+            return Err(ValidationError::new("invalid symbol inside token"))
+        }
+    }
+    Ok(())
+}

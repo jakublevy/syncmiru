@@ -1,7 +1,7 @@
 import {invoke} from "@tauri-apps/api/core";
 import useSWR from "swr";
 import {ServiceStatus} from "@models/serviceStatus.ts";
-import {useQuery} from "@tanstack/react-query";
+import useSWRImmutable from "swr/immutable";
 
 export const useServiceStatusWatch = () =>
     useSWR('get_service_status', cmd => invoke<ServiceStatus>(cmd, {}), {
@@ -9,11 +9,6 @@ export const useServiceStatusWatch = () =>
     })
 
 export const useServiceStatus = () =>
-        useQuery({
-            queryKey: ['get_service_status'], queryFn: () => invoke<ServiceStatus>('get_service_status', {}),
-            refetchOnMount: false,
-            refetchOnWindowFocus: false,
-            refetchOnReconnect: false,
-            refetchInterval: 0,
-            staleTime: 0,
-})
+    useSWRImmutable('get_service_status', cmd => invoke<ServiceStatus>(cmd, {}), {
+        suspense: false,
+    })

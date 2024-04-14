@@ -63,7 +63,7 @@ pub async fn out_of_email_tkn_quota(
     interval: i64,
 ) -> Result<bool> {
     let query = r#"
-        select COUNT(*) > $1 from email_tkn_log
+        select COUNT(*) >= $1 from email_tkn_log
         inner join users on users.id = email_tkn_log.user_id
         where
         users.id = $2

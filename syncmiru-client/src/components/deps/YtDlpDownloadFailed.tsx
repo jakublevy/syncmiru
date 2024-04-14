@@ -3,7 +3,7 @@ import Danger from "@components/svg/Danger.tsx";
 import {refresh} from "@mittwald/react-use-promise";
 import {useErrorBoundary} from "react-error-boundary";
 import {useTranslation} from "react-i18next";
-import {BtnPrimary} from "@components/widgets/Buttons.tsx";
+import {BtnPrimary} from "@components/widgets/Button.tsx";
 import {useLocation} from "wouter";
 import Card from "@components/widgets/Card.tsx";
 import {TrampolineHistoryState} from "@models/historyState.ts";

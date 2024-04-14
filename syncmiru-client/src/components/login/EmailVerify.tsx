@@ -13,10 +13,14 @@ import Loading from "@components/Loading.tsx";
 export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
     const [_, navigate] = useLocation()
     const {email}: VerifyEmailHistoryState = useHistoryState()
-    const {error: verEmailError} = useReqVerificationEmail(email)
+    const {error: verEmailError, isLoading: verEmailIsLoading} = useReqVerificationEmail(email)
     const {data: isVerified} = useWatchVerify(email)
     const [loading, setLoading] = useState<boolean>(false)
     const [resendTimeout , setResendTimeout] = useState<number>(waitBeforeResend)
+
+    useEffect(() => {
+        setLoading(verEmailIsLoading)
+    }, [verEmailIsLoading]);
 
     useEffect(() => {
         if(isVerified)

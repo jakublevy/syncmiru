@@ -4,7 +4,7 @@ import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
 import {EmailInput, EmailInputSrvValidate, Input, UsernameInputSrvValidate} from "@components/widgets/Input.tsx";
 import {DisplaynameInput} from "@components/widgets/Input.tsx";
-import {BtnPrimary, BtnTextPrimary} from "@components/widgets/Buttons.tsx";
+import {BtnPrimary, BtnTextPrimary} from "@components/widgets/Button.tsx";
 import {useLocation} from "wouter";
 import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
@@ -17,6 +17,7 @@ import {invoke} from "@tauri-apps/api/core";
 import {RegFormFields, useRegFormSchema} from "@hooks/useRegFormSchema.ts";
 import {VerifyEmailHistoryState} from "@models/historyState.ts";
 import {showErrorAlert} from "src/utils/alert.ts";
+import {mutate} from "swr";
 
 export default function Register({regPubAllowed}: Props): ReactElement {
     const [_, navigate] = useLocation()
@@ -62,7 +63,10 @@ export default function Register({regPubAllowed}: Props): ReactElement {
         invoke<void>('send_registration', {data: JSON.stringify(send)})
             .then(() => {
                 setLoading(false)
-                navigate('/email-verify', {state: {email: data.email} as VerifyEmailHistoryState})
+                mutate('req_verification_email', undefined).then(() =>
+                    mutate('get_email_verified', undefined).then(() =>
+                        navigate('/email-verify', {state: {email: data.email} as VerifyEmailHistoryState}))
+                )
             })
             .catch((e) => {
                 setValue('captcha', '')
