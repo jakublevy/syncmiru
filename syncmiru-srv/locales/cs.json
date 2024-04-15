@@ -5,5 +5,8 @@
   "email-verify-ok-content": "Váš email byl ověřen a účet byl aktivován.",
 
   "forgotten-password-subject": "Zapomenuté heslo",
-  "forgotten-password-body": "Ahoj,<br/>tvůj ověřovací kód pro obnovení hesla je:"
+  "forgotten-password-body": "Ahoj,<br/>tvůj ověřovací kód pro obnovení hesla je:",
+
+  "password-changed-subject": "Upozornění: provedena změna hesla",
+  "password-changed-body": "Ahoj,<br/> tvoje heslo bylo změněno."
 }

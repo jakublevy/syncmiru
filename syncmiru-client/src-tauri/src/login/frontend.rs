@@ -3,7 +3,7 @@ use crate::config::appdata;
 use crate::result::Result;
 use crate::config::jwt;
 use tauri::Manager;
-use crate::login::{ServiceStatus, RegData, BooleanResp, HttpMethod, TknEmail};
+use crate::login::{ServiceStatus, RegData, BooleanResp, HttpMethod, TknEmail, ForgottenPasswordChange};
 use crate::utils;
 
 #[tauri::command]
@@ -129,4 +129,16 @@ pub async fn get_forgotten_password_tkn_valid(state: tauri::State<'_, AppState>,
         Some(serde_json::to_value(tkn_email)?)
     ).await?)?;
     Ok(tkn_valid.resp)
+}
+
+#[tauri::command]
+pub async fn forgotten_password_change_password(state: tauri::State<'_, AppState>, data: String) -> Result<()> {
+    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    let fp_change: ForgottenPasswordChange = serde_json::from_str(&data)?;
+    super::req(
+        &(home_srv + "/forgotten-password-change"),
+        HttpMethod::Post,
+        Some(serde_json::to_value(fp_change)?)
+    ).await?;
+    Ok(())
 }

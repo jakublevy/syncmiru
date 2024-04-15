@@ -12,7 +12,7 @@ use tower::BoxError;
 use crate::srvstate::SrvState;
 use validator::{Validate};
 use crate::error::SyncmiruError;
-use crate::models::http::{Email, RegForm, ServiceStatus, Username, BooleanResp, EmailWithLang, EmailVerify, TknEmail};
+use crate::models::http::{Email, RegForm, ServiceStatus, Username, BooleanResp, EmailWithLang, EmailVerify, TknEmail, ForgottenPasswordChange};
 use crate::query;
 use crate::result::{Result};
 use crate::crypto;
@@ -52,7 +52,7 @@ pub async fn register(
     let hashed_password = crypto::hash(payload.password.clone()).await?;
     if state.config.reg_pub.allowed {
         payload.valid_response(&state.config.reg_pub.hcaptcha_secret.unwrap(), None).await?;
-        query::new_account(
+        query::new_user(
             &state.db,
             &payload.username,
             &payload.displayname,
@@ -180,7 +180,6 @@ pub async fn forgotten_password_send(
     Ok(())
 }
 
-#[axum::debug_handler]
 pub async fn forgotten_password_tkn_valid(
     axum::extract::State(state): axum::extract::State<SrvState>,
     Json(payload): Json<TknEmail>
@@ -200,6 +199,38 @@ pub async fn forgotten_password_tkn_valid(
 
     let tkn_valid = crypto::verify(payload.tkn, hashed_tkn).await?;
     Ok(Json(BooleanResp{ resp: tkn_valid }))
+}
+
+pub async fn forgotten_password_change(
+    axum::extract::State(state): axum::extract::State<SrvState>,
+    Json(payload): Json<ForgottenPasswordChange>
+) -> Result<()> {
+    payload.validate()?;
+    let uid = query::user_id_from_email(&state.db, &payload.email)
+        .await?
+        .context("invalid or expired token")?;
+
+    let hashed_tkn = query::get_valid_hashed_tkn(
+        &state.db,
+        uid,
+        EmailTknType::ForgottenPassword,
+        state.config.email.token_valid_time)
+        .await?
+        .context("invalid or expired token")?;
+
+    let tkn_valid = crypto::verify(payload.tkn, hashed_tkn).await?;
+    if !tkn_valid {
+        return Err(SyncmiruError::UnprocessableEntity("invalid token".to_string()))
+    }
+    let hashed_password = crypto::hash(payload.password.clone()).await?;
+    query::set_user_hash(&state.db, uid, &hashed_password).await?;
+    email::send_password_changed_warning(
+        &state.config.email,
+        &payload.email,
+        &state.config.srv.url,
+        &payload.lang
+    ).await?;
+    Ok(())
 }
 
 pub async fn error(error: BoxError) -> impl IntoResponse {

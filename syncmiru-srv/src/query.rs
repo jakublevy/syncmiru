@@ -18,7 +18,7 @@ pub async fn email_unique(db: &PgPool, email: &str) -> Result<bool> {
     Ok(unique.0)
 }
 
-pub async fn new_account(
+pub async fn new_user(
     db: &PgPool,
     username: &str,
     displayname: &str,
@@ -171,4 +171,12 @@ pub async fn email_verified(db: &PgPool, email: &str) -> Result<Option<bool>> {
     else {
         Ok(None)
     }
+}
+
+pub async fn set_user_hash(db: &PgPool, uid: i32, hash: &str) -> Result<()> {
+    sqlx::query("update users set hash = $1 where id = $2")
+        .bind(hash)
+        .bind(uid)
+        .execute(db).await?;
+    Ok(())
 }

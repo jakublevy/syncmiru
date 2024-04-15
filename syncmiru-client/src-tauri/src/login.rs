@@ -80,3 +80,11 @@ pub struct TknEmail {
     pub tkn: String,
     pub email: String
 }
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct ForgottenPasswordChange {
+    pub tkn: String,
+    pub email: String,
+    pub password: String,
+    pub lang: String
+}

@@ -3,7 +3,6 @@ import {useLocation} from "wouter";
 import {useServiceStatus} from "@hooks/useServiceStatus.ts";
 import {ForgottenPasswordHistoryState, LoginFormHistoryState} from "@models/historyState.ts";
 import Loading from "@components/Loading.tsx";
-import EmailVerify from "@components/login/EmailVerify.tsx";
 import {useHistoryState} from "wouter/use-browser-location";
 import ForgottenPassword from "@components/login/ForgottenPassword.tsx";
 

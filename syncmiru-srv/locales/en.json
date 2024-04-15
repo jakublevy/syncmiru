@@ -5,5 +5,8 @@
   "email-verify-ok-content": "Your email has been verified and your account has been activated.",
 
   "forgotten-password-subject": "Forgotten password",
-  "forgotten-password-body": "Hi,<br/>your password recovery verification code is:"
+  "forgotten-password-body": "Hi,<br/>your password recovery verification code is:",
+
+  "password-changed-subject": "Warning: Password changed",
+  "password-changed-body": "Hi,<br/> your password has been changed."
 }

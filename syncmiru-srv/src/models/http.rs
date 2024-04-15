@@ -78,6 +78,21 @@ pub struct TknEmail {
     pub email: String
 }
 
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct ForgottenPasswordChange {
+    #[validate(custom(function = "validators::check_tkn"))]
+    pub tkn: String,
+
+    #[validate(email, length(max = 320))]
+    pub email: String,
+
+    #[validate(length(min = 8))]
+    pub password: String,
+
+    #[validate(custom(function = "validators::check_lang"))]
+    pub lang: String
+}
+
 impl BooleanResp {
     pub fn from(b: bool) -> Self {
         Self { resp: b }

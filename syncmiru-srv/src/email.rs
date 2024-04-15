@@ -53,6 +53,22 @@ pub async fn send_forgotten_password_email(
     Ok(())
 }
 
+pub async fn send_password_changed_warning(
+    email_conf: &EmailConf,
+    to: &str,
+    srv_url: &str,
+    lang: &str
+) -> Result<()> {
+    send_email(
+        &email_conf,
+        to,
+        srv_url,
+        &t!("password-changed-subject", locale = lang),
+        &t!("password-changed-body", locale = lang)
+    ).await?;
+    Ok(())
+}
+
 
 async fn send_email(
     email_conf: &EmailConf,

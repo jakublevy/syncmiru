@@ -18,17 +18,19 @@ import {RegFormFields, useRegFormSchema} from "@hooks/useRegFormSchema.ts";
 import {VerifyEmailHistoryState} from "@models/historyState.ts";
 import {showErrorAlert} from "src/utils/alert.ts";
 import {mutate} from "swr";
+import {useTranslation} from "react-i18next";
 
 export default function Register({regPubAllowed}: Props): ReactElement {
     const [_, navigate] = useLocation()
     const lang: Language = useLanguage()
+    const {t} = useTranslation()
 
     const [loading, setLoading] = useState<boolean>(false);
 
     const [unique, setUnique]
         = useState<Unique>({email: true, username: true})
 
-    const formSchema: Joi.ObjectSchema<RegFormFields> = useRegFormSchema(regPubAllowed)
+    const formSchema: Joi.ObjectSchema<RegFormFields> = useRegFormSchema(regPubAllowed, t)
 
     const {
         register,
@@ -62,7 +64,6 @@ export default function Register({regPubAllowed}: Props): ReactElement {
         setLoading(true)
         invoke<void>('send_registration', {data: JSON.stringify(send)})
             .then(() => {
-                setLoading(false)
                 mutate('req_verification_email', undefined).then(() =>
                     mutate('get_email_verified', undefined).then(() =>
                         navigate('/email-verify', {state: {email: data.email} as VerifyEmailHistoryState}))
@@ -70,9 +71,9 @@ export default function Register({regPubAllowed}: Props): ReactElement {
             })
             .catch((e) => {
                 setValue('captcha', '')
-                setLoading(false)
                 showErrorAlert(e)
             })
+            .finally(() => setLoading(false))
     }
 
     function captchaVerified(tkn: string) {
@@ -105,18 +106,17 @@ export default function Register({regPubAllowed}: Props): ReactElement {
         <div className="flex justify-centersafe items-center w-dvw">
             <Card className="min-w-[25rem] w-[40rem] m-3">
                 <div className="flex items-start mb-6">
-                    <h1 className="text-4xl">Registrace</h1>
+                    <h1 className="text-4xl">{t('register-title')}</h1>
                 </div>
                 <form onSubmit={handleSubmit(createAccount)} noValidate>
                     {!regPubAllowed
                         && <div className="flex flex-col">
                             <div className="mb-3 flex-1">
-                                <p>Volné registrace jsou momentálně uzavřeny. Registrovat se můžete pouze se znalostí
-                                    tokenu, který vám musí vygenerovat oprávněná osoba.</p>
+                                <p>{t('register-tkn-required-msg')}</p>
                             </div>
                             <div className="mb-3 flex-1">
                                 <div className="flex justify-between">
-                                    <Label htmlFor="username">Registrační token</Label>
+                                    <Label htmlFor="username">{t('register-tkn-label')}</Label>
                                     <Help
                                         tooltipId="regTkn-help"
                                         className="w-4"
@@ -138,11 +138,11 @@ export default function Register({regPubAllowed}: Props): ReactElement {
                     <div className="flex gap-8">
                         <div className="mb-3 flex-1">
                             <div className="flex justify-between">
-                                <Label htmlFor="username">Uživatelské jméno</Label>
+                                <Label htmlFor="username">{t('username-label')}</Label>
                                 <Help
                                     tooltipId="username-help"
                                     className="w-4"
-                                    content="Uživatelské jméno je vaším identifikátorem na serveru,<br>je neměnné a musí obsahovat 4-16 znaků malých písmen a-z"
+                                    content={t('username-help')}
                                 />
                             </div>
                             <UsernameInputSrvValidate
@@ -155,18 +155,18 @@ export default function Register({regPubAllowed}: Props): ReactElement {
                                 ? <p className="text-danger font-semibold">{errors.username.message}</p>
                                 : <>
                                     {!unique.username
-                                        ? <p className="text-danger font-semibold">Již obsazeno</p>
+                                        ? <p className="text-danger font-semibold">{t('field-not-unique-error')}</p>
                                         : <p className="text-danger invisible font-semibold">L</p>}
                                 </>
                             }
                         </div>
                         <div className="mb-3 flex-1">
                             <div className="flex justify-between">
-                                <Label htmlFor="displayname">Zobrazené jméno</Label>
+                                <Label htmlFor="displayname">{t('displayname-label')}</Label>
                                 <Help
                                     tooltipId="displayname-help"
                                     className="w-4"
-                                    content="Zobrazené jméno je jméno, pod kterým se bude zobrazovat váš účet, jeho hodnotu<br>je možné později změnit. Musí mít 4-24 znaků a není limitováno malými písmeny."
+                                    content={t('displayname-help')}
                                 />
                             </div>
                             <DisplaynameInput
@@ -183,11 +183,11 @@ export default function Register({regPubAllowed}: Props): ReactElement {
                     <div className="flex gap-8">
                         <div className="mb-3 flex-1">
                             <div className="flex justify-between">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">{t('email-label')}</Label>
                                 <Help
                                     tooltipId="email-help"
                                     className="w-4"
-                                    content="Váš email, vyplňte ho pravdivě. Budete ho potřebovat<br>pro ověření účtu a může se hodit pro obnovu hesla"
+                                    content={t('register-email-help')}
                                 />
                             </div>
                             <EmailInputSrvValidate
@@ -201,17 +201,17 @@ export default function Register({regPubAllowed}: Props): ReactElement {
                                 ? <p className="text-danger font-semibold">{errors.email.message}</p>
                                 : <>
                                     {!unique.email
-                                        ? <p className="text-danger font-semibold">Již registrován</p>
+                                        ? <p className="text-danger font-semibold">{t('field-already-registered-error')}</p>
                                         : <p className="text-danger invisible font-semibold">L</p>}
                                 </>}
                         </div>
                         <div className="mb-3 flex-1">
                             <div className="flex justify-between">
-                                <Label htmlFor="email-confirm">Potvrzení emailu</Label>
+                                <Label htmlFor="email-confirm">{t('cemail-label')}</Label>
                                 <Help
                                     tooltipId="email-confirm"
                                     className="w-4"
-                                    content="Váš email ještě jednou pro kontrolu"
+                                    content={t('cemail-help')}
                                 />
                             </div>
                             <EmailInput
@@ -229,11 +229,11 @@ export default function Register({regPubAllowed}: Props): ReactElement {
                     <div className="flex gap-8">
                         <div className="mb-3 flex-1">
                             <div className="flex justify-between">
-                                <Label htmlFor="email">Heslo</Label>
+                                <Label htmlFor="email">{t('password-label')}</Label>
                                 <Help
                                     tooltipId="password-help"
                                     className="w-4"
-                                    content="Heslo musí obsahovat alespoň 8 znaků"
+                                    content={t('password-help')}
                                 />
                             </div>
                             <Input
@@ -248,11 +248,11 @@ export default function Register({regPubAllowed}: Props): ReactElement {
                         </div>
                         <div className="mb-6 flex-1">
                             <div className="flex justify-between">
-                                <Label htmlFor="password-confirm">Potvrzení hesla</Label>
+                                <Label htmlFor="password-confirm">{t('cpassword-label')}</Label>
                                 <Help
                                     tooltipId="password-confirm-help"
                                     className="w-4"
-                                    content="Vaše heslo ještě jednou pro kontrolu"
+                                    content={t('cpassword-help')}
                                 />
                             </div>
                             <Input
@@ -289,8 +289,8 @@ export default function Register({regPubAllowed}: Props): ReactElement {
                         <BtnPrimary
                             className="w-full mb-2"
                             type="submit"
-                        >Založit účet</BtnPrimary>
-                        <span>Máte již účet? <BtnTextPrimary onClick={navigateBack}>Přihlásit se</BtnTextPrimary></span>
+                        >{t('register-create-account-msg')}</BtnPrimary>
+                        <span>{t('already-have-account-msg')} <BtnTextPrimary onClick={navigateBack}>{t('login-btn')}</BtnTextPrimary></span>
                     </div>
                 </form>
             </Card>
@@ -308,7 +308,7 @@ interface RegData {
     email: string,
     password: string,
     captcha: string,
-    reg_tkn: String
+    reg_tkn: string
 }
 
 interface Unique {

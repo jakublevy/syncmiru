@@ -15,7 +15,6 @@ import {ForgottenPasswordHistoryState, LoginFormHistoryState} from "@models/hist
 import useFormValidate from "@hooks/useFormValidate.ts";
 import {mutate} from "swr";
 
-
 export default function LoginFormMain(): ReactElement {
     const [location, navigate] = useLocation()
     const historyState: LoginFormHistoryState | undefined = useHistoryState()
@@ -184,7 +183,7 @@ export default function LoginFormMain(): ReactElement {
                         {homeSrv === "" ?
                             <>
                                 {formShowError.srv
-                                    ? <p className="text-danger font-semibold">Toto pole musí být vyplněno</p>
+                                    ? <p className="text-danger font-semibold">{t('required-field-error')}</p>
                                     : <p className="invisible">L</p>
                                 }
                             </>
@@ -192,10 +191,9 @@ export default function LoginFormMain(): ReactElement {
                                 {homeSrvServiceIsLoading && !homeServerError() &&
                                     <p className="invisible">L</p>}
                                 {homeServerError() &&
-                                    <p className="text-danger font-semibold">Instance serveru nebyla nalezena,
-                                        zkontrolujte adresu</p>}
+                                    <p className="text-danger font-semibold">{t('login-srv-not-found')}</p>}
                                 {!homeServerError() && !homeSrvServiceIsLoading &&
-                                    <p className="text-emerald-500 font-semibold">Server nalezen</p>}
+                                    <p className="text-emerald-500 font-semibold">{t('login-srv-found')}</p>}
                             </>
                         }
                     </div>
@@ -205,7 +203,7 @@ export default function LoginFormMain(): ReactElement {
                             <Help
                                 tooltipId="email-help"
                                 className="w-4"
-                                content="Váš email, který jste použili pro registraci.<br>Toto pole vyplňte i v případě, kdy si chcete obnovit heslo."
+                                content={t('login-email-help')}
                             />
                         </div>
                         <EmailInput
@@ -216,11 +214,11 @@ export default function LoginFormMain(): ReactElement {
                         {formShowError.email
                             ? <>
                                 {formErrors.email === FieldError.Missing &&
-                                    <p className="text-danger font-semibold">Toto pole musí být vyplněno</p>}
+                                    <p className="text-danger font-semibold">{t('required-field-error')}</p>}
                                 {formErrors.email === FieldError.InvalidFormat &&
-                                    <p className="text-danger font-semibold">Toto není email</p>}
+                                    <p className="text-danger font-semibold">{t('email-invalid-format')}</p>}
                                 {formErrors.email === FieldError.InvalidResponse &&
-                                    <p className="text-danger font-semibold">Špatný email / heslo</p>}
+                                    <p className="text-danger font-semibold">{t('login-incorrect-email-password')}</p>}
                                 {formErrors.email === FieldError.None &&
                                     <p className="text-danger font-semibold invisible">L</p>}
                             </>
@@ -229,11 +227,11 @@ export default function LoginFormMain(): ReactElement {
                     </div>
                     <div className="mb-1">
                         <div className="flex justify-between">
-                            <Label htmlFor="password">{t('password')}</Label>
+                            <Label htmlFor="password">{t('password-label')}</Label>
                             <Help
                                 tooltipId="password-help"
                                 className="w-4"
-                                content="Vaše heslo, pokud si ho nepamatujete,<br>můžete si ho nechat obnovit tlačítkem níže."
+                                content={t('login-password-help')}
                             />
                         </div>
                             <Input
@@ -246,9 +244,9 @@ export default function LoginFormMain(): ReactElement {
                             {formShowError.password
                                 ? <>
                                     {formErrors.password === FieldError.Missing &&
-                                        <p className="text-danger font-semibold">Toto pole musí být vyplněno</p>}
+                                        <p className="text-danger font-semibold">{t('required-field-error')}</p>}
                                     {formErrors.password === FieldError.InvalidResponse &&
-                                        <p className="text-danger font-semibold">Špatný email / heslo</p>}
+                                        <p className="text-danger font-semibold">{t('login-incorrect-email-password')}</p>}
                                     {formErrors.password === FieldError.None &&
                                         <p className="text-danger font-semibold invisible">L</p>}
                                 </>

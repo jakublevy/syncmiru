@@ -2,18 +2,26 @@ import {ChangeEvent, ReactElement, useEffect, useState} from "react";
 import Card from "@components/widgets/Card.tsx";
 import BtnTimeout from "@components/widgets/BtnTimeout.tsx";
 import Help from "@components/widgets/Help.tsx";
-import {ForgottenPasswordTknSrvValidate} from "@components/widgets/Input.tsx";
+import {ForgottenPasswordTknSrvValidate, Input} from "@components/widgets/Input.tsx";
 import {LoginFormHistoryState} from "@models/historyState.ts";
-import {BackButton} from "@components/widgets/Button.tsx";
+import {BackButton, BtnPrimary} from "@components/widgets/Button.tsx";
 import {useLocation} from "wouter";
 import {useReqForgottenPasswordEmail} from "@hooks/useReqForgottenPasswordEmail.ts";
 import {showErrorAlert, showSuccessAlert} from "../../utils/alert.ts";
 import Loading from "@components/Loading.tsx";
 import {invoke} from "@tauri-apps/api/core";
-import Check from "@components/svg/Check.tsx";
+import Label from "@components/widgets/Label.tsx";
+import {NewPasswordFields, useNewPasswordSchema} from "@hooks/useNewPasswordFormSchema.ts";
+import {useForm} from "react-hook-form";
+import {joiResolver} from "@hookform/resolvers/joi";
+import {Language} from "@models/config.tsx";
+import {useLanguage} from "@hooks/useLanguage.ts";
+import {useTranslation} from "react-i18next";
 
 export default function ForgottenPassword({email, waitBeforeResend}: Props): ReactElement {
     const [_, navigate] = useLocation()
+    const {t} = useTranslation()
+    const language = useLanguage()
     const {error: fpError, isLoading: fpIsLoading} = useReqForgottenPasswordEmail(email)
     const [loading, setLoading] = useState<boolean>(false)
     const [resendTimeout, setResendTimeout] = useState<number>(waitBeforeResend)
@@ -21,6 +29,14 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
     const [showTknInvalid, setShowTknInvalid] = useState<boolean>(false)
     const [tknCheckFailed, setTknCheckFailed] = useState<boolean>(false)
     const [tkn, setTkn] = useState<string>("")
+
+    const formSchema = useNewPasswordSchema(t)
+
+    const {
+        register,
+        handleSubmit,
+        formState: {errors}
+    } = useForm<NewPasswordFields>({resolver: joiResolver(formSchema)});
 
     useEffect(() => {
         setLoading(fpIsLoading)
@@ -43,16 +59,15 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
         setLoading(true)
         invoke<void>('req_forgotten_password_email', {email: email})
             .then(() => {
-                setLoading(false)
                 setResendTimeout(waitBeforeResend)
-                showSuccessAlert("Nový email byl odeslán")
+                showSuccessAlert(t('new-email-has-been-sent-msg'))
                 setTkn('')
             })
             .catch((e) => {
-                setLoading(false)
                 setResendTimeout(0)
                 showErrorAlert(e)
             })
+            .finally(() => setLoading(false))
     }
 
     function tknValidChanged(valid: boolean) {
@@ -72,29 +87,46 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
         setTknCheckFailed(true)
     }
 
+    function changePassword(form: NewPasswordFields) {
+        const sendData: ForgottenPasswordChangeData = {
+            email: email,
+            tkn: tkn,
+            password: form.password,
+            lang: language,
+        }
+        setLoading(true)
+        invoke<void>('forgotten_password_change_password', {data: JSON.stringify(sendData)})
+            .then(() => {
+                navigate('/forgotten-password-changed')
+            })
+            .catch((e: string) => {
+                showErrorAlert(e)
+            })
+            .finally(() => setLoading(false))
+    }
+
     if (loading)
         return <Loading/>
 
     return (
         <div className="flex justify-centersafe items-center w-dvw">
-            <Card className="min-w-[25rem] w-[40rem] m-3">
+            <Card className="min-w-[27rem] w-[40rem] m-3">
                 <div className="flex items-start">
                     <BackButton onClick={backButtonClicked} className="mr-4"/>
-                    <h1 className="text-4xl mb-4">Ověření emailu</h1>
+                    <h1 className="text-4xl mb-4">{t('forgotten-password-title')}</h1>
                 </div>
-                <p>Pokud byl nalezen účet, tak na uvedenou emailovou adresu <b>{email}</b> byl odeslán ověřující email
-                    obsahující 24 místný kód, který pro změnu hesla vložte níže.</p>
+                <p>{t('forgotten-password-text-1')} <b>{email}</b> {t('forgotten-password-text-2')}</p>
                 {!tknValid && <div className="mt-4 mb-4">
-                    <BtnTimeout text="Email nepřišel?" timeout={resendTimeout} onClick={resendEmail}/>
+                    <BtnTimeout text={t('email-not-received')} timeout={resendTimeout} onClick={resendEmail}/>
                 </div>
                 }
                 <div className="mt-4">
                     <div className="flex justify-between">
-                        <label htmlFor="token" className="block mb-1 text-sm font-medium">Kód pro ověření</label>
+                        <label htmlFor="token" className="block mb-1 text-sm font-medium">{t('forgotten-password-tkn-label')}</label>
                         <Help
                             tooltipId="token-help"
                             className="w-4"
-                            content="Sem vložte 24 místný kód pro ověření vašeho emailu."
+                            content={t('forgotten-password-tkn-help')}
                         />
                     </div>
                     <ForgottenPasswordTknSrvValidate
@@ -110,16 +142,63 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
                         maxLength={24}
                     />
                     {tknCheckFailed
-                        ? <p className="text-danger font-semibold">Chyba spojení</p>
+                        ? <p className="text-danger font-semibold">{t('forgotten-password-tkn-check-failed')}</p>
                         : <> {showTknInvalid
-                            ? <p className="text-danger font-semibold">Neplatný token</p>
+                            ? <p className="text-danger font-semibold">{t('forgotten-password-tkn-invalid')}</p>
                             : <>{tknValid
-                                ? <p className="text-emerald-500 font-semibold">Validní token</p>
+                                ? <p className="text-emerald-500 font-semibold">{t('forgotten-password-tkn-valid')}</p>
                                 : <p className="text-danger invisible font-semibold">L</p>
                             }</>
                         } </>
                     }
                 </div>
+                {tknValid && <form onSubmit={handleSubmit(changePassword)} noValidate>
+                    <div className="flex flex-col mt-4">
+                        <h2 className="text-2xl mb-4">{t('forgotten-password-new-password-title')}</h2>
+                        <div className="flex gap-8">
+                            <div className="mb-3 flex-1">
+                                <div className="flex justify-between">
+                                    <Label htmlFor="username">{t('password-label')}</Label>
+                                    <Help
+                                        tooltipId="password-help"
+                                        className="w-4"
+                                        content={t('password-help')}
+                                    />
+                                </div>
+                                <Input
+                                    type="password"
+                                    id="password"
+                                    required
+                                    {...register('password')}
+                                    />
+                                {errors.password
+                                    ? <p className="text-danger font-semibold">{errors.password.message}</p>
+                                    : <p className="text-danger invisible font-semibold">L</p>}
+                            </div>
+                            <div className="mb-3 flex-1">
+                                <div className="flex justify-between">
+                                    <Label htmlFor="username">{t('cpassword-label')}</Label>
+                                    <Help
+                                        tooltipId="cpassword-help"
+                                        className="w-4"
+                                        content={t('cpassword-help')}
+                                    />
+                                </div>
+                                <Input
+                                    type="password"
+                                    id="password-confirm"
+                                    required
+                                    {...register('cpassword')}
+                                    />
+                                {errors.cpassword
+                                    ? <p className="text-danger font-semibold">{errors.cpassword.message}</p>
+                                    : <p className="text-danger invisible font-semibold">L</p>}
+                            </div>
+                        </div>
+                        <BtnPrimary type="submit" className="mt-4">{t('forgotten-password-change-password-btn')}</BtnPrimary>
+                    </div>
+                </form>
+                }
             </Card>
         </div>
     )
@@ -128,4 +207,11 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
 interface Props {
     email: string
     waitBeforeResend: number
+}
+
+interface ForgottenPasswordChangeData {
+    email: string,
+    password: string,
+    tkn: string
+    lang: Language
 }

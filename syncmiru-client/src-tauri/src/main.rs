@@ -45,7 +45,8 @@ fn main() -> Result<()> {
             login::frontend::req_verification_email,
             login::frontend::get_email_verified,
             login::frontend::req_forgotten_password_email,
-            login::frontend::get_forgotten_password_tkn_valid
+            login::frontend::get_forgotten_password_tkn_valid,
+            login::frontend::forgotten_password_change_password
         ])
         .on_window_event(handle_window_event)
         .manage(appstate)

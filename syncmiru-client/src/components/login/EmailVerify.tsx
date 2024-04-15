@@ -9,9 +9,11 @@ import {showErrorAlert, showSuccessAlert} from "src/utils/alert.ts";
 import BtnTimeout from "@components/widgets/BtnTimeout.tsx";
 import {invoke} from "@tauri-apps/api/core";
 import Loading from "@components/Loading.tsx";
+import {useTranslation} from "react-i18next";
 
 export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
     const [_, navigate] = useLocation()
+    const {t} = useTranslation()
     const {email}: VerifyEmailHistoryState = useHistoryState()
     const {error: verEmailError, isLoading: verEmailIsLoading} = useReqVerificationEmail(email)
     const {data: isVerified} = useWatchVerify(email)
@@ -36,15 +38,14 @@ export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
         setLoading(true)
         invoke<void>('req_verification_email', {email: email})
             .then(() => {
-                setLoading(false)
                 setResendTimeout(waitBeforeResend)
-                showSuccessAlert("Nový email byl odeslán")
+                showSuccessAlert(t('new-email-has-been-sent-msg'))
             })
             .catch((e) => {
-                setLoading(false)
                 setResendTimeout(0)
                 showErrorAlert(e)
             })
+            .finally(() => setLoading(false))
     }
 
     if(loading)
@@ -53,11 +54,10 @@ export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
     return (
         <div className="flex justify-centersafe items-center w-dvw">
             <Card className="min-w-[25rem] w-[40rem] m-3">
-                <h1 className="text-4xl mb-4">Ověření emailu</h1>
-                <p>Váš účet byl vytvořen. Na uvedenou emailovou adresu <b>{email}</b> byl odeslán ověřující email
-                    obsahující odkaz, jehož otevřením dojde k verifikace emailu a aktivaci účtu.</p>
+                <h1 className="text-4xl mb-4">{t('email-verify-title')}</h1>
+                <p>{t('email-verify-text-1')} <b>{email}</b> {t('email-verify-text-2')}</p>
                 <div className="mt-4">
-                    <BtnTimeout onClick={resendEmail} text="Email nepřišel?" timeout={resendTimeout}/>
+                    <BtnTimeout onClick={resendEmail} text={t('email-not-received')} timeout={resendTimeout}/>
                 </div>
             </Card>
         </div>
