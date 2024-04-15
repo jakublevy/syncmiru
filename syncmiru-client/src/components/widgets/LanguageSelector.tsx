@@ -33,7 +33,7 @@ export default function LanguageSelector({className}: Props): ReactElement {
             getOptionValue={(ls: LanguageSelectModel) => ls.id}
             value={LanguagesSelect.find(l => l.id === lang)}
             classNamePrefix="my-react-select"
-            className={`w-52 my-react-select-container ${className}`}
+            className={`w-52 my-react-select-container ${className != null ? className : ''}`}
             //@ts-ignore
             onChange={languageChanged}
             options={LanguagesSelect}

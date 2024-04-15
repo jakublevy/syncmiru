@@ -146,7 +146,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
                         : <> {showTknInvalid
                             ? <p className="text-danger font-semibold">{t('forgotten-password-tkn-invalid')}</p>
                             : <>{tknValid
-                                ? <p className="text-emerald-500 font-semibold">{t('forgotten-password-tkn-valid')}</p>
+                                ? <p className="text-success font-semibold">{t('forgotten-password-tkn-valid')}</p>
                                 : <p className="text-danger invisible font-semibold">L</p>
                             }</>
                         } </>

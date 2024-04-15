@@ -8,6 +8,7 @@ export default {
       colors: {
         primary: "rgb(99 102 241)",
         secondary: "rgb(209 213 219)",
+        success: "rgb(16 185 129)",
         danger: "#dc3545",
         darkbg: "#292b2f",
         darkread: "#eeeeee"

@@ -39,14 +39,14 @@ export default function DepsMissingWindows({firstRunSeen, depsState}: Props): Re
                     <div className="flex flex-col justify-center items-center">
                         <code>mpv</code>
                         {depsState.mpv
-                            ? <Check className="w-4" fill="#1c7f21"/>
-                            : <Cross className="w-4" fill="#ee1e40"/>}
+                            ? <Check className="w-4"/>
+                            : <Cross className="w-4"/>}
                     </div>
                     <div className="flex flex-col justify-center items-center">
                         <code>yt-dlp</code>
                         {depsState.yt_dlp
-                            ? <Check className="w-4" fill="#1c7f21"/>
-                            : <Cross className="w-4" fill="#ee1e40"/>}
+                            ? <Check className="w-4"/>
+                            : <Cross className="w-4"/>}
                     </div>
                 </div>
                 <p className="mb-4">{t('missing-deps-windows-msg2')}</p>

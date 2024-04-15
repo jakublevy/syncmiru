@@ -193,7 +193,7 @@ export default function LoginFormMain(): ReactElement {
                                 {homeServerError() &&
                                     <p className="text-danger font-semibold">{t('login-srv-not-found')}</p>}
                                 {!homeServerError() && !homeSrvServiceIsLoading &&
-                                    <p className="text-emerald-500 font-semibold">{t('login-srv-found')}</p>}
+                                    <p className="text-success font-semibold">{t('login-srv-found')}</p>}
                             </>
                         }
                     </div>

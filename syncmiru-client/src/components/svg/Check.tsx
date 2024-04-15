@@ -25,3 +25,7 @@ interface Props {
     className?: string
     fill?: string
 }
+
+Check.defaultProps = {
+    fill: "#1c7f21"
+}
