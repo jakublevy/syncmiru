@@ -12,7 +12,7 @@ use tower::BoxError;
 use crate::srvstate::SrvState;
 use validator::{Validate};
 use crate::error::SyncmiruError;
-use crate::models::http::{Email, RegForm, ServiceStatus, Username, BooleanResp, EmailWithLang, EmailVerify, TknEmail, ForgottenPasswordChange};
+use crate::models::http::{Email, RegForm, ServiceStatus, Username, BooleanResp, EmailWithLang, EmailVerify, TknEmail, ForgottenPasswordChange, Login};
 use crate::query;
 use crate::result::{Result};
 use crate::crypto;
@@ -230,6 +230,13 @@ pub async fn forgotten_password_change(
         &state.config.srv.url,
         &payload.lang
     ).await?;
+    Ok(())
+}
+
+pub async fn new_login(
+    axum::extract::State(state): axum::extract::State<SrvState>,
+    Json(payload): Json<Login>
+) -> Result<()> {
     Ok(())
 }
 

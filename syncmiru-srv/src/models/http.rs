@@ -93,6 +93,20 @@ pub struct ForgottenPasswordChange {
     pub lang: String
 }
 
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct Login {
+    #[validate(email, length(max = 320))]
+    pub email: String,
+
+    #[validate(length(min = 8))]
+    pub password: String,
+
+    #[validate(length(min = 3))]
+    pub os: String,
+
+    pub serial: String
+}
+
 impl BooleanResp {
     pub fn from(b: bool) -> Self {
         Self { resp: b }

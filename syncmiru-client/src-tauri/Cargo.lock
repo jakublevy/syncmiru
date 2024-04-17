@@ -4381,6 +4381,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "sha256"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "18278f6a914fa3070aa316493f7d2ddfb9ac86ebc06fa3b83bffda487e9065b0"
+dependencies = [
+ "async-trait",
+ "bytes",
+ "hex",
+ "sha2",
+ "tokio",
+]
+
+[[package]]
 name = "sharded-slab"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4654,6 +4667,7 @@ name = "syncmiru-client"
 version = "0.0.0"
 dependencies = [
  "anyhow",
+ "cfg-if",
  "dirs",
  "keyring",
  "octocrab",
@@ -4667,6 +4681,7 @@ dependencies = [
  "serde_with",
  "serial_test",
  "sevenz-rust",
+ "sha256",
  "sys-locale",
  "tauri",
  "tauri-build",
@@ -4675,6 +4690,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "windows-sys 0.52.0",
+ "winreg 0.52.0",
  "x11rb",
  "zip",
 ]

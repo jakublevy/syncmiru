@@ -10,6 +10,7 @@ mod deps;
 mod files;
 mod login;
 mod utils;
+mod sys;
 
 #[macro_use]
 extern crate rust_i18n;
