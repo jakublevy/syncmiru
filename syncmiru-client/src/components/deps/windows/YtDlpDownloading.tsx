@@ -6,7 +6,7 @@ import {useYtDlpStartDownloading} from "@hooks/useYtDlpStartDownloading.ts";
 import {useTranslation} from "react-i18next";
 import {useLocation} from "wouter";
 import Card from "@components/widgets/Card.tsx";
-import {DownloadProgress, DownloadStart} from "@models/depsDownload.ts";
+import {DownloadProgress, DownloadStart} from "@models/deps.ts";
 
 export default function YtDlpDownloading(): ReactElement {
     const {t} = useTranslation()
@@ -28,7 +28,9 @@ export default function YtDlpDownloading(): ReactElement {
             setLoading(false)
         })
         listen<void>('yt-dlp-download-finished', (e: Event<void>) => {
-            setYtDlpDownloadProgress({...ytDlpDownloadProgress, received: ytDlpDownloadInfo.size})
+            setYtDlpDownloadProgress((p) => {
+                return { speed: p.speed, received: ytDlpDownloadInfo.size }
+            })
         })
         listen<void>('yt-dlp-extract-finished', (e: Event<void>) => {
             navigate('/login-dispatch')

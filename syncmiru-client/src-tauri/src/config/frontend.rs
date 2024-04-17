@@ -35,29 +35,6 @@ pub async fn set_language(state: tauri::State<'_, AppState>, language: Language)
 }
 
 #[tauri::command]
-pub async fn get_deps_state(state: tauri::State<'_, AppState>) -> Result<DepsAvailable> {
-    let mut appdata = state.appdata.write()?;
-    if cfg!(target_family = "windows") {
-        if appdata.deps_managed {
-            let local = DepsAvailable::from_params(true)?;
-            if local.all_available() {
-                return Ok(local)
-            }
-        }
-        let global = DepsAvailable::from_params(false)?;
-        if global.all_available() {
-            appdata.deps_managed = false;
-            appdata::write(&appdata)?;
-        }
-        Ok(global)
-    }
-    else {
-        let di = DepsAvailable::from_params(appdata.deps_managed)?;
-        Ok(di)
-    }
-}
-
-#[tauri::command]
 pub async fn get_target_family() -> Result<String> {
     Ok(std::env::consts::FAMILY.to_lowercase().to_string())
 }

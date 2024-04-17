@@ -69,6 +69,13 @@
   "forgotten-password-text-1": "If an account has been found, a verification email has been sent to the email address",
   "forgotten-password-text-2": "containing a 24-digit code, which you can enter below to change your password.",
 
+  "deps-update-title": "Dependencies update",
+  "deps-update-text-1": "The following dependency updates are available.",
+  "deps-update-text-2": "We recommend that you do the update immediately, but you can postpone it until the next time you run the application.",
+  "deps-update-text-3": "Do you want to update the dependencies to the latest version?",
+  "deps-update-later-btn": "Ask later",
+  "deps-update-do-btn": "Update now",
+
   "required-field-error": "This field must be filled in",
   "email-invalid-format": "This is not an valid email",
   "password-invalid-format": "This is not a strong enough password",

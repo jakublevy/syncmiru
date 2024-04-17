@@ -1,5 +1,5 @@
 import {invoke} from "@tauri-apps/api/core";
-import {DepsState} from "@models/config.tsx";
+import {DepsState} from "@models/deps.tsx";
 import {usePromise} from "@mittwald/react-use-promise";
 
 export const useDepsState = (): DepsState => {

@@ -1,4 +1,4 @@
-import {DepsState} from "@models/config.tsx";
+import {DepsState} from "@models/deps.tsx";
 import Check from "@components/svg/Check.tsx";
 import Cross from "@components/svg/Cross.tsx";
 import {useTranslation} from "react-i18next";
@@ -8,6 +8,7 @@ import {BackButton, BtnPrimary, BtnSecondary} from "@components/widgets/Button.t
 import {useLocation} from "wouter";
 import Card from "@components/widgets/Card.tsx";
 import {TrampolineHistoryState} from "@models/historyState.ts";
+import {MpvDownloadHistoryState} from "@models/mpvDownloadHistoryState.ts";
 
 export default function DepsMissingWindows({firstRunSeen, depsState}: Props): ReactElement {
     const {t} = useTranslation()
@@ -24,7 +25,7 @@ export default function DepsMissingWindows({firstRunSeen, depsState}: Props): Re
     }
 
     function downloadDeps(): void {
-        navigate('/mpv-download')
+        navigate('/mpv-download', {state: { yt_dlp: true } as MpvDownloadHistoryState})
     }
 
     return (

@@ -21,6 +21,7 @@ import RegisterDispatch from "@components/login/RegisterDispatch.tsx";
 import EmailVerifyDispatch from "@components/login/EmailVerifyDispatch.tsx";
 import ForgottenPasswordDispatch from "@components/login/ForgottenPasswordDispatch.tsx";
 import ForgottenPasswordChanged from "@components/login/ForgottenPasswordChanged.tsx";
+import DepsUpdate from "@components/deps/windows/DepsUpdate.tsx";
 
 
 export default function App(): ReactElement {
@@ -57,6 +58,7 @@ export default function App(): ReactElement {
                     <YtDlpDownloading/>
                 </ErrorBoundary>
             </Route>
+            <Route path="/deps-update" component={DepsUpdate}/>
 
             <Route path="/login-dispatch" component={LoginDispatch}/>
             <Route path="/login-auto" component={LoginAuto}/>

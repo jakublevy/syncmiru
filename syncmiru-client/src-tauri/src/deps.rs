@@ -1,13 +1,12 @@
 use std::fs::File;
 use std::io::{Write};
 use std::process::Command;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 use anyhow::Context;
 use reqwest::Client;
 use serde::Serialize;
 use tauri::Manager;
 use crate::constants;
-use crate::deps::frontend::{DownloadProgressFrontend, DownloadStartFrontend};
 use crate::deps::utils::{mpv_exe, yt_dlp_exe};
 use crate::error::SyncmiruError;
 use crate::files::syncmiru_data_dir;
@@ -16,9 +15,29 @@ use crate::result::Result;
 pub mod frontend;
 pub mod utils;
 
+#[derive(Clone, serde::Serialize)]
+pub struct DownloadStart<'a> {
+    pub url: &'a str,
+    pub size: u64,
+}
+
+#[derive(Copy, Clone, serde::Serialize)]
+pub struct DownloadProgress {
+    pub speed: u64,
+    pub received: u64,
+}
+
 struct DepRelease {
     url: String,
     version: String,
+}
+
+#[derive(serde::Serialize)]
+pub struct DepsVersions {
+    mpv_cur: String,
+    mpv_newest: String,
+    yt_dlp_cur: String,
+    yt_dlp_newest: String
 }
 
 async fn latest_mpv_download_link() -> Result<DepRelease> {
@@ -27,7 +46,11 @@ async fn latest_mpv_download_link() -> Result<DepRelease> {
         api_url = constants::MPV_AVX2_RELEASES_URL;
     }
     let client = Client::new();
-    let response = client.get(api_url).send().await?;
+    let response = client
+        .get(api_url)
+        .timeout(Duration::from_secs(constants::HTTP_TIMEOUT))
+        .send()
+        .await?;
     let xml_raw = response.text().await?;
     let doc = roxmltree::Document::parse(&xml_raw)?;
     let item = doc
@@ -87,7 +110,9 @@ async fn latest_yt_dlp_download_link() -> Result<DepRelease> {
 
 async fn download(window: &tauri::Window, release: &DepRelease, dst: &str, event_name_prefix: &str) -> Result<()> {
     let client = Client::new();
-    let mut response = client.get(&release.url).send().await?;
+    let mut response = client
+        .get(&release.url)
+        .send().await?;
 
     if !response.status().is_success() {
         return Err(SyncmiruError::DepsDownloadFailed);
@@ -96,7 +121,7 @@ async fn download(window: &tauri::Window, release: &DepRelease, dst: &str, event
     let total_size = response.content_length().unwrap_or(1);
     window.emit(
         &format!("{}download-start", event_name_prefix),
-        DownloadStartFrontend { url: &release.url, size: total_size }
+        DownloadStart { url: &release.url, size: total_size }
     )?;
 
     let mut downloaded_size: u64 = 0;
@@ -114,7 +139,7 @@ async fn download(window: &tauri::Window, release: &DepRelease, dst: &str, event
 
             window.emit(
                 &format!("{}download-progress", event_name_prefix),
-                DownloadProgressFrontend { speed, received: downloaded_size }
+                DownloadProgress { speed, received: downloaded_size }
             )?;
 
             last_print_downloaded_size = downloaded_size;
@@ -131,7 +156,8 @@ async fn download(window: &tauri::Window, release: &DepRelease, dst: &str, event
 #[derive(Serialize)]
 pub struct DepsAvailable {
     mpv: bool,
-    yt_dlp: bool
+    yt_dlp: bool,
+    managed: bool
 }
 
 impl DepsAvailable {
@@ -173,7 +199,7 @@ impl DepsAvailable {
             yt_dlp_res = yt_dlp_version.len() == 10;
         }
 
-        Ok(Self { mpv: mpv_res, yt_dlp: yt_dlp_res })
+        Ok(Self { mpv: mpv_res, yt_dlp: yt_dlp_res, managed: deps_managed })
     }
     pub fn all_available(&self) -> bool {
         self.mpv && self.yt_dlp

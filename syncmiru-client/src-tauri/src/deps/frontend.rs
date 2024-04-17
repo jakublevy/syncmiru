@@ -1,19 +1,44 @@
 use crate::appstate::AppState;
-use crate::deps::{download, latest_mpv_download_link, latest_yt_dlp_download_link};
-use crate::deps::utils::{delete_mpv, delete_yt_dlp, decompress_yt_dlp_archive, decompress_mpv_archive};
+use crate::config::appdata;
+use crate::deps::{DepsAvailable, DepsVersions, download, latest_mpv_download_link, latest_yt_dlp_download_link};
+use crate::deps::utils::{delete_mpv, delete_yt_dlp, decompress_yt_dlp_archive, decompress_mpv_archive, mpv_dir};
 use crate::files::{delete_tmp, syncmiru_data_dir};
 use crate::result::Result;
 
-#[derive(Clone, serde::Serialize)]
-pub(super) struct DownloadStartFrontend<'a> {
-    pub url: &'a str,
-    pub size: u64,
+#[tauri::command]
+pub async fn get_deps_state(state: tauri::State<'_, AppState>) -> Result<DepsAvailable> {
+    let mut appdata = state.appdata.write()?;
+    if cfg!(target_family = "windows") {
+        if appdata.deps_managed {
+            let local = DepsAvailable::from_params(true)?;
+            if local.all_available() {
+                return Ok(local)
+            }
+        }
+        let global = DepsAvailable::from_params(false)?;
+        if global.all_available() {
+            appdata.deps_managed = false;
+            appdata::write(&appdata)?;
+        }
+        Ok(global)
+    }
+    else {
+        let di = DepsAvailable::from_params(appdata.deps_managed)?;
+        Ok(di)
+    }
 }
 
-#[derive(Copy, Clone, serde::Serialize)]
-pub(super) struct DownloadProgressFrontend {
-    pub speed: u64,
-    pub received: u64,
+#[tauri::command]
+pub async fn get_deps_versions_fetch(state: tauri::State<'_, AppState>) -> Result<DepsVersions> {
+    let mpv = latest_mpv_download_link().await?;
+    let yt_dlp = latest_yt_dlp_download_link().await?;
+    let appdata = state.appdata.read()?;
+    Ok(DepsVersions{
+        mpv_cur: appdata.mpv_version.clone().unwrap(),
+        yt_dlp_cur: appdata.yt_dlp_version.clone().unwrap(),
+        mpv_newest: mpv.version,
+        yt_dlp_newest: yt_dlp.version
+    })
 }
 
 #[tauri::command]
@@ -27,6 +52,7 @@ pub async fn mpv_start_downloading(window: tauri::Window, state: tauri::State<'_
     let d = syncmiru_data_dir()?;
     decompress_mpv_archive(&window, &d.join("_mpv"), &d.join("mpv"), "mpv-")?;
 
+    delete_tmp()?;
     let mut appdata = state.appdata.write()?;
     appdata.mpv_version = Some(mpv_release.version);
 

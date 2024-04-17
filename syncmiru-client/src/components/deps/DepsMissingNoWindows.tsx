@@ -1,4 +1,4 @@
-import {DepsState} from "@models/config.tsx";
+import {DepsState} from "@models/deps.tsx";
 import Check from "@components/svg/Check.tsx";
 import Cross from "@components/svg/Cross.tsx";
 import {useTranslation} from "react-i18next";

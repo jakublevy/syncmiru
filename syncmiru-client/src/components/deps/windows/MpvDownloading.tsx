@@ -6,11 +6,14 @@ import Loading from "@components/Loading.tsx";
 import {useTranslation} from "react-i18next";
 import {useLocation} from "wouter";
 import Card from "@components/widgets/Card.tsx";
-import {DownloadProgress, DownloadStart} from "@models/depsDownload.ts";
+import {DownloadProgress, DownloadStart} from "@models/deps.ts";
+import {useHistoryState} from "wouter/use-browser-location";
+import {MpvDownloadHistoryState} from "@models/mpvDownloadHistoryState.ts";
 
 export default function MpvDownloading(): ReactElement {
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
+    const {yt_dlp}: MpvDownloadHistoryState = useHistoryState()
     const [loading, setLoading] = useState<boolean>(true)
 
     const [mpvDownloadProgress, setMpvDownloadProgress]
@@ -28,10 +31,15 @@ export default function MpvDownloading(): ReactElement {
             setLoading(false)
         })
         listen<void>('mpv-download-finished', (e: Event<void>) => {
-            setMpvDownloadProgress({...mpvDownloadProgress, received: mpvDownloadInfo.size})
+            setMpvDownloadProgress((p) => {
+                return { speed: p.speed, received: mpvDownloadInfo.size}
+            })
         })
         listen<void>('mpv-extract-finished', (e: Event<void>) => {
-            navigate('/yt-dlp-download')
+            if(yt_dlp)
+                navigate('/yt-dlp-download')
+            else
+                navigate('/login-dispatch')
         })
     }, [loading, mpvDownloadProgress, mpvDownloadInfo]);
 

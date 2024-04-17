@@ -69,6 +69,13 @@
   "forgotten-password-text-1": "Pokud byl nalezen účet, tak na uvedenou emailovou adresu",
   "forgotten-password-text-2": "byl odeslán ověřující email obsahující 24 místný kód, který pro změnu hesla vložte níže.",
 
+  "deps-update-title": "Aktualizace závislostí",
+  "deps-update-text-1": "K dispozici jsou následující aktualizace závislostí.",
+  "deps-update-text-2": "Aktualizaci doporučujeme provést okamžitě, můžeme ji však odložit na příští spuštění aplikace.",
+  "deps-update-text-3": "Chcete provést aktualizaci závislostí na nejnovější verzi?",
+  "deps-update-later-btn": "Zeptat se příště",
+  "deps-update-do-btn": "Provést aktualizaci",
+
   "required-field-error": "Toto pole musí být vyplněno",
   "email-invalid-format": "Toto není platný email",
   "password-invalid-format": "Toto není dostatečně silné heslo",

@@ -1,11 +1,6 @@
 import React from "react";
 import ReactCountryFlag from "react-country-flag";
 
-export interface DepsState {
-    mpv: boolean,
-    yt_dlp: boolean
-}
-
 export enum Language {
     Czech = "cs",
     English = "en"
