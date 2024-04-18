@@ -6,7 +6,7 @@ import {compare} from "compare-versions";
 import Card from "@components/widgets/Card.tsx";
 import {BtnPrimary, BtnSecondary} from "@components/widgets/Button.tsx";
 import {useTranslation} from "react-i18next";
-import {MpvDownloadHistoryState} from "@models/mpvDownloadHistoryState.ts";
+import {MpvDownloadHistoryState} from "@models/historyState.ts";
 
 export default function DepsUpdate(): ReactElement {
     const [_, navigate] = useLocation()

@@ -3,8 +3,8 @@ use crate::config::appdata;
 use crate::result::Result;
 use crate::config::jwt;
 use tauri::Manager;
-use crate::login::{ServiceStatus, RegData, BooleanResp, HttpMethod, TknEmail, ForgottenPasswordChange};
-use crate::utils;
+use crate::login::{ServiceStatus, RegData, BooleanResp, HttpMethod, TknEmail, ForgottenPasswordChange, LoginForm, NewLogin, Jwt};
+use crate::{sys, utils};
 
 #[tauri::command]
 pub async fn can_auto_login(state: tauri::State<'_, AppState>) -> Result<bool> {
@@ -140,5 +140,25 @@ pub async fn forgotten_password_change_password(state: tauri::State<'_, AppState
         HttpMethod::Post,
         Some(serde_json::to_value(fp_change)?)
     ).await?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn new_login(state: tauri::State<'_, AppState>, data: String) -> Result<()> {
+    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    let login: LoginForm = serde_json::from_str(&data)?;
+    let send = NewLogin {
+        email: login.email,
+        password: login.password,
+        os: std::env::consts::OS.to_string(),
+        hash: sys::id_hashed()?,
+        device_name: sys::device()
+    };
+    let jwt: Jwt = serde_json::from_value(super::req_json(
+        &(home_srv + "/new-login"),
+        HttpMethod::Post,
+        Some(serde_json::to_value(send)?)
+    ).await?)?;
+    println!("{:?}", jwt);
     Ok(())
 }

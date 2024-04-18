@@ -20,3 +20,7 @@ export interface VerifyEmailHistoryState {
 export interface ForgottenPasswordHistoryState {
     email: string
 }
+
+export interface MpvDownloadHistoryState {
+    yt_dlp: boolean
+}

@@ -8,7 +8,7 @@ import {useLocation} from "wouter";
 import Card from "@components/widgets/Card.tsx";
 import {DownloadProgress, DownloadStart} from "@models/deps.ts";
 import {useHistoryState} from "wouter/use-browser-location";
-import {MpvDownloadHistoryState} from "@models/mpvDownloadHistoryState.ts";
+import {MpvDownloadHistoryState} from "@models/historyState.ts";
 
 export default function MpvDownloading(): ReactElement {
     const {t} = useTranslation()

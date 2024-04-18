@@ -88,3 +88,23 @@ pub struct ForgottenPasswordChange {
     pub password: String,
     pub lang: String
 }
+
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct LoginForm {
+    email: String,
+    password: String
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct NewLogin {
+    email: String,
+    password: String,
+    os: String,
+    device_name: String,
+    hash: String
+}
+
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct Jwt {
+    jwt: String
+}
