@@ -1,6 +1,5 @@
 export interface LoginFormHistoryState {
     email?: string,
-    fieldsError?: boolean,
     homeSrvError?: boolean
 }
 

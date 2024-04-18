@@ -154,11 +154,11 @@ pub async fn new_login(state: tauri::State<'_, AppState>, data: String) -> Resul
         hash: sys::id_hashed()?,
         device_name: sys::device()
     };
-    let jwt: Jwt = serde_json::from_value(super::req_json(
+    let payload: Jwt = serde_json::from_value(super::req_json(
         &(home_srv + "/new-login"),
         HttpMethod::Post,
         Some(serde_json::to_value(send)?)
     ).await?)?;
-    println!("{:?}", jwt);
+    jwt::write(&payload.jwt)?;
     Ok(())
 }

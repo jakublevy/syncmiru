@@ -14,12 +14,17 @@ import {useHistoryState} from "wouter/use-browser-location";
 import {ForgottenPasswordHistoryState, LoginFormHistoryState} from "@models/historyState.ts";
 import useFormValidate from "@hooks/useFormValidate.ts";
 import {mutate} from "swr";
+import {invoke} from "@tauri-apps/api/core";
+import {showErrorAlert} from "../../utils/alert.ts";
+import {LoginForm} from "@models/login.ts";
+import Loading from "@components/Loading.tsx";
+import {StatusAlertService} from "react-status-alert";
 
 export default function LoginFormMain(): ReactElement {
     const [location, navigate] = useLocation()
     const historyState: LoginFormHistoryState | undefined = useHistoryState()
     const {t} = useTranslation()
-
+    const [loading, setLoading] = useState<boolean>(false)
     const [homeSrvResponseError, setHomeSrvResponseError] = useState<boolean>(false);
     const homeSrv = useHomeServer()
     const {
@@ -39,6 +44,18 @@ export default function LoginFormMain(): ReactElement {
         = useState<FormShowError>({email: false, srv: false, password: false})
 
     useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent): any => {
+            if (e.key !== undefined && e.key.toLowerCase() === "enter")
+                loginBtnClicked()
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [formData]);
+
+    useEffect(() => {
         if(homeSrvServiceError == null)
             setHomeSrvResponseError(false)
         else
@@ -51,13 +68,6 @@ export default function LoginFormMain(): ReactElement {
                 setFormData((p: FormData) => {
                     return {email: historyState.email as string, password: p.password}
                 })
-
-            if (historyState.fieldsError !== undefined) {
-                setFormErrors({email: FieldError.InvalidResponse, password: FieldError.InvalidResponse})
-                setFormShowError((p: FormShowError) => {
-                    return {email: true, password: true, srv: p.srv}
-                })
-            }
             if (historyState.homeSrvError !== undefined)
                 setHomeSrvResponseError(true)
         }
@@ -109,11 +119,27 @@ export default function LoginFormMain(): ReactElement {
 
         if (
             checkHomeServer()
-            && [FieldError.None, FieldError.InvalidResponse].includes(fieldsError.password)
-            && [FieldError.None, FieldError.InvalidResponse].includes(fieldsError.email)
+            && fieldsError.email == FieldError.None
+            && fieldsError.password == FieldError.None
         ) {
-            // TODO: continue login
-            console.log('continue login')
+            StatusAlertService.removeAllAlerts()
+            const sendData: LoginForm = {
+                email: formData.email,
+                password: formData.password
+            }
+            setLoading(true)
+            invoke<void>('new_login', {data: JSON.stringify(sendData)})
+                .then(() => {
+                    // TODO: dispatch to auto login
+                })
+                .catch((e: string) => {
+                    if(!e.startsWith("Reqwest error"))
+                        showErrorAlert(t('login-incorrect-email-password'))
+                    else {
+                        setHomeSrvResponseError(true)
+                    }
+                })
+                .finally(() => setLoading(false))
         }
     }
 
@@ -122,17 +148,14 @@ export default function LoginFormMain(): ReactElement {
         setFormErrors(fieldsError)
         setFormShowError({srv: true, email: true, password: false})
 
-        if (
-            checkHomeServer()
-            && [FieldError.None, FieldError.InvalidResponse].includes(fieldsError.email)
-        ) {
+        if (checkHomeServer() && fieldsError.email == FieldError.None) {
             await mutate('get_service_status', undefined)
             await mutate('req_forgotten_password_email', undefined)
             navigate('/forgotten-password', {state: {email: formData.email} as ForgottenPasswordHistoryState})
         }
     }
 
-    function emailChanged(e: ChangeEvent<HTMLInputElement>) {
+    function emailOnChange(e: ChangeEvent<HTMLInputElement>) {
         setFormData((p: FormData): FormData => {
             return {email: e.target.value.trim(), password: p.password}
         })
@@ -141,7 +164,7 @@ export default function LoginFormMain(): ReactElement {
         })
     }
 
-    function passwordChanged(e: ChangeEvent<HTMLInputElement>) {
+    function passwordOnChange(e: ChangeEvent<HTMLInputElement>) {
         setFormData((p: FormData): FormData => {
             return {password: e.target.value, email: p.email}
         })
@@ -150,6 +173,8 @@ export default function LoginFormMain(): ReactElement {
         })
     }
 
+    if(loading)
+        return <Loading/>
     if (location === '/login-form/main')
         return (
             <div className="flex justify-centersafe items-center w-dvw">
@@ -209,7 +234,7 @@ export default function LoginFormMain(): ReactElement {
                         <EmailInput
                             id="email"
                             value={formData.email}
-                            onChange={emailChanged}
+                            onChange={emailOnChange}
                         />
                         {formShowError.email
                             ? <>
@@ -217,8 +242,6 @@ export default function LoginFormMain(): ReactElement {
                                     <p className="text-danger font-semibold">{t('required-field-error')}</p>}
                                 {formErrors.email === FieldError.InvalidFormat &&
                                     <p className="text-danger font-semibold">{t('email-invalid-format')}</p>}
-                                {formErrors.email === FieldError.InvalidResponse &&
-                                    <p className="text-danger font-semibold">{t('login-incorrect-email-password')}</p>}
                                 {formErrors.email === FieldError.None &&
                                     <p className="text-danger font-semibold invisible">L</p>}
                             </>
@@ -239,14 +262,12 @@ export default function LoginFormMain(): ReactElement {
                                 id="password"
                                 className="mb-1"
                                 value={formData.password}
-                                onChange={passwordChanged}/>
+                                onChange={passwordOnChange}/>
                         <div className="flex flex-row justify-between items-start mb-5">
                             {formShowError.password
                                 ? <>
                                     {formErrors.password === FieldError.Missing &&
                                         <p className="text-danger font-semibold">{t('required-field-error')}</p>}
-                                    {formErrors.password === FieldError.InvalidResponse &&
-                                        <p className="text-danger font-semibold">{t('login-incorrect-email-password')}</p>}
                                     {formErrors.password === FieldError.None &&
                                         <p className="text-danger font-semibold invisible">L</p>}
                                 </>
@@ -282,7 +303,6 @@ enum FieldError {
     None,
     Missing,
     InvalidFormat,
-    InvalidResponse
 }
 
 interface FormShowError {
