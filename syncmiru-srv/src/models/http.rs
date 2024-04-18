@@ -104,7 +104,16 @@ pub struct Login {
     #[validate(length(min = 3))]
     pub os: String,
 
-    pub serial: String
+    #[validate(length(min = 1))]
+    pub device_name: String,
+
+    #[validate(length(equal = 64))]
+    pub hash: String
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct Jwt {
+    pub jwt: String
 }
 
 impl BooleanResp {

@@ -46,6 +46,15 @@ pub enum SyncmiruError {
     #[error("URL encoding error")]
     SerdeUrlSerError(#[from] serde_urlencoded::ser::Error),
 
+    #[error("PEM parsing error")]
+    PemError(#[from] pem::PemError),
+
+    #[error("openssl error stack")]
+    ErrorStack(#[from] openssl::error::ErrorStack),
+
+    #[error("jwt error")]
+    JwtError(#[from] jwt::error::Error),
+
     #[error("Parsing CLI args failed {0}")]
     CliParseFailed(String),
 
@@ -60,6 +69,12 @@ pub enum SyncmiruError {
 
     #[error("Auth error")]
     AuthError,
+
+    #[error("Email not verified")]
+    EmailNotVerified,
+
+    #[error("JWT key parse error")]
+    JwtKeyParseError(String)
 }
 
 
@@ -105,8 +120,9 @@ impl SyncmiruError {
         use SyncmiruError::*;
 
         match self {
-            InvalidEntity(_) | UnprocessableEntity(_) | HCaptchaInvalid(_) => StatusCode::UNPROCESSABLE_ENTITY,
+            InvalidEntity(_) | UnprocessableEntity(_) | HCaptchaInvalid(_) | EmailNotVerified => StatusCode::UNPROCESSABLE_ENTITY,
             Conflict(_) => StatusCode::CONFLICT,
+            AuthError => StatusCode::UNAUTHORIZED,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

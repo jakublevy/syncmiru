@@ -180,3 +180,34 @@ pub async fn set_user_hash(db: &PgPool, uid: i32, hash: &str) -> Result<()> {
         .execute(db).await?;
     Ok(())
 }
+
+pub async fn get_user_hash_unsafe(db: &PgPool, uid: i32) -> Result<String> {
+    let hash: (String, ) = sqlx::query_as("select hash from users where id = $1 limit 1")
+        .bind(uid)
+        .fetch_one(db).await?;
+    Ok(hash.0)
+}
+
+pub async fn new_session(
+    db: &PgPool,
+    jwt: &str,
+    ip: &str,
+    os: &str,
+    device_name: &str,
+    hash: &str,
+    uid: i32
+) -> Result<()> {
+    let query = r#"
+    insert into session (jwt, ip, os, device_name, hash, user_id)
+    values ($1, $2, $3, $4, $5, $6)
+    "#;
+    sqlx::query(query)
+        .bind(jwt)
+        .bind(ip)
+        .bind(os)
+        .bind(device_name)
+        .bind(hash)
+        .bind(uid)
+        .execute(db).await?;
+    Ok(())
+}

@@ -1,23 +1,34 @@
-#[cfg(target_family = "windows")]
-mod windows;
-
-#[cfg(target_family = "unix")]
-mod unix;
-
 use crate::result::Result;
-use sha256::digest;
+use machineid_rs::{IdBuilder, Encryption, HWIDComponent};
+use anyhow::{anyhow, Context};
+use crate::constants;
 
 pub fn id_hashed() -> Result<String> {
-    cfg_if::cfg_if! {
-        if #[cfg(target_family = "windows")] {
-            Ok(digest(windows::serial_number()?))
-        }
-        else if #[cfg(target_family = "unix")] {
-            Ok(digest(unix::serial_number()?))
+    let mut builder = IdBuilder::new(Encryption::SHA256);
+    builder.add_component(HWIDComponent::SystemID)
+        .add_component(HWIDComponent::OSName)
+        .add_component(HWIDComponent::CPUID);
 
-        }
-        else {
-            Ok("".to_string())
-        }
+    let hwid = builder.build(constants::HWID_KEY)
+        .map_err(|e| anyhow!(e).context("HWID error"))?;
+    Ok(hwid)
+}
+
+pub fn device() -> String {
+    whoami::devicename()
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn id_test() {
+        assert_eq!(id_hashed().unwrap(), "afds")
+    }
+
+    #[test]
+    fn device_test() {
+        assert_eq!(device(), "Desktop")
     }
 }

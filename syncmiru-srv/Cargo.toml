@@ -22,6 +22,7 @@ tokio = { version = "1.37.0", features = ["rt-multi-thread"] }
 serde = "1.0.197"
 serde_repr = "0.1.18"
 serde_with = "3.7.0"
+serde_json = "1.0.116"
 validator = { version = "0.17.0", features = ["derive"] }
 hcaptcha = "2.3.1"
 argon2 = "0.5.3"
@@ -30,3 +31,7 @@ base64 = "0.22.0"
 lettre = "0.11.6"
 rust-i18n = "3.0.1"
 serde_urlencoded = "0.7.1"
+pem = "3.0.4"
+jwt =  { version = "0.16.0", features = ["openssl"] }
+openssl = { version = "0.10.64", features = ["vendored"] }
+axum-client-ip = "0.6.0"

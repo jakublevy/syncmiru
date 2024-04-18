@@ -6,14 +6,15 @@ use axum::extract::Query;
 use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{Html, IntoResponse};
+use axum_client_ip::SecureClientIp;
 use hcaptcha::Hcaptcha;
 use rand::Rng;
 use tower::BoxError;
 use crate::srvstate::SrvState;
 use validator::{Validate};
 use crate::error::SyncmiruError;
-use crate::models::http::{Email, RegForm, ServiceStatus, Username, BooleanResp, EmailWithLang, EmailVerify, TknEmail, ForgottenPasswordChange, Login};
-use crate::query;
+use crate::models::http::{Email, RegForm, ServiceStatus, Username, BooleanResp, EmailWithLang, EmailVerify, TknEmail, ForgottenPasswordChange, Login, Jwt};
+use crate::{query, tkn};
 use crate::result::{Result};
 use crate::crypto;
 use crate::email;
@@ -130,15 +131,14 @@ pub async fn email_verify_send(
     let tkn = crypto::gen_tkn();
     let tkn_hash = crypto::hash(tkn.clone()).await?;
     query::new_email_tkn(&state.db, uid, EmailTknType::Verify, &tkn_hash).await?;
-    println!("Email sending tkn: {}", tkn);
-    // email::send_verification_email(
-    //     &state.config.email,
-    //     &payload.email,
-    //     &tkn,
-    //     uid,
-    //     &state.config.srv.url,
-    //     &payload.lang,
-    // ).await?;
+    email::send_verification_email(
+        &state.config.email,
+        &payload.email,
+        &tkn,
+        uid,
+        &state.config.srv.url,
+        &payload.lang,
+    ).await?;
     Ok(())
 }
 
@@ -169,14 +169,13 @@ pub async fn forgotten_password_send(
     let tkn = crypto::gen_tkn();
     let tkn_hash = crypto::hash(tkn.clone()).await?;
     query::new_email_tkn(&state.db, uid, EmailTknType::ForgottenPassword, &tkn_hash).await?;
-    println!("Email sending {}", tkn);
-    // email::send_forgotten_password_email(
-    //     &state.config.email,
-    //     &payload.email,
-    //     &tkn,
-    //     &state.config.srv.url,
-    //     &payload.lang
-    // ).await?;
+    email::send_forgotten_password_email(
+        &state.config.email,
+        &payload.email,
+        &tkn,
+        &state.config.srv.url,
+        &payload.lang
+    ).await?;
     Ok(())
 }
 
@@ -235,9 +234,36 @@ pub async fn forgotten_password_change(
 
 pub async fn new_login(
     axum::extract::State(state): axum::extract::State<SrvState>,
+    secure_ip: SecureClientIp,
     Json(payload): Json<Login>
-) -> Result<()> {
-    Ok(())
+) -> Result<Json<Jwt>> {
+    payload.validate()?;
+    let email_exists = !query::email_unique(&state.db, &payload.email).await?;
+    if !email_exists {
+        utils::random_sleep(300, 500).await;
+        return Err(SyncmiruError::AuthError)
+    }
+    let uid = query::user_id_from_email(&state.db, &payload.email).await?.unwrap();
+    let pass_hash = query::get_user_hash_unsafe(&state.db, uid).await?;
+    if !crypto::verify(payload.password, pass_hash).await? {
+        return Err(SyncmiruError::AuthError)
+    }
+    let email_verified = query::email_verified(&state.db, &payload.email).await?.unwrap();
+    if !email_verified {
+        return Err(SyncmiruError::EmailNotVerified)
+    }
+    let jwt = tkn::new_login(&state.config.login_jwt, uid)?;
+    query::new_session(
+        &state.db,
+        &jwt,
+        &secure_ip.0.to_string(),
+        &payload.os,
+        &payload.device_name,
+        &payload.hash,
+        uid
+    ).await?;
+
+    Ok(Json(Jwt { jwt }))
 }
 
 pub async fn error(error: BoxError) -> impl IntoResponse {

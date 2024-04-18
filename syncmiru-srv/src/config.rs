@@ -1,11 +1,16 @@
+use std::fmt::Display;
+use std::fs;
 use std::fs::File;
 use std::io::{Read};
 use std::path::{Path, PathBuf};
 use anyhow::{anyhow, Context};
+use jwt::AlgorithmType;
 use lettre::SmtpTransport;
 use lettre::transport::smtp::authentication::Credentials;
 use log::{debug, info, warn};
+use openssl::hash::MessageDigest;
 use yaml_rust2::{Yaml, YamlLoader};
+use crate::config::KeyAlg::{ES256, ES512, RS256, RS512};
 use crate::config::LogOutput::{StdErr, Stdout};
 use crate::error::SyncmiruError;
 use crate::result::Result;
@@ -23,11 +28,11 @@ pub fn read(config_file: impl AsRef<Path> + Copy) -> Result<Config> {
     let db = DbConfig::from(&doc["db"])?;
     let log = LogConfig::from(&doc["log"])?;
     let email = EmailConf::from(&doc["email"])?;
-    let login_jwt_cert = LoginJwtCert::from(&doc["login_jwt_cert"])?;
+    let login_jwt = LoginJwt::from(&doc["login_jwt"])?;
 
     info!("{} parsed", cf_print);
     Ok(
-        Config { srv, reg_pub, db, log, email, login_jwt_cert }
+        Config { srv, reg_pub, db, log, email, login_jwt }
     )
 }
 
@@ -38,7 +43,7 @@ pub struct Config {
     pub db: DbConfig,
     pub log: LogConfig,
     pub email: EmailConf,
-    pub login_jwt_cert: LoginJwtCert,
+    pub login_jwt: LoginJwt,
     //sources: Vec<Source>
 }
 
@@ -324,7 +329,7 @@ struct Source {
     dir_format: DirFormat,
     dir_read_jwt: String,
     client_url: String,
-    client_acc_priv_key_file: PathBuf
+    client_acc_priv_pem: Vec<u8>
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -333,23 +338,95 @@ enum DirFormat {
 }
 
 #[derive(Debug, Clone)]
-struct LoginJwtCert {
-    priv_key_file: PathBuf,
-    pub_key_file: PathBuf
+pub struct LoginJwt {
+    pub priv_pem: Vec<u8>,
+    pub pub_pem: Vec<u8>,
+    pub alg: KeyAlg
 }
 
-impl LoginJwtCert {
+impl LoginJwt {
     pub fn from(yaml: &Yaml) -> Result<Self> {
+        let alg_str = yaml["algorithm"]
+            .as_str()
+            .context("algorithm is missing in login_jwt section")?
+            .to_lowercase();
+        let alg = KeyAlg::from(alg_str.as_ref())
+            .context("Invalid algorithm inside login_jwt section")?;
         let priv_key_file = PathBuf::from(
             yaml["priv_key_file"]
             .as_str()
-            .context("priv_key_file is missing inside login_jwt_cert")?
+            .context("priv_key_file is missing inside login_jwt")?
         );
+        let priv_pem = parse_key(priv_key_file, KeyType::Private, alg)?;
         let pub_key_file = PathBuf::from(
             yaml["pub_key_file"]
                 .as_str()
-                .context("pub_key_file is missing inside login_jwt_cert")?
+                .context("pub_key_file is missing inside login_jwt")?
         );
-        Ok(Self { priv_key_file, pub_key_file })
+        let pub_pem = parse_key(pub_key_file, KeyType::Public, alg)?;
+         Ok(Self { pub_pem, priv_pem, alg })
     }
+}
+
+#[derive(PartialEq)]
+enum KeyType {
+    Private,
+    Public
+}
+
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum KeyAlg {
+    RS256,
+    RS512,
+    ES256,
+    ES512
+}
+
+impl From<KeyAlg> for AlgorithmType {
+    fn from(value: KeyAlg) -> Self {
+        match value {
+            RS256 => AlgorithmType::Rs256,
+            RS512 => AlgorithmType::Rs512,
+            ES256 => AlgorithmType::Es256,
+            ES512 => AlgorithmType::Es512
+        }
+    }
+}
+
+impl KeyAlg {
+    pub fn from(s: &str) -> Option<KeyAlg> {
+        match s.to_lowercase().as_str() {
+            "rs256" => Some(RS256),
+            "rs512" => Some(RS512),
+            "es256" => Some(ES256),
+            "es512" => Some(ES512),
+            _ => None
+        }
+    }
+    pub fn digest(&self) -> MessageDigest {
+        match self {
+            RS256 | ES256 => MessageDigest::sha256(),
+            RS512 | ES512 => MessageDigest::sha512(),
+        }
+    }
+}
+
+fn parse_key(p: impl AsRef<Path> + Clone, kt: KeyType, ka: KeyAlg) -> Result<Vec<u8>> {
+    if !p.as_ref().exists() {
+        return Err(SyncmiruError::JwtKeyParseError(format!("{} does not exists", p.as_ref().display())))
+    }
+    let pem_str = fs::read_to_string(p.clone())?;
+    let pem_bytes = pem_str.as_bytes();
+    let pem = pem::parse(pem_bytes)?;
+    let expected_tag = match (kt, ka) {
+        (KeyType::Private, RS256) | (KeyType::Private, RS512) => "PRIVATE KEY",
+        (KeyType::Public, RS256) | (KeyType::Public, RS512) => "PUBLIC KEY",
+        (KeyType::Private, ES256) | (KeyType::Private, ES512) => "EC PRIVATE KEY",
+        (KeyType::Public, ES256) | (KeyType::Public, ES512) => "PUBLIC KEY",
+    };
+    if pem.tag() != expected_tag {
+        return Err(SyncmiruError::JwtKeyParseError(format!("{} does not appear to be a valid {}", p.as_ref().display(), expected_tag)))
+    }
+    Ok(pem_bytes.to_vec())
 }
