@@ -1,8 +1,8 @@
 import {ReactElement} from "react";
 
-export default function LoginAuto(): ReactElement {
+export default function Login(): ReactElement {
 
     //TODO: this will attempt to login
 
-    return <>Login auto</>
+    return <>Login</>
 }

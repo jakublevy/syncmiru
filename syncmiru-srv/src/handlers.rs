@@ -2,9 +2,9 @@ use socketioxide::extract::SocketRef;
 use crate::handlers;
 
 pub mod http;
-pub mod login;
+pub mod socketio;
 
 pub fn ns_callback(s: SocketRef) {
     println!("client connected to /");
-    s.on("login", handlers::login::login);
+    s.on("login", socketio::login);
 }

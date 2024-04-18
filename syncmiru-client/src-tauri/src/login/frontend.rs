@@ -1,3 +1,4 @@
+use anyhow::Context;
 use crate::appstate::AppState;
 use crate::config::appdata;
 use crate::result::Result;
@@ -160,5 +161,12 @@ pub async fn new_login(state: tauri::State<'_, AppState>, data: String) -> Resul
         Some(serde_json::to_value(send)?)
     ).await?)?;
     jwt::write(&payload.jwt)?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn login(state: tauri::State<'_, AppState>) -> Result<()> {
+    let jwt = jwt::read()?.context("no login jwt tkn available")?;
+    
     Ok(())
 }

@@ -10,7 +10,7 @@ import {ErrorBoundary} from "react-error-boundary";
 import MpvDownloadFailed from "@components/deps/windows/MpvDownloadFailed.tsx";
 import YtDlpDownloadFailed from "@components/deps/YtDlpDownloadFailed.tsx";
 import Trampoline from "@components/Trampoline.tsx";
-import LoginAuto from "@components/login/LoginAuto.tsx";
+import Login from "@components/login/Login.tsx";
 import LoginForm from "@components/login/LoginForm.tsx";
 import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
@@ -61,7 +61,7 @@ export default function App(): ReactElement {
             <Route path="/deps-update" component={DepsUpdate}/>
 
             <Route path="/login-dispatch" component={LoginDispatch}/>
-            <Route path="/login-auto" component={LoginAuto}/>
+            <Route path="/login" component={Login}/>
             <Route path="/login-form/*" component={LoginForm}/>
             <Route path="/register" component={RegisterDispatch}/>
             <Route path="/email-verify" component={EmailVerifyDispatch}/>
