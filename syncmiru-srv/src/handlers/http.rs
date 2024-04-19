@@ -6,7 +6,6 @@ use axum::extract::Query;
 use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{Html, IntoResponse};
-use axum_client_ip::SecureClientIp;
 use hcaptcha::Hcaptcha;
 use rand::Rng;
 use tower::BoxError;
@@ -234,7 +233,6 @@ pub async fn forgotten_password_change(
 
 pub async fn new_login(
     axum::extract::State(state): axum::extract::State<SrvState>,
-    secure_ip: SecureClientIp,
     Json(payload): Json<Login>
 ) -> Result<Json<Jwt>> {
     payload.validate()?;
@@ -256,10 +254,9 @@ pub async fn new_login(
     query::new_session(
         &state.db,
         &jwt,
-        &secure_ip.0.to_string(),
         &payload.os,
         &payload.device_name,
-        &payload.hash,
+        &payload.hwid_hash,
         uid
     ).await?;
 

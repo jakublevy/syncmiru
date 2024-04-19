@@ -34,4 +34,3 @@ serde_urlencoded = "0.7.1"
 pem = "3.0.4"
 jwt =  { version = "0.16.0", features = ["openssl"] }
 openssl = { version = "0.10.64", features = ["vendored"] }
-axum-client-ip = "0.6.0"

@@ -3,6 +3,7 @@ import {useCanAutoLogin} from "@hooks/useCanAutoLogin.ts";
 import {useLocation} from "wouter";
 import {useSetFirstRunSeen} from "@hooks/useFirstRunSeen.ts";
 import {refresh} from "@mittwald/react-use-promise";
+import {mutate} from "swr";
 
 export default function LoginDispatch(): ReactElement {
     useSetFirstRunSeen()
@@ -12,7 +13,7 @@ export default function LoginDispatch(): ReactElement {
     useEffect(() => {
         refresh({tag: 'useCanAutoLogin'})
         if(canAutoLogin)
-            navigate('/main')
+            mutate('login').then(() => navigate('/main'))
         else
             navigate('/login-form/main')
     }, [canAutoLogin]);

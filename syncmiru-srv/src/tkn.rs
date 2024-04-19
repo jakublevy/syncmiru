@@ -1,7 +1,12 @@
-use jwt::{Header, PKeyWithDigest, SignWithKey, Token};
+use std::collections::BTreeMap;
+use std::error::Error;
+use jwt::{Header, PKeyWithDigest, SignWithKey, Token, VerifyWithKey};
 use jwt::header::HeaderType;
 use openssl::pkey::PKey;
+use sqlx::PgPool;
 use crate::config::LoginJwt;
+use crate::error::SyncmiruError::AuthError;
+use crate::query;
 use crate::result::Result;
 
 pub fn new_login(login_jwt_conf: &LoginJwt, uid: i32) -> Result<String> {
@@ -20,6 +25,28 @@ pub fn new_login(login_jwt_conf: &LoginJwt, uid: i32) -> Result<String> {
     Ok(signed.as_str().to_string())
 }
 
-pub fn login_jwt_valid(jwt: &str, login_jwt_conf: &LoginJwt) -> Result<bool> {
-    Ok(true)
+pub async fn login_jwt_check(
+    jwt: &str,
+    login_jwt_conf: &LoginJwt,
+    db: &PgPool
+) -> Result<bool> {
+    let key = PKeyWithDigest {
+        digest: login_jwt_conf.alg.digest(),
+        key: PKey::public_key_from_pem(&login_jwt_conf.pub_pem)?,
+    };
+    if let Ok(claims) = jwt.verify_with_key(&key) as std::result::Result<BTreeMap<String, i32>, jwt::Error> {
+        let sub_opt = claims.get("sub");
+        if sub_opt.is_none() {
+            return Ok(false)
+        }
+        let sub = sub_opt.unwrap();
+        let valid = query::session_valid(db, jwt, *sub).await?;
+        if !valid {
+            return Ok(false)
+        }
+        Ok(true)
+    }
+    else {
+        Ok(false)
+    }
 }

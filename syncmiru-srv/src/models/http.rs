@@ -108,11 +108,12 @@ pub struct Login {
     pub device_name: String,
 
     #[validate(length(equal = 64))]
-    pub hash: String
+    pub hwid_hash: String
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct Jwt {
+    #[validate(length(min = 1))]
     pub jwt: String
 }
 

@@ -1,17 +1,21 @@
 use socketioxide::extract::{Data, SocketRef, State};
+use validator::Validate;
+use crate::error::SyncmiruError::AuthError;
+use crate::models::http::Jwt;
 use crate::result::Result;
 use crate::srvstate::SrvState;
+use crate::tkn;
 
 pub async fn auth(
     state: State<SrvState>,
     s: SocketRef,
-    Data(tkn): Data<String>
+    Data(payload): Data<Jwt>
 ) -> Result<()> {
-    println!("auth middleware");
-    //println!("auth called - state config: {:?}", state.config);
-    // println!("token is {}", tkn);
-    // if tkn != "secret" {
-    //     return Err(AuthError)
-    // }
+    payload.validate()?;
+    println!("{}", payload.jwt);
+    let valid = tkn::login_jwt_check(&payload.jwt, &state.config.login_jwt, &state.db).await?;
+    if !valid {
+        return Err(AuthError)
+    }
     Ok(())
 }

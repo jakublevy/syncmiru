@@ -10,7 +10,6 @@ use axum::error_handling::HandleErrorLayer;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
-use axum_client_ip::SecureClientIpSource;
 use clap::Parser;
 use tower_http::trace::TraceLayer;
 use socketioxide::extract::SocketRef;
@@ -79,7 +78,6 @@ async fn main() -> Result<()> {
               .load_shed()
               .concurrency_limit(128)
               .timeout(Duration::from_secs(10))
-              .layer(SecureClientIpSource::ConnectInfo.into_extension())
               .layer(TraceLayer::new_for_http()),
        )
        .with_state(srvstate);

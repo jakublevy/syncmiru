@@ -191,23 +191,41 @@ pub async fn get_user_hash_unsafe(db: &PgPool, uid: i32) -> Result<String> {
 pub async fn new_session(
     db: &PgPool,
     jwt: &str,
-    ip: &str,
     os: &str,
     device_name: &str,
     hash: &str,
     uid: i32
 ) -> Result<()> {
     let query = r#"
-    insert into session (jwt, ip, os, device_name, hash, user_id)
-    values ($1, $2, $3, $4, $5, $6)
+    insert into session (jwt, os, device_name, hash, user_id)
+    values ($1, $2, $3, $4, $5)
     "#;
     sqlx::query(query)
         .bind(jwt)
-        .bind(ip)
         .bind(os)
         .bind(device_name)
         .bind(hash)
         .bind(uid)
         .execute(db).await?;
     Ok(())
+}
+
+pub async fn session_valid(
+    db: &PgPool,
+    jwt: &str,
+    uid: i32
+) -> Result<bool> {
+    if let Some(session_id) = sqlx::query_as::<_, (i32,)>("select id from session where jwt = $1 and user_id = $2 limit 1")
+        .bind(jwt)
+        .bind(uid)
+        .fetch_optional(db).await? {
+        let allowed: (bool, ) = sqlx::query_as("select count(*) = 0 from session_deleted where session_id = $1 limit 1")
+            .bind(session_id.0)
+            .fetch_one(db)
+            .await?;
+        Ok(allowed.0)
+    }
+    else {
+        Ok(false)
+    }
 }

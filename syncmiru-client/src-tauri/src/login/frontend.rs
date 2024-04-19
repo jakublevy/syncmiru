@@ -158,7 +158,7 @@ pub async fn new_login(state: tauri::State<'_, AppState>, data: String) -> Resul
         email: login.email,
         password: login.password,
         os: std::env::consts::OS.to_string(),
-        hash: sys::id_hashed()?,
+        hwid_hash: sys::id_hashed()?,
         device_name: sys::device()
     };
     let payload: Jwt = serde_json::from_value(super::req_json(
@@ -171,17 +171,20 @@ pub async fn new_login(state: tauri::State<'_, AppState>, data: String) -> Resul
 }
 
 #[tauri::command]
-pub async fn login(state: tauri::State<'_, AppState>) -> Result<()> {
+pub async fn login(state: tauri::State<'_, AppState>, window: tauri::Window) -> Result<()> {
     let a = Arc::new(4);
-    let jwt = jwt::read()?.context("no login jwt tkn available")?;
+    let jwt = Jwt { jwt: jwt::read()?.context("no login jwt tkn available")? };
     let home_srv = utils::extract_home_srv(&state.appdata)?;
     let s = ClientBuilder::new(home_srv)
         .namespace("/")
-        .auth(Value::String(jwt))
-        .on("test", move |p: Payload, s: Client| { socketio::test(a.clone(), p,s).boxed() })
+        .auth(serde_json::to_value(jwt)?)
+        .on("test", move |p: Payload, s: Client| { socketio::test(a.clone(), p, s).boxed() })
         .on("error", async_callback!(socketio::error))
         .connect().await?;
+
     let mut socket_opt = state.socket.write()?;
     *socket_opt = Some(s);
+    let mut w = state.window.write()?;
+    *w = Some(window);
     Ok(())
 }

@@ -101,10 +101,10 @@ pub struct NewLogin {
     password: String,
     os: String,
     device_name: String,
-    hash: String
+    hwid_hash: String
 }
 
-#[derive(Debug, Clone, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Jwt {
     jwt: String
 }
