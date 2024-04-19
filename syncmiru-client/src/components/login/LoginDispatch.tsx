@@ -12,7 +12,7 @@ export default function LoginDispatch(): ReactElement {
     useEffect(() => {
         refresh({tag: 'useCanAutoLogin'})
         if(canAutoLogin)
-            navigate('/login')
+            navigate('/main')
         else
             navigate('/login-form/main')
     }, [canAutoLogin]);

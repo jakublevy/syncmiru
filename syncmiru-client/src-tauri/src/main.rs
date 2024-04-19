@@ -11,6 +11,7 @@ mod files;
 mod login;
 mod utils;
 mod sys;
+mod socketio;
 
 #[macro_use]
 extern crate rust_i18n;
@@ -23,7 +24,7 @@ use tauri::WindowEvent::CloseRequested;
 
 
 fn main() -> Result<()> {
-    let appstate = appstate::AppState { appdata: config::appdata::read()?.into() };
+    let appstate = appstate::AppState { appdata: config::appdata::read()?.into(), socket: None.into() };
     let mut ctx = tauri::generate_context!();
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())

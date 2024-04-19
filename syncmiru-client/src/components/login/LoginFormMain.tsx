@@ -130,7 +130,7 @@ export default function LoginFormMain(): ReactElement {
             setLoading(true)
             invoke<void>('new_login', {data: JSON.stringify(sendData)})
                 .then(() => {
-                    navigate('/login')
+                    mutate('login').then(() => navigate('/main'))
                 })
                 .catch((e: string) => {
                     if(!e.startsWith("Reqwest error"))

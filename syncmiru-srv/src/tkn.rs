@@ -19,3 +19,7 @@ pub fn new_login(login_jwt_conf: &LoginJwt, uid: i32) -> Result<String> {
     let signed = tkn.sign_with_key(&key)?;
     Ok(signed.as_str().to_string())
 }
+
+pub fn login_jwt_valid(jwt: &str, login_jwt_conf: &LoginJwt) -> Result<bool> {
+    Ok(true)
+}

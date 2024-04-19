@@ -38,6 +38,9 @@ pub enum SyncmiruError {
     #[error("Serde JSON error")]
     SerdeJsonError(#[from] serde_json::Error),
 
+    #[error("Socket io error")]
+    SocketIoError(#[from] rust_socketio::Error),
+
     #[error("URL missing version error")]
     LatestVersionMissingError,
 

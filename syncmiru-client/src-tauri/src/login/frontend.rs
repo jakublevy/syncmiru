@@ -1,11 +1,17 @@
+use std::sync::Arc;
 use anyhow::Context;
+use futures_util::FutureExt;
+use rust_socketio::asynchronous::{ClientBuilder, Client};
+use rust_socketio::{async_callback, Payload};
+use serde_json::Value;
 use crate::appstate::AppState;
 use crate::config::appdata;
 use crate::result::Result;
 use crate::config::jwt;
 use tauri::Manager;
+use whoami::fallible::hostname;
 use crate::login::{ServiceStatus, RegData, BooleanResp, HttpMethod, TknEmail, ForgottenPasswordChange, LoginForm, NewLogin, Jwt};
-use crate::{sys, utils};
+use crate::{socketio, sys, utils};
 
 #[tauri::command]
 pub async fn can_auto_login(state: tauri::State<'_, AppState>) -> Result<bool> {
@@ -166,7 +172,16 @@ pub async fn new_login(state: tauri::State<'_, AppState>, data: String) -> Resul
 
 #[tauri::command]
 pub async fn login(state: tauri::State<'_, AppState>) -> Result<()> {
+    let a = Arc::new(4);
     let jwt = jwt::read()?.context("no login jwt tkn available")?;
-    
+    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    let s = ClientBuilder::new(home_srv)
+        .namespace("/")
+        .auth(Value::String(jwt))
+        .on("test", move |p: Payload, s: Client| { socketio::test(a.clone(), p,s).boxed() })
+        .on("error", async_callback!(socketio::error))
+        .connect().await?;
+    let mut socket_opt = state.socket.write()?;
+    *socket_opt = Some(s);
     Ok(())
 }
