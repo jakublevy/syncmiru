@@ -25,6 +25,7 @@ pub async fn error(
     if let Payload::Text(t) = payload {
         if let Some(v) = t.get(0) {
             if let Ok(s) = serde_json::to_string(v) {
+                eprintln!("error: {}", &s);
                 if s.contains("Auth error") {
                     let window = state.window.read()
                         .expect("error reading tauri::window")
@@ -35,30 +36,20 @@ pub async fn error(
                     window.emit("auth-error", {})
                         .expect("error notifying auth-error")
                 }
+                else if s.contains("EngineIO Error") {
+                    eprintln!("disconnect handle todo")
+                    // TODO: handle disconnect
+                }
             }
         }
     }
-    //eprintln!("Error: {:#?}", payload)
-    // let v = t
-    //     .get(0)
-    //     .expect("No error received from srv");
-    // let s = serde_json::to_string(v)
-    //     .expect("Invalid format received from srv");
-    //
-    //
-    // let start = s.find("{")
-    //     .expect("Invalid format received from srv");
-    // let end = s.rfind("}")
-    //     .expect("Invalid format received from srv");
-    // let sub = &s[start..end+1];
-    // eprintln!("string = {}", s);
-    // eprintln!("sub = {}", sub);
-    // let error: ErrorFromSrv = serde_json::from_str(sub)
-    //     .expect("Invalid format received from srv");
-    // eprintln!("after parsing = {:?}", error);
+}
 
-    //eprintln!()
-    //payload
-    // TODO: emit error back
-    //eprintln!("Error: {:#?}", error)
+pub async fn open(
+    state: Arc<AppState>,
+    payload: Payload,
+    socket: Client,
+) {
+    // TODO: handle connect / reconnect
+    println!("open called with payload {:?}", payload);
 }

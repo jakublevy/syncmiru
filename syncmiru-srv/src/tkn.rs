@@ -39,8 +39,7 @@ pub async fn login_jwt_check(
         if sub_opt.is_none() {
             return Ok(false)
         }
-        let sub = sub_opt.unwrap();
-        let valid = query::session_valid(db, jwt, *sub).await?;
+        let valid = query::session_valid(db, jwt).await?;
         if !valid {
             return Ok(false)
         }

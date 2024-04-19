@@ -188,6 +188,7 @@ pub async fn login(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window
         .auth(serde_json::to_value(jwt)?)
         .on("test",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::test(closure_state.clone(), p, s).boxed()}})
         .on("error",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::error(closure_state.clone(), p, s).boxed()}})
+        .on("open",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::open(closure_state.clone(), p, s).boxed()}})
         .connect().await?;
     let mut socket_opt = state.socket.write()?;
     *socket_opt = Some(s);
