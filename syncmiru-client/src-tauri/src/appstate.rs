@@ -1,4 +1,4 @@
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 use crate::config::appdata::AppData;
 
 pub struct AppState {

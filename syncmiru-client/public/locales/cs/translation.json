@@ -89,6 +89,7 @@
   "field-not-unique-error": "Již obsazeno",
   "field-already-registered-error": "Již registrován",
   "captcha-not-filled-error": "Captcha musí být vyplněna",
+  "login-jwt-invalid": "Uložená relace je neplatná, přihlašte se prosím znovu",
 
   "home-srv-desc": "Syncmiru vyžaduje pro svůj běh instanci serveru. Vyplňte do následujícího políčka jeho adresu, nezávisle na tom, zda již účet vlastníte, nebo si ho hodláte vytvořit.",
   "home-srv-edit-help": "URL adresa Syncmiru serveru.",

@@ -1,5 +1,4 @@
 use socketioxide::extract::{SocketRef, State};
-use crate::handlers;
 use crate::srvstate::SrvState;
 
 pub mod http;

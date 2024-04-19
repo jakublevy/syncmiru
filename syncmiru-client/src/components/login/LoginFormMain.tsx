@@ -15,7 +15,7 @@ import {ForgottenPasswordHistoryState, LoginFormHistoryState} from "@models/hist
 import useFormValidate from "@hooks/useFormValidate.ts";
 import {mutate} from "swr";
 import {invoke} from "@tauri-apps/api/core";
-import {showErrorAlert} from "../../utils/alert.ts";
+import {showErrorAlert} from "src/utils/alert.ts";
 import {LoginForm} from "@models/login.ts";
 import Loading from "@components/Loading.tsx";
 import {StatusAlertService} from "react-status-alert";
