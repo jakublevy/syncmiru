@@ -1,8 +1,8 @@
-import {ReactElement} from "react";
+import React, {ReactElement} from "react";
 
-export default function Playlist({height}: Props): ReactElement {
+export default function Playlist(): ReactElement {
     return (
-        <div className="border overflow-auto" style={{height: height}}>
+        <div className="border h-full">
             <ul>
                 <li>ahoj</li>
                 <li>ahoj</li>
@@ -17,8 +17,4 @@ export default function Playlist({height}: Props): ReactElement {
             </ul>
         </div>
     )
-}
-
-interface Props {
-    height: number | string
 }

@@ -1,11 +1,9 @@
-import {ReactElement} from "react";
+import React, {ReactElement} from "react";
 
-export default function Mpv({height}: Props): ReactElement {
+export default function Mpv(): ReactElement {
     return (
-        <div className="border" style={{height: height}}>this is place for mpv</div>
+        <div className="border flex justify-center items-center h-full">
+            <p>mpv</p>
+        </div>
     )
-}
-
-interface Props {
-    height: number | string
 }

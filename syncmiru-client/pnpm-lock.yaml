@@ -50,9 +50,9 @@ dependencies:
   react-i18next:
     specifier: ^14.1.0
     version: 14.1.0(i18next@23.10.1)(react-dom@18.2.0)(react@18.2.0)
-  react-resizable-layout:
-    specifier: ^0.7.2
-    version: 0.7.2(react-dom@18.2.0)(react@18.2.0)
+  react-resizable-panels:
+    specifier: ^2.0.18
+    version: 2.0.18(react-dom@18.2.0)(react@18.2.0)
   react-select:
     specifier: ^5.8.0
     version: 5.8.0(@types/react@18.2.73)(react-dom@18.2.0)(react@18.2.0)
@@ -1963,11 +1963,11 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /react-resizable-layout@0.7.2(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-GrVzAecB6+osdAx5PPP3G8R9n7A2uDd3NL+PyrHWNRaVBivZmW/o0+yFjQdS5Bo016A2fIP11fAhefsknWN4aw==}
+  /react-resizable-panels@2.0.18(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-rKagCW6C8tTjWRq5jNsASsi4TB2a+IixL9++0G1+kPgAgvULPVf7kE0VbHysC3wdvcGYMa70O46C9YpG7CCkeA==}
     peerDependencies:
-      react: '>=17.0.0'
-      react-dom: '>=17.0.0'
+      react: ^16.14.0 || ^17.0.0 || ^18.0.0
+      react-dom: ^16.14.0 || ^17.0.0 || ^18.0.0
     dependencies:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
