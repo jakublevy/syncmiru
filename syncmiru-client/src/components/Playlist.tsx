@@ -2,7 +2,7 @@ import React, {ReactElement} from "react";
 
 export default function Playlist(): ReactElement {
     return (
-        <div className="border h-full">
+        <div className="h-full">
             <ul>
                 <li>ahoj</li>
                 <li>ahoj</li>
