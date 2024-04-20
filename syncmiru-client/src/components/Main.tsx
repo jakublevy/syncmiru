@@ -9,6 +9,9 @@ import SrvInfo from "@components/SrvInfo.tsx";
 import Rooms from "@components/Rooms.tsx";
 import JoinedRoom from "@components/JoinedRoom.tsx";
 import CurrentUser from "@components/CurrentUser.tsx";
+import ButtonPanel from "@components/ButtonPanel.tsx";
+import Middle from "@components/Middle.tsx";
+import {Resizable} from "re-resizable";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -17,7 +20,7 @@ export default function Main(): ReactElement {
     const {error: loginError} = useLogin()
 
     useEffect(() => {
-        if(loginError !== undefined)
+        if (loginError !== undefined)
             navigate('/login-form/main')
     }, [loginError]);
 
@@ -35,7 +38,7 @@ export default function Main(): ReactElement {
         })
     }, []);
 
-    if(reconnecting)
+    if (reconnecting)
         return <Reconnecting/>
 
     return (
@@ -46,7 +49,12 @@ export default function Main(): ReactElement {
                 <JoinedRoom/>
                 <CurrentUser/>
             </div>
-            <div className="border flex-1 min-w-60">C2</div>
+            <div className="border flex-1 min-w-60">
+                <div className="flex flex-col h-full">
+                    <ButtonPanel/>
+                    <Middle/>
+                </div>
+            </div>
             <div className="border min-w-60 w-60">C3</div>
         </div>
     )
