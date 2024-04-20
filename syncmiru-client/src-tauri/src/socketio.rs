@@ -1,55 +1,54 @@
 use std::sync::Arc;
+use anyhow::Context;
 use rust_socketio::asynchronous::{Client};
 use rust_socketio::Payload;
 use tauri::Manager;
 use crate::appstate::AppState;
-use crate::config;
+use crate::{appstate, config};
+use crate::result::Result;
 
 pub async fn test(
     state: Arc<AppState>,
     payload: Payload,
     socket: Client,
-) {
-    let appdata = state.appdata.read().unwrap();
+) -> Result<()> {
+    let appdata = state.appdata.read()?;
     println!("test callback");
     println!("home_srv from appdata: {:?}", appdata.home_srv);
     println!("lang from appdata: {:?}", appdata.lang);
     println!("payload: {:?}", payload);
+    Ok(())
 }
 
 pub async fn error(
     state: Arc<AppState>,
     payload: Payload,
     socket: Client,
-) {
+) -> Result<()> {
     if let Payload::Text(t) = payload {
-        if let Some(v) = t.get(0) {
-            if let Ok(s) = serde_json::to_string(v) {
-                eprintln!("error: {}", &s);
-                if s.contains("Auth error") {
-                    let window = state.window.read()
-                        .expect("error reading tauri::window")
-                        .clone()
-                        .expect("error reading tauri::window");
-                    config::jwt::clear()
-                        .expect("error clearing JWT");
-                    window.emit("auth-error", {})
-                        .expect("error notifying auth-error")
-                }
-                else if s.contains("EngineIO Error") {
-                    eprintln!("disconnect handle todo")
-                    // TODO: handle disconnect
-                }
-            }
+        let v = t.get(0).context("missing error value")?;
+        let s = serde_json::to_string(v)?;
+        eprintln!("error: {}", &s);
+        if s.contains("Auth error") {
+            let window = appstate::extract::window(&state.window)?;
+            config::jwt::clear()?;
+            window.emit("auth-error", {})?;
+        }
+        else if s.contains("EngineIO Error") {
+            eprintln!("will emit engineio error event");
+            let window = appstate::extract::window(&state.window)?;
+            window.emit("conn-error", {})?;
         }
     }
+    Ok(())
 }
 
 pub async fn open(
     state: Arc<AppState>,
     payload: Payload,
     socket: Client,
-) {
-    // TODO: handle connect / reconnect
-    println!("open called with payload {:?}", payload);
+) -> Result<()> {
+    let window = appstate::extract::window(&state.window)?;
+    window.emit("conn-open", {})?;
+    Ok(())
 }

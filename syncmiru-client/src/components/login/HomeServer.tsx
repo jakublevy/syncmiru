@@ -1,6 +1,6 @@
 import {ChangeEvent, ReactElement, useEffect, useState} from "react";
 import {Input} from "@components/widgets/Input.tsx";
-import {BackButton} from "@components/widgets/Button.tsx";
+import {BackBtn} from "@components/widgets/Button.tsx";
 import {useChangeHomeServer, useHomeServer} from "@hooks/useHomeServer.ts";
 import {useLocation} from "wouter";
 import {refresh} from "@mittwald/react-use-promise";
@@ -50,7 +50,7 @@ export default function HomeServer(): ReactElement {
             <div className="flex justify-centersafe items-center w-dvw">
                 <Card className="min-w-[25rem] w-[40rem] m-3">
                     <div className="flex items-start">
-                        <BackButton onClick={backButtonClicked} className="mr-4"/>
+                        <BackBtn onClick={backButtonClicked} className="mr-4"/>
                         <h1 className="text-4xl mb-4">{t('home-srv')}</h1>
                     </div>
                     <p>{t('home-srv-desc')}</p>

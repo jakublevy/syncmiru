@@ -1,5 +1,6 @@
 import React, {ReactElement, ReactNode} from "react";
 import Previous from "@components/svg/Previous.tsx";
+import DoorOut from "@components/svg/DoorOut.tsx";
 
 export function Btn(p: BtnProps): ReactElement {
     const {children, ...restParams} = p
@@ -51,7 +52,7 @@ export interface BtnProps {
     disabled?: boolean
 }
 
-export function BackButton(p: BackButtonProps): ReactElement {
+export function BackBtn(p: BackBtnProps): ReactElement {
     return (
         <button className={`rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 ${p.className}`} onClick={p.onClick}>
             <Previous className="h-12" />
@@ -59,7 +60,19 @@ export function BackButton(p: BackButtonProps): ReactElement {
     )
 }
 
-interface BackButtonProps {
+export function SvgBtn(p: SvgButtonProps): ReactElement {
+    return (
+        <Btn className={`hover:bg-gray-100 dark:hover:bg-gray-700 rounded ${p.className || ''}`}>
+            {p.children}
+        </Btn>
+    )
+}
+
+interface SvgButtonProps extends BackBtnProps {
+    children: ReactNode,
+}
+
+interface BackBtnProps {
     onClick: (e: React.MouseEvent<HTMLButtonElement>) => void,
     className: string
 }

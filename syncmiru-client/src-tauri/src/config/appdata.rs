@@ -1,4 +1,5 @@
 use std::fs;
+use std::sync::RwLock;
 use anyhow::Context;
 use ini::Ini;
 use crate::config::Language;
@@ -128,4 +129,18 @@ pub fn write(config: &AppData) -> Result<()> {
     }
     ini.write_to_file(syncmiru_conf_ini)?;
     Ok(())
+}
+
+pub mod extract {
+    use std::sync::RwLock;
+    use crate::config::appdata::AppData;
+
+    pub fn home_srv(appdata: &RwLock<AppData>) -> crate::result::Result<String> {
+        let mut home_srv: String;
+        {
+            let appdata = appdata.read()?;
+            home_srv = appdata.home_srv.clone().unwrap_or("".to_string());
+        }
+        Ok(home_srv)
+    }
 }

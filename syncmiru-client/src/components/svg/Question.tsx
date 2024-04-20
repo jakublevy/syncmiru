@@ -11,7 +11,7 @@ export default function Question({tooltipId, className, tabIndex}: QuestionProps
             y="0px"
             viewBox="0 0 700 700"
             xmlSpace="preserve"
-            className={className}
+            className={className || ''}
             data-tooltip-id={tooltipId}
             fill="currentColor"
             tabIndex={tabIndex}

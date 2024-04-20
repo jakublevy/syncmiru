@@ -10,7 +10,7 @@ export default function Party({className}: Props) {
             y="0px"
             viewBox="0 0 117.9 120"
             xmlSpace="preserve"
-            className={className}
+            className={className || ''}
         >
             <style>
                 {

@@ -11,7 +11,7 @@ export default function Danger({className}: Props): ReactElement {
             y="0px"
             viewBox="0 0 512 443.4"
             xmlSpace="preserve"
-            className={className}
+            className={className || ''}
         >
             <path
                 d="M256 0L0 443.4h512L256 0zm0 60l204 353.4H52L256 60z"

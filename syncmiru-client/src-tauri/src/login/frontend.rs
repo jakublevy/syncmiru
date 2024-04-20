@@ -14,7 +14,7 @@ use crate::config::jwt;
 use tauri::Manager;
 use whoami::fallible::hostname;
 use crate::login::{ServiceStatus, RegData, BooleanResp, HttpMethod, TknEmail, ForgottenPasswordChange, LoginForm, NewLogin, Jwt};
-use crate::{enclose, socketio, sys, utils};
+use crate::{enclose, socketio, sys};
 
 #[tauri::command]
 pub async fn can_auto_login(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
@@ -26,7 +26,7 @@ pub async fn can_auto_login(state: tauri::State<'_, Arc<AppState>>) -> Result<bo
 
 #[tauri::command]
 pub async fn get_home_srv(state: tauri::State<'_, Arc<AppState>>) -> Result<String> {
-    let srv = utils::extract_home_srv(&state.appdata)?;
+    let srv = appdata::extract::home_srv(&state.appdata)?;
     Ok(srv)
 }
 
@@ -40,7 +40,7 @@ pub async fn set_home_srv(state: tauri::State<'_, Arc<AppState>>, home_srv: Stri
 
 #[tauri::command]
 pub async fn get_service_status(state: tauri::State<'_, Arc<AppState>>) -> Result<ServiceStatus> {
-    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    let home_srv = appdata::extract::home_srv(&state.appdata)?;
     let service_status: ServiceStatus = serde_json::from_value(
         super::req_json(
             &(home_srv + "/service"),
@@ -53,7 +53,7 @@ pub async fn get_service_status(state: tauri::State<'_, Arc<AppState>>) -> Resul
 
 #[tauri::command]
 pub async fn get_username_unique(state: tauri::State<'_, Arc<AppState>>, username: String) -> Result<bool> {
-    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    let home_srv = appdata::extract::home_srv(&state.appdata)?;
     let payload = serde_json::json!({"username": username});
     let username_unique: BooleanResp = serde_json::from_value(
         super::req_json(
@@ -67,7 +67,7 @@ pub async fn get_username_unique(state: tauri::State<'_, Arc<AppState>>, usernam
 
 #[tauri::command]
 pub async fn get_email_unique(state: tauri::State<'_, Arc<AppState>>, email: String) -> Result<bool> {
-    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    let home_srv = appdata::extract::home_srv(&state.appdata)?;
     let payload = serde_json::json!({"email": email});
     let email_unique: BooleanResp = serde_json::from_value(
         super::req_json(
@@ -81,7 +81,7 @@ pub async fn get_email_unique(state: tauri::State<'_, Arc<AppState>>, email: Str
 
 #[tauri::command]
 pub async fn send_registration(state: tauri::State<'_, Arc<AppState>>, data: String) -> Result<()> {
-    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    let home_srv = appdata::extract::home_srv(&state.appdata)?;
     let reg_data: RegData = serde_json::from_str(&data)?;
     super::req(
         &(home_srv + "/register"),
@@ -93,8 +93,8 @@ pub async fn send_registration(state: tauri::State<'_, Arc<AppState>>, data: Str
 
 #[tauri::command]
 pub async fn req_verification_email(state: tauri::State<'_, Arc<AppState>>, email: String) -> Result<()> {
-    let home_srv = utils::extract_home_srv(&state.appdata)?;
-    let lang = utils::extract_lang(&state.appdata)?.as_str();
+    let home_srv = appdata::extract::home_srv(&state.appdata)?;
+    let lang = state.appdata.read()?.lang;
     let payload = serde_json::json!({"email": email, "lang": lang});
     super::req(
         &(home_srv + "/email-verify-send"),
@@ -106,7 +106,7 @@ pub async fn req_verification_email(state: tauri::State<'_, Arc<AppState>>, emai
 
 #[tauri::command]
 pub async fn get_email_verified(state: tauri::State<'_, Arc<AppState>>, email: String) -> Result<bool> {
-    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    let home_srv = appdata::extract::home_srv(&state.appdata)?;
     let payload = serde_json::json!({"email": email});
     let verified: BooleanResp = serde_json::from_value(super::req_json(
         &(home_srv + "/email-verified"),
@@ -118,8 +118,8 @@ pub async fn get_email_verified(state: tauri::State<'_, Arc<AppState>>, email: S
 
 #[tauri::command]
 pub async fn req_forgotten_password_email(state: tauri::State<'_, Arc<AppState>>, email: String) -> Result<()> {
-    let home_srv = utils::extract_home_srv(&state.appdata)?;
-    let lang = utils::extract_lang(&state.appdata)?.as_str();
+    let home_srv = appdata::extract::home_srv(&state.appdata)?;
+    let lang = state.appdata.read()?.lang;
     let payload = serde_json::json!({"email": email, "lang": lang});
     super::req(
         &(home_srv + "/forgotten-password-send"),
@@ -131,7 +131,7 @@ pub async fn req_forgotten_password_email(state: tauri::State<'_, Arc<AppState>>
 
 #[tauri::command]
 pub async fn get_forgotten_password_tkn_valid(state: tauri::State<'_, Arc<AppState>>, data: String) -> Result<bool> {
-    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    let home_srv = appdata::extract::home_srv(&state.appdata)?;
     let tkn_email: TknEmail = serde_json::from_str(&data)?;
     let tkn_valid: BooleanResp = serde_json::from_value(super::req_json(
         &(home_srv + "/forgotten-password-tkn-valid"),
@@ -143,7 +143,7 @@ pub async fn get_forgotten_password_tkn_valid(state: tauri::State<'_, Arc<AppSta
 
 #[tauri::command]
 pub async fn forgotten_password_change_password(state: tauri::State<'_, Arc<AppState>>, data: String) -> Result<()> {
-    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    let home_srv = appdata::extract::home_srv(&state.appdata)?;
     let fp_change: ForgottenPasswordChange = serde_json::from_str(&data)?;
     super::req(
         &(home_srv + "/forgotten-password-change"),
@@ -155,7 +155,7 @@ pub async fn forgotten_password_change_password(state: tauri::State<'_, Arc<AppS
 
 #[tauri::command]
 pub async fn new_login(state: tauri::State<'_, Arc<AppState>>, data: String) -> Result<()> {
-    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    let home_srv = appdata::extract::home_srv(&state.appdata)?;
     let login: LoginForm = serde_json::from_str(&data)?;
     let send = NewLogin {
         email: login.email,
@@ -176,7 +176,7 @@ pub async fn new_login(state: tauri::State<'_, Arc<AppState>>, data: String) -> 
 #[tauri::command]
 pub async fn login(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
     let jwt = Jwt { jwt: jwt::read()?.context("no login jwt tkn available")? };
-    let home_srv = utils::extract_home_srv(&state.appdata)?;
+    let home_srv = appdata::extract::home_srv(&state.appdata)?;
     {
         let mut w = state.window.write()?;
         *w = Some(window);
@@ -186,9 +186,9 @@ pub async fn login(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window
     let s = ClientBuilder::new(home_srv)
         .namespace("/")
         .auth(serde_json::to_value(jwt)?)
-        .on("test",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::test(closure_state.clone(), p, s).boxed()}})
-        .on("error",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::error(closure_state.clone(), p, s).boxed()}})
-        .on("open",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::open(closure_state.clone(), p, s).boxed()}})
+        .on("test",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::test(closure_state.clone(), p, s).map(|_| ()).boxed()}})
+        .on("error",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::error(closure_state.clone(), p, s).map(|_| ()).boxed()}})
+        .on("open",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::open(closure_state.clone(), p, s).map(|_| ()).boxed()}})
         .connect().await?;
     let mut socket_opt = state.socket.write()?;
     *socket_opt = Some(s);

@@ -9,7 +9,6 @@ mod appstate;
 mod deps;
 mod files;
 mod login;
-mod utils;
 mod sys;
 mod socketio;
 mod r#macro;

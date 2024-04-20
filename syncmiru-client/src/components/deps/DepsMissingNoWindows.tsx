@@ -4,7 +4,7 @@ import Cross from "@components/svg/Cross.tsx";
 import {useTranslation} from "react-i18next";
 import {refresh} from "@mittwald/react-use-promise";
 import {ReactElement} from "react";
-import {BackButton, BtnPrimary} from "@components/widgets/Button.tsx";
+import {BackBtn, BtnPrimary} from "@components/widgets/Button.tsx";
 import {useLocation} from "wouter";
 import Card from "@components/widgets/Card.tsx";
 import {TrampolineHistoryState} from "@models/historyState.ts";
@@ -27,7 +27,7 @@ export default function DepsMissingNoWindows({firstRunSeen, depsState}: Props): 
         <div className="flex justify-center items-center ml-8 mr-8 mt-3 mb-3">
             <Card>
                 <div className="flex items-start">
-                    {!firstRunSeen && <BackButton className="mr-4" onClick={navigateBack}/>}
+                    {!firstRunSeen && <BackBtn className="mr-4" onClick={navigateBack}/>}
                     <h1 className="text-4xl mb-4">{t('missing-deps-title')}</h1>
                 </div>
                 <p>{t('missing-deps-msg')}</p>

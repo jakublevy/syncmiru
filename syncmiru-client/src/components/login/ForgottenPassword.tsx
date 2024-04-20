@@ -4,7 +4,7 @@ import BtnTimeout from "@components/widgets/BtnTimeout.tsx";
 import Help from "@components/widgets/Help.tsx";
 import {ForgottenPasswordTknSrvValidate, Input} from "@components/widgets/Input.tsx";
 import {LoginFormHistoryState} from "@models/historyState.ts";
-import {BackButton, BtnPrimary} from "@components/widgets/Button.tsx";
+import {BackBtn, BtnPrimary} from "@components/widgets/Button.tsx";
 import {useLocation} from "wouter";
 import {useReqForgottenPasswordEmail} from "@hooks/useReqForgottenPasswordEmail.ts";
 import {showErrorAlert, showSuccessAlert} from "../../utils/alert.ts";
@@ -112,7 +112,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
         <div className="flex justify-centersafe items-center w-dvw">
             <Card className="min-w-[27rem] w-[40rem] m-3">
                 <div className="flex items-start">
-                    <BackButton onClick={backButtonClicked} className="mr-4"/>
+                    <BackBtn onClick={backButtonClicked} className="mr-4"/>
                     <h1 className="text-4xl mb-4">{t('forgotten-password-title')}</h1>
                 </div>
                 <p>{t('forgotten-password-text-1')} <b>{email}</b> {t('forgotten-password-text-2')}</p>
