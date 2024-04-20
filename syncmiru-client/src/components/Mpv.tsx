@@ -1,14 +1,11 @@
 import {ReactElement} from "react";
 
-export default function Mpv(): ReactElement {
+export default function Mpv({height}: Props): ReactElement {
     return (
-        <Resizable className="border"
-                   enable={{top: true}}
-                   defaultSize={{height: "35vh", width: "auto"}}
-                   minHeight="15vh"
-                   maxHeight="70vh"
-        >
-            Sample with default size
-        </Resizable>
+        <div className="border" style={{height: height}}>this is place for mpv</div>
     )
+}
+
+interface Props {
+    height: number | string
 }
