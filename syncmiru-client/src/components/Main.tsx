@@ -19,14 +19,6 @@ export default function Main(): ReactElement {
     const {t} = useTranslation()
     const [reconnecting, setReconnecting] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(true)
-    const {error: loginError} = useLogin()
-
-    useEffect(() => {
-        if (loginError !== undefined) {
-            showErrorAlert(t('login-failed'))
-            invoke<void>('socketio_drop').then(() => navigate('/login-form/main'))
-        }
-    }, [loginError]);
 
     useEffect(() => {
         listen<void>('auth-error', (e: Event<void>) => {
@@ -42,6 +34,14 @@ export default function Main(): ReactElement {
             setLoading(false)
         })
     }, []);
+
+    const {error: loginError} = useLogin()
+    useEffect(() => {
+        if (loginError !== undefined) {
+            showErrorAlert(t('login-failed'))
+            invoke<void>('socketio_drop').then(() => navigate('/login-form/main'))
+        }
+    }, [loginError]);
 
     if (reconnecting)
         return <Reconnecting/>

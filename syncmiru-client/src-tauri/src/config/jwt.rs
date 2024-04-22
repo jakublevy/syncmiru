@@ -43,6 +43,22 @@ mod tests {
 
     #[test]
     #[serial]
+    fn write_write_test() {
+        clear().unwrap();
+        let tkn1 = "ahoj";
+        let tkn2 = "neco";
+
+        write(tkn1).unwrap();
+        let val1 = read().unwrap().unwrap();
+        assert_eq!(tkn1, val1);
+
+        write(tkn2).unwrap();
+        let val2 = read().unwrap().unwrap();
+        assert_eq!(tkn2, val2);
+    }
+
+    #[test]
+    #[serial]
     fn read_write_login_tkn_test() {
         let jwt = "ahoj svete";
         write(jwt).unwrap();

@@ -10,7 +10,6 @@ import {ErrorBoundary} from "react-error-boundary";
 import MpvDownloadFailed from "@components/deps/windows/MpvDownloadFailed.tsx";
 import YtDlpDownloadFailed from "@components/deps/YtDlpDownloadFailed.tsx";
 import Trampoline from "@components/Trampoline.tsx";
-import Login from "@components/login/Login.tsx";
 import LoginForm from "@components/login/LoginForm.tsx";
 import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
@@ -23,7 +22,6 @@ import ForgottenPasswordDispatch from "@components/login/ForgottenPasswordDispat
 import ForgottenPasswordChanged from "@components/login/ForgottenPasswordChanged.tsx";
 import DepsUpdate from "@components/deps/windows/DepsUpdate.tsx";
 import Main from "@components/Main.tsx";
-import Reconnecting from "@components/Reconnecting.tsx";
 
 
 export default function App(): ReactElement {

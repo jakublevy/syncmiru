@@ -43,17 +43,21 @@ export default function LoginFormMain(): ReactElement {
     const [formShowError, setFormShowError]
         = useState<FormShowError>({email: false, srv: false, password: false})
 
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent): any => {
+    const handleKeyDown = (e: KeyboardEvent): any => {
+        if(location === "/login-form/main") {
             if (e.key !== undefined && e.key.toLowerCase() === "enter")
                 loginBtnClicked()
-        };
+        }
+    };
 
-        document.addEventListener('keydown', handleKeyDown);
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [formData]);
+    useEffect(() => {
+        if(location === "/login-form/main") {
+            document.addEventListener('keydown', handleKeyDown);
+            return () => {
+                document.removeEventListener('keydown', handleKeyDown);
+            };
+        }
+    }, [location, formData]);
 
     useEffect(() => {
         if(homeSrvServiceError == null)
@@ -74,6 +78,7 @@ export default function LoginFormMain(): ReactElement {
     }, [historyState]);
 
     function editClicked() {
+        document.removeEventListener('keydown', handleKeyDown);
         navigate('/login-form/home-server')
         setHomeSrvResponseError(false)
     }

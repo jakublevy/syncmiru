@@ -84,7 +84,7 @@ async fn main() -> Result<()> {
 
    debug!("Staring listener");
    let listener = tokio::net::TcpListener::bind(
-      format!("127.0.0.1:{}", config.srv.port)
+      format!("0.0.0.0:{}", config.srv.port)
    ).await?;
    info!("Listening on {}", config.srv.port);
    axum::serve(
