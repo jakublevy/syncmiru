@@ -90,6 +90,7 @@
   "field-already-registered-error": "Already registered",
   "captcha-not-filled-error": "Captcha must be filled",
   "login-jwt-invalid": "The saved session is invalid, please log in again",
+  "login-failed": "Login failed, is the server online?",
 
   "home-srv-desc": "Syncmiru requires a server instance to run. Fill in its address in the following field, regardless of whether you already have an account or plan to create one.",
   "home-srv-edit-help": "URL address of a Syncmiru server.",

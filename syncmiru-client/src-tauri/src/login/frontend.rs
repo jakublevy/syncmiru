@@ -186,11 +186,11 @@ pub async fn login(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window
     let s = ClientBuilder::new(home_srv)
         .namespace("/")
         .auth(serde_json::to_value(jwt)?)
-        .on("test",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::test(closure_state.clone(), p, s).map(|_| ()).boxed()}})
-        .on("error",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::error(closure_state.clone(), p, s).map(|_| ()).boxed()}})
-        .on("open",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::open(closure_state.clone(), p, s).map(|_| ()).boxed()}})
+        .on("test",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::handlers::test(closure_state.clone(), p, s).map(|_| ()).boxed()}})
+        .on("error",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::handlers::error(closure_state.clone(), p, s).map(|_| ()).boxed()}})
+        .on("open",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::handlers::open(closure_state.clone(), p, s).map(|_| ()).boxed()}})
         .connect().await?;
-    let mut socket_opt = state.socket.write()?;
-    *socket_opt = Some(s);
+    let mut socket_lock = state.socket.write()?;
+    *socket_lock = Some(s);
     Ok(())
 }

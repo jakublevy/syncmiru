@@ -57,6 +57,8 @@ fn main() -> Result<()> {
             login::frontend::forgotten_password_change_password,
             login::frontend::new_login,
             login::frontend::login,
+            socketio::frontend::socketio_drop,
+            socketio::frontend::reconnecting_sign_out
         ])
         .on_window_event(handle_window_event)
         .manage(appstate)

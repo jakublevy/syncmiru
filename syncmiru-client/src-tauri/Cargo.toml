@@ -22,7 +22,7 @@ dirs = "5.0.1"
 sys-locale = "0.3.1"
 thiserror = "1.0.58"
 anyhow = "1.0.81"
-tauri-plugin-theme = "0.4.0"
+tauri-plugin-theme = { git = "https://github.com/jakublevy/tauri-plugin-theme.git", branch = "main" }
 rust-i18n = "3.0.1"
 reqwest = { version = "0.12.2", features = ["json"] }
 roxmltree = "0.19.0"
@@ -34,7 +34,7 @@ serial_test = "3.0.0"
 serde_with = "3.7.0"
 machineid-rs = "1.2.4"
 whoami = "1.5.1"
-rust_socketio = { version = "0.6.0", features = ["async", "async-callbacks", "async-stream", "futures-util", "tokio"] }
+rust_socketio = { git = "https://github.com/jakublevy/rust-socketio.git", branch = "main", features = ["async", "async-callbacks", "async-stream", "futures-util", "tokio"] }
 futures-util = "0.3.30"
 
 

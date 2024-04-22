@@ -1,8 +1,23 @@
-import {ReactElement} from "react";
+import {ReactElement, useState} from "react";
 import {PacmanLoader} from "react-spinners";
 import {BtnSecondary} from "@components/widgets/Button.tsx";
+import {invoke} from "@tauri-apps/api/core";
+import {useLocation} from "wouter";
+import Loading from "@components/Loading.tsx";
 
 export default function Reconnecting(): ReactElement {
+    const [_, navigate] = useLocation()
+    const [loading, setLoading] = useState<boolean>(false)
+
+    function signout() {
+        setLoading(true)
+        invoke<void>('reconnecting_sign_out')
+            .then(() => navigate('/login-form/main'))
+            .finally(() => setLoading(false))
+    }
+    if(loading)
+        return <Loading/>
+
     return (
         <div className="flex flex-col justify-center items-center">
             <div className="flex flex-grow flex-col justify-end items-center">
@@ -12,7 +27,7 @@ export default function Reconnecting(): ReactElement {
             </div>
             <div className="flex-grow flex flex-col justify-end items-center mb-4">
                 <p className="mb-1">Nedaří se připojit zpět?</p>
-                <BtnSecondary>Odhlásit se</BtnSecondary>
+                <BtnSecondary onClick={signout}>Odhlásit se</BtnSecondary>
             </div>
         </div>
     )

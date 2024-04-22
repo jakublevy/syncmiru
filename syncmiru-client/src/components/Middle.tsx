@@ -22,7 +22,6 @@ export default function Middle(): ReactElement {
                     </div>
                 </PanelResizeHandle>
                 <Panel
-                    className=""
                     defaultSize={25}
                     minSize={20}
                 >

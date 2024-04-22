@@ -11,23 +11,27 @@ import JoinedRoom from "@components/JoinedRoom.tsx";
 import CurrentUser from "@components/CurrentUser.tsx";
 import ButtonPanel from "@components/ButtonPanel.tsx";
 import Middle from "@components/Middle.tsx";
-import {Resizable} from "re-resizable";
+import Loading from "@components/Loading.tsx";
+import {invoke} from "@tauri-apps/api/core";
 
 export default function Main(): ReactElement {
-    const [location, navigate] = useLocation()
+    const [_, navigate] = useLocation()
     const {t} = useTranslation()
     const [reconnecting, setReconnecting] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(true)
     const {error: loginError} = useLogin()
 
     useEffect(() => {
-        if (loginError !== undefined)
-            navigate('/login-form/main')
+        if (loginError !== undefined) {
+            showErrorAlert(t('login-failed'))
+            invoke<void>('socketio_drop').then(() => navigate('/login-form/main'))
+        }
     }, [loginError]);
 
     useEffect(() => {
         listen<void>('auth-error', (e: Event<void>) => {
             showErrorAlert(t('login-jwt-invalid'))
-            navigate('/login-form/main')
+            invoke<void>('socketio_drop').then(() => navigate('/login-form/main'))
         })
 
         listen<void>('conn-error', (e: Event<void>) => {
@@ -35,11 +39,15 @@ export default function Main(): ReactElement {
         })
         listen<void>('conn-open', (e: Event<void>) => {
             setReconnecting(false)
+            setLoading(false)
         })
     }, []);
 
     if (reconnecting)
         return <Reconnecting/>
+
+    if (loading)
+        return <Loading/>
 
     return (
         <div className="flex w-dvw">

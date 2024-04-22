@@ -44,9 +44,6 @@ pub enum SyncmiruError {
     #[error("URL missing version error")]
     LatestVersionMissingError,
 
-    #[error("Obtaining system serial number failed")]
-    SystemSerialError,
-
     #[error("Deps download failed")]
     DepsDownloadFailed,
 

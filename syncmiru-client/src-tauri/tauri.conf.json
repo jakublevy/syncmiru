@@ -11,7 +11,7 @@
   "app": {"windows": [
       {
         "title": "syncmiru-client",
-        "width": 800,
+        "width": 1200,
         "height": 600
       }
     ],
