@@ -29,7 +29,7 @@ pub async fn login_jwt_check(
     jwt: &str,
     login_jwt_conf: &LoginJwt,
     db: &PgPool
-) -> Result<bool> {
+) -> Result<(bool, Option<i32>)> {
     let key = PKeyWithDigest {
         digest: login_jwt_conf.alg.digest(),
         key: PKey::public_key_from_pem(&login_jwt_conf.pub_pem)?,
@@ -37,15 +37,15 @@ pub async fn login_jwt_check(
     if let Ok(claims) = jwt.verify_with_key(&key) as std::result::Result<BTreeMap<String, i32>, jwt::Error> {
         let sub_opt = claims.get("sub");
         if sub_opt.is_none() {
-            return Ok(false)
+            return Ok((false, None))
         }
         let valid = query::session_valid(db, jwt).await?;
         if !valid {
-            return Ok(false)
+            return Ok((false, None))
         }
-        Ok(true)
+        Ok((true, sub_opt.map(|&x|x)))
     }
     else {
-        Ok(false)
+        Ok((false, None))
     }
 }

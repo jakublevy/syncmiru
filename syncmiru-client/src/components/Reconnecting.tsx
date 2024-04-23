@@ -1,9 +1,9 @@
 import {ReactElement, useState} from "react";
 import {PacmanLoader} from "react-spinners";
 import {BtnSecondary} from "@components/widgets/Button.tsx";
-import {invoke} from "@tauri-apps/api/core";
 import {useLocation} from "wouter";
 import Loading from "@components/Loading.tsx";
+import {invoke} from "@tauri-apps/api/core";
 
 export default function Reconnecting(): ReactElement {
     const [_, navigate] = useLocation()
@@ -11,9 +11,9 @@ export default function Reconnecting(): ReactElement {
 
     function signout() {
         setLoading(true)
-        invoke<void>('reconnecting_sign_out')
-            .then(() => navigate('/login-form/main'))
-            .finally(() => setLoading(false))
+        invoke<void>('clear_jwt').then(() => {
+            navigate('/login-form/main')
+        })
     }
     if(loading)
         return <Loading/>

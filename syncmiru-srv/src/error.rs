@@ -1,5 +1,6 @@
 use serde_with::DisplayFromStr;
 use std::io;
+use std::sync::PoisonError;
 use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{IntoResponse, Response};
@@ -74,8 +75,18 @@ pub enum SyncmiruError {
     EmailNotVerified,
 
     #[error("JWT key parse error")]
-    JwtKeyParseError(String)
+    JwtKeyParseError(String),
+
+    #[error("Poison error")]
+    PoisonError
 }
+
+impl<T> From<PoisonError<T>> for SyncmiruError {
+    fn from(_: PoisonError<T>) -> Self {
+        Self::PoisonError
+    }
+}
+
 
 
 impl IntoResponse for SyncmiruError {

@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::env::set_var;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -7,7 +8,7 @@ use axum::extract::State;
 use axum::handler::Handler;
 use axum::{Json, Router};
 use axum::error_handling::HandleErrorLayer;
-use axum::http::StatusCode;
+use axum::http::{Method, StatusCode};
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use clap::Parser;
@@ -17,6 +18,7 @@ use socketioxide::handler::ConnectHandler;
 use socketioxide::SocketIo;
 use sqlx::Executor;
 use tower::{BoxError, ServiceBuilder};
+use tower_http::cors::CorsLayer;
 use crate::args::Args;
 use crate::result::Result;
 use crate::srvstate::{SrvState};
@@ -51,13 +53,13 @@ async fn main() -> Result<()> {
    let pool = db::create_connection_pool(&config.db).await?;
    db::run_migrations(&pool).await?;
 
-   let srvstate = SrvState { db: pool.clone(), config: config.clone() };
+   let srvstate = Arc::new(SrvState { db: pool.clone(), config: config.clone(), socket_id2_uid: HashMap::new().into() });
+   let socketio_srvstate = srvstate.clone();
    let (socketio_layer, io) = SocketIo::builder()
-       .with_state(srvstate)
+       .with_state(socketio_srvstate)
        .build_layer();
    io.ns("/", handlers::ns_callback.with(middleware::auth));
 
-   let srvstate = SrvState { db: pool, config: config.clone() };
    let app = Router::new()
        .route("/", get(handlers::http::index))
        .route("/service", get(handlers::http::service))
@@ -74,6 +76,10 @@ async fn main() -> Result<()> {
        .layer(socketio_layer)
        .layer(
           ServiceBuilder::new()
+              .layer(CorsLayer::new()
+                  .allow_methods([Method::GET, Method::POST])
+                  .allow_origin(tower_http::cors::Any)
+              )
               .layer(HandleErrorLayer::new(handlers::http::error))
               .load_shed()
               .concurrency_limit(128)

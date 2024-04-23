@@ -12,8 +12,10 @@ export default function LoginDispatch(): ReactElement {
 
     useEffect(() => {
         refresh({tag: 'useCanAutoLogin'})
-        if(canAutoLogin)
-            mutate('login').then(() => navigate('/main'))
+        if(canAutoLogin) {
+            refresh({tag: "useJwt"})
+            navigate('/main')
+        }
         else
             navigate('/login-form/main')
     }, [canAutoLogin]);

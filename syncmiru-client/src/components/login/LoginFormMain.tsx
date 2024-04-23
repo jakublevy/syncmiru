@@ -19,6 +19,7 @@ import {showErrorAlert} from "src/utils/alert.ts";
 import {LoginForm} from "@models/login.ts";
 import Loading from "@components/Loading.tsx";
 import {StatusAlertService} from "react-status-alert";
+import {refresh} from "@mittwald/react-use-promise";
 
 export default function LoginFormMain(): ReactElement {
     const [location, navigate] = useLocation()
@@ -135,7 +136,8 @@ export default function LoginFormMain(): ReactElement {
             setLoading(true)
             invoke<void>('new_login', {data: JSON.stringify(sendData)})
                 .then(() => {
-                    mutate('login').then(() => navigate('/main'))
+                    refresh({tag: "useJwt"})
+                    navigate('/main')
                 })
                 .catch((e: string) => {
                     if(!e.startsWith("Reqwest error"))

@@ -1,7 +1,5 @@
 import {ReactElement, useEffect, useState} from "react";
-import {useLogin} from "@hooks/useLogin.ts";
 import {useLocation} from "wouter";
-import {Event, listen} from "@tauri-apps/api/event";
 import {showErrorAlert} from "src/utils/alert.ts";
 import {useTranslation} from "react-i18next";
 import Reconnecting from "@components/Reconnecting.tsx";
@@ -12,36 +10,69 @@ import CurrentUser from "@components/CurrentUser.tsx";
 import ButtonPanel from "@components/ButtonPanel.tsx";
 import Middle from "@components/Middle.tsx";
 import Loading from "@components/Loading.tsx";
+import {useJwt} from "@hooks/useJwt.tsx";
+import {io, Socket} from "socket.io-client";
+import {useHomeServer} from "@hooks/useHomeServer.ts";
 import {invoke} from "@tauri-apps/api/core";
 
 export default function Main(): ReactElement {
     const [_, navigate] = useLocation()
     const {t} = useTranslation()
+    const jwt = useJwt();
+    const homeSrv= useHomeServer();
+    const [socket, setSocket] = useState<Socket>();
+
     const [reconnecting, setReconnecting] = useState<boolean>(false)
-    const [loading, setLoading] = useState<boolean>(true)
+    const [loading, setLoading] = useState<boolean>(false)
+    const [currentUserReady, setCurrentUserReady] = useState(false)
 
     useEffect(() => {
-        listen<void>('auth-error', (e: Event<void>) => {
-            showErrorAlert(t('login-jwt-invalid'))
-            invoke<void>('socketio_drop').then(() => navigate('/login-form/main'))
-        })
+        const s = io(homeSrv, {auth: {jwt: jwt}})
+        s.on('connect_error', ioConnError)
+        s.on('connect', ioConn)
+        s.on('disconnect', ioDisconnect)
+        setSocket(s)
+        return () => { s.disconnect() };
+    }, [jwt]);
 
-        listen<void>('conn-error', (e: Event<void>) => {
-            setReconnecting(true)
-        })
-        listen<void>('conn-open', (e: Event<void>) => {
-            setReconnecting(false)
-            setLoading(false)
-        })
-    }, []);
-
-    const {error: loginError} = useLogin()
     useEffect(() => {
-        if (loginError !== undefined) {
-            showErrorAlert(t('login-failed'))
-            invoke<void>('socketio_drop').then(() => navigate('/login-form/main'))
+        if(socket !== undefined) {
+            for (let i = 0; i < 5; ++i)
+                socket.emit('test')
         }
-    }, [loginError]);
+    }, [socket]);
+
+    useEffect(() => {
+        if(currentUserReady) {
+            setLoading(false)
+        }
+    }, [currentUserReady]);
+
+    function ioConn() {
+        setReconnecting(false)
+    }
+
+    function ioDisconnect(reason: Socket.DisconnectReason) {
+        setReconnecting(true)
+        console.log('disconnected')
+    }
+
+    function ioConnError(e: Error) {
+        if(e.message === "Auth error") {
+            invoke<void>('clear_jwt').then(() => {
+                showErrorAlert(t('login-jwt-invalid'))
+                navigate('/login-form/main')
+            })
+        }
+        else {
+            showErrorAlert(t('login-failed'))
+            navigate('/login-form/main')
+        }
+    }
+
+    function onCurrentUserReady() {
+        setCurrentUserReady(true)
+    }
 
     if (reconnecting)
         return <Reconnecting/>
@@ -49,21 +80,23 @@ export default function Main(): ReactElement {
     if (loading)
         return <Loading/>
 
-    return (
-        <div className="flex w-dvw">
-            <div className="flex flex-col min-w-60 w-60">
-                <SrvInfo/>
-                <Rooms/>
-                <JoinedRoom/>
-                <CurrentUser/>
-            </div>
-            <div className="border flex-1 min-w-60">
-                <div className="flex flex-col h-full">
-                    <ButtonPanel/>
-                    <Middle/>
+    if(socket !== undefined)
+        return (
+            <div className="flex w-dvw">
+                <div className="flex flex-col min-w-60 w-60">
+                    <SrvInfo homeSrv={homeSrv}/>
+                    <Rooms/>
+                    <JoinedRoom/>
+                    <CurrentUser socket={socket} onReady={onCurrentUserReady}/>
                 </div>
+                <div className="border flex-1 min-w-60">
+                    <div className="flex flex-col h-full">
+                        <ButtonPanel/>
+                        <Middle/>
+                    </div>
+                </div>
+                <div className="border min-w-60 w-60">C3</div>
             </div>
-            <div className="border min-w-60 w-60">C3</div>
-        </div>
-    )
+        )
+    return <></>
 }

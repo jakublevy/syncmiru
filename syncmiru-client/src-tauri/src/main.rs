@@ -10,8 +10,7 @@ mod deps;
 mod files;
 mod login;
 mod sys;
-mod socketio;
-mod r#macro;
+mod mpv;
 
 #[macro_use]
 extern crate rust_i18n;
@@ -27,8 +26,6 @@ use tauri::WindowEvent::CloseRequested;
 fn main() -> Result<()> {
     let appstate = Arc::new(appstate::AppState {
         appdata: config::appdata::read()?.into(),
-        socket: None.into(),
-        window: None.into()
     });
     let mut ctx = tauri::generate_context!();
     tauri::Builder::default()
@@ -39,6 +36,8 @@ fn main() -> Result<()> {
             config::frontend::get_language,
             config::frontend::set_language,
             config::frontend::get_target_family,
+            config::frontend::jwt,
+            config::frontend::clear_jwt,
             deps::frontend::get_deps_state,
             deps::frontend::mpv_start_downloading,
             deps::frontend::yt_dlp_start_downloading,
@@ -56,9 +55,6 @@ fn main() -> Result<()> {
             login::frontend::get_forgotten_password_tkn_valid,
             login::frontend::forgotten_password_change_password,
             login::frontend::new_login,
-            login::frontend::login,
-            socketio::frontend::socketio_drop,
-            socketio::frontend::reconnecting_sign_out
         ])
         .on_window_event(handle_window_event)
         .manage(appstate)

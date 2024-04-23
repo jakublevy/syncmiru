@@ -1,9 +1,7 @@
 use std::sync::Arc;
-use std::thread::available_parallelism;
 use crate::appstate::AppState;
-use crate::config::appdata;
+use crate::config::{appdata, jwt};
 use crate::config::{Language};
-use crate::deps::{DepsAvailable};
 use crate::result::Result;
 
 #[tauri::command]
@@ -38,4 +36,14 @@ pub async fn set_language(state: tauri::State<'_, Arc<AppState>>, language: Lang
 #[tauri::command]
 pub async fn get_target_family() -> Result<String> {
     Ok(std::env::consts::FAMILY.to_lowercase().to_string())
+}
+
+#[tauri::command]
+pub async fn jwt() -> Result<String> {
+    Ok(jwt::read()?.unwrap_or("".to_string()))
+}
+
+#[tauri::command]
+pub async fn clear_jwt() -> Result<()> {
+    jwt::clear()
 }

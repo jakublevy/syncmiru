@@ -2,10 +2,6 @@ use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
 use anyhow::Context;
-use futures_util::future::BoxFuture;
-use futures_util::{FutureExt, StreamExt};
-use rust_socketio::asynchronous::{ClientBuilder, Client};
-use rust_socketio::{async_callback, Payload};
 use serde_json::Value;
 use crate::appstate::AppState;
 use crate::config::appdata;
@@ -14,7 +10,7 @@ use crate::config::jwt;
 use tauri::Manager;
 use whoami::fallible::hostname;
 use crate::login::{ServiceStatus, RegData, BooleanResp, HttpMethod, TknEmail, ForgottenPasswordChange, LoginForm, NewLogin, Jwt};
-use crate::{enclose, socketio, sys};
+use crate::{sys};
 
 #[tauri::command]
 pub async fn can_auto_login(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
@@ -170,27 +166,5 @@ pub async fn new_login(state: tauri::State<'_, Arc<AppState>>, data: String) -> 
         Some(serde_json::to_value(send)?),
     ).await?)?;
     jwt::write(&payload.jwt)?;
-    Ok(())
-}
-
-#[tauri::command]
-pub async fn login(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
-    let jwt = Jwt { jwt: jwt::read()?.context("no login jwt tkn available")? };
-    let home_srv = appdata::extract::home_srv(&state.appdata)?;
-    {
-        let mut w = state.window.write()?;
-        *w = Some(window);
-    }
-
-    let closure_state = state.inner().clone();
-    let s = ClientBuilder::new(home_srv)
-        .namespace("/")
-        .auth(serde_json::to_value(jwt)?)
-        .on("test",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::handlers::test(closure_state.clone(), p, s).map(|_| ()).boxed()}})
-        .on("error",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::handlers::error(closure_state.clone(), p, s).map(|_| ()).boxed()}})
-        .on("open",  enclose!{(closure_state) move |p: Payload, s: Client| {socketio::handlers::open(closure_state.clone(), p, s).map(|_| ()).boxed()}})
-        .connect().await?;
-    let mut socket_lock = state.socket.write()?;
-    *socket_lock = Some(s);
     Ok(())
 }

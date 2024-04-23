@@ -11,8 +11,8 @@ anyhow = "1.0.81"
 sqlx = { version = "0.7", features = [ "runtime-tokio", "postgres", "migrate" ] }
 axum = { version = "0.7.5", features = ["macros"] }
 tower = { version = "0.4.13", features = ["timeout", "load-shed", "limit"] }
-tower-http = { version = "0.5.2", features = ["trace"] }
-socketioxide = { version = "0.12.0", features = ["state"] }
+tower-http = { version = "0.5.2", features = ["trace", "cors"] }
+socketioxide = { version = "0.12.0", features = ["state", "extensions", "tracing"] }
 log = "0.4.21"
 sys-locale = "0.3.1"
 yaml-rust2 = "0.8.0"

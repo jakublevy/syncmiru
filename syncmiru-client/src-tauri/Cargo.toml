@@ -34,8 +34,6 @@ serial_test = "3.0.0"
 serde_with = "3.7.0"
 machineid-rs = "1.2.4"
 whoami = "1.5.1"
-rust_socketio = { git = "https://github.com/jakublevy/rust-socketio.git", branch = "main", features = ["async", "async-callbacks", "async-stream", "futures-util", "tokio"] }
-futures-util = "0.3.30"
 
 
 [target.'cfg(target_os = "windows")'.dependencies]
