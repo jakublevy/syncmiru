@@ -1,4 +1,4 @@
-import {ReactElement, useEffect, useState} from "react";
+import {ReactElement, useEffect, useRef, useState} from "react";
 import {useLocation} from "wouter";
 import {showErrorAlert} from "src/utils/alert.ts";
 import {useTranslation} from "react-i18next";
@@ -23,8 +23,8 @@ export default function Main(): ReactElement {
     const [socket, setSocket] = useState<Socket>();
 
     const [reconnecting, setReconnecting] = useState<boolean>(false)
-    const [loading, setLoading] = useState<boolean>(false)
-    const [currentUserReady, setCurrentUserReady] = useState(false)
+    const reconnectingRef = useRef<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true)
 
     useEffect(() => {
         const s = io(homeSrv, {auth: {jwt: jwt}})
@@ -33,28 +33,20 @@ export default function Main(): ReactElement {
         s.on('disconnect', ioDisconnect)
         setSocket(s)
         return () => { s.disconnect() };
-    }, [jwt]);
+    }, []);
 
     useEffect(() => {
-        if(socket !== undefined) {
-            for (let i = 0; i < 5; ++i)
-                socket.emit('test')
-        }
-    }, [socket]);
+        reconnectingRef.current = reconnecting;
+    }, [reconnecting]);
 
-    useEffect(() => {
-        if(currentUserReady) {
-            setLoading(false)
-        }
-    }, [currentUserReady]);
 
     function ioConn() {
         setReconnecting(false)
+        setLoading(false)
     }
 
     function ioDisconnect(reason: Socket.DisconnectReason) {
         setReconnecting(true)
-        console.log('disconnected')
     }
 
     function ioConnError(e: Error) {
@@ -64,16 +56,12 @@ export default function Main(): ReactElement {
                 navigate('/login-form/main')
             })
         }
-        else {
+        else if(!reconnectingRef.current) {
             showErrorAlert(t('login-failed'))
             navigate('/login-form/main')
         }
     }
-
-    function onCurrentUserReady() {
-        setCurrentUserReady(true)
-    }
-
+    
     if (reconnecting)
         return <Reconnecting/>
 
@@ -87,7 +75,7 @@ export default function Main(): ReactElement {
                     <SrvInfo homeSrv={homeSrv}/>
                     <Rooms/>
                     <JoinedRoom/>
-                    <CurrentUser socket={socket} onReady={onCurrentUserReady}/>
+                    <CurrentUser socket={socket}/>
                 </div>
                 <div className="border flex-1 min-w-60">
                     <div className="flex flex-col h-full">

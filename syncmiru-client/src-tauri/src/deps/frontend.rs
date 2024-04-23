@@ -7,7 +7,7 @@ use crate::files::{delete_tmp, syncmiru_data_dir};
 use crate::result::Result;
 
 #[tauri::command]
-pub async fn get_deps_state(state: tauri::State<'_, Arc<AppState>>) -> Result<DepsAvailable> {
+pub async fn get_deps_state(state: tauri::State<'_, AppState>) -> Result<DepsAvailable> {
     let mut appdata = state.appdata.write()?;
     if cfg!(target_family = "windows") {
         if appdata.deps_managed {
@@ -30,7 +30,7 @@ pub async fn get_deps_state(state: tauri::State<'_, Arc<AppState>>) -> Result<De
 }
 
 #[tauri::command]
-pub async fn get_deps_versions_fetch(state: tauri::State<'_, Arc<AppState>>) -> Result<DepsVersions> {
+pub async fn get_deps_versions_fetch(state: tauri::State<'_, AppState>) -> Result<DepsVersions> {
     let mpv = latest_mpv_download_link().await?;
     let yt_dlp = latest_yt_dlp_download_link().await?;
     let appdata = state.appdata.read()?;
@@ -43,7 +43,7 @@ pub async fn get_deps_versions_fetch(state: tauri::State<'_, Arc<AppState>>) -> 
 }
 
 #[tauri::command]
-pub async fn mpv_start_downloading(window: tauri::Window, state: tauri::State<'_, Arc<AppState>>) -> Result<()> {
+pub async fn mpv_start_downloading(window: tauri::Window, state: tauri::State<'_, AppState>) -> Result<()> {
     delete_mpv()?;
     delete_tmp()?;
 
@@ -61,7 +61,7 @@ pub async fn mpv_start_downloading(window: tauri::Window, state: tauri::State<'_
 }
 
 #[tauri::command]
-pub async fn yt_dlp_start_downloading(window: tauri::Window, state: tauri::State<'_, Arc<AppState>>) -> Result<()> {
+pub async fn yt_dlp_start_downloading(window: tauri::Window, state: tauri::State<'_, AppState>) -> Result<()> {
     delete_yt_dlp()?;
 
     let yt_dlp_release = latest_yt_dlp_download_link().await?;

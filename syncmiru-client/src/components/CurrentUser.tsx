@@ -3,8 +3,9 @@ import DefaultAvatar from "@components/svg/DefaultAvatar.tsx";
 import {SvgBtn} from "@components/widgets/Button.tsx";
 import Settings from "@components/svg/Settings.tsx";
 import {Socket} from "socket.io-client";
+import Loading from "@components/Loading.tsx";
 
-export default function CurrentUser({socket, onReady}: Props): ReactElement {
+export default function CurrentUser({socket}: Props): ReactElement {
     const [myProfile, setMyProfile] = useState<CurrentUser>()
 
     useEffect(() => {
@@ -13,7 +14,6 @@ export default function CurrentUser({socket, onReady}: Props): ReactElement {
 
     function onMyProfile(p: CurrentUser) {
         setMyProfile(p)
-        onReady()
     }
     if (myProfile !== undefined)
         return (
@@ -31,10 +31,9 @@ export default function CurrentUser({socket, onReady}: Props): ReactElement {
                 </SvgBtn>
             </div>
         )
-    return <></>
+    return <Loading/>
 }
 
 interface Props {
     socket: Socket,
-    onReady: () => void
 }

@@ -16,7 +16,6 @@ mod mpv;
 extern crate rust_i18n;
 rust_i18n::i18n!("locales");
 
-use std::sync::Arc;
 use result::Result;
 use rust_i18n::t;
 use tauri::{Window, WindowEvent};
@@ -24,9 +23,7 @@ use tauri::WindowEvent::CloseRequested;
 
 
 fn main() -> Result<()> {
-    let appstate = Arc::new(appstate::AppState {
-        appdata: config::appdata::read()?.into(),
-    });
+    let appstate = appstate::AppState { appdata: config::appdata::read()?.into() };
     let mut ctx = tauri::generate_context!();
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
