@@ -12,9 +12,6 @@ use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use clap::Parser;
 use tower_http::trace::TraceLayer;
-use socketioxide::extract::SocketRef;
-use socketioxide::handler::ConnectHandler;
-use socketioxide::SocketIo;
 use sqlx::Executor;
 use tower::{BoxError, ServiceBuilder};
 use crate::args::Args;
@@ -29,7 +26,6 @@ mod srvstate;
 mod log;
 mod db;
 mod handlers;
-mod middleware;
 mod validators;
 mod models;
 mod query;
@@ -51,13 +47,7 @@ async fn main() -> Result<()> {
    let pool = db::create_connection_pool(&config.db).await?;
    db::run_migrations(&pool).await?;
 
-   let srvstate = SrvState { db: pool.clone(), config: config.clone() };
-   let (socketio_layer, io) = SocketIo::builder()
-       .with_state(srvstate)
-       .build_layer();
-   io.ns("/", handlers::ns_callback.with(middleware::auth));
-
-   let srvstate = SrvState { db: pool, config: config.clone() };
+   let srvstate = Arc::new(SrvState { db: pool, config: config.clone() });
    let app = Router::new()
        .route("/", get(handlers::http::index))
        .route("/service", get(handlers::http::service))
@@ -71,7 +61,7 @@ async fn main() -> Result<()> {
        .route("/forgotten-password-tkn-valid", get(handlers::http::forgotten_password_tkn_valid))
        .route("/forgotten-password-change", post(handlers::http::forgotten_password_change))
        .route("/new-login", post(handlers::http::new_login))
-       .layer(socketio_layer)
+       .route("/ws", get(handlers::ws::init))
        .layer(
           ServiceBuilder::new()
               .layer(HandleErrorLayer::new(handlers::http::error))

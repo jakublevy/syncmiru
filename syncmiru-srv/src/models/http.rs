@@ -111,12 +111,6 @@ pub struct Login {
     pub hwid_hash: String
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
-pub struct Jwt {
-    #[validate(length(min = 1))]
-    pub jwt: String
-}
-
 impl BooleanResp {
     pub fn from(b: bool) -> Self {
         Self { resp: b }

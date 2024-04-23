@@ -1,4 +1,5 @@
 use sqlx::PgPool;
+use crate::models::MyProfile;
 use crate::models::query::EmailTknType;
 use crate::result::Result;
 
@@ -246,4 +247,14 @@ pub async fn exists_session_with_hwid(db: &PgPool, hwid_hash: &str) -> Result<bo
         .fetch_one(db)
         .await?;
     Ok(exists.0)
+}
+
+pub async fn get_my_profile(db: &PgPool, uid: i32) -> Result<MyProfile> {
+    let my_profile = sqlx::query_as::<_, MyProfile>(
+        "select username, display_name, email, avatar from users where id = $1 limit 1"
+    )
+        .bind(uid)
+        .fetch_one(db)
+        .await?;
+    Ok(my_profile)
 }

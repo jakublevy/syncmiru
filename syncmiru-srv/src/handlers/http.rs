@@ -1,8 +1,9 @@
 mod utils;
 
 use std::borrow::Cow;
+use std::sync::Arc;
 use anyhow::Context;
-use axum::extract::Query;
+use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{Html, IntoResponse};
@@ -12,7 +13,8 @@ use tower::BoxError;
 use crate::srvstate::SrvState;
 use validator::{Validate};
 use crate::error::SyncmiruError;
-use crate::models::http::{Email, RegForm, ServiceStatus, Username, BooleanResp, EmailWithLang, EmailVerify, TknEmail, ForgottenPasswordChange, Login, Jwt};
+use crate::models::http::{Email, RegForm, ServiceStatus, Username, BooleanResp, EmailWithLang, EmailVerify, TknEmail, ForgottenPasswordChange, Login};
+use crate::models::Jwt;
 use crate::{query, tkn};
 use crate::result::{Result};
 use crate::crypto;
@@ -24,9 +26,7 @@ pub async fn index() -> &'static str {
     "Syncmiru server"
 }
 
-pub async fn service(
-    axum::extract::State(state): axum::extract::State<SrvState>
-) -> Json<ServiceStatus> {
+pub async fn service(State(state): State<Arc<SrvState>>) -> Json<ServiceStatus> {
     Json(ServiceStatus {
         reg_pub_allowed: state.config.reg_pub.allowed,
         wait_before_resend: state.config.email.wait_before_resend,
@@ -34,10 +34,7 @@ pub async fn service(
 }
 
 
-pub async fn register(
-    axum::extract::State(state): axum::extract::State<SrvState>,
-    Json(payload): Json<RegForm>,
-) -> Result<()> {
+pub async fn register(State(state): State<Arc<SrvState>>, Json(payload): Json<RegForm>) -> Result<()> {
     payload.validate()?;
     let username_unique = query::username_unique(&state.db, &payload.username).await?;
     if !username_unique {
@@ -51,7 +48,7 @@ pub async fn register(
 
     let hashed_password = crypto::hash(payload.password.clone()).await?;
     if state.config.reg_pub.allowed {
-        payload.valid_response(&state.config.reg_pub.hcaptcha_secret.unwrap(), None).await?;
+        payload.valid_response(state.config.reg_pub.hcaptcha_secret.as_ref().unwrap(), None).await?;
         query::new_user(
             &state.db,
             &payload.username,
@@ -67,8 +64,8 @@ pub async fn register(
 }
 
 pub async fn username_unique(
-    axum::extract::State(state): axum::extract::State<SrvState>,
-    Json(payload): Json<Username>,
+    State(state): State<Arc<SrvState>>,
+    Json(payload): Json<Username>
 ) -> Result<Json<BooleanResp>> {
     payload.validate()?;
     let unique = query::username_unique(&state.db, &payload.username).await?;
@@ -76,8 +73,8 @@ pub async fn username_unique(
 }
 
 pub async fn email_unique(
-    axum::extract::State(state): axum::extract::State<SrvState>,
-    Json(payload): Json<Email>,
+    State(state): State<Arc<SrvState>>,
+    Json(payload): Json<Email>
 ) -> Result<Json<BooleanResp>> {
     payload.validate()?;
     let unique = query::email_unique(&state.db, &payload.email).await?;
@@ -85,7 +82,7 @@ pub async fn email_unique(
 }
 
 pub async fn email_verify(
-    axum::extract::State(state): axum::extract::State<SrvState>,
+    State(state): State<Arc<SrvState>>,
     Query(payload): Query<EmailVerify>,
 ) -> Result<Html<String>> {
     payload.validate()?;
@@ -112,8 +109,8 @@ pub async fn email_verify(
 
 
 pub async fn email_verify_send(
-    axum::extract::State(state): axum::extract::State<SrvState>,
-    Json(payload): Json<EmailWithLang>,
+    State(state): State<Arc<SrvState>>,
+    Json(payload): Json<EmailWithLang>
 ) -> Result<()> {
     payload.validate()?;
 
@@ -142,7 +139,7 @@ pub async fn email_verify_send(
 }
 
 pub async fn email_verified(
-    axum::extract::State(state): axum::extract::State<SrvState>,
+    State(state): State<Arc<SrvState>>,
     Json(payload): Json<Email>,
 ) -> Result<Json<BooleanResp>> {
     payload.validate()?;
@@ -153,7 +150,7 @@ pub async fn email_verified(
 }
 
 pub async fn forgotten_password_send(
-    axum::extract::State(state): axum::extract::State<SrvState>,
+    State(state): State<Arc<SrvState>>,
     Json(payload): Json<EmailWithLang>,
 ) -> Result<()> {
     payload.validate()?;
@@ -179,7 +176,7 @@ pub async fn forgotten_password_send(
 }
 
 pub async fn forgotten_password_tkn_valid(
-    axum::extract::State(state): axum::extract::State<SrvState>,
+    State(state): State<Arc<SrvState>>,
     Json(payload): Json<TknEmail>
 ) -> Result<Json<BooleanResp>> {
     payload.validate()?;
@@ -200,7 +197,7 @@ pub async fn forgotten_password_tkn_valid(
 }
 
 pub async fn forgotten_password_change(
-    axum::extract::State(state): axum::extract::State<SrvState>,
+    State(state): State<Arc<SrvState>>,
     Json(payload): Json<ForgottenPasswordChange>
 ) -> Result<()> {
     payload.validate()?;
@@ -232,7 +229,7 @@ pub async fn forgotten_password_change(
 }
 
 pub async fn new_login(
-    axum::extract::State(state): axum::extract::State<SrvState>,
+    State(state): State<Arc<SrvState>>,
     Json(payload): Json<Login>
 ) -> Result<Json<Jwt>> {
     payload.validate()?;
