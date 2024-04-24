@@ -65,7 +65,7 @@ export default function Main(): ReactElement {
         }
     }
 
-    function onUsers(users: Array<User>) {
+    function onUsers(...users: Array<User>) {
         let m: Map<UserId, UserValue> = new Map<UserId, UserValue>();
         for(const user of users)
             m.set(user.id, { username: user.username, displayname: user.displayname, avatar: user.avatar})

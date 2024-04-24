@@ -251,9 +251,19 @@ pub async fn exists_session_with_hwid(db: &PgPool, hwid_hash: &str) -> Result<bo
 
 pub async fn get_users(db: &PgPool) -> Result<Vec<User>> {
     let users = sqlx::query_as::<_, User>(
-        "select id, username, display_name, email, avatar from users"
+        "select id, username, display_name, avatar from users"
     )
         .fetch_all(db)
         .await?;
     Ok(users)
+}
+
+pub async fn get_user(db: &PgPool, uid: Id) -> Result<User> {
+    let user = sqlx::query_as::<_, User>(
+        "select id, username, display_name, avatar from users where id = $1 limit 1"
+    )
+        .bind(uid)
+        .fetch_one(db)
+        .await?;
+    Ok(user)
 }

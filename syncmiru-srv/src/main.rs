@@ -58,7 +58,7 @@ async fn main() -> Result<()> {
    let (socketio_layer, io) = SocketIo::builder()
        .with_state(socketio_srvstate)
        .build_layer();
-   io.ns("/", handlers::ns_callback.with(middleware::auth));
+   io.ns("/", handlers::socketio::ns_callback.with(middleware::auth));
 
    let app = Router::new()
        .route("/", get(handlers::http::index))
