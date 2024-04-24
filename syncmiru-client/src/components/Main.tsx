@@ -70,7 +70,7 @@ export default function Main(): ReactElement {
         for (const user of users)
             m.set(user.id, {username: user.username, displayname: user.displayname, avatar: user.avatar})
 
-        setUsers(m)
+        setUsers((p) => new Map<UserId, UserValue>([...p, ...m]))
     }
 
     if (reconnecting)
