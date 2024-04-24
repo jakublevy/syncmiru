@@ -11,8 +11,10 @@ export default function Users(): ReactElement {
     const [onlineUids, setOnlineUids] = useState<Array<UserId>>(new Array<UserId>());
 
     useEffect(() => {
-        if(socket !== undefined)
+        if(socket !== undefined) {
             socket.on('online', onOnline)
+            socket.on('offline', onOffline)
+        }
     }, [socket]);
 
     useEffect(() => {
@@ -33,27 +35,31 @@ export default function Users(): ReactElement {
     }, [users, onlineUids]);
 
     function onOnline(...uids: Array<UserId>) {
-        setOnlineUids(uids)
+        setOnlineUids((p) => [...p, ...uids])
+    }
+
+    function onOffline(...uids: Array<UserId>) {
+        setOnlineUids((p) => p.filter(x => !uids.includes(x)))
     }
 
     return (
         <div className="flex flex-col overflow-auto h-dvh -mt-1">
             {onlineUsers.length > 0 && <p className="text-xs pt-4 pl-4 pb-1">Online ({onlineUsers.length})</p> }
-            {onlineUsers.map((u) => {
+            {onlineUsers.map((u, i) => {
                 return (
-                    <div className="flex items-center p-1 pl-3 ml-1 mr-1 hover:bg-gray-100">
-                        <DefaultAvatar className="w-8 rounded-full mr-2"/>
-                        <p>{u.displayname}</p>
+                    <div className="flex items-center p-1 pl-3 ml-1 mr-1 hover:bg-gray-100" key={i}>
+                        <DefaultAvatar className="w-8 rounded-full mr-2" key={`${i}_avatar`}/>
+                        <p key={`${i}_displayname`}>{u.displayname}</p>
                     </div>
                 )
             })}
 
             {offlineUsers.length > 0 && <p className="text-xs pt-4 pl-4 pb-1">Offline ({offlineUsers.length})</p> }
-            {offlineUsers.map((u) => {
+            {offlineUsers.map((u, i) => {
                 return (
-                    <div className="flex items-center p-1 pl-3 ml-1 mr-1 opacity-30 hover:bg-gray-300">
-                        <DefaultAvatar className="w-8 rounded-full mr-2"/>
-                        <p>{u.displayname}</p>
+                    <div className="flex items-center p-1 pl-3 ml-1 mr-1 opacity-30 hover:bg-gray-300" key={i}>
+                        <DefaultAvatar className="w-8 rounded-full mr-2" key={`${i}_avatar`}/>
+                        <p key={`${i}_displayname`}>{u.displayname}</p>
                     </div>
                 )
             })}

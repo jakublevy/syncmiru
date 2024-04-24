@@ -2,13 +2,12 @@ mod utils;
 
 use std::sync::Arc;
 use socketioxide::extract::{SocketRef, State};
+use crate::handlers::socketio::utils::online_uids;
 use crate::models::query::Id;
 use crate::query;
 use crate::srvstate::SrvState;
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
-    println!("client connected to /");
-    s.on("test", test);
     s.on_disconnect(disconnect);
 
     let uid = state.socket2uid(&s);
@@ -23,21 +22,19 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.broadcast().emit("users", user).ok();
     s.emit("me", uid).ok();
 
-    utils::send_online_uids(&s, &state.socket_id2_uid);
-}
-
-
-pub async fn test(State(state): State<Arc<SrvState>>, s: SocketRef) {
-    println!("test handler called from s.id = {}", s.id);
+    let online_uids = online_uids(&state.socket_id2_uid);
+    s.emit("online", &online_uids).ok();
+    s.broadcast().emit("online", uid).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
+    let mut uid: Id;
     {
         let mut socket_id2_uid_lock = state.socket_id2_uid
             .write()
             .expect("lock error");
+        uid = socket_id2_uid_lock[&s.id];
         socket_id2_uid_lock.remove(&s.id);
     }
-
-    utils::send_online_uids(&s, &state.socket_id2_uid);
+    s.broadcast().emit("offline", uid).ok();
 }
