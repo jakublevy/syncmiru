@@ -1,7 +1,6 @@
 use std::sync::Arc;
 use socketioxide::extract::{SocketRef, State};
 use crate::query;
-use crate::result::Result;
 use crate::srvstate::SrvState;
 
 pub mod http;

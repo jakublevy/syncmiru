@@ -10,7 +10,7 @@ mod deps;
 mod files;
 mod login;
 mod sys;
-mod mpv;
+mod player;
 
 #[macro_use]
 extern crate rust_i18n;
