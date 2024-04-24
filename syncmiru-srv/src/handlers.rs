@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use serde_json::json;
 use socketioxide::extract::{SocketRef, State};
 use crate::query;
 use crate::srvstate::SrvState;
@@ -12,9 +13,10 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on_disconnect(socketio::disconnect);
 
     let uid = state.socket2uid(&s);
-    let p = query::get_current_user(&state.db, uid)
+    let users = query::get_users(&state.db)
         .await
         .expect("db error");
 
-    s.emit("my-profile", p).ok();
+    s.emit("users", [users]).ok();
+    s.emit("me", uid).ok();
 }

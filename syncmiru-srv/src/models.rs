@@ -1,10 +1,13 @@
 use serde::Serialize;
+use crate::models::query::Id;
 
 pub mod http;
 pub mod query;
 
 #[derive(Debug, Clone, Serialize, sqlx::FromRow)]
-pub struct CurrentUser {
+pub struct User {
+    pub id: Id,
+
     pub username: String,
 
     #[sqlx(rename = "display_name")]

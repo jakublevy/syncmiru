@@ -5,15 +5,16 @@ import Settings from "@components/svg/Settings.tsx";
 import {Socket} from "socket.io-client";
 import Loading from "@components/Loading.tsx";
 
-export default function CurrentUser({socket}: Props): ReactElement {
-    const [myProfile, setMyProfile] = useState<CurrentUser>()
+export default function CurrentUser({socket, users}: Props): ReactElement {
+    const [myProfile, setMyProfile] = useState<User>()
 
     useEffect(() => {
-        socket.on('my-profile', onMyProfile)
+        socket.on('me', onMe)
     }, [socket]);
 
-    function onMyProfile(p: CurrentUser) {
-        setMyProfile(p)
+    function onMe(uid: UserId) {
+        let user = users.get(uid) as UserValue
+        setMyProfile({id: uid,  username: user.username, displayname: user.displayname, avatar: user.avatar})
     }
     if (myProfile !== undefined)
         return (
@@ -25,8 +26,7 @@ export default function CurrentUser({socket}: Props): ReactElement {
                         <p className="text-xs -mt-1">{myProfile.username}</p>
                     </div>
                 </div>
-                <SvgBtn className="p-3" onClick={() => {
-                }}>
+                <SvgBtn className="p-3" onClick={() => {}}>
                     <Settings className="h-6"/>
                 </SvgBtn>
             </div>
@@ -36,4 +36,5 @@ export default function CurrentUser({socket}: Props): ReactElement {
 
 interface Props {
     socket: Socket,
+    users: Map<UserId, UserValue>
 }

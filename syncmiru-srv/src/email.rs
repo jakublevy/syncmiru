@@ -4,19 +4,20 @@ use lettre::message::header::ContentType;
 use crate::config::EmailConf;
 use crate::result::Result;
 use rust_i18n::t;
+use crate::models::query::Id;
 
 pub async fn send_verification_email(
     email_conf: &EmailConf,
     to: &str,
     tkn: &str,
-    uid: i32,
+    uid: Id,
     srv_url: &str,
     lang: &str
 ) -> Result<()> {
     #[derive(serde::Serialize)]
     struct Params {
         tkn: String,
-        uid: i32,
+        uid: Id,
         lang: String
     }
     let params = Params { tkn: tkn.to_string(), uid, lang: lang.to_string() };

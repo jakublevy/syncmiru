@@ -1,6 +1,6 @@
 use sqlx::PgPool;
-use crate::models::CurrentUser;
-use crate::models::query::EmailTknType;
+use crate::models::User;
+use crate::models::query::{EmailTknType, Id};
 use crate::result::Result;
 
 pub async fn username_unique(db: &PgPool, username: &str) -> Result<bool> {
@@ -45,8 +45,8 @@ pub async fn unverified_account_exist(db: &PgPool, email: &str) -> Result<bool> 
 pub async fn user_id_from_email(
     db: &PgPool,
     email: &str
-) -> Result<Option<i32>> {
-    if let Some(uid) = sqlx::query_as::<_, (i32,)>("select id from users where email = $1 limit 1")
+) -> Result<Option<Id>> {
+    if let Some(uid) = sqlx::query_as::<_, (Id,)>("select id from users where email = $1 limit 1")
         .bind(email)
         .fetch_optional(db).await? {
         Ok(Some(uid.0))
@@ -58,7 +58,7 @@ pub async fn user_id_from_email(
 
 pub async fn out_of_email_tkn_quota(
     db: &PgPool,
-    uid: i32,
+    uid: Id,
     email_type: &EmailTknType,
     max: i64,
     interval: i64,
@@ -83,7 +83,7 @@ pub async fn out_of_email_tkn_quota(
 
 pub async fn waited_before_last_email_tkn(
     db: &PgPool,
-    uid: i32,
+    uid: Id,
     email_type: &EmailTknType,
     wait_before_resend: i64
 ) -> Result<bool> {
@@ -106,7 +106,7 @@ pub async fn waited_before_last_email_tkn(
 
 pub async fn new_email_tkn(
     db: &PgPool,
-    uid: i32,
+    uid: Id,
     email_type: EmailTknType,
     hash: &str,
 ) -> Result<()> {
@@ -121,7 +121,7 @@ pub async fn new_email_tkn(
 
 pub async fn get_valid_hashed_tkn(
     db: &PgPool,
-    uid: i32,
+    uid: Id,
     email_type: EmailTknType,
     valid_time: i64
 ) -> Result<Option<String>> {
@@ -148,7 +148,7 @@ pub async fn get_valid_hashed_tkn(
 
 pub async fn get_verified_unsafe(
     db: &PgPool,
-    uid: i32
+    uid: Id
 ) -> Result<bool> {
     let is_verified: (bool,) = sqlx::query_as("select verified from users where id = $1 limit 1")
         .bind(uid)
@@ -156,7 +156,7 @@ pub async fn get_verified_unsafe(
     Ok(is_verified.0)
 }
 
-pub async fn set_verified(db: &PgPool, uid: i32) -> Result<()> {
+pub async fn set_verified(db: &PgPool, uid: Id) -> Result<()> {
     sqlx::query("update users set verified = TRUE where id = $1")
         .bind(uid)
         .execute(db).await?;
@@ -174,7 +174,7 @@ pub async fn email_verified(db: &PgPool, email: &str) -> Result<Option<bool>> {
     }
 }
 
-pub async fn set_user_hash(db: &PgPool, uid: i32, hash: &str) -> Result<()> {
+pub async fn set_user_hash(db: &PgPool, uid: Id, hash: &str) -> Result<()> {
     sqlx::query("update users set hash = $1 where id = $2")
         .bind(hash)
         .bind(uid)
@@ -182,7 +182,7 @@ pub async fn set_user_hash(db: &PgPool, uid: i32, hash: &str) -> Result<()> {
     Ok(())
 }
 
-pub async fn get_user_hash_unsafe(db: &PgPool, uid: i32) -> Result<String> {
+pub async fn get_user_hash_unsafe(db: &PgPool, uid: Id) -> Result<String> {
     let hash: (String, ) = sqlx::query_as("select hash from users where id = $1 limit 1")
         .bind(uid)
         .fetch_one(db).await?;
@@ -194,7 +194,7 @@ pub async fn new_session(
     os: &str,
     device_name: &str,
     hash: &str,
-    uid: i32
+    uid: Id
 ) -> Result<()> {
     let query = r#"
     insert into session (os, device_name, hash, user_id)
@@ -249,12 +249,11 @@ pub async fn exists_session_with_hwid(db: &PgPool, hwid_hash: &str) -> Result<bo
     Ok(exists.0)
 }
 
-pub async fn get_current_user(db: &PgPool, uid: i32) -> Result<CurrentUser> {
-    let my_profile = sqlx::query_as::<_, CurrentUser>(
-        "select username, display_name, email, avatar from users where id = $1 limit 1"
+pub async fn get_users(db: &PgPool) -> Result<Vec<User>> {
+    let users = sqlx::query_as::<_, User>(
+        "select id, username, display_name, email, avatar from users"
     )
-        .bind(uid)
-        .fetch_one(db)
+        .fetch_all(db)
         .await?;
-    Ok(my_profile)
+    Ok(users)
 }

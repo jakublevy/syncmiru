@@ -4,3 +4,5 @@ pub enum EmailTknType {
     ForgottenPassword,
     Verify,
 }
+
+pub type Id = i32;

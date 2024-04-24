@@ -6,10 +6,11 @@ use openssl::pkey::PKey;
 use sqlx::PgPool;
 use crate::config::LoginJwt;
 use crate::error::SyncmiruError::AuthError;
+use crate::models::query::Id;
 use crate::query;
 use crate::result::Result;
 
-pub fn new_login(login_jwt_conf: &LoginJwt, uid: i32) -> Result<String> {
+pub fn new_login(login_jwt_conf: &LoginJwt, uid: Id) -> Result<String> {
     let mut header = Header::default();
     header.algorithm = login_jwt_conf.alg.into();
     header.type_ = Some(HeaderType::JsonWebToken);
@@ -29,12 +30,12 @@ pub async fn login_jwt_check(
     jwt: &str,
     login_jwt_conf: &LoginJwt,
     db: &PgPool
-) -> Result<(bool, Option<i32>)> {
+) -> Result<(bool, Option<Id>)> {
     let key = PKeyWithDigest {
         digest: login_jwt_conf.alg.digest(),
         key: PKey::public_key_from_pem(&login_jwt_conf.pub_pem)?,
     };
-    if let Ok(claims) = jwt.verify_with_key(&key) as std::result::Result<BTreeMap<String, i32>, jwt::Error> {
+    if let Ok(claims) = jwt.verify_with_key(&key) as std::result::Result<BTreeMap<String, Id>, jwt::Error> {
         let sub_opt = claims.get("sub");
         if sub_opt.is_none() {
             return Ok((false, None))

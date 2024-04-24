@@ -26,11 +26,15 @@ export default function Main(): ReactElement {
     const reconnectingRef = useRef<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true)
 
+    const [users, setUsers]
+        = useState<Map<UserId, UserValue>>(new Map<UserId, UserValue>());
+
     useEffect(() => {
         const s = io(homeSrv, {auth: {jwt: jwt}})
         s.on('connect_error', ioConnError)
         s.on('connect', ioConn)
         s.on('disconnect', ioDisconnect)
+        s.on('users', onUsers)
         setSocket(s)
         return () => { s.disconnect() };
     }, []);
@@ -42,7 +46,6 @@ export default function Main(): ReactElement {
 
     function ioConn() {
         setReconnecting(false)
-        setLoading(false)
     }
 
     function ioDisconnect(reason: Socket.DisconnectReason) {
@@ -61,6 +64,15 @@ export default function Main(): ReactElement {
             navigate('/login-form/main')
         }
     }
+
+    function onUsers(users: Array<User>) {
+        let m: Map<UserId, UserValue> = new Map<UserId, UserValue>();
+        for(const user of users)
+            m.set(user.id, { username: user.username, displayname: user.displayname, avatar: user.avatar})
+
+        setUsers(m)
+        setLoading(false)
+    }
     
     if (reconnecting)
         return <Reconnecting/>
@@ -75,7 +87,7 @@ export default function Main(): ReactElement {
                     <SrvInfo homeSrv={homeSrv}/>
                     <Rooms/>
                     <JoinedRoom/>
-                    <CurrentUser socket={socket}/>
+                    <CurrentUser socket={socket} users={users}/>
                 </div>
                 <div className="border flex-1 min-w-60">
                     <div className="flex flex-col h-full">

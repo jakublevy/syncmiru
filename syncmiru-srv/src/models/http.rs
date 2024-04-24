@@ -3,6 +3,7 @@ use validator::Validate;
 use crate::validators;
 use serde::{Serialize, Deserialize};
 use serde_repr::Serialize_repr;
+use crate::models::query::Id;
 
 
 #[derive(Debug, Copy, Clone, Serialize)]
@@ -58,7 +59,7 @@ pub struct EmailVerify {
     pub tkn: String,
 
     #[validate(range(min = 1))]
-    pub uid: i32,
+    pub uid: Id,
 
     #[validate(custom(function = "validators::check_lang"))]
     pub lang: String

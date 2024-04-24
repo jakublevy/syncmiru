@@ -3,7 +3,7 @@ use anyhow::Context;
 use axum::Json;
 use rand::Rng;
 use crate::error::SyncmiruError;
-use crate::models::query::EmailTknType;
+use crate::models::query::{EmailTknType, Id};
 use crate::{crypto, query};
 use crate::models::http::BooleanResp;
 use crate::srvstate::SrvState;
@@ -11,7 +11,7 @@ use crate::result::Result;
 
 pub(super) async fn check_email_tkn_out_of_quota(
     state: &SrvState,
-    uid: i32,
+    uid: Id,
     email_type: EmailTknType
 ) -> Result<()> {
     let mut out_of_quota = false;
