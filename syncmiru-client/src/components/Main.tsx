@@ -9,22 +9,21 @@ import JoinedRoom from "@components/JoinedRoom.tsx";
 import CurrentUser from "@components/CurrentUser.tsx";
 import ButtonPanel from "@components/ButtonPanel.tsx";
 import Middle from "@components/Middle.tsx";
-import Loading from "@components/Loading.tsx";
 import {useJwt} from "@hooks/useJwt.tsx";
 import {io, Socket} from "socket.io-client";
 import {useHomeServer} from "@hooks/useHomeServer.ts";
 import {invoke} from "@tauri-apps/api/core";
+import Users from "@components/Users.tsx";
+import { MainContext } from "@hooks/useMainContext";
 
 export default function Main(): ReactElement {
     const [_, navigate] = useLocation()
     const {t} = useTranslation()
     const jwt = useJwt();
-    const homeSrv= useHomeServer();
+    const homeSrv = useHomeServer();
     const [socket, setSocket] = useState<Socket>();
-
     const [reconnecting, setReconnecting] = useState<boolean>(false)
     const reconnectingRef = useRef<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(true)
 
     const [users, setUsers]
         = useState<Map<UserId, UserValue>>(new Map<UserId, UserValue>());
@@ -36,7 +35,9 @@ export default function Main(): ReactElement {
         s.on('disconnect', ioDisconnect)
         s.on('users', onUsers)
         setSocket(s)
-        return () => { s.disconnect() };
+        return () => {
+            s.disconnect()
+        };
     }, []);
 
     useEffect(() => {
@@ -53,13 +54,12 @@ export default function Main(): ReactElement {
     }
 
     function ioConnError(e: Error) {
-        if(e.message === "Auth error") {
+        if (e.message === "Auth error") {
             invoke<void>('clear_jwt').then(() => {
                 showErrorAlert(t('login-jwt-invalid'))
                 navigate('/login-form/main')
             })
-        }
-        else if(!reconnectingRef.current) {
+        } else if (!reconnectingRef.current) {
             showErrorAlert(t('login-failed'))
             navigate('/login-form/main')
         }
@@ -67,27 +67,23 @@ export default function Main(): ReactElement {
 
     function onUsers(...users: Array<User>) {
         let m: Map<UserId, UserValue> = new Map<UserId, UserValue>();
-        for(const user of users)
-            m.set(user.id, { username: user.username, displayname: user.displayname, avatar: user.avatar})
+        for (const user of users)
+            m.set(user.id, {username: user.username, displayname: user.displayname, avatar: user.avatar})
 
         setUsers(m)
-        setLoading(false)
     }
-    
+
     if (reconnecting)
         return <Reconnecting/>
 
-    if (loading)
-        return <Loading/>
-
-    if(socket !== undefined)
-        return (
+    return (
+        <MainContext.Provider value={{socket: socket, users: users}}>
             <div className="flex w-dvw">
-                <div className="flex flex-col min-w-60 w-60">
+                <div className="flex flex-col min-w-60 w-60 h-dvh">
                     <SrvInfo homeSrv={homeSrv}/>
                     <Rooms/>
                     <JoinedRoom/>
-                    <CurrentUser socket={socket} users={users}/>
+                    <CurrentUser />
                 </div>
                 <div className="border flex-1 min-w-60">
                     <div className="flex flex-col h-full">
@@ -95,8 +91,10 @@ export default function Main(): ReactElement {
                         <Middle/>
                     </div>
                 </div>
-                <div className="border min-w-60 w-60">C3</div>
+                <div className="border min-w-60 w-60">
+                    <Users/>
+                </div>
             </div>
-        )
-    return <></>
+        </MainContext.Provider>
+    )
 }
