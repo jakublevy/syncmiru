@@ -9,6 +9,7 @@ import {useTranslation} from "react-i18next";
 import Card from "@components/widgets/Card.tsx";
 import {mutate} from "swr";
 import Label from "@components/widgets/Label.tsx";
+import {navigateToLoginFormMain} from "../../utils/navigate.ts";
 
 export default function HomeServer(): ReactElement {
     const [location, navigate] = useLocation()
@@ -34,11 +35,7 @@ export default function HomeServer(): ReactElement {
     }, [homeSrv]);
 
     function backButtonClicked() {
-        changeHomeSrv(homeSrv).then(() => {
-            mutate('get_service_status', undefined)
-            refresh({tag: "useHomeServer"})
-            navigate("/login-form/main")
-        })
+        changeHomeSrv(homeSrv).then(() => navigateToLoginFormMain(navigate))
     }
 
     function homeSrvInputChanged(e: ChangeEvent<HTMLInputElement>) {

@@ -43,7 +43,7 @@ export default function DepsUpdate(): ReactElement {
 
     function updateNow() {
         if(updateAvailable.mpv) {
-            navigate('/mpv-download', {state: {yt_dlp: updateAvailable.yt_dlp} as MpvDownloadHistoryState})
+            navigate<MpvDownloadHistoryState>('/mpv-download', {state: {yt_dlp: updateAvailable.yt_dlp}})
         }
         else {
             navigate('/yt-dlp-download')

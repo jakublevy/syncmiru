@@ -4,6 +4,7 @@ import Register from "@components/login/Register.tsx";
 import Loading from "@components/Loading.tsx";
 import {useLocation} from "wouter";
 import {LoginFormHistoryState} from "@models/historyState.ts";
+import {navigateToLoginFormMain} from "../../utils/navigate.ts";
 
 export default function RegisterDispatch(): ReactElement {
     const [_, navigate] = useLocation()
@@ -15,7 +16,8 @@ export default function RegisterDispatch(): ReactElement {
 
     useEffect(() => {
         if(homeSrvServiceError)
-            navigate("/login-form/main", {state: { homeSrvError: true } as LoginFormHistoryState})
+            navigateToLoginFormMain(navigate, {homeSrvError: true})
+
     }, [homeSrvServiceError]);
 
     return (

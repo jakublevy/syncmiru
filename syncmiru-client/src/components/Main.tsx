@@ -15,6 +15,7 @@ import {useHomeServer} from "@hooks/useHomeServer.ts";
 import {invoke} from "@tauri-apps/api/core";
 import Users from "@components/Users.tsx";
 import { MainContext } from "@hooks/useMainContext";
+import {navigateToLoginFormMain} from "../utils/navigate.ts";
 
 export default function Main(): ReactElement {
     const [_, navigate] = useLocation()
@@ -57,11 +58,11 @@ export default function Main(): ReactElement {
         if (e.message === "Auth error") {
             invoke<void>('clear_jwt').then(() => {
                 showErrorAlert(t('login-jwt-invalid'))
-                navigate('/login-form/main')
+                navigateToLoginFormMain(navigate)
             })
         } else if (!reconnectingRef.current) {
             showErrorAlert(t('login-failed'))
-            navigate('/login-form/main')
+            navigateToLoginFormMain(navigate)
         }
     }
 

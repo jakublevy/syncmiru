@@ -8,6 +8,7 @@ import {useLocation} from "wouter";
 import {useHistoryState} from 'wouter/use-browser-location'
 import {DepsHistoryState} from "@models/historyState.ts";
 import {mutate} from "swr";
+import {navigateToDepsUpdate} from "../../utils/navigate.ts";
 
 export default function Deps(): ReactElement {
     const {firstRunSeen}: DepsHistoryState = useHistoryState()
@@ -20,9 +21,7 @@ export default function Deps(): ReactElement {
     }
 
     function navigateCheckDepsUpdates() {
-        mutate('get_deps_versions_fetch', undefined).then(() =>
-            navigate("/deps-update")
-        )
+        navigateToDepsUpdate(navigate)
     }
 
     useEffect(() => {

@@ -22,6 +22,7 @@ import ForgottenPasswordDispatch from "@components/login/ForgottenPasswordDispat
 import ForgottenPasswordChanged from "@components/login/ForgottenPasswordChanged.tsx";
 import DepsUpdate from "@components/deps/windows/DepsUpdate.tsx";
 import Main from "@components/Main.tsx";
+import {navigateToDeps, navigateToWelcome} from "../utils/navigate.ts";
 
 
 export default function App(): ReactElement {
@@ -36,9 +37,10 @@ export default function App(): ReactElement {
 
     useEffect(() => {
         if (firstRunSeen)
-            navigate('/deps', {state: {firstRunSeen: true} as DepsHistoryState})
-        else
-            navigate('/welcome')
+            navigateToDeps(navigate, {firstRunSeen: true})
+        else {
+            navigateToWelcome(navigate)
+        }
     }, [firstRunSeen]);
 
     return (

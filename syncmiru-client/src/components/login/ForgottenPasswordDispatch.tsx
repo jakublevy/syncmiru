@@ -5,6 +5,7 @@ import {ForgottenPasswordHistoryState, LoginFormHistoryState} from "@models/hist
 import Loading from "@components/Loading.tsx";
 import {useHistoryState} from "wouter/use-browser-location";
 import ForgottenPassword from "@components/login/ForgottenPassword.tsx";
+import {navigateToLoginFormMain} from "../../utils/navigate.ts";
 
 export default function ForgottenPasswordDispatch(): ReactElement {
     const [_, navigate] = useLocation()
@@ -17,7 +18,8 @@ export default function ForgottenPasswordDispatch(): ReactElement {
 
     useEffect(() => {
         if(homeSrvServiceError)
-            navigate("/login-form/main", {state: { homeSrvError: true, email: email } as LoginFormHistoryState})
+            navigateToLoginFormMain(navigate, {homeSrvError: true, email: email})
+
     }, [homeSrvServiceError]);
 
     return (

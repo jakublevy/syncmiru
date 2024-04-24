@@ -16,7 +16,7 @@ export default function MpvDownloadFailed(): ReactElement {
     function downloadMpvAgain() {
         resetBoundary()
         refresh({error: true})
-        navigate('/reload', {state: {to: location} as TrampolineHistoryState})
+        navigate<TrampolineHistoryState>('/reload', {state: {to: location}})
     }
 
     return (

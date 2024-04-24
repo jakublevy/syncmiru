@@ -47,7 +47,7 @@ export default function Users(): ReactElement {
             {onlineUsers.length > 0 && <p className="text-xs pt-4 pl-4 pb-1">Online ({onlineUsers.length})</p> }
             {onlineUsers.map((u, i) => {
                 return (
-                    <div className="flex items-center p-1 pl-3 ml-1 mr-1 hover:bg-gray-100" key={i}>
+                    <div className="flex items-center p-1 pl-3 ml-1 mr-1 hover:bg-gray-100 dark:hover:bg-gray-700" key={i}>
                         <DefaultAvatar className="w-8 rounded-full mr-2" key={`${i}_avatar`}/>
                         <p key={`${i}_displayname`}>{u.displayname}</p>
                     </div>
@@ -57,7 +57,7 @@ export default function Users(): ReactElement {
             {offlineUsers.length > 0 && <p className="text-xs pt-4 pl-4 pb-1">Offline ({offlineUsers.length})</p> }
             {offlineUsers.map((u, i) => {
                 return (
-                    <div className="flex items-center p-1 pl-3 ml-1 mr-1 opacity-30 hover:bg-gray-300" key={i}>
+                    <div className="flex items-center p-1 pl-3 ml-1 mr-1 opacity-30 hover:bg-gray-300 dark:hover:bg-gray-600" key={i}>
                         <DefaultAvatar className="w-8 rounded-full mr-2" key={`${i}_avatar`}/>
                         <p key={`${i}_displayname`}>{u.displayname}</p>
                     </div>

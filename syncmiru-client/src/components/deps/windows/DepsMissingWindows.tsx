@@ -8,23 +8,23 @@ import {BackBtn, BtnPrimary, BtnSecondary} from "@components/widgets/Button.tsx"
 import {useLocation} from "wouter";
 import Card from "@components/widgets/Card.tsx";
 import {TrampolineHistoryState, MpvDownloadHistoryState} from "@models/historyState.ts";
+import {navigateToWelcome} from "../../../utils/navigate.ts";
 
 export default function DepsMissingWindows({firstRunSeen, depsState}: Props): ReactElement {
     const {t} = useTranslation()
     const [location, navigate] = useLocation()
 
     function navigateBack(): void {
-        refresh({tag: "useLanguage"})
-        navigate("/welcome")
+        navigateToWelcome(navigate)
     }
 
     function checkDepsAgain(): void {
         refresh({tag: "useDepsState"})
-        navigate("/reload", {state: {to: location, firstRunSeen: firstRunSeen} as TrampolineHistoryState})
+        navigate<TrampolineHistoryState>("/reload", {state: {to: location, firstRunSeen: firstRunSeen}})
     }
 
     function downloadDeps(): void {
-        navigate('/mpv-download', {state: { yt_dlp: true } as MpvDownloadHistoryState})
+        navigate<MpvDownloadHistoryState>('/mpv-download', {state: { yt_dlp: true }})
     }
 
     return (

@@ -19,6 +19,7 @@ import {VerifyEmailHistoryState} from "@models/historyState.ts";
 import {showErrorAlert} from "src/utils/alert.ts";
 import {mutate} from "swr";
 import {useTranslation} from "react-i18next";
+import {navigateToEmailVerify} from "../../utils/navigate.ts";
 
 export default function Register({regPubAllowed}: Props): ReactElement {
     const [_, navigate] = useLocation()
@@ -64,10 +65,7 @@ export default function Register({regPubAllowed}: Props): ReactElement {
         setLoading(true)
         invoke<void>('send_registration', {data: JSON.stringify(send)})
             .then(() => {
-                mutate('req_verification_email', undefined).then(() =>
-                    mutate('get_email_verified', undefined).then(() =>
-                        navigate('/email-verify', {state: {email: data.email} as VerifyEmailHistoryState}))
-                )
+                navigateToEmailVerify(navigate, {email: data.email})
             })
             .catch((e) => {
                 setValue('captcha', '')

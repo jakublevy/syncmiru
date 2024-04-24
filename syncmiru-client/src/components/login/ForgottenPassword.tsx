@@ -17,6 +17,7 @@ import {joiResolver} from "@hookform/resolvers/joi";
 import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
 import {useTranslation} from "react-i18next";
+import {navigateToLoginFormMain} from "../../utils/navigate.ts";
 
 export default function ForgottenPassword({email, waitBeforeResend}: Props): ReactElement {
     const [_, navigate] = useLocation()
@@ -52,7 +53,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
     }, [fpError]);
 
     function backButtonClicked() {
-        navigate("/login-form/main", {state: {email: email} as LoginFormHistoryState})
+        navigateToLoginFormMain(navigate, {email: email})
     }
 
     function resendEmail() {

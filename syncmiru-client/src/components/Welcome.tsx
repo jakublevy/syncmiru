@@ -6,14 +6,14 @@ import {refresh} from "@mittwald/react-use-promise";
 import {BtnPrimary} from "@components/widgets/Button.tsx";
 import Card from "@components/widgets/Card.tsx";
 import {DepsHistoryState} from "@models/historyState.ts";
+import {navigateToDeps} from "../utils/navigate.ts";
 
 export default function Welcome(): ReactElement {
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
 
-    function navigateToDeps(): void {
-        refresh({tag: "useDepsState"})
-        navigate("/deps", {state: {firstRunSeen: false} as DepsHistoryState})
+    function navToDeps(): void {
+        navigateToDeps(navigate, {firstRunSeen: false})
     }
 
     return (
@@ -25,7 +25,7 @@ export default function Welcome(): ReactElement {
                     <label>{t('language')}</label>
                     <LanguageSelector/>
                 </div>
-                <BtnPrimary onClick={navigateToDeps}>{t('continue')}</BtnPrimary>
+                <BtnPrimary onClick={navToDeps}>{t('continue')}</BtnPrimary>
             </Card>
         </div>
     )

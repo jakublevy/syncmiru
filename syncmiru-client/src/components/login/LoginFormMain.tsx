@@ -20,6 +20,12 @@ import {LoginForm} from "@models/login.ts";
 import Loading from "@components/Loading.tsx";
 import {StatusAlertService} from "react-status-alert";
 import {refresh} from "@mittwald/react-use-promise";
+import {
+    navigateToEmailVerify,
+    navigateToForgottenPassword,
+    navigateToMain,
+    navigateToRegister
+} from "../../utils/navigate.ts";
 
 export default function LoginFormMain(): ReactElement {
     const [location, navigate] = useLocation()
@@ -114,8 +120,7 @@ export default function LoginFormMain(): ReactElement {
         if (!checkHomeServer())
             return
 
-        await mutate('get_service_status', undefined)
-        navigate('/register')
+        navigateToRegister(navigate)
     }
 
     function loginBtnClicked() {
@@ -136,11 +141,12 @@ export default function LoginFormMain(): ReactElement {
             setLoading(true)
             invoke<void>('new_login', {data: JSON.stringify(sendData)})
                 .then(() => {
-                    refresh({tag: "useJwt"})
-                    navigate('/main')
+                    navigateToMain(navigate)
                 })
                 .catch((e: string) => {
-                    if(!e.startsWith("Reqwest error"))
+                    if(e.includes("Email not verified"))
+                        navigateToEmailVerify(navigate, {email: sendData.email})
+                    else if(!e.startsWith("Reqwest error"))
                         showErrorAlert(t('login-incorrect-email-password'))
                     else {
                         setHomeSrvResponseError(true)
@@ -155,11 +161,8 @@ export default function LoginFormMain(): ReactElement {
         setFormErrors(fieldsError)
         setFormShowError({srv: true, email: true, password: false})
 
-        if (checkHomeServer() && fieldsError.email == FieldError.None) {
-            await mutate('get_service_status', undefined)
-            await mutate('req_forgotten_password_email', undefined)
-            navigate('/forgotten-password', {state: {email: formData.email} as ForgottenPasswordHistoryState})
-        }
+        if (checkHomeServer() && fieldsError.email == FieldError.None)
+            navigateToForgottenPassword(navigate, {email: formData.email})
     }
 
     function emailOnChange(e: ChangeEvent<HTMLInputElement>) {

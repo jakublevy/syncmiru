@@ -4,6 +4,7 @@ import {BtnSecondary} from "@components/widgets/Button.tsx";
 import {useLocation} from "wouter";
 import Loading from "@components/Loading.tsx";
 import {invoke} from "@tauri-apps/api/core";
+import {navigateToLoginFormMain} from "../utils/navigate.ts";
 
 export default function Reconnecting(): ReactElement {
     const [_, navigate] = useLocation()
@@ -12,7 +13,7 @@ export default function Reconnecting(): ReactElement {
     function signout() {
         setLoading(true)
         invoke<void>('clear_jwt').then(() => {
-            navigate('/login-form/main')
+            navigateToLoginFormMain(navigate)
         })
     }
     if(loading)
