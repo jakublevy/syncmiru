@@ -53,7 +53,7 @@ export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
 
     return (
         <div className="flex justify-centersafe items-center w-dvw">
-            <Card className="min-w-[25rem] w-[40rem] m-3">
+            <Card className="min-w-[25rem] w-[40rem] m-3 p-6">
                 <h1 className="text-4xl mb-4">{t('email-verify-title')}</h1>
                 <p>{t('email-verify-text-1')} <b>{email}</b> {t('email-verify-text-2')}</p>
                 <div className="mt-4">

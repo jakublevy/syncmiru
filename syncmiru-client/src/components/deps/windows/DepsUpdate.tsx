@@ -55,7 +55,7 @@ export default function DepsUpdate(): ReactElement {
 
     return (
         <div className="flex justify-centersafe items-center w-dvw">
-            <Card className="min-w-[32rem] w-[40rem] m-3">
+            <Card className="min-w-[32rem] w-[40rem] m-3 p-6">
                 <div className="flex items-start">
                     <h1 className="text-4xl mb-4">{t('deps-update-title')}</h1>
                 </div>

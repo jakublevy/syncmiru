@@ -21,7 +21,7 @@ export function navigateToEmailVerify(
 
 export function navigateToMain(navigate: NavigateFunc<any>) {
     refresh({tag: "useJwt"})
-    navigate('/main')
+    navigate('/main/index')
 }
 
 export function navigateToDeps(

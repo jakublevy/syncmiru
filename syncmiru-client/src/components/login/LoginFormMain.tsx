@@ -188,7 +188,7 @@ export default function LoginFormMain(): ReactElement {
     if (location === '/login-form/main')
         return (
             <div className="flex justify-centersafe items-center w-dvw">
-                <Card className="min-w-[25rem] w-[30rem] m-3">
+                <Card className="min-w-[25rem] w-[30rem] m-3 p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-4xl">{t('login-title')}</h1>
                         <LanguageSelector className="w-40 ml-4"/>

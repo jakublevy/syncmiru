@@ -102,7 +102,7 @@ export default function Register({regPubAllowed}: Props): ReactElement {
 
     return (
         <div className="flex justify-centersafe items-center w-dvw">
-            <Card className="min-w-[25rem] w-[40rem] m-3">
+            <Card className="min-w-[25rem] w-[40rem] m-3 p-6">
                 <div className="flex items-start mb-6">
                     <h1 className="text-4xl">{t('register-title')}</h1>
                 </div>

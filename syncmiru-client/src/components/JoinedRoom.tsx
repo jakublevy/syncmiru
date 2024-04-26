@@ -1,6 +1,6 @@
 import {ReactElement} from "react";
 import DoorOut from "@components/svg/DoorOut.tsx";
-import {Btn, SvgBtn} from "@components/widgets/Button.tsx";
+import {Btn, Clickable} from "@components/widgets/Button.tsx";
 
 export default function JoinedRoom(): ReactElement {
     return (
@@ -9,9 +9,9 @@ export default function JoinedRoom(): ReactElement {
                 <p className="text-xs">Připojen</p>
                 <p>Seriály ČT</p>
             </div>
-            <SvgBtn onClick={() => {}} className="p-2">
+            <Clickable onClick={() => {}} className="p-2">
                 <DoorOut className="w-7"/>
-            </SvgBtn>
+            </Clickable>
         </div>
     )
 }

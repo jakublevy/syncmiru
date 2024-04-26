@@ -70,7 +70,7 @@ export default function App(): ReactElement {
             <Route path="/forgotten-password" component={ForgottenPasswordDispatch}/>
             <Route path="/forgotten-password-changed" component={ForgottenPasswordChanged}/>
 
-            <Route path="/main" component={Main}/>
+            <Route path="/main/*" component={Main}/>
         </Router>
     )
 }

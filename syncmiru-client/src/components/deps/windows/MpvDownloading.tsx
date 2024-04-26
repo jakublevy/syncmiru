@@ -50,7 +50,7 @@ export default function MpvDownloading(): ReactElement {
     } else {
         return (
             <div className="flex justify-center items-center m-3">
-                <Card className="w-[40rem]">
+                <Card className="w-[40rem] p-6">
                     <h1 className="text-center text-4xl mb-4">{t('mpv-downloading-title')}</h1>
                     <DownloadProgressBar
                         title={mpvDownloadInfo.url}

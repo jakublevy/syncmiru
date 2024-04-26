@@ -17,7 +17,7 @@ export default function ForgottenPasswordChanged(): ReactElement {
 
     return (
         <div className="flex justify-centersafe items-center w-dvw">
-            <Card className="w-[28rem] m-3">
+            <Card className="w-[28rem] m-3 p-6">
                 <div className="flex items-start">
                     <h1 className="text-4xl mb-4 mr-4">{t('forgotten-password-changed-title')}</h1>
                     <Party className="min-w-12 w-12"/>

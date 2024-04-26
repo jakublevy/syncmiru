@@ -29,7 +29,7 @@ export default function DepsMissingWindows({firstRunSeen, depsState}: Props): Re
 
     return (
         <div className="flex justify-center items-center ml-8 mr-8 mt-3 mb-3">
-            <Card>
+            <Card className="p-6">
                 <div className="flex items-start">
                     {!firstRunSeen && <BackBtn className="mr-4" onClick={navigateBack}/>}
                     <h1 className="text-4xl mb-4">{t('missing-deps-title')}</h1>

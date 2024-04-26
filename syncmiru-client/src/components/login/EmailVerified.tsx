@@ -17,7 +17,7 @@ export default function EmailVerified(): ReactElement {
 
     return (
         <div className="flex justify-centersafe items-center w-dvw">
-            <Card className="w-[29rem] m-3">
+            <Card className="w-[29rem] m-3 p-6">
                 <div className="flex items-start">
                     <h1 className="text-4xl mb-4 mr-4">{t('email-verified-title')}</h1>
                     <Party className="min-w-12 w-12"/>

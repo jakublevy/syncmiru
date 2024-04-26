@@ -17,9 +17,10 @@ import Users from "@components/Users.tsx";
 import {MainContext} from "@hooks/useMainContext";
 import {navigateToLoginFormMain} from "../utils/navigate.ts";
 import Loading from "@components/Loading.tsx";
+import UserSettings from "@components/UserSettings.tsx";
 
 export default function Main(): ReactElement {
-    const [_, navigate] = useLocation()
+    const [location, navigate] = useLocation()
     const {t} = useTranslation()
     const jwt = useJwt();
     const homeSrv = useHomeServer();
@@ -83,12 +84,24 @@ export default function Main(): ReactElement {
         navigateToLoginFormMain(navigate)
     }
 
+    function shouldRender() {
+        return !reconnecting && !loading
+    }
+
+    function showMainContent() {
+        return location === "/main/index" && shouldRender()
+    }
+
+    function showUserSettings() {
+        return location === "/main/user-settings" && shouldRender()
+    }
+
     return (
         <>
             {reconnecting && <Reconnecting/>}
             {loading && <Loading/>}
             <MainContext.Provider value={{socket: socket, users: users}}>
-                <div className={`flex w-dvw ${reconnecting || loading ? 'hidden' : ''}`}>
+                <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">
                         <SrvInfo homeSrv={homeSrv}/>
                         <Rooms/>
@@ -106,6 +119,7 @@ export default function Main(): ReactElement {
                     </div>
                 </div>
             </MainContext.Provider>
+            {showUserSettings() && <UserSettings/>}
         </>
     )
 }

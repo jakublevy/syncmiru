@@ -110,7 +110,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
 
     return (
         <div className="flex justify-centersafe items-center w-dvw">
-            <Card className="min-w-[27rem] w-[40rem] m-3">
+            <Card className="min-w-[27rem] w-[40rem] m-3 p-6">
                 <div className="flex items-start">
                     <BackBtn onClick={backButtonClicked} className="mr-4"/>
                     <h1 className="text-4xl mb-4">{t('forgotten-password-title')}</h1>

@@ -1,11 +1,13 @@
 import React, {ReactElement, useEffect, useState} from "react";
 import DefaultAvatar from "@components/svg/DefaultAvatar.tsx";
-import {SvgBtn} from "@components/widgets/Button.tsx";
+import {Clickable} from "@components/widgets/Button.tsx";
 import Settings from "@components/svg/Settings.tsx";
 import Loading from "@components/Loading.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
+import {useLocation} from "wouter";
 
 export default function CurrentUser(): ReactElement {
+    const [_, navigate] = useLocation()
     const {socket, users} = useMainContext()
     const [myUid, setMyUid] = useState<number>();
 
@@ -16,6 +18,11 @@ export default function CurrentUser(): ReactElement {
 
     function onMe(uid: UserId) {
         setMyUid(uid)
+    }
+
+    function userSettingsClicked() {
+        console.log("userSettingsClicked");
+        navigate('/main/user-settings')
     }
 
     if (myUid !== undefined && users.get(myUid) !== undefined) {
@@ -29,10 +36,9 @@ export default function CurrentUser(): ReactElement {
                         <p className="text-xs -mt-1">{user.username}</p>
                     </div>
                 </div>
-                <SvgBtn className="p-3" onClick={() => {
-                }}>
+                <Clickable className="p-3" onClick={userSettingsClicked}>
                     <Settings className="h-6"/>
-                </SvgBtn>
+                </Clickable>
             </div>
         )
     }

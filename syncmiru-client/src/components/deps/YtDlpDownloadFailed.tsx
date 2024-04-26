@@ -20,7 +20,7 @@ export default function YtDlpDownloadFailed(): ReactElement {
 
     return (
         <div className="flex justify-center items-center m-3">
-            <Card className="flex flex-col items-center">
+            <Card className="flex flex-col items-center p-6">
                 <h1 className="text-center text-4xl mb-4">{t('yt-dlp-download-failed-title')}</h1>
                 <p className="mb-8">{t('yt-dlp-download-failed-reason')}</p>
                 <Danger className="w-20" />

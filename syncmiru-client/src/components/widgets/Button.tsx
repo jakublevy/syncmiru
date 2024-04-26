@@ -60,16 +60,14 @@ export function BackBtn(p: BackBtnProps): ReactElement {
     )
 }
 
-export function SvgBtn(p: SvgButtonProps): ReactElement {
+export function Clickable(p: BtnProps): ReactElement {
+    const {className, children, ...restParams} = p
     return (
-        <Btn className={`hover:bg-gray-100 dark:hover:bg-gray-700 rounded ${p.className || ''}`}>
+        <Btn className={`hover:bg-gray-100 dark:hover:bg-gray-700 rounded ${p.className || ''}`}
+            {...restParams}>
             {p.children}
         </Btn>
     )
-}
-
-interface SvgButtonProps extends BackBtnProps {
-    children: ReactNode,
 }
 
 interface BackBtnProps {

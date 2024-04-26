@@ -44,7 +44,7 @@ export default function YtDlpDownloading(): ReactElement {
     } else {
         return (
             <div className="flex justify-center items-center m-3">
-                <Card className="w-[40rem]">
+                <Card className="w-[40rem] p-6">
                     <h1 className="text-center text-4xl mb-4">{t('yt-dlp-downloading-title')}</h1>
                     <DownloadProgressBar
                         title={ytDlpDownloadInfo.url}
