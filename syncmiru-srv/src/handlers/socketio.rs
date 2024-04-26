@@ -8,7 +8,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on_disconnect(disconnect);
 
     let uid = state.socket2uid(&s).await;
-    let users = query::get_users(&state.db)
+    let users = query::get_verified_users(&state.db)
         .await
         .expect("db error");
     let user = query::get_user(&state.db, uid)

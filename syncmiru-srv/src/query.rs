@@ -35,13 +35,6 @@ pub async fn new_user(
     Ok(())
 }
 
-pub async fn unverified_account_exist(db: &PgPool, email: &str) -> Result<bool> {
-    let unverified: (bool,) = sqlx::query_as("select COUNT(*) = 1 from users where email = $1 and verified = FALSE limit 1")
-        .bind(email)
-        .fetch_one(db).await?;
-    Ok(unverified.0)
-}
-
 pub async fn user_id_from_email(
     db: &PgPool,
     email: &str
@@ -205,7 +198,8 @@ pub async fn new_session(
         .bind(device_name)
         .bind(hash)
         .bind(uid)
-        .execute(db).await?;
+        .execute(db)
+        .await?;
     Ok(())
 }
 
@@ -241,17 +235,24 @@ pub async fn session_valid(
 
 }
 
-pub async fn exists_session_with_hwid(db: &PgPool, hwid_hash: &str) -> Result<bool> {
-    let exists: (bool, ) = sqlx::query_as("select count(*) > 0 from session where hash = $1 limit 1")
+pub async fn exists_session_with_hwid(
+    db: &PgPool,
+    hwid_hash: &str,
+    uid: Id
+) -> Result<bool> {
+    let exists: (bool, ) = sqlx::query_as(
+        "select count(*) > 0 from session where hash = $1 and user_id = $2 limit 1"
+    )
         .bind(hwid_hash)
+        .bind(uid)
         .fetch_one(db)
         .await?;
     Ok(exists.0)
 }
 
-pub async fn get_users(db: &PgPool) -> Result<Vec<User>> {
+pub async fn get_verified_users(db: &PgPool) -> Result<Vec<User>> {
     let users = sqlx::query_as::<_, User>(
-        "select id, username, display_name, avatar from users"
+        "select id, username, display_name, avatar from users where verified = TRUE"
     )
         .fetch_all(db)
         .await?;
@@ -266,4 +267,12 @@ pub async fn get_user(db: &PgPool, uid: Id) -> Result<User> {
         .fetch_one(db)
         .await?;
     Ok(user)
+}
+
+pub async fn user_exists(db: &PgPool, uid: Id) -> Result<bool> {
+    let exists: (bool,) = sqlx::query_as("select count(*) = 1 from users where id = $1 limit 1")
+        .bind(uid)
+        .fetch_one(db)
+        .await?;
+    Ok(exists.0)
 }

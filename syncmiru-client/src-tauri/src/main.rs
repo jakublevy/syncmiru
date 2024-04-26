@@ -65,7 +65,7 @@ fn main() -> Result<()> {
 
 fn handle_window_event(window: &Window, event: &WindowEvent) {
     match event {
-        CloseRequested {.. } => {
+        CloseRequested { .. } => {
             files::delete_tmp().expect("Deleting tmp files failed")
         }
         _ => {}

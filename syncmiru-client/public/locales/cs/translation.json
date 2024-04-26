@@ -54,7 +54,7 @@
 
   "new-email-has-been-sent-msg": "Nový email byl odeslán",
   "email-verify-title": "Ověření emailu",
-  "email-not-received": "Email neprišel?",
+  "email-not-received": "Email nepřišel?",
   "email-verify-text-1": "Váš účet byl vytvořen. Na uvedenou emailovou adresu",
   "email-verify-text-2": "byl odeslán ověřující email obsahující odkaz, jehož otevřením dojde k verifikace emailu a aktivaci účtu.",
 
@@ -91,6 +91,7 @@
   "captcha-not-filled-error": "Captcha musí být vyplněna",
   "login-jwt-invalid": "Uložená relace je neplatná, přihlašte se prosím znovu",
   "login-failed": "Přihlášení selhalo, je server online?",
+  "login-on-another-device": "Byl jste přihlášen(a) na jiném zařízení",
 
   "home-srv-desc": "Syncmiru vyžaduje pro svůj běh instanci serveru. Vyplňte do následujícího políčka jeho adresu, nezávisle na tom, zda již účet vlastníte, nebo si ho hodláte vytvořit.",
   "home-srv-edit-help": "URL adresa Syncmiru serveru.",

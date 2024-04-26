@@ -44,6 +44,11 @@ pub async fn login_jwt_check(
         if !valid {
             return Ok((false, None))
         }
+        let uid = sub_opt.unwrap();
+        let exists = query::user_exists(db, *uid).await?;
+        if !exists {
+            return Ok((false, None))
+        }
         Ok((true, sub_opt.map(|&x|x)))
     }
     else {

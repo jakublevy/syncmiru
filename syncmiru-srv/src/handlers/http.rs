@@ -252,7 +252,9 @@ pub async fn new_login(
         return Err(SyncmiruError::EmailNotVerified)
     }
     let jwt = tkn::new_login(&state.config.login_jwt, uid)?;
-    let session_exists = query::exists_session_with_hwid(&state.db, &payload.hwid_hash).await?;
+    let session_exists = query::exists_session_with_hwid(
+        &state.db, &payload.hwid_hash, uid
+    ).await?;
     if session_exists {
         query::update_session(
             &state.db,

@@ -76,7 +76,7 @@ export default function Main(): ReactElement {
     }
 
     function onNewLogin() {
-        showWarningAlert("Byl jste přihlášen na jiném zařízení")
+        showWarningAlert(t('login-on-another-device'))
         navigateToLoginFormMain(navigate)
     }
 
