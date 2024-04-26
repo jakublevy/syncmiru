@@ -6,6 +6,12 @@ export const showErrorAlert = (message: string) => {
     })
 }
 
+export const showWarningAlert = (message: string) => {
+    StatusAlertService.showWarning(message, {
+        autoHide: false
+    })
+}
+
 export const showSuccessAlert = (message: string) => {
     StatusAlertService.showSuccess(message)
 }

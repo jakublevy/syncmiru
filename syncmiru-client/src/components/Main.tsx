@@ -1,6 +1,6 @@
 import {ReactElement, useEffect, useRef, useState} from "react";
 import {useLocation} from "wouter";
-import {showErrorAlert} from "src/utils/alert.ts";
+import {showErrorAlert, showWarningAlert} from "src/utils/alert.ts";
 import {useTranslation} from "react-i18next";
 import Reconnecting from "@components/Reconnecting.tsx";
 import SrvInfo from "@components/SrvInfo.tsx";
@@ -35,6 +35,7 @@ export default function Main(): ReactElement {
         s.on('connect', ioConn)
         s.on('disconnect', ioDisconnect)
         s.on('users', onUsers)
+        s.on('new-login' , onNewLogin)
         setSocket(s)
         return () => {
             s.disconnect()
@@ -72,6 +73,11 @@ export default function Main(): ReactElement {
             m.set(user.id, {username: user.username, displayname: user.displayname, avatar: user.avatar})
 
         setUsers((p) => new Map<UserId, UserValue>([...p, ...m]))
+    }
+
+    function onNewLogin() {
+        showWarningAlert("Byl jste přihlášen na jiném zařízení")
+        navigateToLoginFormMain(navigate)
     }
 
     if (reconnecting)

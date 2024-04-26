@@ -1,4 +1,5 @@
-use std::collections::HashMap;
+use std::cell::Cell;
+use std::collections::{HashMap, HashSet};
 use std::env::set_var;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -11,6 +12,7 @@ use axum::error_handling::HandleErrorLayer;
 use axum::http::{Method, StatusCode};
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
+use bimap::BiMap;
 use clap::Parser;
 use tower_http::trace::TraceLayer;
 use socketioxide::extract::SocketRef;
@@ -53,11 +55,23 @@ async fn main() -> Result<()> {
    let pool = db::create_connection_pool(&config.db).await?;
    db::run_migrations(&pool).await?;
 
-   let srvstate = Arc::new(SrvState { db: pool.clone(), config: config.clone(), socket_id2_uid: HashMap::new().into() });
+   let srvstate = Arc::new(
+      SrvState {
+         db: pool.clone(),
+         config: config.clone(),
+         socket_uid: BiMap::new().into(),
+         io: None.into()
+      });
+
    let socketio_srvstate = srvstate.clone();
    let (socketio_layer, io) = SocketIo::builder()
-       .with_state(socketio_srvstate)
+       .with_state(socketio_srvstate.clone())
        .build_layer();
+   {
+      let mut io_lock = socketio_srvstate.io.write()
+          .expect("lock error");
+      *io_lock = Some(io.clone());
+   }
    io.ns("/", handlers::socketio::ns_callback.with(middleware::auth));
 
    let app = Router::new()

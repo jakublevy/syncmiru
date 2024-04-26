@@ -1,14 +1,16 @@
 use std::sync::Arc;
+use anyhow::Context;
 use socketioxide::extract::{Data, SocketRef, State};
 use validator::Validate;
 use crate::error::SyncmiruError::AuthError;
 use crate::models::http::Jwt;
+use crate::models::query::Id;
 use crate::result::Result;
 use crate::srvstate::SrvState;
 use crate::tkn;
 
 pub async fn auth(
-    state: State<Arc<SrvState>>,
+    State(state): State<Arc<SrvState>>,
     s: SocketRef,
     Data(payload): Data<Jwt>
 ) -> Result<()> {
@@ -17,8 +19,24 @@ pub async fn auth(
     if !valid {
         return Err(AuthError)
     }
+    new_client(&state, &s, uid.unwrap()).await?;
+    Ok(())
+}
 
-    let mut socket_id2_uid_lock = state.socket_id2_uid.write()?;
-    socket_id2_uid_lock.insert(s.id, uid.unwrap());
+pub async fn new_client(
+    state: &Arc<SrvState>,
+    s: &SocketRef,
+    uid: Id
+) -> Result<()> {
+    let mut socket_uid =  state.socket_uid.write()?;
+    if socket_uid.contains_right(&uid) {
+        let io_lock = state.io.read()?;
+        let io = io_lock.as_ref().unwrap();
+        let old_sid = socket_uid.get_by_right(&uid).unwrap();
+        let old_socket = io.get_socket(*old_sid).context("socket does not exist")?;
+        old_socket.emit("new-login", {})?;
+        old_socket.disconnect()?;
+    }
+    socket_uid.insert(s.id, uid);
     Ok(())
 }

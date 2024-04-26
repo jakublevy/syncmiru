@@ -56,6 +56,12 @@ pub enum SyncmiruError {
     #[error("jwt error")]
     JwtError(#[from] jwt::error::Error),
 
+    #[error("socketio send error")]
+    SocketIoSendUnitError(#[from] socketioxide::SendError<()>),
+
+    #[error("socketio disconnect error")]
+    SocketIoDisconnectError(#[from] socketioxide::DisconnectError),
+
     #[error("Parsing CLI args failed {0}")]
     CliParseFailed(String),
 
