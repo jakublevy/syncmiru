@@ -1,5 +1,4 @@
 use std::fs;
-use std::sync::RwLock;
 use anyhow::Context;
 use ini::Ini;
 use crate::config::Language;

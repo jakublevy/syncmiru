@@ -68,8 +68,7 @@ async fn main() -> Result<()> {
        .with_state(socketio_srvstate.clone())
        .build_layer();
    {
-      let mut io_lock = socketio_srvstate.io.write()
-          .expect("lock error");
+      let mut io_lock = socketio_srvstate.io.write().await;
       *io_lock = Some(io.clone());
    }
    io.ns("/", handlers::socketio::ns_callback.with(middleware::auth));

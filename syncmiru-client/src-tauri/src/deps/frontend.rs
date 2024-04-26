@@ -8,7 +8,7 @@ use crate::result::Result;
 
 #[tauri::command]
 pub async fn get_deps_state(state: tauri::State<'_, AppState>) -> Result<DepsAvailable> {
-    let mut appdata = state.appdata.write()?;
+    let mut appdata = state.appdata.write().await;
     if cfg!(target_family = "windows") {
         if appdata.deps_managed {
             let local = DepsAvailable::from_params(true)?;
@@ -33,7 +33,7 @@ pub async fn get_deps_state(state: tauri::State<'_, AppState>) -> Result<DepsAva
 pub async fn get_deps_versions_fetch(state: tauri::State<'_, AppState>) -> Result<DepsVersions> {
     let mpv = latest_mpv_download_link().await?;
     let yt_dlp = latest_yt_dlp_download_link().await?;
-    let appdata = state.appdata.read()?;
+    let appdata = state.appdata.read().await;
     Ok(DepsVersions{
         mpv_cur: appdata.mpv_version.clone().unwrap(),
         yt_dlp_cur: appdata.yt_dlp_version.clone().unwrap(),
@@ -54,7 +54,7 @@ pub async fn mpv_start_downloading(window: tauri::Window, state: tauri::State<'_
     decompress_mpv_archive(&window, &d.join("_mpv"), &d.join("mpv"), "mpv-")?;
 
     delete_tmp()?;
-    let mut appdata = state.appdata.write()?;
+    let mut appdata = state.appdata.write().await;
     appdata.mpv_version = Some(mpv_release.version);
 
     Ok(())
@@ -71,7 +71,7 @@ pub async fn yt_dlp_start_downloading(window: tauri::Window, state: tauri::State
     decompress_yt_dlp_archive(&window, &d.join("_yt-dlp"), &d.join("yt-dlp"), "yt-dlp-")?;
 
     delete_tmp()?;
-    let mut appdata = state.appdata.write()?;
+    let mut appdata = state.appdata.write().await;
     appdata.yt_dlp_version = Some(yt_dlp_release.version);
     appdata.deps_managed = true;
     Ok(())

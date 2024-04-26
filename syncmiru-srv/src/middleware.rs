@@ -28,15 +28,20 @@ pub async fn new_client(
     s: &SocketRef,
     uid: Id
 ) -> Result<()> {
-    let mut socket_uid =  state.socket_uid.write()?;
-    if socket_uid.contains_right(&uid) {
-        let io_lock = state.io.read()?;
-        let io = io_lock.as_ref().unwrap();
-        let old_sid = socket_uid.get_by_right(&uid).unwrap();
-        let old_socket = io.get_socket(*old_sid).context("socket does not exist")?;
-        old_socket.emit("new-login", {})?;
-        old_socket.disconnect()?;
+    {
+        let socket_uid_rl = state.socket_uid.read().await;
+        if socket_uid_rl.contains_right(&uid) {
+            let io_lock = state.io.read().await;
+            let io = io_lock.as_ref().unwrap();
+            let old_sid = socket_uid_rl.get_by_right(&uid).unwrap();
+            let old_socket = io.get_socket(*old_sid).context("socket does not exist")?;
+            old_socket.emit("new-login", {})?;
+            old_socket.disconnect()?;
+        }
     }
-    socket_uid.insert(s.id, uid);
+    {
+        let mut socket_uid_wl = state.socket_uid.write().await;
+        socket_uid_wl.insert(s.id, uid);
+    }
     Ok(())
 }

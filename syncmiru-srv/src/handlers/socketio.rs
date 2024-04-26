@@ -7,7 +7,7 @@ use crate::srvstate::SrvState;
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on_disconnect(disconnect);
 
-    let uid = state.socket2uid(&s);
+    let uid = state.socket2uid(&s).await;
     let users = query::get_users(&state.db)
         .await
         .expect("db error");
@@ -19,22 +19,20 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.broadcast().emit("users", user).ok();
     s.emit("me", uid).ok();
 
-    let online_uids_lock = state.socket_uid
-        .read()
-        .expect("lock error");
+    let online_uids_lock = state.socket_uid.read().await;
     let online_uids = online_uids_lock.right_values().collect::<Vec<&Id>>();
     s.emit("online", &online_uids).ok();
     s.broadcast().emit("online", uid).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
-    let mut uid: Id;
+    let mut uid: Option<Id>;
     {
-        let mut socket_uid_lock = state.socket_uid
-            .write()
-            .expect("lock error");
-        uid = socket_uid_lock.get_by_left(&s.id).map(|x|x.clone()).unwrap();
+        let mut socket_uid_lock = state.socket_uid.write().await;
+        uid = socket_uid_lock.get_by_left(&s.id).map(|x| x.clone());
         socket_uid_lock.remove_by_left(&s.id);
     }
-    s.broadcast().emit("offline", uid).ok();
+    if let Some(uid) = uid {
+        s.broadcast().emit("offline", uid).ok();
+    }
 }
