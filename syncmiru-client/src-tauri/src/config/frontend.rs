@@ -41,7 +41,7 @@ pub async fn set_language(state: tauri::State<'_, AppState>, language: Language)
 
 #[tauri::command]
 pub async fn get_target_family() -> Result<String> {
-    Ok(std::env::consts::FAMILY.to_lowercase().to_string())
+    Ok(std::env::consts::FAMILY.to_string())
 }
 
 #[tauri::command]

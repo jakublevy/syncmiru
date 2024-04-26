@@ -34,6 +34,7 @@ serial_test = "3.0.0"
 serde_with = "3.7.0"
 machineid-rs = "1.2.4"
 whoami = "1.5.1"
+tauri-plugin-single-instance = "2.0.0-beta.6"
 
 
 [target.'cfg(target_os = "windows")'.dependencies]

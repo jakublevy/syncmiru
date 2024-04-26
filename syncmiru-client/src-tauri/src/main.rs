@@ -18,7 +18,7 @@ rust_i18n::i18n!("locales");
 
 use result::Result;
 use rust_i18n::t;
-use tauri::{Window, WindowEvent};
+use tauri::{Manager, Window, WindowEvent};
 use tauri::WindowEvent::CloseRequested;
 
 
@@ -57,6 +57,9 @@ fn main() -> Result<()> {
         .manage(appstate)
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_theme::init(ctx.config_mut()))
+        .plugin(tauri_plugin_single_instance::init(|app, args, cwd| {
+            let _ = focus_window(app);
+        }))
         .run(ctx)
         .expect(t!("tauri-app-error").as_ref());
 
@@ -70,4 +73,13 @@ fn handle_window_event(window: &Window, event: &WindowEvent) {
         }
         _ => {}
     }
+}
+
+fn focus_window(app: &tauri::AppHandle) {
+    app.webview_windows()
+        .values()
+        .next()
+        .expect("No window found")
+        .set_focus()
+        .expect("Cannot get window to focus");
 }

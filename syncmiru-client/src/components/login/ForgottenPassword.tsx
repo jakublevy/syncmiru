@@ -3,7 +3,6 @@ import Card from "@components/widgets/Card.tsx";
 import BtnTimeout from "@components/widgets/BtnTimeout.tsx";
 import Help from "@components/widgets/Help.tsx";
 import {ForgottenPasswordTknSrvValidate, Input} from "@components/widgets/Input.tsx";
-import {LoginFormHistoryState} from "@models/historyState.ts";
 import {BackBtn, BtnPrimary} from "@components/widgets/Button.tsx";
 import {useLocation} from "wouter";
 import {useReqForgottenPasswordEmail} from "@hooks/useReqForgottenPasswordEmail.ts";
