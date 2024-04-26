@@ -14,8 +14,9 @@ import {io, Socket} from "socket.io-client";
 import {useHomeServer} from "@hooks/useHomeServer.ts";
 import {invoke} from "@tauri-apps/api/core";
 import Users from "@components/Users.tsx";
-import { MainContext } from "@hooks/useMainContext";
+import {MainContext} from "@hooks/useMainContext";
 import {navigateToLoginFormMain} from "../utils/navigate.ts";
+import Loading from "@components/Loading.tsx";
 
 export default function Main(): ReactElement {
     const [_, navigate] = useLocation()
@@ -24,6 +25,7 @@ export default function Main(): ReactElement {
     const homeSrv = useHomeServer();
     const [socket, setSocket] = useState<Socket>();
     const [reconnecting, setReconnecting] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(true)
     const reconnectingRef = useRef<boolean>(false);
 
     const [users, setUsers]
@@ -35,7 +37,7 @@ export default function Main(): ReactElement {
         s.on('connect', ioConn)
         s.on('disconnect', ioDisconnect)
         s.on('users', onUsers)
-        s.on('new-login' , onNewLogin)
+        s.on('new-login', onNewLogin)
         setSocket(s)
         return () => {
             s.disconnect()
@@ -73,6 +75,7 @@ export default function Main(): ReactElement {
             m.set(user.id, {username: user.username, displayname: user.displayname, avatar: user.avatar})
 
         setUsers((p) => new Map<UserId, UserValue>([...p, ...m]))
+        setLoading(false)
     }
 
     function onNewLogin() {
@@ -80,28 +83,29 @@ export default function Main(): ReactElement {
         navigateToLoginFormMain(navigate)
     }
 
-    if (reconnecting)
-        return <Reconnecting/>
-
     return (
-        <MainContext.Provider value={{socket: socket, users: users}}>
-            <div className="flex w-dvw">
-                <div className="flex flex-col min-w-60 w-60 h-dvh">
-                    <SrvInfo homeSrv={homeSrv}/>
-                    <Rooms/>
-                    <JoinedRoom/>
-                    <CurrentUser />
-                </div>
-                <div className="border flex-1 min-w-60">
-                    <div className="flex flex-col h-full">
-                        <ButtonPanel/>
-                        <Middle/>
+        <>
+            {reconnecting && <Reconnecting/>}
+            {loading && <Loading/>}
+            <MainContext.Provider value={{socket: socket, users: users}}>
+                <div className={`flex w-dvw ${reconnecting || loading ? 'hidden' : ''}`}>
+                    <div className="flex flex-col min-w-60 w-60 h-dvh">
+                        <SrvInfo homeSrv={homeSrv}/>
+                        <Rooms/>
+                        <JoinedRoom/>
+                        <CurrentUser/>
+                    </div>
+                    <div className="border flex-1 min-w-60">
+                        <div className="flex flex-col h-full">
+                            <ButtonPanel/>
+                            <Middle/>
+                        </div>
+                    </div>
+                    <div className="border min-w-60 w-60">
+                        <Users/>
                     </div>
                 </div>
-                <div className="border min-w-60 w-60">
-                    <Users/>
-                </div>
-            </div>
-        </MainContext.Provider>
+            </MainContext.Provider>
+        </>
     )
 }
