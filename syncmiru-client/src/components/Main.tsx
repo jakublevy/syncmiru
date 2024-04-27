@@ -14,7 +14,7 @@ import {useHomeServer} from "@hooks/useHomeServer.ts";
 import {invoke} from "@tauri-apps/api/core";
 import Users from "@components/Users.tsx";
 import {MainContext} from "@hooks/useMainContext";
-import {navigateToLoginFormMain} from "../utils/navigate.ts";
+import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import Loading from "@components/Loading.tsx";
 import UserSettings from "@components/user/UserSettings.tsx";
 import {StatusAlertService} from "react-status-alert";

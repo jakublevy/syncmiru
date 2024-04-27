@@ -1,11 +1,11 @@
 import {ReactElement, useEffect} from "react";
 import {useLocation} from "wouter";
 import {useServiceStatus} from "@hooks/useServiceStatus.ts";
-import {ForgottenPasswordHistoryState, LoginFormHistoryState} from "@models/historyState.ts";
+import {ForgottenPasswordHistoryState} from "@models/historyState.ts";
 import Loading from "@components/Loading.tsx";
 import {useHistoryState} from "wouter/use-browser-location";
 import ForgottenPassword from "@components/login/ForgottenPassword.tsx";
-import {navigateToLoginFormMain} from "../../utils/navigate.ts";
+import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 
 export default function ForgottenPasswordDispatch(): ReactElement {
     const [_, navigate] = useLocation()

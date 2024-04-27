@@ -3,13 +3,11 @@ import {Input} from "@components/widgets/Input.tsx";
 import {BackBtn} from "@components/widgets/Button.tsx";
 import {useChangeHomeServer, useHomeServer} from "@hooks/useHomeServer.ts";
 import {useLocation} from "wouter";
-import {refresh} from "@mittwald/react-use-promise";
 import Help from "@components/widgets/Help.tsx";
 import {useTranslation} from "react-i18next";
 import Card from "@components/widgets/Card.tsx";
-import {mutate} from "swr";
 import Label from "@components/widgets/Label.tsx";
-import {navigateToLoginFormMain} from "../../utils/navigate.ts";
+import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 
 export default function HomeServer(): ReactElement {
     const [location, navigate] = useLocation()

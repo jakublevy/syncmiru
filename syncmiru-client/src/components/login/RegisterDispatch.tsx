@@ -3,8 +3,7 @@ import {useServiceStatus} from "@hooks/useServiceStatus.ts";
 import Register from "@components/login/Register.tsx";
 import Loading from "@components/Loading.tsx";
 import {useLocation} from "wouter";
-import {LoginFormHistoryState} from "@models/historyState.ts";
-import {navigateToLoginFormMain} from "../../utils/navigate.ts";
+import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 
 export default function RegisterDispatch(): ReactElement {
     const [_, navigate] = useLocation()

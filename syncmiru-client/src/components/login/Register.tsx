@@ -16,7 +16,7 @@ import Loading from "@components/Loading.tsx";
 import {invoke} from "@tauri-apps/api/core";
 import {RegFormFields, useRegFormSchema} from "@hooks/useRegFormSchema.ts";
 import {useTranslation} from "react-i18next";
-import {navigateToEmailVerify} from "../../utils/navigate.ts";
+import {navigateToEmailVerify} from "src/utils/navigate.ts";
 import {StatusAlertService} from "react-status-alert";
 
 export default function Register({regPubAllowed}: Props): ReactElement {

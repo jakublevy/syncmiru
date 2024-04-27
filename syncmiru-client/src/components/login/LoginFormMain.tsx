@@ -22,7 +22,7 @@ import {
     navigateToForgottenPassword,
     navigateToMain,
     navigateToRegister
-} from "../../utils/navigate.ts";
+} from "src/utils/navigate.ts";
 
 export default function LoginFormMain(): ReactElement {
     const [location, navigate] = useLocation()

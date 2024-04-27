@@ -8,7 +8,7 @@ import {BackBtn, BtnPrimary, BtnSecondary} from "@components/widgets/Button.tsx"
 import {useLocation} from "wouter";
 import Card from "@components/widgets/Card.tsx";
 import {TrampolineHistoryState, MpvDownloadHistoryState} from "@models/historyState.ts";
-import {navigateToWelcome} from "../../../utils/navigate.ts";
+import {navigateToWelcome} from "src/utils/navigate.ts";
 
 export default function DepsMissingWindows({firstRunSeen, depsState}: Props): ReactElement {
     const {t} = useTranslation()

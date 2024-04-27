@@ -1,6 +1,6 @@
 import {ReactElement} from "react";
 import {CloseBtn} from "@components/widgets/Button.tsx";
-import {navigateToMain} from "../../utils/navigate.ts";
+import {navigateToMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
 import LanguageSelector from "@components/widgets/LanguageSelector.tsx";
 import ThemeSelector from "@components/widgets/ThemeSelector.tsx";

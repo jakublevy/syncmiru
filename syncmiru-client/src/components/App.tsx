@@ -14,7 +14,6 @@ import LoginForm from "@components/login/LoginForm.tsx";
 import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
 import {useTranslation} from "react-i18next";
-import {DepsHistoryState} from "@models/historyState.ts";
 import EmailVerified from "@components/login/EmailVerified.tsx";
 import RegisterDispatch from "@components/login/RegisterDispatch.tsx";
 import EmailVerifyDispatch from "@components/login/EmailVerifyDispatch.tsx";
@@ -22,7 +21,7 @@ import ForgottenPasswordDispatch from "@components/login/ForgottenPasswordDispat
 import ForgottenPasswordChanged from "@components/login/ForgottenPasswordChanged.tsx";
 import DepsUpdate from "@components/deps/windows/DepsUpdate.tsx";
 import Main from "@components/Main.tsx";
-import {navigateToDeps, navigateToWelcome} from "../utils/navigate.ts";
+import {navigateToDeps, navigateToWelcome} from "src/utils/navigate.ts";
 
 
 export default function App(): ReactElement {

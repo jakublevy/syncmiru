@@ -3,7 +3,7 @@ import Card from "@components/widgets/Card.tsx";
 import Party from "@components/svg/Party.tsx";
 import {useLocation} from "wouter";
 import {useTranslation} from "react-i18next";
-import {navigateToLoginFormMain} from "../../utils/navigate.ts";
+import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 
 export default function EmailVerified(): ReactElement {
     const {t} = useTranslation()

@@ -4,7 +4,7 @@ import Card from "@components/widgets/Card.tsx";
 import {useLocation} from "wouter";
 import Account from "@components/user/Account.tsx";
 import Appearance from "@components/user/Appearance.tsx";
-import {navigateToUserSettingsAppearance} from "../../utils/navigate.ts";
+import {navigateToUserSettingsAppearance} from "src/utils/navigate.ts";
 import {useTranslation} from "react-i18next";
 
 export default function UserSettings(): ReactElement {

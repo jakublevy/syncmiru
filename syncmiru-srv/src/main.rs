@@ -101,7 +101,7 @@ async fn main() -> Result<()> {
        )
        .with_state(srvstate);
 
-   debug!("Staring listener");
+   debug!("Starting listener");
    let listener = tokio::net::TcpListener::bind(
       format!("0.0.0.0:{}", config.srv.port)
    ).await?;

@@ -7,8 +7,7 @@ import DepsMissingWindows from "@components/deps/windows/DepsMissingWindows.tsx"
 import {useLocation} from "wouter";
 import {useHistoryState} from 'wouter/use-browser-location'
 import {DepsHistoryState} from "@models/historyState.ts";
-import {mutate} from "swr";
-import {navigateToDepsUpdate} from "../../utils/navigate.ts";
+import {navigateToDepsUpdate} from "src/utils/navigate.ts";
 
 export default function Deps(): ReactElement {
     const {firstRunSeen}: DepsHistoryState = useHistoryState()

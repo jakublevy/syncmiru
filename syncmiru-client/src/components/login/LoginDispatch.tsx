@@ -3,8 +3,7 @@ import {useCanAutoLogin} from "@hooks/useCanAutoLogin.ts";
 import {useLocation} from "wouter";
 import {useSetFirstRunSeen} from "@hooks/useFirstRunSeen.ts";
 import {refresh} from "@mittwald/react-use-promise";
-import {mutate} from "swr";
-import {navigateToMain} from "../../utils/navigate.ts";
+import {navigateToMain} from "src/utils/navigate.ts";
 
 export default function LoginDispatch(): ReactElement {
     useSetFirstRunSeen()

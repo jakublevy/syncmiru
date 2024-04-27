@@ -15,7 +15,7 @@ import {joiResolver} from "@hookform/resolvers/joi";
 import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
 import {useTranslation} from "react-i18next";
-import {navigateToLoginFormMain} from "../../utils/navigate.ts";
+import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import {StatusAlertService} from "react-status-alert";
 
 export default function ForgottenPassword({email, waitBeforeResend}: Props): ReactElement {
