@@ -1,11 +1,11 @@
 import {ReactElement, useEffect, useState} from "react";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
-import useShownTheme, {ShownTheme} from "@hooks/useShownTheme.ts";
+import useCSSTheme, {CSSTheme} from "@hooks/useCSSTheme.ts";
 import {listen} from "@tauri-apps/api/event";
 
 export default function HCaptchaThemeAware(p: HCaptchaProps): ReactElement {
-    const shownTheme: ShownTheme = useShownTheme()
-    const [theme, setTheme] = useState<ShownTheme>(ShownTheme.Light)
+    const shownTheme: CSSTheme = useCSSTheme()
+    const [theme, setTheme] = useState<CSSTheme>(CSSTheme.Light)
 
     useEffect(() => {
         setTheme(shownTheme)
@@ -16,10 +16,10 @@ export default function HCaptchaThemeAware(p: HCaptchaProps): ReactElement {
         if(p.onExpire !== undefined)
             p.onExpire()
 
-        if(e.payload === ShownTheme.Light)
-            setTheme(ShownTheme.Light)
+        if(e.payload === CSSTheme.Light)
+            setTheme(CSSTheme.Light)
         else
-            setTheme(ShownTheme.Dark)
+            setTheme(CSSTheme.Dark)
     })
 
     return (

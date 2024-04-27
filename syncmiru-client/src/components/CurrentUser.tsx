@@ -21,8 +21,7 @@ export default function CurrentUser(): ReactElement {
     }
 
     function userSettingsClicked() {
-        console.log("userSettingsClicked");
-        navigate('/main/user-settings')
+        navigate('/main/user-settings/account')
     }
 
     if (myUid !== undefined && users.get(myUid) !== undefined) {

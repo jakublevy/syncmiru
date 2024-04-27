@@ -1,6 +1,5 @@
 import {ReactElement, useEffect, useRef, useState} from "react";
 import {useLocation} from "wouter";
-import {showErrorAlert, showWarningAlert} from "src/utils/alert.ts";
 import {useTranslation} from "react-i18next";
 import Reconnecting from "@components/Reconnecting.tsx";
 import SrvInfo from "@components/SrvInfo.tsx";
@@ -17,7 +16,8 @@ import Users from "@components/Users.tsx";
 import {MainContext} from "@hooks/useMainContext";
 import {navigateToLoginFormMain} from "../utils/navigate.ts";
 import Loading from "@components/Loading.tsx";
-import UserSettings from "@components/UserSettings.tsx";
+import UserSettings from "@components/user/UserSettings.tsx";
+import {StatusAlertService} from "react-status-alert";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -61,11 +61,11 @@ export default function Main(): ReactElement {
     function ioConnError(e: Error) {
         if (e.message === "Auth error") {
             invoke<void>('clear_jwt').then(() => {
-                showErrorAlert(t('login-jwt-invalid'))
+                StatusAlertService.showError(t('login-jwt-invalid'))
                 navigateToLoginFormMain(navigate)
             })
         } else if (!reconnectingRef.current) {
-            showErrorAlert(t('login-failed'))
+            StatusAlertService.showError(t('login-failed'))
             navigateToLoginFormMain(navigate)
         }
     }
@@ -80,7 +80,7 @@ export default function Main(): ReactElement {
     }
 
     function onNewLogin() {
-        showWarningAlert(t('login-on-another-device'))
+        StatusAlertService.showWarning(t('login-on-another-device'))
         navigateToLoginFormMain(navigate)
     }
 
@@ -93,7 +93,7 @@ export default function Main(): ReactElement {
     }
 
     function showUserSettings() {
-        return location === "/main/user-settings" && shouldRender()
+        return location.startsWith("/main/user-settings") && shouldRender()
     }
 
     return (

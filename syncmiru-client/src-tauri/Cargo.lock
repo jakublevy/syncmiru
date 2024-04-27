@@ -4890,7 +4890,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-theme"
 version = "0.4.0"
-source = "git+https://github.com/jakublevy/tauri-plugin-theme.git?branch=main#c169d770b1895e74497775944b2fe31f5a2326d5"
+source = "git+https://github.com/jakublevy/tauri-plugin-theme.git?branch=main#28cd2b411928af0f64ea0565aa647f13260f4258"
 dependencies = [
  "cocoa",
  "dirs-next",

@@ -1,6 +1,8 @@
 import React, {ReactElement, ReactNode} from "react";
 import Previous from "@components/svg/Previous.tsx";
 import DoorOut from "@components/svg/DoorOut.tsx";
+import {act} from "react-dom/test-utils";
+import Close from "@components/svg/Close.tsx";
 
 export function Btn(p: BtnProps): ReactElement {
     const {children, ...restParams} = p
@@ -44,6 +46,7 @@ export function BtnTextPrimary(p: BtnProps): ReactElement {
 }
 
 export interface BtnProps {
+    id?: string,
     className?: string
     children?: ReactNode,
     onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void,
@@ -52,10 +55,18 @@ export interface BtnProps {
     disabled?: boolean
 }
 
-export function BackBtn(p: BackBtnProps): ReactElement {
+export function BackBtn(p: SvgBtn): ReactElement {
     return (
-        <button className={`rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 ${p.className}`} onClick={p.onClick}>
+        <button className={`rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 ${p.className || ''}`} onClick={p.onClick}>
             <Previous className="h-12" />
+        </button>
+    )
+}
+
+export function CloseBtn(p: SvgBtn): ReactElement {
+    return (
+        <button className={`rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 ${p.className || ''}`} onClick={p.onClick}>
+            <Close className="h-12" />
         </button>
     )
 }
@@ -63,14 +74,28 @@ export function BackBtn(p: BackBtnProps): ReactElement {
 export function Clickable(p: BtnProps): ReactElement {
     const {className, children, ...restParams} = p
     return (
-        <Btn className={`hover:bg-gray-100 dark:hover:bg-gray-700 rounded ${p.className || ''}`}
+        <Btn className={`rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${p.className || ''}`}
             {...restParams}>
             {p.children}
         </Btn>
     )
 }
 
-interface BackBtnProps {
+export function NavLink(p: NavlinkProps): ReactElement {
+    const {className, children, active, ...restParams} = p
+    return (
+        <Btn className={`rounded ${active ? 'bg-gray-200 dark:bg-gray-600' : 'hover:bg-gray-100 dark:hover:bg-gray-700'} ${p.className || ''}`}
+             {...restParams}>
+            {p.children}
+        </Btn>
+    )
+}
+
+interface NavlinkProps extends BtnProps {
+    active?: boolean
+}
+
+interface SvgBtn {
     onClick: (e: React.MouseEvent<HTMLButtonElement>) => void,
-    className: string
+    className?: string
 }

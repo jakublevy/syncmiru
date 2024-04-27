@@ -6,7 +6,6 @@ import {ForgottenPasswordTknSrvValidate, Input} from "@components/widgets/Input.
 import {BackBtn, BtnPrimary} from "@components/widgets/Button.tsx";
 import {useLocation} from "wouter";
 import {useReqForgottenPasswordEmail} from "@hooks/useReqForgottenPasswordEmail.ts";
-import {showErrorAlert, showSuccessAlert} from "../../utils/alert.ts";
 import Loading from "@components/Loading.tsx";
 import {invoke} from "@tauri-apps/api/core";
 import Label from "@components/widgets/Label.tsx";
@@ -17,6 +16,7 @@ import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
 import {useTranslation} from "react-i18next";
 import {navigateToLoginFormMain} from "../../utils/navigate.ts";
+import {StatusAlertService} from "react-status-alert";
 
 export default function ForgottenPassword({email, waitBeforeResend}: Props): ReactElement {
     const [_, navigate] = useLocation()
@@ -44,7 +44,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
 
     useEffect(() => {
         if (fpError !== undefined) {
-            showErrorAlert(fpError)
+            StatusAlertService.showError(fpError)
             setResendTimeout(0)
         } else {
             setResendTimeout(waitBeforeResend)
@@ -60,12 +60,12 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
         invoke<void>('req_forgotten_password_email', {email: email})
             .then(() => {
                 setResendTimeout(waitBeforeResend)
-                showSuccessAlert(t('new-email-has-been-sent-msg'))
+                StatusAlertService.showSuccess(t('new-email-has-been-sent-msg'))
                 setTkn('')
             })
             .catch((e) => {
                 setResendTimeout(0)
-                showErrorAlert(e)
+                StatusAlertService.showError(e)
             })
             .finally(() => setLoading(false))
     }
@@ -100,7 +100,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
                 navigate('/forgotten-password-changed')
             })
             .catch((e: string) => {
-                showErrorAlert(e)
+                StatusAlertService.showError(e)
             })
             .finally(() => setLoading(false))
     }

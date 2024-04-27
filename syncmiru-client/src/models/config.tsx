@@ -25,3 +25,9 @@ export const LanguagesSelect: LanguageSelectModel[] = [
         flag: <ReactCountryFlag svg countryCode="us"></ReactCountryFlag>,
     },
 ]
+
+export enum Theme {
+    Light = "light",
+    Dark = "dark",
+    System = "auto"
+}

@@ -19,7 +19,7 @@ export function navigateToEmailVerify(
         }))
 }
 
-export function navigateToMain(navigate: NavigateFunc<any>) {
+export function navigateToMain(navigate: NavigateFunc<void>) {
     refresh({tag: "useJwt"})
     navigate('/main/index')
 }
@@ -32,13 +32,13 @@ export function navigateToDeps(
     navigate("/deps", {state: depsHistoryState})
 }
 
-export function navigateToDepsUpdate(navigate: NavigateFunc<any>) {
+export function navigateToDepsUpdate(navigate: NavigateFunc<void>) {
     mutate('get_deps_versions_fetch', undefined).then(() =>
         navigate("/deps-update")
     )
 }
 
-export function navigateToWelcome(navigate: NavigateFunc<any>) {
+export function navigateToWelcome(navigate: NavigateFunc<void>) {
     refresh({tag: "useLanguage"})
     navigate("/welcome")
 }
@@ -58,7 +58,7 @@ export function navigateToLoginFormMain(
     })
 }
 
-export function navigateToRegister(navigate: NavigateFunc<any>) {
+export function navigateToRegister(navigate: NavigateFunc<void>) {
     mutate('get_service_status', undefined).then(() =>
         navigate('/register')
     )
@@ -73,4 +73,9 @@ export function navigateToForgottenPassword(
             navigate('/forgotten-password', {state: forgottenPasswordHistoryState})
         })
     })
+}
+
+export function navigateToUserSettingsAppearence(navigate: NavigateFunc<void>) {
+    refresh({tag: "useTheme"})
+    navigate("/main/user-settings/appearence")
 }
