@@ -100,5 +100,15 @@
   "email-verified-content": "Brzy budete přesměrováni na přihlašovací stránku.",
 
   "forgotten-password-changed-title": "Heslo bylo změněno",
-  "forgotten-password-changed-content": "Brzy budete přesměřování na přihlašovací stránku."
+  "forgotten-password-changed-content": "Brzy budete přesměřování na přihlašovací stránku.",
+
+  "user-settings-nav-account": "Účet",
+  "user-settings-nav-appearance": "Vzhled",
+  "user-settings-nav-player": "Přehrávač",
+  "user-settings-nav-devices": "Zařízení",
+  "user-settings-nav-about": "O programu",
+  "user-settings-appearance-title": "Nastavení vzhledu",
+  "user-settings-appearance-theme": "Motiv",
+
+  "theme-changed-windows-warning": "Na OS Windows se z technických důvodů změna motivu projeví až po restartu aplikace"
 }

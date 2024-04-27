@@ -1,4 +1,4 @@
-import {MouseEvent, ReactElement, useRef, useState} from "react";
+import {MouseEvent, ReactElement, useState} from "react";
 import LightMode from "@components/svg/LightMode.tsx";
 import DarkMode from "@components/svg/DarkMode.tsx";
 import Sync from "@components/svg/Sync.tsx";
@@ -8,10 +8,12 @@ import {Theme} from "@models/config.tsx";
 import {useChangeTheme, useTheme} from "@hooks/useTheme.ts";
 import {useTargetFamily} from "@hooks/useTargetFamily.ts";
 import {StatusAlertService} from "react-status-alert";
+import {useTranslation} from "react-i18next";
 
 export default function ThemeSelector(): ReactElement {
     const initialTheme = useTheme()
     const changeTheme = useChangeTheme()
+    const {t} = useTranslation()
     const targetFamily = useTargetFamily()
     const [theme, setTheme] = useState<Theme>(initialTheme)
 
@@ -22,7 +24,7 @@ export default function ThemeSelector(): ReactElement {
                 setTheme(newTheme)
                 if(targetFamily === 'windows') {
                     StatusAlertService.showWarning(
-                        "Na operačním systému Windows se z technických důvodů změna motivu projeví až po restartu aplikace",
+                        t('theme-changed-windows-warning'),
                         {autoHideTime: 3000}
                     )
                 }

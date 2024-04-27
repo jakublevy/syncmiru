@@ -75,7 +75,7 @@ export function navigateToForgottenPassword(
     })
 }
 
-export function navigateToUserSettingsAppearence(navigate: NavigateFunc<void>) {
+export function navigateToUserSettingsAppearance(navigate: NavigateFunc<void>) {
     refresh({tag: "useTheme"})
-    navigate("/main/user-settings/appearence")
+    navigate("/main/user-settings/appearance")
 }

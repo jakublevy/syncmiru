@@ -100,5 +100,15 @@
   "email-verified-content": "You will soon be redirected to the login page.",
 
   "forgotten-password-changed-title": "Your password has been changed",
-  "forgotten-password-changed-content": "You will soon be redirected to the login page."
+  "forgotten-password-changed-content": "You will soon be redirected to the login page.",
+
+  "user-settings-nav-account": "Account",
+  "user-settings-nav-appearance": "Appearance",
+  "user-settings-nav-player": "Player",
+  "user-settings-nav-devices": "Devices",
+  "user-settings-nav-about": "About",
+  "user-settings-appearance-title": "Appearance settings",
+  "user-settings-appearance-theme": "Theme",
+
+  "theme-changed-windows-warning": "The theme change will take effect after restarting the application on the Windows OS, due to technical reasons"
 }
