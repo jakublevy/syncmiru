@@ -5,24 +5,28 @@ import Help from "@components/widgets/Help.tsx";
 import {ForgottenPasswordTknSrvValidate, Input} from "@components/widgets/Input.tsx";
 import {BackBtn, BtnPrimary} from "@components/widgets/Button.tsx";
 import {useLocation} from "wouter";
-import {useReqForgottenPasswordEmail} from "@hooks/useReqForgottenPasswordEmail.ts";
+import {useReqForgottenPasswordEmail, useReqForgottenPasswordEmailAgain} from "@hooks/useReqForgottenPasswordEmail.ts";
 import Loading from "@components/Loading.tsx";
-import {invoke} from "@tauri-apps/api/core";
 import Label from "@components/widgets/Label.tsx";
 import {NewPasswordFields, useNewPasswordSchema} from "@hooks/useNewPasswordFormSchema.ts";
 import {useForm} from "react-hook-form";
 import {joiResolver} from "@hookform/resolvers/joi";
-import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
 import {useTranslation} from "react-i18next";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import {StatusAlertService} from "react-status-alert";
+import {
+    useForgottenPasswordChangePassword
+} from "@hooks/useForgottenPasswordChangePassword.ts";
+import {ForgottenPasswordChangeData} from "@models/login.ts";
 
 export default function ForgottenPassword({email, waitBeforeResend}: Props): ReactElement {
     const [_, navigate] = useLocation()
     const {t} = useTranslation()
     const language = useLanguage()
     const {error: fpError, isLoading: fpIsLoading} = useReqForgottenPasswordEmail(email)
+    const reqForgottenPasswordEmailAgain = useReqForgottenPasswordEmailAgain()
+    const forgottenPasswordChangePassword = useForgottenPasswordChangePassword()
     const [loading, setLoading] = useState<boolean>(false)
     const [resendTimeout, setResendTimeout] = useState<number>(waitBeforeResend)
     const [tknValid, setTknValid] = useState<boolean>(false)
@@ -57,7 +61,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
 
     function resendEmail() {
         setLoading(true)
-        invoke<void>('req_forgotten_password_email', {email: email})
+        reqForgottenPasswordEmailAgain(email)
             .then(() => {
                 setResendTimeout(waitBeforeResend)
                 StatusAlertService.showSuccess(t('new-email-has-been-sent-msg'))
@@ -95,7 +99,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
             lang: language,
         }
         setLoading(true)
-        invoke<void>('forgotten_password_change_password', {data: JSON.stringify(sendData)})
+        forgottenPasswordChangePassword(sendData)
             .then(() => {
                 navigate('/forgotten-password-changed')
             })
@@ -209,9 +213,3 @@ interface Props {
     waitBeforeResend: number
 }
 
-interface ForgottenPasswordChangeData {
-    email: string,
-    password: string,
-    tkn: string
-    lang: Language
-}

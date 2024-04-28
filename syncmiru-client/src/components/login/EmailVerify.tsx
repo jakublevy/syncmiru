@@ -4,9 +4,8 @@ import {useLocation} from "wouter";
 import {useHistoryState} from "wouter/use-browser-location";
 import {VerifyEmailHistoryState} from "@models/historyState.ts";
 import {useWatchVerify} from "@hooks/useWatchVerify.tsx";
-import {useReqVerificationEmail} from "@hooks/useReqVerificationEmail.ts";
+import {useReqVerificationEmail, useReqVerificationEmailAgain} from "@hooks/useReqVerificationEmail.ts";
 import BtnTimeout from "@components/widgets/BtnTimeout.tsx";
-import {invoke} from "@tauri-apps/api/core";
 import Loading from "@components/Loading.tsx";
 import {useTranslation} from "react-i18next";
 import {StatusAlertService} from "react-status-alert";
@@ -16,6 +15,7 @@ export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
     const {t} = useTranslation()
     const {email}: VerifyEmailHistoryState = useHistoryState()
     const {error: verEmailError, isLoading: verEmailIsLoading} = useReqVerificationEmail(email)
+    const reqVerEmailAgain = useReqVerificationEmailAgain()
     const {data: isVerified} = useWatchVerify(email)
     const [loading, setLoading] = useState<boolean>(false)
     const [resendTimeout , setResendTimeout] = useState<number>(waitBeforeResend)
@@ -36,7 +36,7 @@ export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
 
     function resendEmail() {
         setLoading(true)
-        invoke<void>('req_verification_email', {email: email})
+        reqVerEmailAgain(email)
             .then(() => {
                 setResendTimeout(waitBeforeResend)
                 StatusAlertService.showSuccess(t('new-email-has-been-sent-msg'))

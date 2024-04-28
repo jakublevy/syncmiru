@@ -3,18 +3,17 @@ import {PacmanLoader} from "react-spinners";
 import {BtnSecondary} from "@components/widgets/Button.tsx";
 import {useLocation} from "wouter";
 import Loading from "@components/Loading.tsx";
-import {invoke} from "@tauri-apps/api/core";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
+import useClearJwt from "@hooks/useClearJwt.ts";
 
 export default function Reconnecting(): ReactElement {
     const [_, navigate] = useLocation()
+    const clearJwt = useClearJwt()
     const [loading, setLoading] = useState<boolean>(false)
 
     function signout() {
         setLoading(true)
-        invoke<void>('clear_jwt').then(() => {
-            navigateToLoginFormMain(navigate)
-        })
+        clearJwt().then(() => navigateToLoginFormMain(navigate))
     }
     if(loading)
         return <Loading/>

@@ -6,3 +6,9 @@ export const useReqVerificationEmail = (email: string) =>
         suspense: true,
         shouldRetryOnError: false,
     })
+
+export function useReqVerificationEmailAgain(): (email: string) => Promise<void> {
+    return (email: string): Promise<void> => {
+        return invoke('req_verification_email', {email: email})
+    }
+}

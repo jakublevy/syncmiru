@@ -7,14 +7,8 @@ export const useReqForgottenPasswordEmail = (email: string) =>
         shouldRetryOnError: false,
     })
 
-
-// export const useReqForgottenPasswordEmail = (email: string) => {
-//         const [error, setError] = useState<string | undefined>(undefined);
-//         const [isLoading, setIsLoading] = useState<boolean>(true);
-//
-//         invoke<void>("req_forgotten_password_email", {email: email})
-//             .then(() => setIsLoading(false))
-//             .catch((e: string) => { setError(e); setIsLoading(false) });
-//
-//         return { isLoading: isLoading, error: error }
-// }
+export function useReqForgottenPasswordEmailAgain(): (email: string) => Promise<void> {
+    return (email: string): Promise<void> => {
+        return invoke('req_forgotten_password_email', {email: email})
+    }
+}

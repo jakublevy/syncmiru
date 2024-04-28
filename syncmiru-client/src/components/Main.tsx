@@ -18,11 +18,13 @@ import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import Loading from "@components/Loading.tsx";
 import UserSettings from "@components/user/UserSettings.tsx";
 import {StatusAlertService} from "react-status-alert";
+import useClearJwt from "@hooks/useClearJwt.ts";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
     const {t} = useTranslation()
     const jwt = useJwt();
+    const clearJwt = useClearJwt()
     const homeSrv = useHomeServer();
     const [socket, setSocket] = useState<Socket>();
     const [reconnecting, setReconnecting] = useState<boolean>(false)
@@ -60,7 +62,7 @@ export default function Main(): ReactElement {
 
     function ioConnError(e: Error) {
         if (e.message === "Auth error") {
-            invoke<void>('clear_jwt').then(() => {
+            clearJwt().then(() => {
                 StatusAlertService.showError(t('login-jwt-invalid'))
                 navigateToLoginFormMain(navigate)
             })

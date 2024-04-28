@@ -23,10 +23,12 @@ import {
     navigateToMain,
     navigateToRegister
 } from "src/utils/navigate.ts";
+import {useNewLogin} from "@hooks/useNewLogin.ts";
 
 export default function LoginFormMain(): ReactElement {
     const [location, navigate] = useLocation()
     const historyState: LoginFormHistoryState | undefined = useHistoryState()
+    const newLogin = useNewLogin()
     const {t} = useTranslation()
     const [loading, setLoading] = useState<boolean>(false)
     const [homeSrvResponseError, setHomeSrvResponseError] = useState<boolean>(false);
@@ -136,7 +138,7 @@ export default function LoginFormMain(): ReactElement {
                 password: formData.password
             }
             setLoading(true)
-            invoke<void>('new_login', {data: JSON.stringify(sendData)})
+            newLogin(sendData)
                 .then(() => {
                     navigateToMain(navigate)
                 })

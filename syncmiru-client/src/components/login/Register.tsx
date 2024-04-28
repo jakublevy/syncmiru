@@ -13,16 +13,18 @@ import {useForm} from "react-hook-form";
 import Joi from 'joi'
 import {joiResolver} from "@hookform/resolvers/joi";
 import Loading from "@components/Loading.tsx";
-import {invoke} from "@tauri-apps/api/core";
 import {RegFormFields, useRegFormSchema} from "@hooks/useRegFormSchema.ts";
 import {useTranslation} from "react-i18next";
 import {navigateToEmailVerify} from "src/utils/navigate.ts";
 import {StatusAlertService} from "react-status-alert";
+import {RegData} from "@models/login.ts";
+import {useSendRegistration} from "@hooks/useSendRegistration.ts";
 
 export default function Register({regPubAllowed}: Props): ReactElement {
     const [_, navigate] = useLocation()
     const lang: Language = useLanguage()
     const {t} = useTranslation()
+    const sendRegistration = useSendRegistration()
 
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -61,7 +63,7 @@ export default function Register({regPubAllowed}: Props): ReactElement {
             send.reg_tkn = data.regTkn
 
         setLoading(true)
-        invoke<void>('send_registration', {data: JSON.stringify(send)})
+        sendRegistration(send)
             .then(() => {
                 navigateToEmailVerify(navigate, {email: data.email})
             })
@@ -296,15 +298,6 @@ export default function Register({regPubAllowed}: Props): ReactElement {
 
 interface Props {
     regPubAllowed: boolean
-}
-
-interface RegData {
-    username: string,
-    displayname: string,
-    email: string,
-    password: string,
-    captcha: string,
-    reg_tkn: string
 }
 
 interface Unique {

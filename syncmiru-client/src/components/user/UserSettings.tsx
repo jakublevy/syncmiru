@@ -71,7 +71,7 @@ export default function UserSettings(): ReactElement {
 
 enum Link {
     Account = "/main/user-settings/account",
-    Appearance = "/main/user-settings/appearence",
+    Appearance = "/main/user-settings/appearance",
     Player = "/main/user-settings/player",
     Devices = "/main/user-settings/devices",
     About = "/main/user-settings/about",
