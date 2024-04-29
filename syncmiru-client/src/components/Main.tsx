@@ -16,12 +16,11 @@ import {MainContext} from "@hooks/useMainContext";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import Loading from "@components/Loading.tsx";
 import UserSettings from "@components/user/UserSettings.tsx";
-import {StatusAlertService} from "react-status-alert";
 import useClearJwt from "@hooks/useClearJwt.ts";
 import {LoginTkns} from "@models/login.ts";
 import {useHwidHash} from "@hooks/useHwidHash.ts";
 import {User, UserId, UserValue} from "src/models.ts";
-import {showPersistentErrorAlert, showPersistentWarningAlert} from "../utils/alert.ts";
+import {showPersistentErrorAlert, showPersistentWarningAlert} from "src/utils/alert.ts";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()

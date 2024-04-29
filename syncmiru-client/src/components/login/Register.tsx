@@ -16,10 +16,9 @@ import Loading from "@components/Loading.tsx";
 import {RegFormFields, useRegFormSchema} from "@hooks/useRegFormSchema.ts";
 import {useTranslation} from "react-i18next";
 import {navigateToEmailVerify} from "src/utils/navigate.ts";
-import {StatusAlertService} from "react-status-alert";
 import {RegData} from "@models/login.ts";
 import {useSendRegistration} from "@hooks/useSendRegistration.ts";
-import {showPersistentErrorAlert} from "../../utils/alert.ts";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
 
 export default function Register({regPubAllowed}: Props): ReactElement {
     const [_, navigate] = useLocation()
