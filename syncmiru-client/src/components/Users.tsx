@@ -1,6 +1,7 @@
 import React, {ReactElement, useEffect, useState} from "react";
 import DefaultAvatar from "@components/svg/DefaultAvatar.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
+import {UserId, UserValue} from "src/models.ts";
 
 export default function Users(): ReactElement {
     const {socket, users} = useMainContext()

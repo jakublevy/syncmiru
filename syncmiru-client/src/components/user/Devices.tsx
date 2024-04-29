@@ -6,6 +6,8 @@ import Pc from "@components/svg/Pc.tsx";
 import Delete from "@components/svg/Delete.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
+import {UserSession} from "src/models.ts";
+import InactiveUserSessionsList from "@components/widgets/InactiveUserSessionsList.tsx";
 
 export default function Devices(): ReactElement {
     const [_, navigate] = useLocation()
@@ -13,6 +15,9 @@ export default function Devices(): ReactElement {
     const [loading, setLoading] = useState<boolean>(true)
     const [activeSessionReceived, setActiveSessionReceived] = useState<boolean>(false)
     const [inactiveSessionReceived, setInactiveSessionReceived] = useState<boolean>(false)
+    const [activeSession, setActiveSession]
+        = useState<UserSession>({device_name: '', last_access_at: '', os: '', id: 0})
+    const [inactiveSessions, setInactiveSessions] = useState<Array<UserSession>>([])
 
     useEffect(() => {
         if(socket !== undefined) {
@@ -27,15 +32,13 @@ export default function Devices(): ReactElement {
             setLoading(false)
     }, [activeSessionReceived, inactiveSessionReceived]);
 
-    function onActiveSession(session: UserValue) {
-        console.log("active session")
-        console.log(JSON.stringify(session))
+    function onActiveSession(session: UserSession) {
+        setActiveSession(session)
         setActiveSessionReceived(true)
     }
 
-    function onInactiveSessions(...userSessions: Array<UserSession>) {
-        console.log("inactive sessions")
-        console.log(JSON.stringify(userSessions))
+    function onInactiveSessions(userSessions: Array<UserSession>) {
+        setInactiveSessions(userSessions)
         setInactiveSessionReceived(true)
     }
 
@@ -57,47 +60,15 @@ export default function Devices(): ReactElement {
                 <h2 className="text-xl font-semibold">Aktuální zařízení</h2>
                 <div className="flex mt-4">
                     <Pc className="w-8 mr-2"/>
-                    <p>Jakub-Desktop</p>
-                    <p>・Windows</p>
+                    <p>{activeSession.device_name}</p>
+                    <p>・{activeSession.os}</p>
                 </div>
             </div>
-            <div className="m-8">
+            {inactiveSessions.length > 0 &&
+                <div className="m-8">
                 <h2 className="text-xl font-semibold">Další zařízení</h2>
-                <div className="flex items-center mt-2">
-                    <Pc className="w-8 mr-2"/>
-                    <p>Jakub-Desktop</p>
-                    <p>・Windows</p>
-                    <div className="flex-1"></div>
-                    <Clickable className="p-2">
-                        <Delete className="w-8"/>
-                    </Clickable>
-                </div>
-                <div className="flex items-center mt-2">
-                    <Pc className="w-8 mr-2"/>
-                    <p>Jakub-Desktop</p>
-                    <p>・Windows</p>
-                    <div className="flex-1"></div>
-                    <Clickable className="p-2">
-                        <Delete className="w-8"/>
-                    </Clickable>
-                </div>
-                <div className="flex items-center mt-2">
-                    <Pc className="w-8 mr-2"/>
-                    <p>Jakub-Desktop</p>
-                    <p>・Windows</p>
-                    <div className="flex-1"></div>
-                    <Clickable className="p-2">
-                        <Delete className="w-8"/>
-                    </Clickable>
-                </div>
-            </div>
+                <InactiveUserSessionsList sessions={inactiveSessions}/>
+            </div>}
         </div>
     )
-}
-
-interface UserSession {
-    id: number,
-    device_name: string
-    os: string,
-    last_access_at: string
 }

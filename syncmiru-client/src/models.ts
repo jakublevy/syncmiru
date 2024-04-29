@@ -1,10 +1,17 @@
-interface User extends UserValue {
+export interface User extends UserValue {
     id: number
 }
 
-type UserId = number
-interface UserValue {
+export type UserId = number
+export interface UserValue {
     username: string,
     displayname: string,
     avatar: Array<number> | undefined
+}
+
+export interface UserSession {
+    id: number,
+    device_name: string
+    os: string,
+    last_access_at: string
 }

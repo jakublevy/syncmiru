@@ -36,7 +36,7 @@ pub async fn get_user_sessions(State(state): State<Arc<SrvState>>, s: SocketRef)
     )
         .await
         .expect("getting inactive user sessions failed");
-    s.emit("inactive_sessions", inactive_sessions).ok();
+    s.emit("inactive_sessions", [inactive_sessions]).ok();
 
     let active_session = query::get_active_user_session(
         &state.db,
