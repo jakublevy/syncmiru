@@ -10,6 +10,7 @@ pub struct SrvState {
     pub config: Config,
     pub db: PgPool,
     pub socket_uid: RwLock<bimap::BiMap<socketioxide::socket::Sid, Id>>,
+    pub socket_uid_disconnect: RwLock<HashMap<socketioxide::socket::Sid, Id>>,
     pub sid_hwid_hash: RwLock<HashMap<socketioxide::socket::Sid, String>>,
     pub io: RwLock<Option<SocketIo>>
 }

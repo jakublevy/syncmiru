@@ -1,7 +1,6 @@
 use std::sync::Arc;
 use socketioxide::extract::{SocketRef, State};
 use crate::models::query::Id;
-use crate::models::socketio::UserSession;
 use crate::query;
 use crate::srvstate::SrvState;
 
@@ -51,17 +50,24 @@ pub async fn get_user_sessions(State(state): State<Arc<SrvState>>, s: SocketRef)
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
-    let mut uid: Option<Id>;
+    let mut uid_opt: Option<Id>;
     {
         let mut socket_uid_lock = state.socket_uid.write().await;
-        uid = socket_uid_lock.get_by_left(&s.id).map(|x| x.clone());
+        uid_opt = socket_uid_lock.get_by_left(&s.id).map(|x| x.clone());
         socket_uid_lock.remove_by_left(&s.id);
     }
-    if let Some(uid) = uid {
-        let hwid_hash = state.socket2hwid_hash(&s).await;
-        query::update_session_last_access_time_now(&state.db, uid, &hwid_hash)
-            .await
-            .expect("db error");
-        s.broadcast().emit("offline", uid).ok();
+    let mut uid: Id;
+    if let None = uid_opt {
+        let mut socket_uid_disconnect_wl = state.socket_uid_disconnect.write().await;
+        uid = socket_uid_disconnect_wl.get(&s.id).unwrap().clone();
+        socket_uid_disconnect_wl.remove(&s.id);
     }
+    else {
+        uid = uid_opt.unwrap()
+    }
+    let hwid_hash = state.socket2hwid_hash(&s).await;
+    query::update_session_last_access_time_now(&state.db, uid, &hwid_hash)
+        .await
+        .expect("db error");
+    s.broadcast().emit("offline", uid).ok();
 }

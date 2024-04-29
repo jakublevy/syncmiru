@@ -57,9 +57,10 @@ async fn main() -> Result<()> {
 
    let srvstate = Arc::new(
       SrvState {
-         db: pool.clone(),
          config: config.clone(),
+         db: pool.clone(),
          socket_uid: BiMap::new().into(),
+         socket_uid_disconnect: HashMap::new().into(),
          io: None.into(),
          sid_hwid_hash: HashMap::new().into(),
       });
