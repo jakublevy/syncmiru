@@ -19,6 +19,7 @@ import {
     useForgottenPasswordChangePassword
 } from "@hooks/useForgottenPasswordChangePassword.ts";
 import {ForgottenPasswordChangeData} from "@models/login.ts";
+import {showPersistentErrorAlert} from "../../utils/alert.ts";
 
 export default function ForgottenPassword({email, waitBeforeResend}: Props): ReactElement {
     const [_, navigate] = useLocation()
@@ -48,7 +49,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
 
     useEffect(() => {
         if (fpError !== undefined) {
-            StatusAlertService.showError(fpError)
+            showPersistentErrorAlert(fpError)
             setResendTimeout(0)
         } else {
             setResendTimeout(waitBeforeResend)
@@ -69,7 +70,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
             })
             .catch((e) => {
                 setResendTimeout(0)
-                StatusAlertService.showError(e)
+                showPersistentErrorAlert(e)
             })
             .finally(() => setLoading(false))
     }
@@ -104,7 +105,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
                 navigate('/forgotten-password-changed')
             })
             .catch((e: string) => {
-                StatusAlertService.showError(e)
+                showPersistentErrorAlert(e)
             })
             .finally(() => setLoading(false))
     }

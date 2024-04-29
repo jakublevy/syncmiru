@@ -21,6 +21,7 @@ import useClearJwt from "@hooks/useClearJwt.ts";
 import {LoginTkns} from "@models/login.ts";
 import {useHwidHash} from "@hooks/useHwidHash.ts";
 import {User, UserId, UserValue} from "src/models.ts";
+import {showPersistentErrorAlert, showPersistentWarningAlert} from "../utils/alert.ts";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -66,11 +67,11 @@ export default function Main(): ReactElement {
     function ioConnError(e: Error) {
         if (e.message === "Auth error") {
             clearJwt().then(() => {
-                StatusAlertService.showError(t('login-jwt-invalid'))
+                showPersistentErrorAlert(t('login-jwt-invalid'))
                 navigateToLoginFormMain(navigate)
             })
         } else if (!reconnectingRef.current) {
-            StatusAlertService.showError(t('login-failed'))
+            showPersistentErrorAlert(t('login-failed'))
             navigateToLoginFormMain(navigate)
         }
     }
@@ -85,7 +86,7 @@ export default function Main(): ReactElement {
     }
 
     function onNewLogin() {
-        StatusAlertService.showWarning(t('login-on-another-device'))
+        showPersistentWarningAlert(t('login-on-another-device'))
         navigateToLoginFormMain(navigate)
     }
 

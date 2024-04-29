@@ -9,6 +9,7 @@ import BtnTimeout from "@components/widgets/BtnTimeout.tsx";
 import Loading from "@components/Loading.tsx";
 import {useTranslation} from "react-i18next";
 import {StatusAlertService} from "react-status-alert";
+import {showPersistentErrorAlert} from "../../utils/alert.ts";
 
 export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
     const [_, navigate] = useLocation()
@@ -31,7 +32,7 @@ export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
 
     useEffect(() => {
         if(verEmailError !== undefined)
-            StatusAlertService.showError(verEmailError)
+            showPersistentErrorAlert(verEmailError)
     }, [verEmailError]);
 
     function resendEmail() {
@@ -43,7 +44,7 @@ export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
             })
             .catch((e) => {
                 setResendTimeout(0)
-                StatusAlertService.showError(e)
+                showPersistentErrorAlert(e)
             })
             .finally(() => setLoading(false))
     }

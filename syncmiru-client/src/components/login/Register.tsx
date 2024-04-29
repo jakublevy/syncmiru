@@ -19,6 +19,7 @@ import {navigateToEmailVerify} from "src/utils/navigate.ts";
 import {StatusAlertService} from "react-status-alert";
 import {RegData} from "@models/login.ts";
 import {useSendRegistration} from "@hooks/useSendRegistration.ts";
+import {showPersistentErrorAlert} from "../../utils/alert.ts";
 
 export default function Register({regPubAllowed}: Props): ReactElement {
     const [_, navigate] = useLocation()
@@ -69,7 +70,7 @@ export default function Register({regPubAllowed}: Props): ReactElement {
             })
             .catch((e) => {
                 setValue('captcha', '')
-                StatusAlertService.showError(e)
+                showPersistentErrorAlert(e)
             })
             .finally(() => setLoading(false))
     }
