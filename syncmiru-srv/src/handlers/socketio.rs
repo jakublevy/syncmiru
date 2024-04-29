@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use socketioxide::extract::{SocketRef, State};
 use crate::models::query::Id;
+use crate::models::socketio::UserSession;
 use crate::query;
 use crate::srvstate::SrvState;
 
@@ -16,14 +17,14 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
         .await
         .expect("db error");
 
-    s.emit("users", &users).ok();
-    s.broadcast().emit("users", user).ok();
+    s.emit("users", [&users]).ok();
+    s.broadcast().emit("users", [[user]]).ok();
     s.emit("me", uid).ok();
 
     let online_uids_lock = state.socket_uid.read().await;
     let online_uids = online_uids_lock.right_values().collect::<Vec<&Id>>();
-    s.emit("online", &online_uids).ok();
-    s.broadcast().emit("online", uid).ok();
+    s.emit("online", [&online_uids]).ok();
+    s.broadcast().emit("online", [[uid]]).ok();
 }
 
 pub async fn get_user_sessions(State(state): State<Arc<SrvState>>, s: SocketRef) {

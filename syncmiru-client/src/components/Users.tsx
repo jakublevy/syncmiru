@@ -35,12 +35,12 @@ export default function Users(): ReactElement {
         setOfflineUsers(off)
     }, [users, onlineUids]);
 
-    function onOnline(...uids: Array<UserId>) {
+    function onOnline(uids: Array<UserId>) {
         setOnlineUids((p) => [...p, ...uids])
     }
 
-    function onOffline(...uids: Array<UserId>) {
-        setOnlineUids((p) => p.filter(x => !uids.includes(x)))
+    function onOffline(uid: UserId) {
+        setOnlineUids((p) => p.filter(x => x !== uid))
     }
 
     return (

@@ -1,13 +1,13 @@
-import {ReactElement, useEffect, useState} from "react";
+import {ReactElement, useEffect, useState, MouseEvent} from "react";
 import {Clickable, CloseBtn} from "@components/widgets/Button.tsx";
-import {navigateToMain} from "../../utils/navigate.ts";
+import {navigateToMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
 import Pc from "@components/svg/Pc.tsx";
-import Delete from "@components/svg/Delete.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
-import {UserSession} from "src/models.ts";
-import InactiveUserSessionsList from "@components/widgets/InactiveUserSessionsList.tsx";
+import {UserSession, UserSessionStrTime} from "src/models.ts";
+import Delete from "@components/svg/Delete.tsx";
+import DateTimeLocalPretty from "@components/widgets/DateTimeLocalPretty.tsx";
 
 export default function Devices(): ReactElement {
     const [_, navigate] = useLocation()
@@ -16,7 +16,7 @@ export default function Devices(): ReactElement {
     const [activeSessionReceived, setActiveSessionReceived] = useState<boolean>(false)
     const [inactiveSessionReceived, setInactiveSessionReceived] = useState<boolean>(false)
     const [activeSession, setActiveSession]
-        = useState<UserSession>({device_name: '', last_access_at: '', os: '', id: 0})
+        = useState<UserSession>({device_name: '', last_access_at: new Date(), os: '', id: 0})
     const [inactiveSessions, setInactiveSessions] = useState<Array<UserSession>>([])
 
     useEffect(() => {
@@ -32,12 +32,23 @@ export default function Devices(): ReactElement {
             setLoading(false)
     }, [activeSessionReceived, inactiveSessionReceived]);
 
-    function onActiveSession(session: UserSession) {
-        setActiveSession(session)
+    function onActiveSession(sessionStrTime: UserSessionStrTime) {
+        const {last_access_at, ...rest} = sessionStrTime
+        setActiveSession({
+            last_access_at: new Date(sessionStrTime.last_access_at),
+            ...rest
+        } as UserSession)
         setActiveSessionReceived(true)
     }
 
-    function onInactiveSessions(userSessions: Array<UserSession>) {
+    function onInactiveSessions(sessionsStrTime: Array<UserSessionStrTime>) {
+        const userSessions = sessionsStrTime.map(x => {
+            return {
+                device_name: x.device_name,
+                os: x.os,
+                id: x.id,
+                last_access_at: new Date(x.last_access_at)
+        } as UserSession})
         setInactiveSessions(userSessions)
         setInactiveSessionReceived(true)
     }
@@ -48,6 +59,10 @@ export default function Devices(): ReactElement {
                 <Loading/>
             </div>
         )
+
+    function onSessionDelete(e: MouseEvent<HTMLButtonElement>) {
+        console.log(e.currentTarget.id)
+    }
 
     return (
         <div className="flex flex-col">
@@ -67,8 +82,24 @@ export default function Devices(): ReactElement {
             {inactiveSessions.length > 0 &&
                 <div className="m-8">
                 <h2 className="text-xl font-semibold">Další zařízení</h2>
-                <InactiveUserSessionsList sessions={inactiveSessions}/>
-            </div>}
+                    {inactiveSessions
+                        .sort((x,y) => y.last_access_at.getTime() - x.last_access_at.getTime())
+                        .map((session => {
+                        return (
+                            <div className="flex items-center mt-2">
+                                <Pc className="w-8 mr-2"/>
+                                <div className="flex flex-col">
+                                    <p>{session.device_name}・{session.os}</p>
+                                    <p>naposledy aktivní: {<DateTimeLocalPretty datetime={session.last_access_at}/>}</p>
+                                </div>
+                                <div className="flex-1"></div>
+                                <Clickable id={session.id.toString()} className="p-2" onClick={onSessionDelete}>
+                                    <Delete className="w-8"/>
+                                </Clickable>
+                            </div>
+                        )
+                    }))}
+                </div>}
         </div>
     )
 }

@@ -9,9 +9,16 @@ export interface UserValue {
     avatar: Array<number> | undefined
 }
 
-export interface UserSession {
+export interface UserSessionStrTime {
     id: number,
     device_name: string
     os: string,
     last_access_at: string
+}
+
+export interface UserSession {
+    id: number,
+    device_name: string
+    os: string,
+    last_access_at: Date
 }
