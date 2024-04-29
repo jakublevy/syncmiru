@@ -1,11 +1,12 @@
 import {ReactElement} from "react";
-import {Clickable, NavLink} from "@components/widgets/Button.tsx";
+import {NavLink} from "@components/widgets/Button.tsx";
 import Card from "@components/widgets/Card.tsx";
 import {useLocation} from "wouter";
 import Account from "@components/user/Account.tsx";
 import Appearance from "@components/user/Appearance.tsx";
 import {navigateToUserSettingsAppearance} from "src/utils/navigate.ts";
 import {useTranslation} from "react-i18next";
+import Devices from "@components/user/Devices.tsx";
 
 export default function UserSettings(): ReactElement {
     const [location, navigate] = useLocation()
@@ -16,7 +17,7 @@ export default function UserSettings(): ReactElement {
     }
 
     return (
-        <Card className="flex m-6 p-0.5">
+        <Card className="flex h-[calc(100dvh-1.5rem)] m-3 p-0.5">
             <div className="min-w-40 w-40">
                 <div className="h-16"></div>
                 <div className="m-1">
@@ -61,9 +62,10 @@ export default function UserSettings(): ReactElement {
                 </div>
                 <div className="h-16"></div>
             </div>
-            <div className="border-l border-gray-200 dark:border-gray-700 w-[40rem]">
+            <div className="border-l border-gray-200 dark:border-gray-700 w-[38rem] overflow-auto">
                 {isActive(Link.Account) && <Account/>}
                 {isActive(Link.Appearance) && <Appearance/>}
+                {isActive(Link.Devices) && <Devices/>}
             </div>
         </Card>
     )
