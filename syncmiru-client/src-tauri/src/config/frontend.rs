@@ -1,8 +1,8 @@
-use std::sync::Arc;
 use crate::appstate::AppState;
 use crate::config::{appdata, jwt};
 use crate::config::{Language};
 use crate::result::Result;
+use crate::sys;
 
 #[tauri::command]
 pub async fn get_first_run_seen(state: tauri::State<'_, AppState>) -> Result<bool> {
@@ -45,7 +45,7 @@ pub async fn get_target_family() -> Result<String> {
 }
 
 #[tauri::command]
-pub async fn jwt() -> Result<String> {
+pub async fn get_jwt() -> Result<String> {
     Ok(jwt::read()?.unwrap_or("".to_string()))
 }
 
@@ -53,3 +53,6 @@ pub async fn jwt() -> Result<String> {
 pub async fn clear_jwt() -> Result<()> {
     jwt::clear()
 }
+
+#[tauri::command]
+pub async fn get_hwid_hash() -> Result<String> { sys::id_hashed() }

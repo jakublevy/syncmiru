@@ -3,6 +3,7 @@ use crate::models::query::Id;
 
 pub mod http;
 pub mod query;
+pub mod socketio;
 
 #[derive(Debug, Clone, Serialize, sqlx::FromRow)]
 pub struct User {

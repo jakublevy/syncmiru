@@ -20,3 +20,8 @@ export interface RegData {
     captcha: string,
     reg_tkn: string
 }
+
+export interface LoginTkns {
+    jwt: string,
+    hwid_hash: string
+}

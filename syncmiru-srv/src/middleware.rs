@@ -3,8 +3,8 @@ use anyhow::Context;
 use socketioxide::extract::{Data, SocketRef, State};
 use validator::Validate;
 use crate::error::SyncmiruError::AuthError;
-use crate::models::http::Jwt;
 use crate::models::query::Id;
+use crate::models::socketio::LoginTkns;
 use crate::result::Result;
 use crate::srvstate::SrvState;
 use crate::tkn;
@@ -12,21 +12,22 @@ use crate::tkn;
 pub async fn auth(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
-    Data(payload): Data<Jwt>
+    Data(payload): Data<LoginTkns>
 ) -> Result<()> {
     payload.validate()?;
-    let (valid, uid) = tkn::login_jwt_check(&payload.jwt, &state.config.login_jwt, &state.db).await?;
+    let (valid, uid) = tkn::login_jwt_check(&payload, &state.config.login_jwt, &state.db).await?;
     if !valid {
         return Err(AuthError)
     }
-    new_client(&state, &s, uid.unwrap()).await?;
+    new_client(&state, &s, uid.unwrap(), &payload.hwid_hash).await?;
     Ok(())
 }
 
 pub async fn new_client(
     state: &Arc<SrvState>,
     s: &SocketRef,
-    uid: Id
+    uid: Id,
+    hwid_hash: &str
 ) -> Result<()> {
     {
         let socket_uid_rl = state.socket_uid.read().await;
@@ -42,6 +43,10 @@ pub async fn new_client(
     {
         let mut socket_uid_wl = state.socket_uid.write().await;
         socket_uid_wl.insert(s.id, uid);
+    }
+    {
+        let mut sid2hwid_hash_wl = state.sid_hwid_hash.write().await;
+        sid2hwid_hash_wl.insert(s.id, hwid_hash.to_string());
     }
     Ok(())
 }

@@ -1,4 +1,3 @@
-import useSWRImmutable from "swr/immutable";
 import {invoke} from "@tauri-apps/api/core";
 import {usePromise} from "@mittwald/react-use-promise";
 
@@ -7,5 +6,5 @@ export const useJwt = (): string => {
 }
 
 const jwtPromise = (): Promise<string> => {
-    return invoke('jwt', {})
+    return invoke('get_jwt', {})
 }

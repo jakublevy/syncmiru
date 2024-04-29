@@ -60,7 +60,8 @@ async fn main() -> Result<()> {
          db: pool.clone(),
          config: config.clone(),
          socket_uid: BiMap::new().into(),
-         io: None.into()
+         io: None.into(),
+         sid_hwid_hash: HashMap::new().into(),
       });
 
    let socketio_srvstate = srvstate.clone();

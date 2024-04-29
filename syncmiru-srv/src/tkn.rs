@@ -7,6 +7,7 @@ use sqlx::PgPool;
 use crate::config::LoginJwt;
 use crate::error::SyncmiruError::AuthError;
 use crate::models::query::Id;
+use crate::models::socketio::LoginTkns;
 use crate::query;
 use crate::result::Result;
 
@@ -27,7 +28,7 @@ pub fn new_login(login_jwt_conf: &LoginJwt, uid: Id) -> Result<String> {
 }
 
 pub async fn login_jwt_check(
-    jwt: &str,
+    login_tkns: &LoginTkns,
     login_jwt_conf: &LoginJwt,
     db: &PgPool
 ) -> Result<(bool, Option<Id>)> {
@@ -35,20 +36,18 @@ pub async fn login_jwt_check(
         digest: login_jwt_conf.alg.digest(),
         key: PKey::public_key_from_pem(&login_jwt_conf.pub_pem)?,
     };
-    if let Ok(claims) = jwt.verify_with_key(&key) as std::result::Result<BTreeMap<String, Id>, jwt::Error> {
+    if let Ok(claims) = login_tkns.jwt.verify_with_key(&key) as std::result::Result<BTreeMap<String, Id>, jwt::Error> {
         let sub_opt = claims.get("sub");
         if sub_opt.is_none() {
             return Ok((false, None))
         }
-        let valid = query::session_valid(db, jwt).await?;
-        if !valid {
-            return Ok((false, None))
-        }
+
         let uid = sub_opt.unwrap();
-        let exists = query::user_exists(db, *uid).await?;
+        let exists = query::session_exists(db, &login_tkns.hwid_hash, *uid).await?;
         if !exists {
             return Ok((false, None))
         }
+
         Ok((true, sub_opt.map(|&x|x)))
     }
     else {

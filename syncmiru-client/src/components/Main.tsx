@@ -11,7 +11,6 @@ import Middle from "@components/Middle.tsx";
 import {useJwt} from "@hooks/useJwt.tsx";
 import {io, Socket} from "socket.io-client";
 import {useHomeServer} from "@hooks/useHomeServer.ts";
-import {invoke} from "@tauri-apps/api/core";
 import Users from "@components/Users.tsx";
 import {MainContext} from "@hooks/useMainContext";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
@@ -19,11 +18,14 @@ import Loading from "@components/Loading.tsx";
 import UserSettings from "@components/user/UserSettings.tsx";
 import {StatusAlertService} from "react-status-alert";
 import useClearJwt from "@hooks/useClearJwt.ts";
+import {LoginTkns} from "@models/login.ts";
+import {useHwidHash} from "@hooks/useHwidHash.ts";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
     const {t} = useTranslation()
     const jwt = useJwt();
+    const hwidHash = useHwidHash()
     const clearJwt = useClearJwt()
     const homeSrv = useHomeServer();
     const [socket, setSocket] = useState<Socket>();
@@ -35,7 +37,7 @@ export default function Main(): ReactElement {
         = useState<Map<UserId, UserValue>>(new Map<UserId, UserValue>());
 
     useEffect(() => {
-        const s = io(homeSrv, {auth: {jwt: jwt}})
+        const s = io(homeSrv, {auth: {jwt: jwt, hwid_hash: hwidHash} as LoginTkns})
         s.on('connect_error', ioConnError)
         s.on('connect', ioConn)
         s.on('disconnect', ioDisconnect)

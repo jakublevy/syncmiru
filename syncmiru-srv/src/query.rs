@@ -223,16 +223,19 @@ pub async fn update_session(
     Ok(())
 }
 
-pub async fn session_valid(
+pub async fn session_exists(
     db: &PgPool,
-    jwt: &str,
+    hwid_hash: &str,
+    uid: Id
 ) -> Result<bool> {
-    let allowed: (bool,) = sqlx::query_as("select count(*) = 0 from session_deleted where jwt = $1 limit 1")
-        .bind(jwt)
+    let allowed: (bool,) = sqlx::query_as(
+        "select count(*) = 1 from session where hash = $1 and user_id = $2 limit 1"
+    )
+        .bind(hwid_hash)
+        .bind(uid)
         .fetch_one(db)
         .await?;
     Ok(allowed.0)
-
 }
 
 pub async fn exists_session_with_hwid(
@@ -269,10 +272,17 @@ pub async fn get_user(db: &PgPool, uid: Id) -> Result<User> {
     Ok(user)
 }
 
-pub async fn user_exists(db: &PgPool, uid: Id) -> Result<bool> {
-    let exists: (bool,) = sqlx::query_as("select count(*) = 1 from users where id = $1 limit 1")
+pub async fn update_session_last_access_time_now(
+    db: &PgPool,
+    uid: Id,
+    hwid_hash: &str
+) -> Result<()> {
+    sqlx::query(
+        "update session set last_access_at = now() where user_id = $1 and last_access_at = $2"
+    )
         .bind(uid)
-        .fetch_one(db)
+        .bind(hwid_hash)
+        .execute(db)
         .await?;
-    Ok(exists.0)
+    Ok(())
 }
