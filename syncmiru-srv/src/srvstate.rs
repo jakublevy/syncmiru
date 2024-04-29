@@ -20,8 +20,8 @@ impl SrvState {
         *socket_uid_lock.get_by_left(&s.id).unwrap()
     }
 
-    pub async fn sid2_hwid_hash(&self, s: &SocketRef) -> Option<String> {
+    pub async fn socket2hwid_hash(&self, s: &SocketRef) -> String {
         let sid_hwid_hash_rl = self.sid_hwid_hash.read().await;
-        sid_hwid_hash_rl.get(&s.id).map(|x| x.clone())
+        sid_hwid_hash_rl.get(&s.id).map(|x| x.clone()).unwrap()
     }
 }

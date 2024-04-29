@@ -1,6 +1,7 @@
 use sqlx::PgPool;
 use crate::models::User;
 use crate::models::query::{EmailTknType, Id};
+use crate::models::socketio::UserSession;
 use crate::result::Result;
 
 pub async fn username_unique(db: &PgPool, username: &str) -> Result<bool> {
@@ -278,11 +279,45 @@ pub async fn update_session_last_access_time_now(
     hwid_hash: &str
 ) -> Result<()> {
     sqlx::query(
-        "update session set last_access_at = now() where user_id = $1 and last_access_at = $2"
+        "update session set last_access_at = now() where user_id = $1 and hash = $2"
     )
         .bind(uid)
         .bind(hwid_hash)
         .execute(db)
         .await?;
     Ok(())
+}
+
+pub async fn get_active_user_session(
+    db: &PgPool,
+    uid: Id,
+    hwid_hash: &str
+) -> Result<UserSession> {
+    let query = r#"
+     select id, os, device_name, last_access_at from session
+     where user_id = $1 and hash = $2 limit 1
+    "#;
+    let session = sqlx::query_as::<_, UserSession>(query)
+        .bind(uid)
+        .bind(hwid_hash)
+        .fetch_one(db)
+        .await?;
+    Ok(session)
+}
+
+pub async fn get_inactive_user_sessions(
+    db: &PgPool,
+    uid: Id,
+    hwid_hash: &str
+) -> Result<Vec<UserSession>> {
+    let query = r#"
+     select id, os, device_name, last_access_at from session
+     where user_id = $1 and hash <> $2
+    "#;
+    let sessions = sqlx::query_as::<_, UserSession>(query)
+        .bind(uid)
+        .bind(hwid_hash)
+        .fetch_all(db)
+        .await?;
+    Ok(sessions)
 }

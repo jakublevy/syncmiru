@@ -122,8 +122,8 @@ export default function Main(): ReactElement {
                         <Users/>
                     </div>
                 </div>
+                {showUserSettings() && <UserSettings/>}
             </MainContext.Provider>
-            {showUserSettings() && <UserSettings/>}
         </>
     )
 }
