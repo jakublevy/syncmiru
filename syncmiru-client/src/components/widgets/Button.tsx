@@ -21,7 +21,7 @@ export function BtnPrimary(p: BtnProps): ReactElement {
 export function BtnSecondary(p: BtnProps): ReactElement {
     const {className, children, ...restParams} = p
     return <Btn
-        className={`bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded ${className != null ? className : ''}`}
+        className={`bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold border py-2 px-4 rounded ${className != null ? className : ''}`}
         {...restParams}>
         {children}
     </Btn>

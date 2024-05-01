@@ -110,5 +110,15 @@
   "user-settings-appearance-title": "Nastavení vzhledu",
   "user-settings-appearance-theme": "Motiv",
 
-  "theme-changed-windows-warning": "Na OS Windows se z technických důvodů změna motivu projeví až po restartu aplikace"
+  "theme-changed-windows-warning": "Na OS Windows se z technických důvodů změna motivu projeví až po restartu aplikace",
+
+  "sessions-delete-error": "Došlo k chybě při smazání zařízení",
+  "sessions-devices": "Zařízení",
+  "sessions-current": "Aktuální zařízení",
+  "sessions-inactive": "Další zařízení",
+  "sessions-last-active": "naposledy aktivní:",
+
+  "delete-dialog-title": "Potvrzení smazání",
+  "delete-dialog-delete-btn": "Smazat",
+  "delete-dialog-keep-btn": "Ponechat"
 }

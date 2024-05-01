@@ -110,5 +110,15 @@
   "user-settings-appearance-title": "Appearance settings",
   "user-settings-appearance-theme": "Theme",
 
-  "theme-changed-windows-warning": "The theme change will take effect after restarting the application on the Windows OS, due to technical reasons"
+  "theme-changed-windows-warning": "The theme change will take effect after restarting the application on the Windows OS, due to technical reasons",
+
+  "sessions-delete-error": "An error occurred while deleting the device",
+  "sessions-devices": "Devices",
+  "sessions-current": "Current device",
+  "sessions-inactive": "Other devices",
+  "sessions-last-active": "last active:",
+
+  "delete-dialog-title": "Confirm deletion",
+  "delete-dialog-delete-btn": "Delete",
+  "delete-dialog-keep-btn": "Keep"
 }

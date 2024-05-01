@@ -19,3 +19,20 @@ pub struct UserSession {
     pub os: String,
     pub last_access_at: chrono::DateTime<Utc>
 }
+
+#[derive(Debug, Copy, Clone, Deserialize, Validate)]
+pub struct IdStruct {
+    #[validate(range(min = 1))]
+    pub id: Id
+}
+
+#[derive(Debug, Copy, Clone, Serialize)]
+pub enum SocketIoAckType {
+    Ok,
+    Err
+}
+
+#[derive(Debug, Copy, Clone, Serialize)]
+pub struct SocketIoAck {
+    pub resp: SocketIoAckType
+}

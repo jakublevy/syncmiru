@@ -1,0 +1,1 @@
+export const SOCKETIO_RESP_TIMEOUT_MS = 5000

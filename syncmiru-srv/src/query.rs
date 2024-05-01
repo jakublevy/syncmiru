@@ -321,3 +321,24 @@ pub async fn get_inactive_user_sessions(
         .await?;
     Ok(sessions)
 }
+
+pub async fn is_session_of_user(db: &PgPool, session_id: Id, uid: Id) -> Result<bool> {
+    let query = r#"
+    select count(*) = 1 from session
+    where id = $1 and user_id = $2
+    "#;
+    let is_user_session: (bool,) = sqlx::query_as(query)
+        .bind(session_id)
+        .bind(uid)
+        .fetch_one(db)
+        .await?;
+    Ok(is_user_session.0)
+}
+
+pub async fn delete_user_session(db: &PgPool, id: Id) -> Result<()> {
+    sqlx::query("delete from session where id = $1")
+        .bind(id)
+        .execute(db)
+        .await?;
+    Ok(())
+}
