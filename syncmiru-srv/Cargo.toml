@@ -32,7 +32,7 @@ lettre = "0.11.6"
 rust-i18n = "3.0.1"
 serde_urlencoded = "0.7.1"
 pem = "3.0.4"
-jwt =  { version = "0.16.0", features = ["openssl"] }
+josekit = "0.8.6"
 openssl = { version = "0.10.64", features = ["vendored"] }
 bimap = "0.6.3"
 chrono = { version = "0.4.38", features = ["serde"] }

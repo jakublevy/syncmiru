@@ -1,30 +1,21 @@
-use std::collections::BTreeMap;
-use std::error::Error;
-use jwt::{Header, PKeyWithDigest, SignWithKey, Token, VerifyWithKey};
-use jwt::header::HeaderType;
-use openssl::pkey::PKey;
+use josekit::jws::{JwsHeader};
+use josekit::jwt::JwtPayload;
 use sqlx::PgPool;
 use crate::config::LoginJwt;
-use crate::error::SyncmiruError::AuthError;
 use crate::models::query::Id;
 use crate::models::socketio::LoginTkns;
 use crate::query;
 use crate::result::Result;
 
 pub fn new_login(login_jwt_conf: &LoginJwt, uid: Id) -> Result<String> {
-    let mut header = Header::default();
-    header.algorithm = login_jwt_conf.alg.into();
-    header.type_ = Some(HeaderType::JsonWebToken);
-    let claims = serde_json::json!({
-        "sub": uid
-    });
-    let tkn = Token::new(header, claims);
-    let key = PKeyWithDigest {
-        digest: login_jwt_conf.alg.digest(),
-        key: PKey::private_key_from_pem(&login_jwt_conf.priv_pem)?,
-    };
-    let signed = tkn.sign_with_key(&key)?;
-    Ok(signed.as_str().to_string())
+    let mut header = JwsHeader::new();
+    header.set_token_type("JWT");
+    let mut payload = JwtPayload::new();
+    payload.set_subject(uid.to_string());
+    let signer = login_jwt_conf.signer()?;
+    header.set_algorithm(signer.algorithm().name());
+    let signed = josekit::jwt::encode_with_signer(&payload, &header, &*signer)?;
+    Ok(signed)
 }
 
 pub async fn login_jwt_check(
@@ -32,25 +23,16 @@ pub async fn login_jwt_check(
     login_jwt_conf: &LoginJwt,
     db: &PgPool
 ) -> Result<(bool, Option<Id>)> {
-    let key = PKeyWithDigest {
-        digest: login_jwt_conf.alg.digest(),
-        key: PKey::public_key_from_pem(&login_jwt_conf.pub_pem)?,
-    };
-    if let Ok(claims) = login_tkns.jwt.verify_with_key(&key) as std::result::Result<BTreeMap<String, Id>, jwt::Error> {
-        let sub_opt = claims.get("sub");
-        if sub_opt.is_none() {
-            return Ok((false, None))
-        }
-
-        let uid = sub_opt.unwrap();
-        let exists = query::session_exists(db, &login_tkns.hwid_hash, *uid).await?;
-        if !exists {
-            return Ok((false, None))
-        }
-
-        Ok((true, sub_opt.map(|&x|x)))
+    let verifier = login_jwt_conf.verifier()?;
+    let (payload, _) = josekit::jwt::decode_with_verifier(&login_tkns.jwt, &*verifier)?;
+    let sub_opt = payload.claim("sub");
+    if sub_opt.is_none() {
+        return Ok((false, None))
     }
-    else {
-        Ok((false, None))
+    let uid = sub_opt.unwrap().as_str().unwrap().parse::<i32>()?;
+    let exists = query::session_exists(db, &login_tkns.hwid_hash, uid).await?;
+    if !exists {
+        return Ok((false, None))
     }
+    Ok((true, Some(uid)))
 }

@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::{Read};
 use std::path::{Path, PathBuf};
 use anyhow::{anyhow, Context};
-use jwt::AlgorithmType;
+use josekit::jws::{JwsSigner, JwsVerifier};
 use lettre::SmtpTransport;
 use lettre::transport::smtp::authentication::Credentials;
 use log::{debug, info, warn};
@@ -364,8 +364,27 @@ impl LoginJwt {
                 .context("pub_key_file is missing inside login_jwt")?
         );
         let pub_pem = parse_key(pub_key_file, KeyType::Public, alg)?;
-         Ok(Self { pub_pem, priv_pem, alg })
+        Ok(Self { pub_pem, priv_pem, alg })
     }
+
+    pub fn signer(&self) -> Result<Box<dyn JwsSigner>> {
+        match self.alg {
+            RS256 => Ok(Box::new(josekit::jws::RS256.signer_from_pem(&self.priv_pem)?)),
+            RS512 => Ok(Box::new(josekit::jws::RS512.signer_from_pem(&self.priv_pem)?)),
+            ES256 => Ok(Box::new(josekit::jws::ES256.signer_from_pem(&self.priv_pem)?)),
+            ES512 => Ok(Box::new(josekit::jws::ES512.signer_from_pem(&self.priv_pem)?)),
+        }
+    }
+
+    pub fn verifier(&self) -> Result<Box<dyn JwsVerifier>> {
+        match self.alg {
+            RS256 => Ok(Box::new(josekit::jws::RS256.verifier_from_pem(&self.pub_pem)?)),
+            RS512 => Ok(Box::new(josekit::jws::RS512.verifier_from_pem(&self.pub_pem)?)),
+            ES256 => Ok(Box::new(josekit::jws::ES256.verifier_from_pem(&self.pub_pem)?)),
+            ES512 => Ok(Box::new(josekit::jws::ES512.verifier_from_pem(&self.pub_pem)?)),
+        }
+    }
+
 }
 
 #[derive(PartialEq)]
@@ -383,17 +402,6 @@ pub enum KeyAlg {
     ES512
 }
 
-impl From<KeyAlg> for AlgorithmType {
-    fn from(value: KeyAlg) -> Self {
-        match value {
-            RS256 => AlgorithmType::Rs256,
-            RS512 => AlgorithmType::Rs512,
-            ES256 => AlgorithmType::Es256,
-            ES512 => AlgorithmType::Es512
-        }
-    }
-}
-
 impl KeyAlg {
     pub fn from(s: &str) -> Option<KeyAlg> {
         match s.to_lowercase().as_str() {
@@ -402,12 +410,6 @@ impl KeyAlg {
             "es256" => Some(ES256),
             "es512" => Some(ES512),
             _ => None
-        }
-    }
-    pub fn digest(&self) -> MessageDigest {
-        match self {
-            RS256 | ES256 => MessageDigest::sha256(),
-            RS512 | ES512 => MessageDigest::sha512(),
         }
     }
 }

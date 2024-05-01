@@ -1,5 +1,6 @@
 use serde_with::DisplayFromStr;
 use std::io;
+use std::num::ParseIntError;
 use std::sync::PoisonError;
 use axum::http::StatusCode;
 use axum::Json;
@@ -54,13 +55,16 @@ pub enum SyncmiruError {
     ErrorStack(#[from] openssl::error::ErrorStack),
 
     #[error("jwt error")]
-    JwtError(#[from] jwt::error::Error),
+    JoseError(#[from] josekit::JoseError),
 
     #[error("socketio send error")]
     SocketIoSendUnitError(#[from] socketioxide::SendError<()>),
 
     #[error("socketio disconnect error")]
     SocketIoDisconnectError(#[from] socketioxide::DisconnectError),
+
+    #[error("int parse failed")]
+    ParseIntError(#[from] ParseIntError),
 
     #[error("Parsing CLI args failed {0}")]
     CliParseFailed(String),
