@@ -10,6 +10,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on_disconnect(disconnect);
     s.on("get_user_sessions", get_user_sessions);
     s.on("delete_session", delete_session);
+    s.on("sign_out", sign_out);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_verified_users(&state.db)
@@ -80,6 +81,15 @@ pub async fn delete_session(
         .await
         .expect("db error");
     s.emit("delete_session_r", SocketIoAck { resp: SocketIoAckType::Ok }).ok();
+}
+
+pub async fn sign_out(State(state): State<Arc<SrvState>>, s: SocketRef) {
+    let uid = state.socket2uid(&s).await;
+    let hwid = state.socket2hwid_hash(&s).await;
+    query::delete_user_session_by_hwid_uid(&state.db, &hwid, uid)
+        .await
+        .expect("db error");
+    s.disconnect().expect("disconnect error")
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {

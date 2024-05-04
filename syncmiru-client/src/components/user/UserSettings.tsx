@@ -7,6 +7,7 @@ import Appearance from "@components/user/Appearance.tsx";
 import {navigateToUserSettingsAppearance} from "src/utils/navigate.ts";
 import {useTranslation} from "react-i18next";
 import Devices from "@components/user/Devices.tsx";
+import {useMainContext} from "@hooks/useMainContext.ts";
 
 export default function UserSettings(): ReactElement {
     const [location, navigate] = useLocation()

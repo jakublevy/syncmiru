@@ -342,3 +342,16 @@ pub async fn delete_user_session(db: &PgPool, id: Id) -> Result<()> {
         .await?;
     Ok(())
 }
+
+pub async fn delete_user_session_by_hwid_uid(
+    db: &PgPool,
+    hwid: &str,
+    uid: Id
+) -> Result<()> {
+    sqlx::query("delete from session where hash = $1 and user_id = $2")
+        .bind(hwid)
+        .bind(uid)
+        .execute(db)
+        .await?;
+    Ok(())
+}

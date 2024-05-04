@@ -109,6 +109,8 @@
   "user-settings-nav-about": "About",
   "user-settings-appearance-title": "Appearance settings",
   "user-settings-appearance-theme": "Theme",
+  "user-settings-account-title": "Account settings",
+  "user-settings-account-sign-out-btn": "Sign out",
 
   "theme-changed-windows-warning": "The theme change will take effect after restarting the application on the Windows OS, due to technical reasons",
 

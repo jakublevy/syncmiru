@@ -8,11 +8,11 @@ import Loading from "@components/Loading.tsx";
 import {UserSession, UserSessionStrTime} from "src/models.ts";
 import Delete from "@components/svg/Delete.tsx";
 import DateTimeLocalPretty from "@components/widgets/DateTimeLocalPretty.tsx";
-import DeleteDialog from "@components/widgets/DeleteDialog.tsx";
 import {SOCKETIO_RESP_TIMEOUT_MS} from "src/utils/constants.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {useTranslation} from "react-i18next";
+import {ModalDelete} from "@components/widgets/Modal.tsx";
 
 export default function Devices(): ReactElement {
     const [_, navigate] = useLocation()
@@ -27,6 +27,7 @@ export default function Devices(): ReactElement {
     const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false)
     const [deletingSession, setDeletingSession] = useState<UserSession>({device_name: '', last_access_at: new Date(), os: '', id: 0})
     const socketioErrorTimeout = useRef<number>(0)
+    const [test, setTest] = useState<boolean>(true)
 
     useEffect(() => {
         if(socket !== undefined) {
@@ -135,7 +136,7 @@ export default function Devices(): ReactElement {
                         )
                     }))}
                 </div>}
-            <DeleteDialog
+            <ModalDelete
                 onDeleteConfirmed={sessionDeleteConfirmed}
                 content={
                     <div className="flex items-center mt-2">

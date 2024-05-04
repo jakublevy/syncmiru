@@ -109,6 +109,8 @@
   "user-settings-nav-about": "O programu",
   "user-settings-appearance-title": "Nastavení vzhledu",
   "user-settings-appearance-theme": "Motiv",
+  "user-settings-account-title": "Nastavení účtu",
+  "user-settings-account-sign-out-btn": "Odhlásit se",
 
   "theme-changed-windows-warning": "Na OS Windows se z technických důvodů změna motivu projeví až po restartu aplikace",
 
