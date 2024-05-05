@@ -111,6 +111,11 @@
   "user-settings-appearance-theme": "Motiv",
   "user-settings-account-title": "Nastavení účtu",
   "user-settings-account-sign-out-btn": "Odhlásit se",
+  "user-settings-account-username-label": "Uživatelské jméno",
+  "user-settings-account-avatar-label": "Avatar",
+  "user-settings-account-displayname-label": "Zobrazené jméno",
+  "user-settings-account-email-label": "Email",
+  "user-settings-account-delete-account-label": "Zrušit účet",
 
   "theme-changed-windows-warning": "Na OS Windows se z technických důvodů změna motivu projeví až po restartu aplikace",
 
@@ -120,7 +125,11 @@
   "sessions-inactive": "Další zařízení",
   "sessions-last-active": "naposledy aktivní:",
 
-  "delete-dialog-title": "Potvrzení smazání",
-  "delete-dialog-delete-btn": "Smazat",
-  "delete-dialog-keep-btn": "Ponechat"
+  "modal-delete-title": "Potvrzení smazání",
+  "modal-delete-delete-btn": "Smazat",
+  "modal-no-action-btn": "Ponechat",
+  "modal-change-action-btn": "Změnit",
+
+  "modal-change-displayname-title": "Změna zobrazeného jména",
+  "modal-change-displayname-help": "Do políčka vyplňte nové zobrazené jméno"
 }

@@ -21,7 +21,7 @@ export default function DeleteDialog({open, setOpen, content, onDeleteConfirmed}
                 <Dialog.Panel
                     className="mx-auto max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-darkbg dark:border-gray-700 p-6 min-w-[40rem]">
                     <div className="flex items-center">
-                        <Dialog.Title className="text-3xl">{t('delete-dialog-title')}</Dialog.Title>
+                        <Dialog.Title className="text-3xl">{t('modal-delete-title')}</Dialog.Title>
                         <div className="flex-1"></div>
                         <CloseBtn onClick={() => setOpen(false)}></CloseBtn>
                     </div>
@@ -29,8 +29,8 @@ export default function DeleteDialog({open, setOpen, content, onDeleteConfirmed}
                     {content}
                     <hr className="-ml-6 -mr-6 mt-4 mb-4"/>
                     <div className="flex gap-3">
-                        <BtnDanger onClick={() => {setOpen(false); onDeleteConfirmed()}}>{t('delete-dialog-delete-btn')}</BtnDanger>
-                        <BtnSecondary onClick={() => setOpen(false)}>{t('delete-dialog-keep-btn')}</BtnSecondary>
+                        <BtnDanger onClick={() => {setOpen(false); onDeleteConfirmed()}}>{t('modal-delete-delete-btn')}</BtnDanger>
+                        <BtnSecondary onClick={() => setOpen(false)}>{t('modal-no-action-btn')}</BtnSecondary>
                     </div>
                 </Dialog.Panel>
             </div>

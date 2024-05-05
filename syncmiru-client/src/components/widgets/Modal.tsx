@@ -61,7 +61,7 @@ export function ModalDelete(p: ModalDeleteProps
         <ModalWHeader
             open={open}
             setOpen={setOpen}
-            title={t('delete-dialog-title')}
+            title={t('modal-delete-title')}
             {...restParams}
             content={
                 <>
@@ -71,8 +71,8 @@ export function ModalDelete(p: ModalDeleteProps
                         <BtnDanger onClick={() => {
                             setOpen(false);
                             onDeleteConfirmed()
-                        }}>{t('delete-dialog-delete-btn')}</BtnDanger>
-                        <BtnSecondary onClick={() => setOpen(false)}>{t('delete-dialog-keep-btn')}</BtnSecondary>
+                        }}>{t('modal-delete-delete-btn')}</BtnDanger>
+                        <BtnSecondary onClick={() => setOpen(false)}>{t('modal-no-action-btn')}</BtnSecondary>
                     </div>
                 </>
 

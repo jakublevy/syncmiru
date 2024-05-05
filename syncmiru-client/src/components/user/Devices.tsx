@@ -1,5 +1,5 @@
 import {MouseEvent, ReactElement, useEffect, useRef, useState} from "react";
-import {Clickable, CloseBtn} from "@components/widgets/Button.tsx";
+import {Clickable, CloseBtn, DeleteBtn} from "@components/widgets/Button.tsx";
 import {navigateToMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
 import Pc from "@components/svg/Pc.tsx";
@@ -34,7 +34,7 @@ export default function Devices(): ReactElement {
             socket.on('active_session', onActiveSession)
             socket.on('inactive_sessions', onInactiveSessions)
             socket.on('delete_session_r', onDeleteSessionR)
-            socket.emit("get_user_sessions")
+            socket.emit("req_user_sessions")
         }
     }, [socket]);
 
@@ -129,9 +129,7 @@ export default function Devices(): ReactElement {
                                     <p>{t('sessions-last-active')} {<DateTimeLocalPretty datetime={session.last_access_at}/>}</p>
                                 </div>
                                 <div className="flex-1"></div>
-                                <Clickable id={session.id.toString()} className="p-2" onClick={onSessionDelete}>
-                                    <Delete className="w-8"/>
-                                </Clickable>
+                                <DeleteBtn id={session.id.toString()} className="p-2 w-10" onClick={onSessionDelete}/>
                             </div>
                         )
                     }))}

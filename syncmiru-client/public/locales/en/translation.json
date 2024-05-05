@@ -111,6 +111,11 @@
   "user-settings-appearance-theme": "Theme",
   "user-settings-account-title": "Account settings",
   "user-settings-account-sign-out-btn": "Sign out",
+  "user-settings-account-username-label": "Username",
+  "user-settings-account-avatar-label": "Avatar",
+  "user-settings-account-displayname-label": "Display name",
+  "user-settings-account-email-label": "Email",
+  "user-settings-account-delete-account-label": "Delete your account",
 
   "theme-changed-windows-warning": "The theme change will take effect after restarting the application on the Windows OS, due to technical reasons",
 
@@ -120,7 +125,11 @@
   "sessions-inactive": "Other devices",
   "sessions-last-active": "last active:",
 
-  "delete-dialog-title": "Confirm deletion",
-  "delete-dialog-delete-btn": "Delete",
-  "delete-dialog-keep-btn": "Keep"
+  "modal-delete-title": "Confirm deletion",
+  "modal-delete-delete-btn": "Delete",
+  "modal-no-action-btn": "Keep",
+  "modal-change-action-btn": "Change",
+
+  "modal-change-displayname-title": "Display name change",
+  "modal-change-displayname-help": "Fill in the new display name in the field"
 }

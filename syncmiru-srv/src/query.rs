@@ -355,3 +355,27 @@ pub async fn delete_user_session_by_hwid_uid(
         .await?;
     Ok(())
 }
+
+pub async fn get_username_by_uid(db: &PgPool, uid: Id) -> Result<String> {
+    let username: (String,) = sqlx::query_as("select username from users where id = $1 limit 1")
+        .bind(uid)
+        .fetch_one(db)
+        .await?;
+    Ok(username.0)
+}
+
+pub async fn get_displayname_by_uid(db: &PgPool, uid: Id) -> Result<String> {
+    let displayname: (String,) = sqlx::query_as("select display_name from users where id = $1 limit 1")
+        .bind(uid)
+        .fetch_one(db)
+        .await?;
+    Ok(displayname.0)
+}
+
+pub async fn get_email_by_uid(db: &PgPool, uid: Id) -> Result<String> {
+    let email: (String,) = sqlx::query_as("select email from users where id = $1 limit 1")
+        .bind(uid)
+        .fetch_one(db)
+        .await?;
+    Ok(email.0)
+}

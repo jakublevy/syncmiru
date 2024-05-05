@@ -8,9 +8,12 @@ use crate::srvstate::SrvState;
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on_disconnect(disconnect);
-    s.on("get_user_sessions", get_user_sessions);
+    s.on("req_user_sessions", get_user_sessions);
     s.on("delete_session", delete_session);
     s.on("sign_out", sign_out);
+    s.on("req_my_username", req_my_username);
+    s.on("req_my_displayname", req_my_displayname);
+    s.on("req_my_email", req_my_email);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_verified_users(&state.db)
@@ -90,6 +93,30 @@ pub async fn sign_out(State(state): State<Arc<SrvState>>, s: SocketRef) {
         .await
         .expect("db error");
     s.disconnect().expect("disconnect error")
+}
+
+pub async fn req_my_username(State(state): State<Arc<SrvState>>, s: SocketRef) {
+    let uid = state.socket2uid(&s).await;
+    let username = query::get_username_by_uid(&state.db, uid)
+        .await
+        .expect("db error");
+    s.emit("my_username", username).ok();
+}
+
+pub async fn req_my_displayname(State(state): State<Arc<SrvState>>, s: SocketRef) {
+    let uid = state.socket2uid(&s).await;
+    let displayname = query::get_displayname_by_uid(&state.db, uid)
+        .await
+        .expect("db error");
+    s.emit("my_displayname", displayname).ok();
+}
+
+pub async fn req_my_email(State(state): State<Arc<SrvState>>, s: SocketRef) {
+    let uid = state.socket2uid(&s).await;
+    let email = query::get_email_by_uid(&state.db, uid)
+        .await
+        .expect("db error");
+    s.emit("my_email", email).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
