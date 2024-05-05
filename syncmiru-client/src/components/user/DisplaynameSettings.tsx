@@ -11,7 +11,7 @@ import useFormValidate from "@hooks/useFormValidate.ts";
 import {useForm} from "react-hook-form";
 import {joiResolver} from "@hookform/resolvers/joi";
 
-export default function DisplaynameSettingsTableRow(p: Props): ReactElement {
+export default function DisplaynameSettings(p: Props): ReactElement {
     const {t} = useTranslation()
     const [open, setOpen] = useState<boolean>(false)
     const {socket} = useMainContext()
@@ -33,6 +33,7 @@ export default function DisplaynameSettingsTableRow(p: Props): ReactElement {
     const {
         register,
         handleSubmit,
+        reset,
         formState: {errors}
     } = useForm<FormFields>({resolver: joiResolver(formSchema)});
 
@@ -50,17 +51,22 @@ export default function DisplaynameSettingsTableRow(p: Props): ReactElement {
 
     function changeDisplayname(data: FormFields) {
         console.log(JSON.stringify(data))
+        // TODO: finish submit
+    }
+
+    function editClicked() {
+        reset({displayname: displayname})
+        setOpen(true)
     }
 
     return (
         <>
-            <tr>
-                <td>{t('user-settings-account-displayname-label')}</td>
-                <td className="font-bold">{displayname}</td>
-                <td className="text-right">
-                    <EditBtn className="w-10" onClick={() => setOpen(true)}/>
-                </td>
-            </tr>
+            <div className="flex items-center">
+                <p className="w-56">{t('user-settings-account-displayname-label')}</p>
+                <p className="font-bold">{displayname}</p>
+                <div className="flex-1"></div>
+                <EditBtn className="w-10" onClick={editClicked}/>
+            </div>
             <ModalWHeader
                 title={t('modal-change-displayname-title')}
                 open={open}
@@ -77,12 +83,14 @@ export default function DisplaynameSettingsTableRow(p: Props): ReactElement {
                         </div>
                         <DisplaynameInput
                             id="displayname"
-                            className="mb-4"
                             {...register('displayname')}
                         />
-                        <hr className="-ml-6 -mr-6 mt-6 mb-4"/>
+                        {errors.displayname
+                            ? <p className="text-danger font-semibold">{errors.displayname.message}</p>
+                            : <p className="text-danger invisible font-semibold">L</p>}
+                        <hr className="-ml-6 -mr-6 mt-4 mb-4"/>
                         <div className="flex gap-3">
-                            <BtnPrimary type="submit" onClick={() => setOpen(false)}>{t('modal-change-action-btn')}</BtnPrimary>
+                            <BtnPrimary type="submit">{t('modal-change-action-btn')}</BtnPrimary>
                             <BtnSecondary onClick={() => setOpen(false)}>{t('modal-no-action-btn')}</BtnSecondary>
                         </div>
                     </form>

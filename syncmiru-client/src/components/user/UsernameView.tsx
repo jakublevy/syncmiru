@@ -2,7 +2,7 @@ import {ReactElement, useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {useMainContext} from "@hooks/useMainContext.ts";
 
-export default function UsernameTableRow(p: Props): ReactElement {
+export default function UsernameView(p: Props): ReactElement {
     const {t} = useTranslation()
     const {socket} = useMainContext()
     const [username, setUsername] = useState<string>("")
@@ -20,10 +20,10 @@ export default function UsernameTableRow(p: Props): ReactElement {
     }
 
     return (
-        <tr>
-            <td>{t('user-settings-account-username-label')}</td>
-            <td className="font-bold">{username}</td>
-        </tr>
+        <div className="flex items-center">
+            <p className="w-56">{t('user-settings-account-username-label')}</p>
+            <p className="font-bold">{username}</p>
+        </div>
     )
 }
 

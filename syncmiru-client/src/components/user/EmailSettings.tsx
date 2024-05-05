@@ -3,7 +3,7 @@ import {EditBtn} from "@components/widgets/Button.tsx";
 import {useTranslation} from "react-i18next";
 import {useMainContext} from "@hooks/useMainContext.ts";
 
-export default function EmailSettingsTableRow(p: Props): ReactElement {
+export default function EmailSettings(p: Props): ReactElement {
     const {t} = useTranslation()
     const {socket} = useMainContext()
     const [email, setEmail] = useState<string>("")
@@ -21,13 +21,12 @@ export default function EmailSettingsTableRow(p: Props): ReactElement {
     }
 
     return (
-        <tr>
-            <td>{t('user-settings-account-email-label')}</td>
-            <td className="font-bold">{email}</td>
-            <td className="text-right">
-                <EditBtn className="w-10"/>
-            </td>
-        </tr>
+        <div className="flex items-center">
+            <p className="w-56">{t('user-settings-account-email-label')}</p>
+            <p className="font-bold">{email}</p>
+            <div className="flex-1"></div>
+            <EditBtn className="w-10"/>
+        </div>
     )
 }
 

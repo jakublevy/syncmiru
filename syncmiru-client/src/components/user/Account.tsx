@@ -5,11 +5,11 @@ import {navigateToLoginFormMain, navigateToMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
 import useClearJwt from "@hooks/useClearJwt.ts";
 import {useMainContext} from "@hooks/useMainContext.ts";
-import AvatarSettingsTableRow from "@components/user/AvatarSettingsTableRow.tsx";
-import UsernameTableRow from "@components/user/UsernameTableRow.tsx";
-import DisplaynameSettingsTableRow from "@components/user/DisplaynameSettingsTableRow.tsx";
-import EmailSettingsTableRow from "@components/user/EmailSettingsTableRow.tsx";
-import DeleteAccountTableRow from "@components/user/DeleteAccountTableRow.tsx";
+import AvatarSettings from "@components/user/AvatarSettings.tsx";
+import UsernameView from "@components/user/UsernameView.tsx";
+import DisplaynameSettings from "@components/user/DisplaynameSettings.tsx";
+import EmailSettings from "@components/user/EmailSettings.tsx";
+import DeleteAccount from "@components/user/DeleteAccount.tsx";
 import Loading from "@components/Loading.tsx";
 
 export default function Account(): ReactElement {
@@ -47,24 +47,20 @@ export default function Account(): ReactElement {
                 <div className="flex-1"></div>
                 <CloseBtn onClick={() => navigateToMain(navigate)}></CloseBtn>
             </div>
-            <div className="ml-8 mr-8">
+            <div className="ml-8 mr-8 mb-8">
                 <BtnSecondary onClick={signOutClicked}>{t('user-settings-account-sign-out-btn')}</BtnSecondary>
             </div>
-            <table className="ml-8 mr-8 border-separate border-spacing-y-6">
-                <tbody>
-                <UsernameTableRow onUsernameLoaded={() => setUsernameLoading(false)}/>
-                <AvatarSettingsTableRow/>
-                <DisplaynameSettingsTableRow onDisplaynameLoaded={() => setDisplaynameLoading(false)}/>
-                <EmailSettingsTableRow onEmailLoaded={() => setEmailLoading(false)}/>
-                </tbody>
-            </table>
+            <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
+                <UsernameView onUsernameLoaded={() => setUsernameLoading(false)}/>
+                <AvatarSettings/>
+                <DisplaynameSettings onDisplaynameLoaded={() => setDisplaynameLoading(false)}/>
+                <EmailSettings onEmailLoaded={() => setEmailLoading(false)}/>
+            </div>
 
             <hr/>
-            <table className="ml-8 mr-8 mt-8">
-                <tbody>
-                <DeleteAccountTableRow/>
-                </tbody>
-            </table>
+            <div className="ml-8 mr-8 mt-8">
+                <DeleteAccount/>
+            </div>
         </div>
         </>
     )

@@ -120,16 +120,16 @@ export default function Devices(): ReactElement {
                 <h2 className="text-xl font-semibold">{t('sessions-inactive')}</h2>
                     {inactiveSessions
                         .sort((x,y) => y.last_access_at.getTime() - x.last_access_at.getTime())
-                        .map((session => {
+                        .map(((session, i) => {
                         return (
-                            <div className="flex items-center mt-2">
-                                <Pc className="w-8 mr-2"/>
-                                <div className="flex flex-col">
-                                    <p>{session.device_name}・{session.os}</p>
-                                    <p>{t('sessions-last-active')} {<DateTimeLocalPretty datetime={session.last_access_at}/>}</p>
+                            <div className="flex items-center mt-2" key={i}>
+                                <Pc className="w-8 mr-2" key={`${i}_pc`}/>
+                                <div className="flex flex-col" key={`${i}_flex`}>
+                                    <p key={`${i}_desc`}>{session.device_name}・{session.os}</p>
+                                    <p key={`${i}_last_access_at`}>{t('sessions-last-active')} {<DateTimeLocalPretty datetime={session.last_access_at}/>}</p>
                                 </div>
-                                <div className="flex-1"></div>
-                                <DeleteBtn id={session.id.toString()} className="p-2 w-10" onClick={onSessionDelete}/>
+                                <div className="flex-1" key={`${i}_spacer`}></div>
+                                <DeleteBtn id={session.id.toString()} className="p-2 w-10" key={`${i}_delete`} onClick={onSessionDelete}/>
                             </div>
                         )
                     }))}
