@@ -5,11 +5,11 @@ import {useMainContext} from "@hooks/useMainContext.ts";
 import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
-import {EmailInput, EmailInputSrvValidate} from "@components/widgets/Input.tsx";
+import {EmailInputSrvValidate} from "@components/widgets/Input.tsx";
 import Joi from "joi";
 import {useForm} from "react-hook-form";
 import {joiResolver} from "@hookform/resolvers/joi";
-import {emailValidate} from "../../form/validators.ts";
+import {emailValidate} from "src/form/validators.ts";
 
 export default function EmailSettings(p: Props): ReactElement {
     const {t} = useTranslation()
@@ -42,15 +42,12 @@ export default function EmailSettings(p: Props): ReactElement {
 
     useEffect(() => {
         if (socket !== undefined) {
-            socket.on('my_email', onMyEmail)
-            socket.emit("req_my_email")
+            socket.emitWithAck("get_my_email")
+                .then((email) => setEmail(email))
+                .catch(() => setEmail("N/A"))
+                .finally(() => p.onEmailLoaded())
         }
     }, [socket]);
-
-    function onMyEmail(email: string) {
-        setEmail(email)
-        p.onEmailLoaded()
-    }
 
     function changeEmail(data: FormFields) {
         if(!emailUnique)

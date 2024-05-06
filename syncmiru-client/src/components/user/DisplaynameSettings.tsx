@@ -41,15 +41,12 @@ export default function DisplaynameSettings(p: Props): ReactElement {
 
     useEffect(() => {
         if (socket !== undefined) {
-            socket.on('my_displayname', onMyDisplayname)
-            socket.emit("req_my_displayname")
+            socket.emitWithAck("get_my_displayname")
+                .then((displayname) => setDisplayname(displayname))
+                .catch(() => setDisplayname("N/A"))
+                .finally(() => p.onDisplaynameLoaded())
         }
     }, [socket]);
-
-    function onMyDisplayname(displayname: string) {
-        setDisplayname(displayname)
-        p.onDisplaynameLoaded()
-    }
 
     function changeDisplayname(data: FormFields) {
         p.onDisplaynameLoading()

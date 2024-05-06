@@ -9,15 +9,12 @@ export default function UsernameView(p: Props): ReactElement {
 
     useEffect(() => {
         if(socket !== undefined) {
-            socket.on('my_username', onMyUsername)
-            socket.emit("req_my_username")
+            socket.emitWithAck("get_my_username")
+                .then((username) => setUsername(username))
+                .catch(() => setUsername("N/A"))
+                .finally(() => p.onUsernameLoaded())
         }
     }, [socket]);
-
-    function onMyUsername(username: string) {
-        setUsername(username)
-        p.onUsernameLoaded()
-    }
 
     return (
         <div className="flex items-center">

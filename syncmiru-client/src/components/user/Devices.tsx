@@ -28,7 +28,7 @@ export default function Devices(): ReactElement {
         if(socket !== undefined) {
             socket.on('active_session', onActiveSession)
             socket.on('inactive_sessions', onInactiveSessions)
-            socket.emit("req_user_sessions")
+            socket.emit("get_user_sessions")
         }
     }, [socket]);
 
