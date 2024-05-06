@@ -132,5 +132,9 @@
 
   "modal-change-displayname-title": "Změna zobrazeného jména",
   "modal-change-displayname-help": "Do políčka vyplňte nové zobrazené jméno",
-  "displayname-change-error": "Změna zobrazeného jména selhala"
+  "displayname-change-error": "Změna zobrazeného jména selhala",
+  "modal-change-email-title": "Změna emailu",
+  "modal-change-email-help": "Do políčka vyplňte nový email",
+  "displayname-currently-using": "Toto zobrazené jméno aktuálně používáte",
+  "email-currently-using": "Tento email aktuálně používáte"
 }

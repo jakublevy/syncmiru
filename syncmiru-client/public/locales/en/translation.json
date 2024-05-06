@@ -132,5 +132,9 @@
 
   "modal-change-displayname-title": "Display name change",
   "modal-change-displayname-help": "Fill in the new display name in the field",
-  "displayname-change-error": "Display name change failed"
+  "displayname-change-error": "Display name change failed",
+  "modal-change-email-title": "Email change",
+  "modal-change-email-help": "Fill in the new email in the field",
+  "displayname-currently-using": "You are currently using this display name",
+  "email-currently-using": "You are currently using this email"
 }

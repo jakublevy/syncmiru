@@ -11,6 +11,7 @@ import DisplaynameSettings from "@components/user/DisplaynameSettings.tsx";
 import EmailSettings from "@components/user/EmailSettings.tsx";
 import DeleteAccount from "@components/user/DeleteAccount.tsx";
 import Loading from "@components/Loading.tsx";
+import PasswordSettings from "@components/user/PasswordSettings.tsx";
 
 export default function Account(): ReactElement {
     const [_, navigate] = useLocation()
@@ -48,7 +49,10 @@ export default function Account(): ReactElement {
                 <CloseBtn onClick={() => navigateToMain(navigate)}></CloseBtn>
             </div>
             <div className="ml-8 mr-8 mb-8">
-                <BtnSecondary onClick={signOutClicked}>{t('user-settings-account-sign-out-btn')}</BtnSecondary>
+                <div className="flex gap-x-4">
+                    <BtnSecondary onClick={signOutClicked}>{t('user-settings-account-sign-out-btn')}</BtnSecondary>
+                    <PasswordSettings/>
+                </div>
             </div>
             <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
                 <UsernameView
@@ -61,6 +65,7 @@ export default function Account(): ReactElement {
                 />
                 <EmailSettings
                     onEmailLoaded={() => setEmailLoading(false)}
+                    onEmailLoading={() => setEmailLoading(true)}
                 />
             </div>
 

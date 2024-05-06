@@ -1,7 +1,7 @@
 import Joi from "joi";
 import {TFunction} from "i18next";
-import {emailValidate, usernameValidate} from "src/form/validators.ts";
-import {useCPasswordSchema, useDisplaynameSchema, usePasswordSchema} from "@hooks/fieldSchema.ts";
+import {displaynameValidate, emailValidate, usernameValidate} from "src/form/validators.ts";
+import {useCPasswordSchema, usePasswordSchema} from "@hooks/fieldSchema.ts";
 
 export function useRegFormSchema(regPubAllowed: boolean, t: TFunction<"translation", undefined>): Joi.ObjectSchema<RegFormFields> {
     if(regPubAllowed) {
@@ -45,7 +45,15 @@ function commonSchema(t: TFunction<"translation", undefined>) {
                     return h.message({custom: t('username-invalid-format')})
                 return v
             }),
-        displayname: useDisplaynameSchema(t),
+        displayname: Joi
+            .string()
+            .required()
+            .messages({"string.empty": t('required-field-error')})
+            .custom((v: string, h) => {
+                if (!displaynameValidate(v))
+                    return h.message({custom: t('displayname-invalid-format')})
+                return v
+            }),
         cpassword: useCPasswordSchema(t),
 
         cemail: Joi
