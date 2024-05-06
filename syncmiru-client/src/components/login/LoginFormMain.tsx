@@ -12,7 +12,7 @@ import Card from "@components/widgets/Card.tsx";
 import {useServiceStatusWatch} from "@hooks/useServiceStatus.ts";
 import {useHistoryState} from "wouter/use-browser-location";
 import {LoginFormHistoryState} from "@models/historyState.ts";
-import useFormValidate from "@hooks/useFormValidate.ts";
+import {emailValidate} from "src/form/validators.ts";
 import {LoginForm} from "@models/login.ts";
 import Loading from "@components/Loading.tsx";
 import {StatusAlertService} from "react-status-alert";
@@ -36,8 +36,6 @@ export default function LoginFormMain(): ReactElement {
         isLoading: homeSrvServiceIsLoading,
         error: homeSrvServiceError
     } = useServiceStatusWatch()
-
-    const {emailValidate} = useFormValidate()
 
     const [formData, setFormData]
         = useState<FormData>({email: '', password: ''})

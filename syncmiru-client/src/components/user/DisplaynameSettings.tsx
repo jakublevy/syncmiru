@@ -7,28 +7,17 @@ import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
 import {DisplaynameInput} from "@components/widgets/Input.tsx";
 import Joi from "joi";
-import useFormValidate from "@hooks/useFormValidate.ts";
 import {useForm} from "react-hook-form";
 import {joiResolver} from "@hookform/resolvers/joi";
+import {useDisplaynameSchema} from "@hooks/fieldSchema.ts";
 
 export default function DisplaynameSettings(p: Props): ReactElement {
     const {t} = useTranslation()
     const [open, setOpen] = useState<boolean>(false)
     const {socket} = useMainContext()
-    const {displaynameValidate} = useFormValidate()
     const [displayname, setDisplayname] = useState<string>("")
 
-    const formSchema = Joi.object({
-        displayname: Joi
-            .string()
-            .required()
-            .messages({"string.empty": t('required-field-error')})
-            .custom((v: string, h) => {
-                if (!displaynameValidate(v))
-                    return h.message({custom: t('displayname-invalid-format')})
-                return v
-            }),
-    })
+    const formSchema = Joi.object({displayname: useDisplaynameSchema(t)})
 
     const {
         register,

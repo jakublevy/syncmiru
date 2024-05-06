@@ -1,0 +1,33 @@
+import {TFunction} from "i18next";
+import Joi from "joi";
+import {displaynameValidate, passwordValidate} from "src/form/validators.ts";
+
+export const useDisplaynameSchema = (t: TFunction<"translation", undefined>) =>
+    Joi
+        .string()
+        .required()
+        .messages({"string.empty": t('required-field-error')})
+        .custom((v: string, h) => {
+            if (!displaynameValidate(v))
+                return h.message({custom: t('displayname-invalid-format')})
+            return v
+        })
+
+export const usePasswordSchema = (t: TFunction<"translation", undefined>) =>
+    Joi
+        .string()
+        .required()
+        .messages({"string.empty": t('required-field-error')})
+        .custom((v: string, h) => {
+            if(!passwordValidate(v))
+                return h.message({custom: t('password-invalid-format')})
+            return v
+        })
+
+export const useCPasswordSchema = (t: TFunction<"translation", undefined>) =>
+    Joi
+        .string()
+        .valid(Joi.ref('password'))
+        .required()
+        .empty('')
+        .messages({"any.only": t('password-not-match'), "any.required": t('required-field-error')})

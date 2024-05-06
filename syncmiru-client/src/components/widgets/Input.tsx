@@ -4,7 +4,7 @@ import React, {
     KeyboardEvent,
     FocusEvent,
 } from "react";
-import useFormValidate from "@hooks/useFormValidate.ts";
+import {emailValidate, usernameValidate, tknValidate} from "src/form/validators.ts";
 import useSWR from "swr";
 import {invoke} from "@tauri-apps/api/core";
 import {withSrvValidate} from "@components/hoc/withSrvValidate.tsx";
@@ -77,7 +77,7 @@ type UsernameProps = Omit<InputProps, "type" | "maxLength" | "pattern">
 
 export const EmailInputSrvValidate = withSrvValidate(EmailInput,
     {
-        validate: useFormValidate().emailValidate,
+        validate: emailValidate,
         swr:
             (value: string, validate: (v: string) => boolean) => {
                 return useSWR(["get_email_unique", value], ([cmd, value]) => {
@@ -98,7 +98,7 @@ export const EmailInputSrvValidate = withSrvValidate(EmailInput,
 
 export const UsernameInputSrvValidate = withSrvValidate(UsernameInput,
     {
-        validate: useFormValidate().usernameValidate,
+        validate: usernameValidate,
         swr:
             (value: string, validate: (v: string) => boolean) => {
                 return useSWR(["get_username_unique", value], ([cmd, value]) => {
@@ -119,7 +119,7 @@ export const UsernameInputSrvValidate = withSrvValidate(UsernameInput,
 
 export const ForgottenPasswordTknSrvValidate = withSrvValidate(Input,
     {
-        validate: useFormValidate().tknValidate,
+        validate: tknValidate,
         swr: (value: string, validate: (v: string) => boolean, validationArgs: Record<string, unknown> | undefined) => {
             if (validationArgs !== undefined) {
                 return useSWR(["get_forgotten_password_tkn_valid", value], ([cmd, value]) => {

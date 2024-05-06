@@ -1,9 +1,7 @@
 import Joi from "joi";
-import useFormValidate from "@hooks/useFormValidate.ts";
 import {TFunction} from "i18next";
-
-const {passwordValidate, usernameValidate, displaynameValidate, emailValidate}
-    = useFormValidate()
+import {emailValidate, usernameValidate} from "src/form/validators.ts";
+import {useCPasswordSchema, useDisplaynameSchema, usePasswordSchema} from "@hooks/fieldSchema.ts";
 
 export function useRegFormSchema(regPubAllowed: boolean, t: TFunction<"translation", undefined>): Joi.ObjectSchema<RegFormFields> {
     if(regPubAllowed) {
@@ -37,15 +35,7 @@ function commonSchema(t: TFunction<"translation", undefined>) {
                     return h.message({custom: t('email-invalid-format')})
                 return v
             }),
-        password: Joi
-            .string()
-            .required()
-            .messages({"string.empty": t('required-field-error')})
-            .custom((v: string, h) => {
-                if(!passwordValidate(v))
-                    return h.message({custom: t('password-invalid-format')})
-                return v
-            }),
+        password: usePasswordSchema(t),
         username: Joi
             .string()
             .required()
@@ -55,21 +45,8 @@ function commonSchema(t: TFunction<"translation", undefined>) {
                     return h.message({custom: t('username-invalid-format')})
                 return v
             }),
-        displayname: Joi
-            .string()
-            .required()
-            .messages({"string.empty": t('required-field-error')})
-            .custom((v: string, h) => {
-                if (!displaynameValidate(v))
-                    return h.message({custom: t('displayname-invalid-format')})
-                return v
-            }),
-        cpassword: Joi
-            .string()
-            .valid(Joi.ref('password'))
-            .required()
-            .empty('')
-            .messages({"any.only": t('password-not-match'), "any.required": t('required-field-error')}),
+        displayname: useDisplaynameSchema(t),
+        cpassword: useCPasswordSchema(t),
 
         cemail: Joi
             .string()
