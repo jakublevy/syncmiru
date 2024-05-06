@@ -1,16 +1,13 @@
-import {MouseEvent, ReactElement, useEffect, useRef, useState} from "react";
-import {Clickable, CloseBtn, DeleteBtn} from "@components/widgets/Button.tsx";
+import {MouseEvent, ReactElement, useEffect, useState} from "react";
+import {CloseBtn, DeleteBtn} from "@components/widgets/Button.tsx";
 import {navigateToMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
 import Pc from "@components/svg/Pc.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
-import {UserSession, UserSessionStrTime} from "src/models.ts";
-import Delete from "@components/svg/Delete.tsx";
+import {UserSession, UserSessionStrTime} from "src/models/user.ts";
 import DateTimeLocalPretty from "@components/widgets/DateTimeLocalPretty.tsx";
-import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
-import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {useTranslation} from "react-i18next";
 import {ModalDelete} from "@components/widgets/Modal.tsx";
 
@@ -26,14 +23,11 @@ export default function Devices(): ReactElement {
     const [inactiveSessions, setInactiveSessions] = useState<Array<UserSession>>([])
     const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false)
     const [deletingSession, setDeletingSession] = useState<UserSession>({device_name: '', last_access_at: new Date(), os: '', id: 0})
-    const socketioErrorTimeout = useRef<number>(0)
-    const [test, setTest] = useState<boolean>(true)
 
     useEffect(() => {
         if(socket !== undefined) {
             socket.on('active_session', onActiveSession)
             socket.on('inactive_sessions', onInactiveSessions)
-            socket.on('delete_session_r', onDeleteSessionR)
             socket.emit("req_user_sessions")
         }
     }, [socket]);
@@ -72,25 +66,15 @@ export default function Devices(): ReactElement {
 
     function sessionDeleteConfirmed() {
         setLoading(true)
-        socket!.emit("delete_session", {id: deletingSession.id})
-        socketioErrorTimeout.current = setTimeout(socketioRespTimeoutError, SOCKETIO_ACK_TIMEOUT_MS)
-    }
-
-    function socketioRespTimeoutError() {
-        clearTimeout(socketioErrorTimeout.current)
-        setLoading(false)
-        showPersistentErrorAlert(t('An error occurred while deleting the device'))
-    }
-
-    function onDeleteSessionR(payload: SocketIoAck) {
-        clearTimeout(socketioErrorTimeout.current)
-        setLoading(false)
-        if(payload.resp === SocketIoAckType.Err) {
-            showPersistentErrorAlert(t('An error occurred while deleting the device'))
-            return
-        }
-        const filtered = inactiveSessions.filter(x => x.id !== deletingSession.id)
-        setInactiveSessions(filtered)
+        socket!.emitWithAck("delete_session", {id: deletingSession.id})
+            .then(() => {
+                const filtered = inactiveSessions.filter(x => x.id !== deletingSession.id)
+                setInactiveSessions(filtered)
+            })
+            .catch(() => {
+                showPersistentErrorAlert(t('sessions-delete-error'))
+            })
+            .finally(() => setLoading(false))
     }
 
     if (loading)

@@ -19,9 +19,9 @@ import UserSettings from "@components/user/UserSettings.tsx";
 import useClearJwt from "@hooks/useClearJwt.ts";
 import {LoginTkns} from "@models/login.ts";
 import {useHwidHash} from "@hooks/useHwidHash.ts";
-import {User, UserId, UserValue} from "src/models.ts";
+import {DisplaynameChange, User, UserId, UserValue} from "src/models/user.ts";
 import {showPersistentErrorAlert, showPersistentWarningAlert} from "src/utils/alert.ts";
-import {SOCKETIO_ACK_TIMEOUT_MS} from "../utils/constants.ts";
+import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -48,7 +48,8 @@ export default function Main(): ReactElement {
         s.on('connect', ioConn)
         s.on('disconnect', ioDisconnect)
         s.on('users', onUsers)
-        s.on('new-login', onNewLogin)
+        s.on('new_login', onNewLogin)
+        s.on('displayname_change', onDisplaynameChange)
         setSocket(s)
         return () => {
             s.disconnect()
@@ -92,6 +93,17 @@ export default function Main(): ReactElement {
     function onNewLogin() {
         showPersistentWarningAlert(t('login-on-another-device'))
         navigateToLoginFormMain(navigate)
+    }
+
+    function onDisplaynameChange(payload: DisplaynameChange) {
+        let user = users.get(payload.uid)
+        if(user === undefined)
+            return;
+
+        user.displayname = payload.displayname;
+        const m = new Map<UserId, UserValue>();
+        m.set(payload.uid, user);
+        setUsers((p) => new Map<UserId, UserValue>([...p, ...m]))
     }
 
     function shouldRender() {

@@ -33,22 +33,8 @@ pub struct Displayname {
     pub displayname: String,
 }
 
-#[derive(Debug, Copy, Clone, Serialize)]
-pub enum SocketIoAckType {
-    Ok,
-    Err
-}
-
-#[derive(Debug, Copy, Clone, Serialize)]
-pub struct SocketIoAck {
-    pub resp: SocketIoAckType
-}
-
-impl SocketIoAck {
-    pub fn ok() -> Self {
-        Self { resp: SocketIoAckType::Ok }
-    }
-    pub fn err() -> Self {
-        Self { resp: SocketIoAckType::Err }
-    }
+#[derive(Debug, Clone, Serialize)]
+pub struct DisplaynameChange {
+    pub uid: Id,
+    pub displayname: String
 }

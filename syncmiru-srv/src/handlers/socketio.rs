@@ -2,7 +2,7 @@ use std::sync::Arc;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::query::Id;
-use crate::models::socketio::{IdStruct, SocketIoAckType, SocketIoAck, Displayname};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange};
 use crate::query;
 use crate::srvstate::SrvState;
 
@@ -60,10 +60,10 @@ pub async fn get_user_sessions(State(state): State<Arc<SrvState>>, s: SocketRef)
 pub async fn delete_session(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
+    ack: AckSender,
     Data(payload): Data<IdStruct>
 ) {
     if let Err(_) = payload.validate() {
-        s.emit("delete_session_r", SocketIoAck { resp: SocketIoAckType::Err }).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -71,20 +71,18 @@ pub async fn delete_session(
         .await
         .expect("db error");
     if !is_session_of_user {
-        s.emit("delete_session_r", SocketIoAck { resp: SocketIoAckType::Err }).ok();
         return;
     }
     let active_session = query::get_active_user_session(&state.db, uid, &state.socket2hwid_hash(&s).await)
         .await
         .expect("db error");
     if active_session.id == payload.id {
-        s.emit("delete_session_r", SocketIoAck { resp: SocketIoAckType::Err }).ok();
         return;
     }
     query::delete_user_session(&state.db, payload.id)
         .await
         .expect("db error");
-    s.emit("delete_session_r", SocketIoAck { resp: SocketIoAckType::Ok }).ok();
+    ack.send({}).ok();
 }
 
 pub async fn sign_out(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -129,7 +127,19 @@ pub async fn set_my_displayname(
     if let Err(_) = payload.validate() {
         return;
     }
-    
+    let uid = state.socket2uid(&s).await;
+    query::update_displayname_by_uid(&state.db, uid, &payload.displayname)
+        .await
+        .expect("db error");
+    s
+        .broadcast()
+        .emit("displayname_change", DisplaynameChange{uid, displayname: payload.displayname.clone()})
+        .ok();
+
+    s
+        .emit("displayname_change", DisplaynameChange{uid, displayname: payload.displayname})
+        .ok();
+
     ack.send({}).ok();
 }
 

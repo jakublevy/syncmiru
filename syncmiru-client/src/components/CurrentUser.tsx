@@ -5,7 +5,7 @@ import Settings from "@components/svg/Settings.tsx";
 import Loading from "@components/Loading.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {useLocation} from "wouter";
-import {UserId, UserValue} from "src/models.ts";
+import {UserId, UserValue} from "src/models/user.ts";
 
 export default function CurrentUser(): ReactElement {
     const [_, navigate] = useLocation()

@@ -22,3 +22,8 @@ export interface UserSession {
     os: string,
     last_access_at: Date
 }
+
+export interface DisplaynameChange {
+    uid: number,
+    displayname: string
+}

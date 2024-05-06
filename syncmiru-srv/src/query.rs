@@ -379,3 +379,12 @@ pub async fn get_email_by_uid(db: &PgPool, uid: Id) -> Result<String> {
         .await?;
     Ok(email.0)
 }
+
+pub async fn update_displayname_by_uid(db: &PgPool, uid: Id, displayname: &str) -> Result<()> {
+    sqlx::query("update users set display_name = $1 where id = $2")
+        .bind(displayname)
+        .bind(uid)
+        .execute(db)
+        .await?;
+    Ok(())
+}

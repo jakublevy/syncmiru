@@ -10,8 +10,7 @@ import Joi from "joi";
 import {useForm} from "react-hook-form";
 import {joiResolver} from "@hookform/resolvers/joi";
 import {useDisplaynameSchema} from "@hooks/fieldSchema.ts";
-import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
-import {showPersistentErrorAlert} from "../../utils/alert.ts";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
 
 export default function DisplaynameSettings(p: Props): ReactElement {
     const {t} = useTranslation()
