@@ -1,8 +1,8 @@
 use std::sync::Arc;
-use socketioxide::extract::{Data, SocketRef, State};
+use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::query::Id;
-use crate::models::socketio::{IdStruct, SocketIoAckType, SocketIoAck};
+use crate::models::socketio::{IdStruct, SocketIoAckType, SocketIoAck, Displayname};
 use crate::query;
 use crate::srvstate::SrvState;
 
@@ -14,6 +14,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("req_my_username", req_my_username);
     s.on("req_my_displayname", req_my_displayname);
     s.on("req_my_email", req_my_email);
+    s.on("set_my_displayname", set_my_displayname);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_verified_users(&state.db)
@@ -117,6 +118,19 @@ pub async fn req_my_email(State(state): State<Arc<SrvState>>, s: SocketRef) {
         .await
         .expect("db error");
     s.emit("my_email", email).ok();
+}
+
+pub async fn set_my_displayname(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<Displayname>
+) {
+    if let Err(_) = payload.validate() {
+        return;
+    }
+    
+    ack.send({}).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {

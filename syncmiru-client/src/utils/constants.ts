@@ -1,1 +1,1 @@
-export const SOCKETIO_RESP_TIMEOUT_MS = 5000
+export const SOCKETIO_ACK_TIMEOUT_MS = 5000

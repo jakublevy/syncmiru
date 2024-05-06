@@ -22,6 +22,7 @@ use sqlx::Executor;
 use tower::{BoxError, ServiceBuilder};
 use tower_http::cors::CorsLayer;
 use crate::args::Args;
+use crate::constants::SOCKETIO_ACK_TIMEOUT;
 use crate::result::Result;
 use crate::srvstate::{SrvState};
 
@@ -41,6 +42,7 @@ mod crypto;
 mod email;
 mod html;
 mod tkn;
+mod constants;
 
 
 #[macro_use]
@@ -67,6 +69,7 @@ async fn main() -> Result<()> {
 
    let socketio_srvstate = srvstate.clone();
    let (socketio_layer, io) = SocketIo::builder()
+       .ack_timeout(SOCKETIO_ACK_TIMEOUT)
        .with_state(socketio_srvstate.clone())
        .build_layer();
    {

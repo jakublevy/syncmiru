@@ -21,6 +21,7 @@ import {LoginTkns} from "@models/login.ts";
 import {useHwidHash} from "@hooks/useHwidHash.ts";
 import {User, UserId, UserValue} from "src/models.ts";
 import {showPersistentErrorAlert, showPersistentWarningAlert} from "src/utils/alert.ts";
+import {SOCKETIO_ACK_TIMEOUT_MS} from "../utils/constants.ts";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -38,7 +39,11 @@ export default function Main(): ReactElement {
         = useState<Map<UserId, UserValue>>(new Map<UserId, UserValue>());
 
     useEffect(() => {
-        const s = io(homeSrv, {auth: {jwt: jwt, hwid_hash: hwidHash} as LoginTkns})
+        const s = io(homeSrv, {
+            auth: {jwt: jwt, hwid_hash: hwidHash} as LoginTkns,
+            ackTimeout: SOCKETIO_ACK_TIMEOUT_MS
+            },
+        )
         s.on('connect_error', ioConnError)
         s.on('connect', ioConn)
         s.on('disconnect', ioDisconnect)

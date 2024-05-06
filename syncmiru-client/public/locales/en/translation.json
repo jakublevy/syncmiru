@@ -131,5 +131,6 @@
   "modal-change-action-btn": "Change",
 
   "modal-change-displayname-title": "Display name change",
-  "modal-change-displayname-help": "Fill in the new display name in the field"
+  "modal-change-displayname-help": "Fill in the new display name in the field",
+  "displayname-change-error": "Display name change failed"
 }

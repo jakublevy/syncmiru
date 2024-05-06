@@ -10,6 +10,8 @@ import Joi from "joi";
 import {useForm} from "react-hook-form";
 import {joiResolver} from "@hookform/resolvers/joi";
 import {useDisplaynameSchema} from "@hooks/fieldSchema.ts";
+import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
+import {showPersistentErrorAlert} from "../../utils/alert.ts";
 
 export default function DisplaynameSettings(p: Props): ReactElement {
     const {t} = useTranslation()
@@ -39,8 +41,17 @@ export default function DisplaynameSettings(p: Props): ReactElement {
     }
 
     function changeDisplayname(data: FormFields) {
-        console.log(JSON.stringify(data))
-        // TODO: finish submit
+        p.onDisplaynameLoading()
+        setOpen(false)
+        socket!
+            .emitWithAck("set_my_displayname", data)
+                .then(() => {
+                    setDisplayname(data.displayname)
+                })
+                .catch(() => {
+                    showPersistentErrorAlert(t('displayname-change-error'))
+                })
+                .finally(() => p.onDisplaynameLoaded())
     }
 
     function editClicked() {
@@ -91,6 +102,7 @@ export default function DisplaynameSettings(p: Props): ReactElement {
 
 interface Props {
     onDisplaynameLoaded: () => void
+    onDisplaynameLoading: () => void
 }
 
 interface FormFields {

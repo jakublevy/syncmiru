@@ -1,6 +1,7 @@
 use chrono::Utc;
 use serde::{Serialize, Deserialize};
 use validator::Validate;
+use crate::validators;
 use crate::models::query::Id;
 
 #[derive(Debug, Clone, Deserialize, Validate)]
@@ -26,6 +27,12 @@ pub struct IdStruct {
     pub id: Id
 }
 
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct Displayname {
+    #[validate(custom(function = "validators::check_displayname_format"))]
+    pub displayname: String,
+}
+
 #[derive(Debug, Copy, Clone, Serialize)]
 pub enum SocketIoAckType {
     Ok,
@@ -35,4 +42,13 @@ pub enum SocketIoAckType {
 #[derive(Debug, Copy, Clone, Serialize)]
 pub struct SocketIoAck {
     pub resp: SocketIoAckType
+}
+
+impl SocketIoAck {
+    pub fn ok() -> Self {
+        Self { resp: SocketIoAckType::Ok }
+    }
+    pub fn err() -> Self {
+        Self { resp: SocketIoAckType::Err }
+    }
 }

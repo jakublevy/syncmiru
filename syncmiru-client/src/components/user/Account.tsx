@@ -51,10 +51,17 @@ export default function Account(): ReactElement {
                 <BtnSecondary onClick={signOutClicked}>{t('user-settings-account-sign-out-btn')}</BtnSecondary>
             </div>
             <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
-                <UsernameView onUsernameLoaded={() => setUsernameLoading(false)}/>
+                <UsernameView
+                    onUsernameLoaded={() => setUsernameLoading(false)}
+                />
                 <AvatarSettings/>
-                <DisplaynameSettings onDisplaynameLoaded={() => setDisplaynameLoading(false)}/>
-                <EmailSettings onEmailLoaded={() => setEmailLoading(false)}/>
+                <DisplaynameSettings
+                    onDisplaynameLoaded={() => setDisplaynameLoading(false)}
+                    onDisplaynameLoading={() => setDisplaynameLoading(true)}
+                />
+                <EmailSettings
+                    onEmailLoaded={() => setEmailLoading(false)}
+                />
             </div>
 
             <hr/>

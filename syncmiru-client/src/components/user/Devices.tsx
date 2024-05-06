@@ -8,7 +8,7 @@ import Loading from "@components/Loading.tsx";
 import {UserSession, UserSessionStrTime} from "src/models.ts";
 import Delete from "@components/svg/Delete.tsx";
 import DateTimeLocalPretty from "@components/widgets/DateTimeLocalPretty.tsx";
-import {SOCKETIO_RESP_TIMEOUT_MS} from "src/utils/constants.ts";
+import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {useTranslation} from "react-i18next";
@@ -73,7 +73,7 @@ export default function Devices(): ReactElement {
     function sessionDeleteConfirmed() {
         setLoading(true)
         socket!.emit("delete_session", {id: deletingSession.id})
-        socketioErrorTimeout.current = setTimeout(socketioRespTimeoutError, SOCKETIO_RESP_TIMEOUT_MS)
+        socketioErrorTimeout.current = setTimeout(socketioRespTimeoutError, SOCKETIO_ACK_TIMEOUT_MS)
     }
 
     function socketioRespTimeoutError() {
