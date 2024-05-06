@@ -15,6 +15,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("get_my_displayname", get_my_displayname);
     s.on("get_my_email", get_my_email);
     s.on("set_my_displayname", set_my_displayname);
+    s.on("get_email_resend_timeout", get_email_resend_timeout);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_verified_users(&state.db)
@@ -153,6 +154,14 @@ pub async fn set_my_displayname(
         .ok();
 
     ack.send({}).ok();
+}
+
+pub async fn get_email_resend_timeout(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+) {
+    ack.send(state.config.email.wait_before_resend).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {

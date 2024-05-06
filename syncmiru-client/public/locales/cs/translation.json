@@ -4,6 +4,8 @@
   "language": "Jazyk",
   "continue": "Pokračovat",
   "of": "z",
+  "from-temporal": "z",
+  "to-temporal": "na",
 
   "missing-deps-title": "Chybějící závislosti",
   "missing-deps-msg": "V environmentální proměnné PATH vám chybí závislosti nutné pro správnou funkčnost aplikace Syncmiru.",
@@ -133,8 +135,17 @@
   "modal-change-displayname-title": "Změna zobrazeného jména",
   "modal-change-displayname-help": "Do políčka vyplňte nové zobrazené jméno",
   "displayname-change-error": "Změna zobrazeného jména selhala",
-  "modal-change-email-title": "Změna emailu",
-  "modal-change-email-help": "Do políčka vyplňte nový email",
   "displayname-currently-using": "Toto zobrazené jméno aktuálně používáte",
-  "email-currently-using": "Tento email aktuálně používáte"
+
+  "modal-change-email-title-1": "Změna emailu",
+  "modal-change-email-help": "Do políčka vyplňte nový email",
+  "email-currently-using": "Tento email aktuálně používáte",
+  "emails-not-received": "Emaily nepřišly?",
+
+  "modal-change-email-title-2": "Ověření emailů",
+  "modal-change-email-text-1": "Vyžádal jste si změnu emailové adresy",
+  "modal-change-email-text-2": "Na obě emailové adresy byly odeslány 24-místné kódy pro ověření, které pro dokončení změny emailové adresy vložte níže.",
+  "modal-change-email-tkn-label": "Kód odeslaný na",
+  "modal-change-email-tkn-from-help": "Do políčka vyplňte kód, který byl odeslán na váš současný email",
+  "modal-change-email-tkn-to-help": "Do políčka vyplňte kód, který byl odeslán na váš nový email"
 }

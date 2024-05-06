@@ -4,6 +4,8 @@
   "language": "Language",
   "continue": "Continue",
   "of": "of",
+  "from-temporal": "of",
+  "to-temporal": "to",
 
   "missing-deps-title": "Missing dependencies",
   "missing-deps-msg": "You are missing dependencies in the PATH environment variable that are necessary for proper functionality of the Syncmiru application.",
@@ -133,8 +135,17 @@
   "modal-change-displayname-title": "Display name change",
   "modal-change-displayname-help": "Fill in the new display name in the field",
   "displayname-change-error": "Display name change failed",
-  "modal-change-email-title": "Email change",
-  "modal-change-email-help": "Fill in the new email in the field",
   "displayname-currently-using": "You are currently using this display name",
-  "email-currently-using": "You are currently using this email"
+
+  "modal-change-email-title-1": "Email change",
+  "modal-change-email-help": "Fill in the new email in the field",
+  "email-currently-using": "You are currently using this email",
+  "emails-not-received": "Emails not received?",
+
+  "modal-change-email-title-2": "Verification of emails",
+  "modal-change-email-text-1": "You have requested a change of email address from",
+  "modal-change-email-text-2": "24-digit verification codes have been sent to both email addresses, please enter them below to complete the email address change.",
+  "modal-change-email-tkn-label": "Code sent to",
+  "modal-change-email-tkn-from-help": "Fill in the code that was sent to your current email",
+  "modal-change-email-tkn-to-help": "Fill in the code that was sent to your new email"
 }

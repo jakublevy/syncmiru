@@ -5,20 +5,25 @@ import {useMainContext} from "@hooks/useMainContext.ts";
 import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
-import {EmailInputSrvValidate} from "@components/widgets/Input.tsx";
+import {EmailInput, EmailInputSrvValidate, Input} from "@components/widgets/Input.tsx";
 import Joi from "joi";
 import {useForm} from "react-hook-form";
 import {joiResolver} from "@hookform/resolvers/joi";
 import {emailValidate} from "src/form/validators.ts";
+import BtnTimeout from "@components/widgets/BtnTimeout.tsx";
 
 export default function EmailSettings(p: Props): ReactElement {
     const {t} = useTranslation()
     const [openSetNewEmailModal, setOpenSetNewEmailModal]
         = useState<boolean>(false)
+    const [openVerifyEmailsModal, setOpenVerifyEmailsModal] = useState<boolean>(false)
     const {socket} = useMainContext()
     const [email, setEmail] = useState<string>("")
     const [newEmail, setNewEmail] = useState<string>("")
     const [emailUnique, setEmailUnique] = useState<boolean>(true)
+    const [emailLoading, setEmailLoading] = useState<boolean>(true)
+    const [resendTimeLoading, setResendTimeLoading] = useState<boolean>(true)
+    const [resendTimeout, setResendTimeout] = useState<number>(60)
     const formSchema = Joi.object({
         email: Joi
             .string()
@@ -42,18 +47,32 @@ export default function EmailSettings(p: Props): ReactElement {
 
     useEffect(() => {
         if (socket !== undefined) {
+            socket.emitWithAck("get_email_resend_timeout")
+                .then((timeout) => setResendTimeout(timeout))
+                .finally(() => setResendTimeLoading(false))
+
             socket.emitWithAck("get_my_email")
                 .then((email) => setEmail(email))
                 .catch(() => setEmail("N/A"))
-                .finally(() => p.onEmailLoaded())
+                .finally(() => setEmailLoading(false))
         }
     }, [socket]);
+
+    useEffect(() => {
+        if(!emailLoading && !resendTimeLoading)
+            p.onLoaded()
+        else
+            p.onLoading()
+    }, [emailLoading, resendTimeLoading]);
 
     function changeEmail(data: FormFields) {
         if(!emailUnique)
             return;
 
-        console.log(JSON.stringify(data));
+        setNewEmail(data.email)
+        setOpenSetNewEmailModal(false)
+        setOpenVerifyEmailsModal(true)
+        //TODO:
     }
 
     function emailUniqueChanged(unique: boolean) {
@@ -66,6 +85,10 @@ export default function EmailSettings(p: Props): ReactElement {
         setOpenSetNewEmailModal(true)
     }
 
+    function resendEmails() {
+        //TODO:
+    }
+
     return (
         <>
             <div className="flex items-center">
@@ -75,7 +98,7 @@ export default function EmailSettings(p: Props): ReactElement {
                 <EditBtn className="w-10" onClick={editClicked}/>
             </div>
             <ModalWHeader
-                title={t('modal-change-email-title')}
+                title={t('modal-change-email-title-1')}
                 open={openSetNewEmailModal}
                 setOpen={setOpenSetNewEmailModal}
                 content={
@@ -109,13 +132,50 @@ export default function EmailSettings(p: Props): ReactElement {
                     </form>
                 }
             />
+            <ModalWHeader
+                title={t('modal-change-email-title-2')}
+                open={openVerifyEmailsModal}
+                setOpen={setOpenVerifyEmailsModal}
+                content={
+                    <>
+                        <p>{t('modal-change-email-text-1')} {t('from-temporal')} <b>{email}</b> {t('to-temporal')} <b>{newEmail}</b>. {t('modal-change-email-text-2')}</p>
+                        <div className="mt-4 mb-4">
+                            <BtnTimeout text={t('emails-not-received')} timeout={resendTimeout} onClick={resendEmails}/>
+                        </div>
+                        <div className="flex gap-8">
+                            <div className="mb-3 flex-1">
+                                <div className="flex justify-between">
+                                    <Label htmlFor="current-email-tkn">{t('modal-change-email-tkn-label')} {email}</Label>
+                                    <Help
+                                        tooltipId="current-email-tkn"
+                                        className="w-4"
+                                        content={t('modal-change-email-tkn-from-help')}
+                                    />
+                                </div>
+                                <Input type="text"/>
+                            </div>
+                            <div className="mb-3 flex-1">
+                                <div className="flex justify-between">
+                                    <Label htmlFor="current-email-tkn">{t('modal-change-email-tkn-label')} {newEmail}</Label>
+                                    <Help
+                                        tooltipId="current-email-tkn"
+                                        className="w-4"
+                                        content={t('modal-change-email-tkn-to-help')}
+                                    />
+                                </div>
+                                <Input type="text"/>
+                            </div>
+                        </div>
+                    </>
+                }
+            />
         </>
     )
 }
 
 interface Props {
-    onEmailLoaded: () => void
-    onEmailLoading: () => void
+    onLoaded: () => void
+    onLoading: () => void
 }
 
 interface FormFields {
