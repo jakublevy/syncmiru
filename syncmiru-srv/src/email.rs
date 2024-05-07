@@ -36,6 +36,33 @@ pub async fn send_verification_email(
     Ok(())
 }
 
+pub async fn send_change_emails(
+    email_conf: &EmailConf,
+    to_old: &str,
+    tkn_to_old: &str,
+    to_new: &str,
+    tkn_to_new: &str,
+    srv_url: &str,
+    lang: &str
+) -> Result<()> {
+    send_email(
+        email_conf,
+        to_old,
+        srv_url,
+        "Změna emailu",
+        &format!("Tkn pro ověření {}", tkn_to_old)
+    ).await?;
+
+    send_email(
+        email_conf,
+        to_new,
+        srv_url,
+        "Změna emailu",
+        &format!("Tkn pro ověření {}", tkn_to_new)
+    ).await?;
+    Ok(())
+}
+
 
 pub async fn send_forgotten_password_email(
     email_conf: &EmailConf,

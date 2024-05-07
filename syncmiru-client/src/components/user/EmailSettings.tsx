@@ -1,19 +1,23 @@
-import {ReactElement, useEffect, useState} from "react";
+import {ReactElement, useEffect, useRef, useState} from "react";
 import {BtnPrimary, BtnSecondary, EditBtn} from "@components/widgets/Button.tsx";
 import {useTranslation} from "react-i18next";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
-import {EmailInput, EmailInputSrvValidate, Input} from "@components/widgets/Input.tsx";
+import {EmailInputSrvValidate, Input} from "@components/widgets/Input.tsx";
 import Joi from "joi";
 import {useForm} from "react-hook-form";
 import {joiResolver} from "@hookform/resolvers/joi";
 import {emailValidate} from "src/form/validators.ts";
 import BtnTimeout from "@components/widgets/BtnTimeout.tsx";
+import {useLanguage} from "@hooks/useLanguage.ts";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
+import {StatusAlertService} from "react-status-alert";
 
 export default function EmailSettings(p: Props): ReactElement {
     const {t} = useTranslation()
+    const lang = useLanguage()
     const [openSetNewEmailModal, setOpenSetNewEmailModal]
         = useState<boolean>(false)
     const [openVerifyEmailsModal, setOpenVerifyEmailsModal] = useState<boolean>(false)
@@ -23,7 +27,8 @@ export default function EmailSettings(p: Props): ReactElement {
     const [emailUnique, setEmailUnique] = useState<boolean>(true)
     const [emailLoading, setEmailLoading] = useState<boolean>(true)
     const [resendTimeLoading, setResendTimeLoading] = useState<boolean>(true)
-    const [resendTimeout, setResendTimeout] = useState<number>(60)
+    const resendTimeoutDefault = useRef<number>(60)
+    const [resendTimeout, setResendTimeout] = useState<number>(resendTimeoutDefault.current)
     const formSchema = Joi.object({
         email: Joi
             .string()
@@ -48,7 +53,10 @@ export default function EmailSettings(p: Props): ReactElement {
     useEffect(() => {
         if (socket !== undefined) {
             socket.emitWithAck("get_email_resend_timeout")
-                .then((timeout) => setResendTimeout(timeout))
+                .then((timeout) => {
+                    resendTimeoutDefault.current = timeout
+                    setResendTimeout(timeout)
+                })
                 .finally(() => setResendTimeLoading(false))
 
             socket.emitWithAck("get_my_email")
@@ -72,7 +80,8 @@ export default function EmailSettings(p: Props): ReactElement {
         setNewEmail(data.email)
         setOpenSetNewEmailModal(false)
         setOpenVerifyEmailsModal(true)
-        //TODO:
+        socket!.emitWithAck("send_email_change_verification_emails", {email: newEmail, lang: lang})
+            .then(() => {})
     }
 
     function emailUniqueChanged(unique: boolean) {
@@ -86,7 +95,15 @@ export default function EmailSettings(p: Props): ReactElement {
     }
 
     function resendEmails() {
-        //TODO:
+        socket!.emitWithAck("send_email_change_verification_emails", {email: newEmail, lang: lang})
+            .then(() => {
+                StatusAlertService.showSuccess("Nové emaily byly rozeslány")
+                setResendTimeout(resendTimeoutDefault.current)
+            })
+            .catch(() => {
+                showPersistentErrorAlert("Odeslání emailů selhalo, příliš mnoho požadavků v krátkém čase, zkuste to prosím později")
+                setResendTimeout(0)
+            })
     }
 
     return (
@@ -145,22 +162,22 @@ export default function EmailSettings(p: Props): ReactElement {
                         <div className="flex gap-8">
                             <div className="mb-3 flex-1">
                                 <div className="flex justify-between">
-                                    <Label htmlFor="current-email-tkn">{t('modal-change-email-tkn-label')} {email}</Label>
+                                    <Label htmlFor="current-email-tkn">{t('modal-change-email-tkn-from-label')}</Label>
                                     <Help
                                         tooltipId="current-email-tkn"
                                         className="w-4"
-                                        content={t('modal-change-email-tkn-from-help')}
+                                        content={`${t('modal-change-email-tkn-help')} ${email}`}
                                     />
                                 </div>
                                 <Input type="text"/>
                             </div>
                             <div className="mb-3 flex-1">
                                 <div className="flex justify-between">
-                                    <Label htmlFor="current-email-tkn">{t('modal-change-email-tkn-label')} {newEmail}</Label>
+                                    <Label htmlFor="current-email-tkn">{t('modal-change-email-tkn-to-label')}</Label>
                                     <Help
                                         tooltipId="current-email-tkn"
                                         className="w-4"
-                                        content={t('modal-change-email-tkn-to-help')}
+                                        content={`${t('modal-change-email-tkn-help')} ${newEmail}`}
                                     />
                                 </div>
                                 <Input type="text"/>

@@ -1,5 +1,7 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use validator::Validate;
 use crate::models::query::Id;
+use crate::validators;
 
 pub mod http;
 pub mod query;
@@ -15,4 +17,13 @@ pub struct User {
     pub displayname: String,
 
     pub avatar: Option<Vec<u8>>
+}
+
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct EmailWithLang {
+    #[validate(email, length(max = 320))]
+    pub email: String,
+
+    #[validate(custom(function = "validators::check_lang"))]
+    pub lang: String
 }

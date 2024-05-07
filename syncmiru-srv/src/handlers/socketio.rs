@@ -1,9 +1,12 @@
+mod utils;
+
 use std::sync::Arc;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
+use crate::models::{EmailWithLang};
 use crate::models::query::Id;
 use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange};
-use crate::query;
+use crate::{crypto, email, query};
 use crate::srvstate::SrvState;
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -16,6 +19,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("get_my_email", get_my_email);
     s.on("set_my_displayname", set_my_displayname);
     s.on("get_email_resend_timeout", get_email_resend_timeout);
+    s.on("send_email_change_verification_emails", send_email_change_verification_emails);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_verified_users(&state.db)
@@ -162,6 +166,50 @@ pub async fn get_email_resend_timeout(
     ack: AckSender,
 ) {
     ack.send(state.config.email.wait_before_resend).ok();
+}
+
+pub async fn send_email_change_verification_emails(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<EmailWithLang>
+) {
+    let uid = state.socket2uid(&s).await;
+
+    let out_of_quota = utils::is_email_out_of_quota(&state, uid)
+        .await
+        .expect("change_email_out_of_quota error");
+    if out_of_quota {
+        return;
+    }
+
+    let tkn1 = crypto::gen_tkn();
+    let tkn1_hash = crypto::hash(tkn1.clone()).await.expect("hash error");
+    let tkn2 = crypto::gen_tkn();
+    let tkn2_hash = crypto::hash(tkn2.clone()).await.expect("hash error");
+    let current_email = query::get_email_by_uid(&state.db, uid)
+        .await
+        .expect("db error");
+    query::new_change_email(
+        &state.db,
+        &tkn1_hash,
+        &tkn2_hash,
+        uid
+    )
+        .await
+        .expect("db error");
+    email::send_change_emails(
+        &state.config.email,
+        &current_email,
+        &tkn1,
+        &payload.email,
+        &tkn2,
+        &state.config.srv.url,
+        &payload.lang
+    )
+        .await
+        .expect("email error");
+    ack.send({}).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {

@@ -1,4 +1,5 @@
 use sqlx::PgPool;
+use crate::config::DbConfig;
 use crate::models::User;
 use crate::models::query::{EmailTknType, Id};
 use crate::models::socketio::UserSession;
@@ -59,11 +60,10 @@ pub async fn out_of_email_tkn_quota(
 ) -> Result<bool> {
     let query = r#"
         select COUNT(*) >= $1 from email_tkn_log
-        inner join users on users.id = email_tkn_log.user_id
         where
-        users.id = $2
-        and email_tkn_log.reason = $3
-        and email_tkn_log.sent_at > now() - interval '1 seconds' * $4
+        user_id = $2
+        and reason = $3
+        and sent_at > now() - interval '1 seconds' * $4
         limit 1
     "#;
     let out_of_quota: (bool,) = sqlx::query_as(query)
@@ -387,4 +387,65 @@ pub async fn update_displayname_by_uid(db: &PgPool, uid: Id, displayname: &str) 
         .execute(db)
         .await?;
     Ok(())
+}
+
+pub async fn new_change_email(
+    db: &PgPool,
+    hash_from: &str,
+    hash_to: &str,
+    uid: Id,
+) -> Result<()> {
+    let query = r#"
+        insert into change_email_log (hash_from, hash_to, user_id)
+        values ($1, $2, $3)
+    "#;
+    sqlx::query(query)
+        .bind(hash_from)
+        .bind(hash_to)
+        .bind(uid)
+        .execute(db)
+        .await?;
+    Ok(())
+}
+
+pub async fn out_of_change_email_quota(
+    db: &PgPool,
+    uid: Id,
+    max: i64,
+    per: i64
+) -> Result<bool> {
+    let query = r#"
+        select COUNT(*) >= $1 from change_email_log
+        where
+        user_id = $2
+        and sent_at > now() - interval '1 seconds' * $3
+        limit 1
+    "#;
+    let out_of_quota: (bool,) = sqlx::query_as(query)
+        .bind(max)
+        .bind(uid)
+        .bind(per)
+        .fetch_one(db)
+        .await?;
+    Ok(out_of_quota.0)
+}
+
+pub async fn waited_before_last_change_email(
+    db: &PgPool,
+    uid: Id,
+    wait_before_resend: i64
+) -> Result<bool> {
+    let query = r#"
+        select count(*) = 0 from change_email_log
+        where
+        user_id = $1
+        and sent_at >= now() - interval '1 seconds' * $2
+        limit 1
+    "#;
+    let waited: (bool, ) = sqlx::query_as(query)
+        .bind(uid)
+        .bind(wait_before_resend)
+        .fetch_one(db)
+        .await?;
+    Ok(waited.0)
 }

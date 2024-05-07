@@ -145,7 +145,7 @@
   "modal-change-email-title-2": "Verification of emails",
   "modal-change-email-text-1": "You have requested a change of email address from",
   "modal-change-email-text-2": "24-digit verification codes have been sent to both email addresses, please enter them below to complete the email address change.",
-  "modal-change-email-tkn-label": "Code sent to",
-  "modal-change-email-tkn-from-help": "Fill in the code that was sent to your current email",
-  "modal-change-email-tkn-to-help": "Fill in the code that was sent to your new email"
+  "modal-change-email-tkn-from-label": "Code sent to your current email",
+  "modal-change-email-tkn-to-label": "Code sent to filled new email",
+  "modal-change-email-tkn-help": "Fill in the code that was sent to"
 }

@@ -145,7 +145,7 @@
   "modal-change-email-title-2": "Ověření emailů",
   "modal-change-email-text-1": "Vyžádal jste si změnu emailové adresy",
   "modal-change-email-text-2": "Na obě emailové adresy byly odeslány 24-místné kódy pro ověření, které pro dokončení změny emailové adresy vložte níže.",
-  "modal-change-email-tkn-label": "Kód odeslaný na",
-  "modal-change-email-tkn-from-help": "Do políčka vyplňte kód, který byl odeslán na váš současný email",
-  "modal-change-email-tkn-to-help": "Do políčka vyplňte kód, který byl odeslán na váš nový email"
+  "modal-change-email-tkn-from-label": "Kód odeslaný na váš současný email",
+  "modal-change-email-tkn-to-label": "Kód odeslaný na vyplněný nový email",
+  "modal-change-email-tkn-help": "Do políčka vyplňte kód, který byl odeslán na"
 }
