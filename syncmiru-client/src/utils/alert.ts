@@ -11,3 +11,19 @@ export const showPersistentWarningAlert = (message: string) => {
         autoHide: false
     })
 }
+
+export const showTemporalErrorAlertForModal = (message: string, autoHideTime: number = 3000) => {
+    StatusAlertService.showError(message, {
+        autoHide: true,
+        withCloseIcon: false,
+        autoHideTime: autoHideTime
+    })
+}
+
+export const showTemporalSuccessAlertForModal = (message: string, autoHideTime: number = 3000) => {
+    StatusAlertService.showSuccess(message, {
+        autoHide: true,
+        withCloseIcon: false,
+        autoHideTime: autoHideTime
+    })
+}

@@ -44,12 +44,12 @@ export default function DisplaynameSettings(p: Props): ReactElement {
             socket.emitWithAck("get_my_displayname")
                 .then((displayname) => setDisplayname(displayname))
                 .catch(() => setDisplayname("N/A"))
-                .finally(() => p.onLoaded())
+                .finally(() => p.setLoading(false))
         }
     }, [socket]);
 
     function changeDisplayname(data: FormFields) {
-        p.onLoading()
+        p.setLoading(true)
         setOpen(false)
         socket!
             .emitWithAck("set_my_displayname", data)
@@ -59,7 +59,7 @@ export default function DisplaynameSettings(p: Props): ReactElement {
                 .catch(() => {
                     showPersistentErrorAlert(t('displayname-change-error'))
                 })
-                .finally(() => p.onLoaded())
+                .finally(() => p.setLoading(false))
     }
 
     function editClicked() {
@@ -109,8 +109,7 @@ export default function DisplaynameSettings(p: Props): ReactElement {
 }
 
 interface Props {
-    onLoaded: () => void
-    onLoading: () => void
+    setLoading: (b: boolean) => void
 }
 
 interface FormFields {

@@ -6,13 +6,22 @@ export default function BtnTimeout(p: BtnTimeoutProps): ReactElement {
     const {text, onClick, timeout, ...restProps} = p
     const [wait, setWait] = useState<number>(Math.round(timeout))
     const isReady = wait <= 0
+    const [clickExecuting, setClickExecuting] = useState<boolean>(false)
 
     const classNameEnabled = "text-indigo-500 hover:text-indigo-900 dark:hover:text-indigo-700 font-semibold"
     const classNameDisabled = "text-indigo-500 font-semibold"
 
     function clicked(e: MouseEvent<HTMLButtonElement>) {
+        setClickExecuting(true)
         if(onClick !== undefined && isReady)
             onClick(e)
+        setClickExecuting(false)
+    }
+
+    function disabled() {
+        if(clickExecuting)
+            return true
+        return !isReady
     }
 
     useEffect(() => {
@@ -30,7 +39,7 @@ export default function BtnTimeout(p: BtnTimeoutProps): ReactElement {
     }, []);
 
     return <Btn
-        disabled={!isReady}
+        disabled={disabled()}
         className={isReady ? classNameEnabled : classNameDisabled}
         onClick={clicked}
         {...restProps}>

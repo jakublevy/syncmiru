@@ -147,5 +147,7 @@
   "modal-change-email-text-2": "Na obě emailové adresy byly odeslány 24-místné kódy pro ověření, které pro dokončení změny emailové adresy vložte níže.",
   "modal-change-email-tkn-from-label": "Kód odeslaný na váš současný email",
   "modal-change-email-tkn-to-label": "Kód odeslaný na vyplněný nový email",
-  "modal-change-email-tkn-help": "Do políčka vyplňte kód, který byl odeslán na"
+  "modal-change-email-tkn-help": "Do políčka vyplňte kód, který byl odeslán na",
+  "modal-change-email-resend-success": "Nové emaily byly rozeslány",
+  "modal-change-email-send-error": "Odeslání emailů selhalo, příliš mnoho požadavků v krátkém čase, zkuste to prosím později"
 }

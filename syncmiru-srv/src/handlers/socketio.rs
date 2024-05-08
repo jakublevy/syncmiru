@@ -5,8 +5,9 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang};
 use crate::models::query::Id;
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck};
 use crate::{crypto, email, query};
+use crate::error::SyncmiruError;
 use crate::srvstate::SrvState;
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -165,7 +166,7 @@ pub async fn get_email_resend_timeout(
     s: SocketRef,
     ack: AckSender,
 ) {
-    ack.send(state.config.email.wait_before_resend).ok();
+    ack.send(state.config.email.wait_before_resend + 1).ok();
 }
 
 pub async fn send_email_change_verification_emails(
@@ -180,6 +181,7 @@ pub async fn send_email_change_verification_emails(
         .await
         .expect("change_email_out_of_quota error");
     if out_of_quota {
+        ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
 
@@ -209,7 +211,7 @@ pub async fn send_email_change_verification_emails(
     )
         .await
         .expect("email error");
-    ack.send({}).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {

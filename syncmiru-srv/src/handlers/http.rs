@@ -31,7 +31,7 @@ pub async fn service(
 ) -> Json<ServiceStatus> {
     Json(ServiceStatus {
         reg_pub_allowed: state.config.reg_pub.allowed,
-        wait_before_resend: state.config.email.wait_before_resend,
+        wait_before_resend: state.config.email.wait_before_resend + 1,
     })
 }
 

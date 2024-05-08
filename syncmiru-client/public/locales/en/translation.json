@@ -147,5 +147,7 @@
   "modal-change-email-text-2": "24-digit verification codes have been sent to both email addresses, please enter them below to complete the email address change.",
   "modal-change-email-tkn-from-label": "Code sent to your current email",
   "modal-change-email-tkn-to-label": "Code sent to filled new email",
-  "modal-change-email-tkn-help": "Fill in the code that was sent to"
+  "modal-change-email-tkn-help": "Fill in the code that was sent to",
+  "modal-change-email-resend-success": "New emails has been sent",
+  "modal-change-email-send-error": "Sending emails failed, too many requests in a short time, please try again later"
 }

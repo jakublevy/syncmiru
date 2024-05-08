@@ -12,8 +12,8 @@ import {joiResolver} from "@hookform/resolvers/joi";
 import {emailValidate} from "src/form/validators.ts";
 import BtnTimeout from "@components/widgets/BtnTimeout.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
-import {showPersistentErrorAlert} from "src/utils/alert.ts";
-import {StatusAlertService} from "react-status-alert";
+import {showTemporalErrorAlertForModal, showTemporalSuccessAlertForModal} from "src/utils/alert.ts";
+import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 
 export default function EmailSettings(p: Props): ReactElement {
     const {t} = useTranslation()
@@ -68,9 +68,9 @@ export default function EmailSettings(p: Props): ReactElement {
 
     useEffect(() => {
         if(!emailLoading && !resendTimeLoading)
-            p.onLoaded()
+            p.setLoading(false)
         else
-            p.onLoading()
+            p.setLoading(true)
     }, [emailLoading, resendTimeLoading]);
 
     function changeEmail(data: FormFields) {
@@ -81,7 +81,20 @@ export default function EmailSettings(p: Props): ReactElement {
         setOpenSetNewEmailModal(false)
         setOpenVerifyEmailsModal(true)
         socket!.emitWithAck("send_email_change_verification_emails", {email: newEmail, lang: lang})
-            .then(() => {})
+            .then((ack: SocketIoAck<null>) => {
+                if(ack.status === SocketIoAckType.Err) {
+                    showTemporalErrorAlertForModal(t('modal-change-email-send-error'))
+                    setResendTimeout(0)
+                }
+            })
+            .catch(() => {
+                showTemporalErrorAlertForModal(t('modal-change-email-send-error'))
+                setResendTimeout(0)
+            })
+            .finally(() => {
+                setOpenVerifyEmailsModal(true)
+                p.setLoading(false)
+            })
     }
 
     function emailUniqueChanged(unique: boolean) {
@@ -95,14 +108,26 @@ export default function EmailSettings(p: Props): ReactElement {
     }
 
     function resendEmails() {
+        setOpenVerifyEmailsModal(false)
+        p.setLoading(true)
         socket!.emitWithAck("send_email_change_verification_emails", {email: newEmail, lang: lang})
-            .then(() => {
-                StatusAlertService.showSuccess("Nové emaily byly rozeslány")
-                setResendTimeout(resendTimeoutDefault.current)
+            .then((ack: SocketIoAck<null>) => {
+                if(ack.status === SocketIoAckType.Ok) {
+                    showTemporalSuccessAlertForModal(t('modal-change-email-resend-success'))
+                    setResendTimeout(resendTimeoutDefault.current)
+                }
+                else {
+                    showTemporalErrorAlertForModal(t('modal-change-email-send-error'))
+                    setResendTimeout(0)
+                }
             })
             .catch(() => {
-                showPersistentErrorAlert("Odeslání emailů selhalo, příliš mnoho požadavků v krátkém čase, zkuste to prosím později")
+                showTemporalErrorAlertForModal(t('modal-change-email-send-error'))
                 setResendTimeout(0)
+            })
+            .finally(() => {
+                setOpenVerifyEmailsModal(true)
+                p.setLoading(false)
             })
     }
 
@@ -191,8 +216,7 @@ export default function EmailSettings(p: Props): ReactElement {
 }
 
 interface Props {
-    onLoaded: () => void
-    onLoading: () => void
+    setLoading: (b: boolean) => void
 }
 
 interface FormFields {

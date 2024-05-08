@@ -56,16 +56,14 @@ export default function Account(): ReactElement {
             </div>
             <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
                 <UsernameView
-                    onLoaded={() => setUsernameLoading(false)}
+                    setLoading={(b: boolean) => setUsernameLoading(b)}
                 />
                 <AvatarSettings/>
                 <DisplaynameSettings
-                    onLoaded={() => setDisplaynameLoading(false)}
-                    onLoading={() => setDisplaynameLoading(true)}
+                    setLoading={(b: boolean) => setDisplaynameLoading(b)}
                 />
                 <EmailSettings
-                    onLoaded={() => setEmailLoading(false)}
-                    onLoading={() => setEmailLoading(true)}
+                    setLoading={(b: boolean) => setEmailLoading(b)}
                 />
             </div>
 

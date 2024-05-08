@@ -1,5 +1,7 @@
 use chrono::Utc;
 use serde::{Serialize, Deserialize};
+use serde_repr::Serialize_repr;
+use socketioxide::extract::SocketRef;
 use validator::Validate;
 use crate::validators;
 use crate::models::query::Id;
@@ -37,4 +39,28 @@ pub struct Displayname {
 pub struct DisplaynameChange {
     pub uid: Id,
     pub displayname: String
+}
+
+#[serde_with::serde_as]
+#[serde_with::skip_serializing_none]
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct SocketIoAck<T: Serialize> {
+    status: SocketIoAckType,
+    payload: Option<T>
+}
+
+impl<T: Serialize + Clone> SocketIoAck<T> {
+    pub fn ok(payload: Option<&T>) -> Self {
+        Self { status: SocketIoAckType::Ok, payload: payload.map(|x| x.clone()) }
+    }
+    pub fn err() -> Self {
+        Self { status: SocketIoAckType::Err, payload: None }
+    }
+}
+
+#[derive(Debug, Clone, Serialize_repr)]
+#[repr(u8)]
+pub enum SocketIoAckType {
+    Ok = 0,
+    Err = 1
 }

@@ -12,7 +12,7 @@ export default function UsernameView(p: Props): ReactElement {
             socket.emitWithAck("get_my_username")
                 .then((username) => setUsername(username))
                 .catch(() => setUsername("N/A"))
-                .finally(() => p.onLoaded())
+                .finally(() => p.setLoading(false))
         }
     }, [socket]);
 
@@ -25,5 +25,5 @@ export default function UsernameView(p: Props): ReactElement {
 }
 
 interface Props {
-    onLoaded: () => void
+    setLoading: (b: boolean) => void
 }
