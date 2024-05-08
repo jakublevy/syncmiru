@@ -70,6 +70,7 @@ pub async fn delete_session(
     Data(payload): Data<IdStruct>
 ) {
     if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -77,18 +78,20 @@ pub async fn delete_session(
         .await
         .expect("db error");
     if !is_session_of_user {
+        ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
     let active_session = query::get_active_user_session(&state.db, uid, &state.socket2hwid_hash(&s).await)
         .await
         .expect("db error");
     if active_session.id == payload.id {
+        ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
     query::delete_user_session(&state.db, payload.id)
         .await
         .expect("db error");
-    ack.send({}).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn sign_out(State(state): State<Arc<SrvState>>, s: SocketRef) {

@@ -10,6 +10,7 @@ import DateTimeLocalPretty from "@components/widgets/DateTimeLocalPretty.tsx";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {useTranslation} from "react-i18next";
 import {ModalDelete} from "@components/widgets/Modal.tsx";
+import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 
 export default function Devices(): ReactElement {
     const [_, navigate] = useLocation()
@@ -67,9 +68,14 @@ export default function Devices(): ReactElement {
     function sessionDeleteConfirmed() {
         setLoading(true)
         socket!.emitWithAck("delete_session", {id: deletingSession.id})
-            .then(() => {
-                const filtered = inactiveSessions.filter(x => x.id !== deletingSession.id)
-                setInactiveSessions(filtered)
+            .then((ack: SocketIoAck<null>) => {
+                if(ack.status === SocketIoAckType.Ok) {
+                    const filtered = inactiveSessions.filter(x => x.id !== deletingSession.id)
+                    setInactiveSessions(filtered)
+                }
+                else {
+                    showPersistentErrorAlert(t('sessions-delete-error'))
+                }
             })
             .catch(() => {
                 showPersistentErrorAlert(t('sessions-delete-error'))
