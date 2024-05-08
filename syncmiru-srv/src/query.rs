@@ -449,3 +449,51 @@ pub async fn waited_before_last_change_email(
         .await?;
     Ok(waited.0)
 }
+
+pub async fn get_valid_hashed_email_from_tkn(
+    db: &PgPool,
+    uid: Id,
+    valid_time: i64
+) -> Result<Option<String>> {
+    let query = r#"
+        select hash_from from change_email_log
+        where
+        user_id = $1
+        and sent_at > now() - interval '1 seconds' * $2
+        order by sent_at desc
+        limit 1
+    "#;
+    if let Some(hash) = sqlx::query_as::<_, (String,)>(query)
+        .bind(uid)
+        .bind(valid_time)
+        .fetch_optional(db).await? {
+        Ok(Some(hash.0))
+    }
+    else {
+        Ok(None)
+    }
+}
+
+pub async fn get_valid_hashed_email_to_tkn(
+    db: &PgPool,
+    uid: Id,
+    valid_time: i64
+) -> Result<Option<String>> {
+    let query = r#"
+        select hash_to from change_email_log
+        where
+        user_id = $1
+        and sent_at > now() - interval '1 seconds' * $2
+        order by sent_at desc
+        limit 1
+    "#;
+    if let Some(hash) = sqlx::query_as::<_, (String,)>(query)
+        .bind(uid)
+        .bind(valid_time)
+        .fetch_optional(db).await? {
+        Ok(Some(hash.0))
+    }
+    else {
+        Ok(None)
+    }
+}

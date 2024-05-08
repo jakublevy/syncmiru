@@ -50,7 +50,7 @@ pub async fn send_change_emails(
         to_old,
         srv_url,
         "Změna emailu",
-        &format!("Tkn pro ověření {}", tkn_to_old)
+        &format!("Ahoj,<br>z tvého účtu byla podána žádost na změnu emailu na {}.<br>Tvůj verifikační kód je: {}", to_new, tkn_to_old)
     ).await?;
 
     send_email(
@@ -58,7 +58,7 @@ pub async fn send_change_emails(
         to_new,
         srv_url,
         "Změna emailu",
-        &format!("Tkn pro ověření {}", tkn_to_new)
+        &format!("Ahoj,<br>z tvého účtu byla podána žádost na změnu emailu na tento email.<br>Tvůj verifikační kód je: {}", tkn_to_new)
     ).await?;
     Ok(())
 }

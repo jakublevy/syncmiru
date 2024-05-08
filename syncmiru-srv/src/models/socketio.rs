@@ -1,6 +1,6 @@
 use chrono::Utc;
 use serde::{Serialize, Deserialize};
-use serde_repr::Serialize_repr;
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use socketioxide::extract::SocketRef;
 use validator::Validate;
 use crate::validators;
@@ -41,6 +41,19 @@ pub struct DisplaynameChange {
     pub displayname: String
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct EmailChangeTkn {
+    pub tkn: String,
+    pub tkn_type: EmailChangeTknType
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Deserialize_repr)]
+#[repr(u8)]
+pub enum EmailChangeTknType {
+    From = 0,
+    To = 1
+}
+
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize)]
@@ -50,7 +63,7 @@ pub struct SocketIoAck<T: Serialize> {
 }
 
 impl<T: Serialize + Clone> SocketIoAck<T> {
-    pub fn ok(payload: Option<&T>) -> Self {
+    pub fn ok(payload: Option<T>) -> Self {
         Self { status: SocketIoAckType::Ok, payload: payload.map(|x| x.clone()) }
     }
     pub fn err() -> Self {

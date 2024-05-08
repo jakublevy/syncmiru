@@ -11,6 +11,7 @@ import {useForm} from "react-hook-form";
 import {joiResolver} from "@hookform/resolvers/joi";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {displaynameValidate} from "src/form/validators.ts";
+import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 
 export default function DisplaynameSettings(p: Props): ReactElement {
     const {t} = useTranslation()
@@ -53,8 +54,13 @@ export default function DisplaynameSettings(p: Props): ReactElement {
         setOpen(false)
         socket!
             .emitWithAck("set_my_displayname", data)
-                .then(() => {
-                    setDisplayname(data.displayname)
+                .then((ack: SocketIoAck<null>) => {
+                    if(ack.status === SocketIoAckType.Ok) {
+                        setDisplayname(data.displayname)
+                    }
+                    else {
+                        showPersistentErrorAlert(t('displayname-change-error'))
+                    }
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('displayname-change-error'))

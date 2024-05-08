@@ -1,4 +1,4 @@
-import {ReactElement, useEffect, useRef, useState} from "react";
+import {ChangeEvent, ReactElement, useEffect, useRef, useState} from "react";
 import {BtnPrimary, BtnSecondary, EditBtn} from "@components/widgets/Button.tsx";
 import {useTranslation} from "react-i18next";
 import {useMainContext} from "@hooks/useMainContext.ts";
@@ -9,11 +9,11 @@ import {EmailInputSrvValidate, Input} from "@components/widgets/Input.tsx";
 import Joi from "joi";
 import {useForm} from "react-hook-form";
 import {joiResolver} from "@hookform/resolvers/joi";
-import {emailValidate} from "src/form/validators.ts";
+import {emailValidate, tknValidate} from "src/form/validators.ts";
 import BtnTimeout from "@components/widgets/BtnTimeout.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
 import {showTemporalErrorAlertForModal, showTemporalSuccessAlertForModal} from "src/utils/alert.ts";
-import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
+import {EmailChangeTkn, EmailChangeTknType, SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 
 export default function EmailSettings(p: Props): ReactElement {
     const {t} = useTranslation()
@@ -29,6 +29,14 @@ export default function EmailSettings(p: Props): ReactElement {
     const [resendTimeLoading, setResendTimeLoading] = useState<boolean>(true)
     const resendTimeoutDefault = useRef<number>(60)
     const [resendTimeout, setResendTimeout] = useState<number>(resendTimeoutDefault.current)
+    const [tknFrom, setTknFrom] = useState<string>('')
+    const [tknFromValid, setTknFromValid] = useState<boolean>(false)
+    const [tknFromCheckFailed, setTknFromCheckFailed] = useState<boolean>(false)
+    const [tknFromShowError, setTknFromShowError] = useState<boolean>(false)
+    const [tknTo, setTknTo] = useState<string>('')
+    const [tknToValid, setTknToValid] = useState<boolean>(false)
+    const [tknToCheckFailed, setTknToCheckFailed] = useState<boolean>(false)
+    const [tknToShowError, setTknToShowError] = useState<boolean>(false)
     const formSchema = Joi.object({
         email: Joi
             .string()
@@ -73,6 +81,13 @@ export default function EmailSettings(p: Props): ReactElement {
             p.setLoading(true)
     }, [emailLoading, resendTimeLoading]);
 
+    useEffect(() => {
+        if(tknFromValid && tknToValid) {
+            console.log('todo: actually send the request to change the email')
+            // TODO: actually send the request to change the email
+        }
+    }, [tknFromValid, tknToValid]);
+
     function changeEmail(data: FormFields) {
         if(!emailUnique)
             return;
@@ -107,9 +122,42 @@ export default function EmailSettings(p: Props): ReactElement {
         setOpenSetNewEmailModal(true)
     }
 
+    async function checkTkn(tkn: string, tknType: EmailChangeTknType): Promise<boolean> {
+        if(!tknValidate(tkn))
+            return false
+
+        return socket!.emitWithAck("check_email_change_tkn", { tkn_type: tknType, tkn: tkn } as EmailChangeTkn)
+            .then((ack: SocketIoAck<boolean>) => {
+                if(tknType === EmailChangeTknType.From)
+                    setTknFromCheckFailed(false)
+                else
+                    setTknToCheckFailed(false)
+
+                if(ack.status === SocketIoAckType.Ok)
+                    return ack.payload as boolean
+                return false
+            })
+            .catch(() => {
+                if(tknType === EmailChangeTknType.From)
+                    setTknFromCheckFailed(true)
+                else
+                    setTknToCheckFailed(true)
+
+                return false
+            })
+    }
+
     function resendEmails() {
         setOpenVerifyEmailsModal(false)
         p.setLoading(true)
+
+        setTknFrom('')
+        setTknFromShowError(false)
+        setTknFromValid(false)
+        setTknTo('')
+        setTknToShowError(false)
+        setTknToValid(false)
+
         socket!.emitWithAck("send_email_change_verification_emails", {email: newEmail, lang: lang})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Ok) {
@@ -129,6 +177,22 @@ export default function EmailSettings(p: Props): ReactElement {
                 setOpenVerifyEmailsModal(true)
                 p.setLoading(false)
             })
+    }
+
+    async function tknFromChanged(e: ChangeEvent<HTMLInputElement>) {
+        const tkn = e.target.value
+        setTknFrom(tkn)
+        const valid = await checkTkn(tkn, EmailChangeTknType.From)
+        setTknFromValid(valid)
+        setTknFromShowError(!valid && tkn.length > 0)
+    }
+
+    async function tknToChanged(e: ChangeEvent<HTMLInputElement>) {
+        const tkn = e.target.value
+        setTknTo(tkn)
+        const valid = await checkTkn(tkn, EmailChangeTknType.To)
+        setTknToValid(valid)
+        setTknToShowError(!valid && tkn.length > 0)
     }
 
     return (
@@ -194,7 +258,24 @@ export default function EmailSettings(p: Props): ReactElement {
                                         content={`${t('modal-change-email-tkn-help')} ${email}`}
                                     />
                                 </div>
-                                <Input type="text"/>
+                                <Input
+                                    type="text"
+                                    value={tknFrom}
+                                    readOnly={tknFromValid}
+                                    disabled={tknFromValid}
+                                    onChange={tknFromChanged}
+                                    maxLength={24}
+                                />
+                                {tknFromCheckFailed
+                                    ? <p className="text-danger font-semibold">{t('tkn-check-failed')}</p>
+                                    : <> {tknFromShowError
+                                        ? <p className="text-danger font-semibold">{t('tkn-invalid')}</p>
+                                        : <>{tknFromValid
+                                            ? <p className="text-success font-semibold">{t('tkn-valid')}</p>
+                                            : <p className="text-danger invisible font-semibold">L</p>
+                                        }</>
+                                    } </>
+                                }
                             </div>
                             <div className="mb-3 flex-1">
                                 <div className="flex justify-between">
@@ -205,7 +286,24 @@ export default function EmailSettings(p: Props): ReactElement {
                                         content={`${t('modal-change-email-tkn-help')} ${newEmail}`}
                                     />
                                 </div>
-                                <Input type="text"/>
+                                <Input
+                                    type="text"
+                                    value={tknTo}
+                                    readOnly={tknToValid}
+                                    disabled={tknToValid}
+                                    onChange={tknToChanged}
+                                    maxLength={24}
+                                />
+                                {tknToCheckFailed
+                                    ? <p className="text-danger font-semibold">{t('tkn-check-failed')}</p>
+                                    : <> {tknToShowError
+                                        ? <p className="text-danger font-semibold">{t('tkn-invalid')}</p>
+                                        : <>{tknToValid
+                                            ? <p className="text-success font-semibold">{t('tkn-valid')}</p>
+                                            : <p className="text-danger invisible font-semibold">L</p>
+                                        }</>
+                                    } </>
+                                }
                             </div>
                         </div>
                     </>

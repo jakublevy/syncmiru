@@ -5,7 +5,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang};
 use crate::models::query::Id;
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn};
 use crate::{crypto, email, query};
 use crate::error::SyncmiruError;
 use crate::srvstate::SrvState;
@@ -21,6 +21,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("set_my_displayname", set_my_displayname);
     s.on("get_email_resend_timeout", get_email_resend_timeout);
     s.on("send_email_change_verification_emails", send_email_change_verification_emails);
+    s.on("check_email_change_tkn", check_email_change_tkn);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_verified_users(&state.db)
@@ -146,6 +147,7 @@ pub async fn set_my_displayname(
     Data(payload): Data<Displayname>
 ) {
     if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -161,7 +163,7 @@ pub async fn set_my_displayname(
         .emit("displayname_change", DisplaynameChange{uid, displayname: payload.displayname})
         .ok();
 
-    ack.send({}).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn get_email_resend_timeout(
@@ -215,6 +217,45 @@ pub async fn send_email_change_verification_emails(
         .await
         .expect("email error");
     ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn check_email_change_tkn(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<EmailChangeTkn>
+) {
+    let uid = state.socket2uid(&s).await;
+    let mut tkn_hash_opt: Option<String> = None;
+    if payload.tkn_type == EmailChangeTknType::From {
+        tkn_hash_opt = query::get_valid_hashed_email_from_tkn(
+            &state.db,
+            uid,
+            state.config.email.token_valid_time
+        )
+            .await
+            .expect("db error")
+    }
+    else {
+        tkn_hash_opt = query::get_valid_hashed_email_to_tkn(
+            &state.db,
+            uid,
+            state.config.email.token_valid_time
+        )
+            .await
+            .expect("db error")
+    }
+    if tkn_hash_opt.is_none() {
+        ack.send(SocketIoAck::<bool>::err()).ok();
+        return;
+    }
+    let tkn_hash_db = tkn_hash_opt.unwrap();
+    if crypto::verify(payload.tkn, tkn_hash_db).await.expect("argon2 error") {
+        ack.send(SocketIoAck::<bool>::ok(Some(true))).ok();
+    }
+    else {
+        ack.send(SocketIoAck::<bool>::ok(Some(false))).ok();
+    }
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
