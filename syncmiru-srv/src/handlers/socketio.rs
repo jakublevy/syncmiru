@@ -5,9 +5,8 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang};
 use crate::models::query::Id;
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail};
 use crate::{crypto, email, query};
-use crate::error::SyncmiruError;
 use crate::srvstate::SrvState;
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -22,6 +21,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("get_email_resend_timeout", get_email_resend_timeout);
     s.on("send_email_change_verification_emails", send_email_change_verification_emails);
     s.on("check_email_change_tkn", check_email_change_tkn);
+    s.on("change_email", change_email);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_verified_users(&state.db)
@@ -180,6 +180,10 @@ pub async fn send_email_change_verification_emails(
     ack: AckSender,
     Data(payload): Data<EmailWithLang>
 ) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
     let uid = state.socket2uid(&s).await;
 
     let out_of_quota = utils::is_email_out_of_quota(&state, uid)
@@ -225,37 +229,100 @@ pub async fn check_email_change_tkn(
     ack: AckSender,
     Data(payload): Data<EmailChangeTkn>
 ) {
-    let uid = state.socket2uid(&s).await;
-    let mut tkn_hash_opt: Option<String> = None;
-    if payload.tkn_type == EmailChangeTknType::From {
-        tkn_hash_opt = query::get_valid_hashed_email_from_tkn(
-            &state.db,
-            uid,
-            state.config.email.token_valid_time
-        )
-            .await
-            .expect("db error")
-    }
-    else {
-        tkn_hash_opt = query::get_valid_hashed_email_to_tkn(
-            &state.db,
-            uid,
-            state.config.email.token_valid_time
-        )
-            .await
-            .expect("db error")
-    }
-    if tkn_hash_opt.is_none() {
-        ack.send(SocketIoAck::<bool>::err()).ok();
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-    let tkn_hash_db = tkn_hash_opt.unwrap();
-    if crypto::verify(payload.tkn, tkn_hash_db).await.expect("argon2 error") {
+
+    let uid = state.socket2uid(&s).await;
+
+    let tkn_valid = utils::check_email_change_tkn(
+        &state,
+        &payload,
+        uid
+    )
+        .await
+        .expect("checking email tkn error");
+
+    if tkn_valid {
         ack.send(SocketIoAck::<bool>::ok(Some(true))).ok();
     }
     else {
         ack.send(SocketIoAck::<bool>::ok(Some(false))).ok();
     }
+}
+
+pub async fn change_email(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<ChangeEmail>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let uid = state.socket2uid(&s).await;
+    let tkn_from_valid = utils::check_email_change_tkn(
+        &state,
+        &EmailChangeTkn { tkn: payload.tkn_from, tkn_type: EmailChangeTknType::From },
+        uid
+    )
+        .await
+        .expect("checking email tkn error");
+
+    if !tkn_from_valid {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+
+    let tkn_to_valid = utils::check_email_change_tkn(
+        &state,
+        &EmailChangeTkn { tkn: payload.tkn_to, tkn_type: EmailChangeTknType::To },
+        uid
+    )
+        .await
+        .expect("checking email tkn error");
+
+    if !tkn_to_valid {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+
+    let username = query::get_username_by_uid(
+        &state.db,
+        uid
+    )
+        .await
+        .expect("db error");
+    let email_old = query::get_email_by_uid(
+        &state.db,
+        uid
+    )
+        .await
+        .expect("db error");
+    query::update_email_by_uid(&state.db, uid, &payload.email_new)
+        .await
+        .expect("db error");
+    query::invalidate_last_email_change_tkn(
+        &state.db,
+        uid,
+        state.config.email.token_valid_time
+    )
+        .await
+        .expect("db error");
+
+    email::send_email_changed_warning(
+        &state.config.email,
+        &email_old,
+        &state.config.srv.url,
+        &payload.email_new,
+        &username,
+        &payload.lang
+    )
+        .await
+        .expect("email error");
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {

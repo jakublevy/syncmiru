@@ -106,6 +106,12 @@ pub async fn email_verify(
 
     if crypto::verify(payload.tkn, hashed_tkn).await? {
         query::set_verified(&state.db, payload.uid).await?;
+        query::invalidate_email_tkn(
+            &state.db,
+            payload.uid,
+            EmailTknType::Verify,
+            state.config.email.token_valid_time
+        ).await?;
         Ok(html::ok_verified(&payload.lang))
     } else {
         Err(SyncmiruError::UnprocessableEntity("invalid token".to_string()))
@@ -223,7 +229,15 @@ pub async fn forgotten_password_change(
         return Err(SyncmiruError::UnprocessableEntity("invalid token".to_string()))
     }
     let hashed_password = crypto::hash(payload.password.clone()).await?;
+
     query::set_user_hash(&state.db, uid, &hashed_password).await?;
+    query::invalidate_email_tkn(
+        &state.db,
+        uid,
+        EmailTknType::ForgottenPassword,
+        state.config.email.token_valid_time
+    ).await?;
+
     email::send_password_changed_warning(
         &state.config.email,
         &payload.email,

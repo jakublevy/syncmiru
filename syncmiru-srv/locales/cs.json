@@ -8,5 +8,10 @@
   "forgotten-password-body": "Ahoj,<br/>tvůj ověřovací kód pro obnovení hesla je:",
 
   "password-changed-subject": "Upozornění: provedena změna hesla",
-  "password-changed-body": "Ahoj,<br/> tvoje heslo bylo změněno."
+  "password-changed-body": "Ahoj,<br/> tvoje heslo bylo změněno.",
+
+  "email-change-subject": "Upozornění: provedena změna emailu",
+  "email-change-body-1": "Ahoj,<br>na tvém účtu s uživatelským jménem",
+  "email-change-body-2": "došlo ke změně emailu z",
+  "email-change-body-3": "na"
 }

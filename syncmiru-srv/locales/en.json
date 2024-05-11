@@ -8,5 +8,10 @@
   "forgotten-password-body": "Hi,<br/>your password recovery verification code is:",
 
   "password-changed-subject": "Warning: Password changed",
-  "password-changed-body": "Hi,<br/> your password has been changed."
+  "password-changed-body": "Hi,<br/> your password has been changed.",
+
+  "email-change-subject": "Warning: Email changed",
+  "email-change-body-1": "Hi,<br>on your account with the user name",
+  "email-change-body-2": "an email change was performed from",
+  "email-change-body-3": "to"
 }

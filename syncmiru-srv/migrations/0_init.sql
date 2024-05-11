@@ -48,7 +48,8 @@ CREATE TABLE "email_tkn_log" (
                                  "reason" email_reason NOT NULL,
                                  "hash" varchar(128) NOT NULL,
                                  "user_id" integer NOT NULL,
-                                 "sent_at" timestamptz NOT NULL DEFAULT (now())
+                                 "sent_at" timestamptz NOT NULL DEFAULT (now()),
+                                 "used" bool NOT NULL DEFAULT false
 );
 
 CREATE TABLE "change_email_log" (
@@ -56,7 +57,8 @@ CREATE TABLE "change_email_log" (
                                     "hash_from" varchar(128) NOT NULL,
                                     "hash_to" varchar(128) NOT NULL,
                                     "user_id" integer NOT NULL,
-                                    "sent_at" timestamptz NOT NULL DEFAULT (now())
+                                    "sent_at" timestamptz NOT NULL DEFAULT (now()),
+                                    "used" bool NOT NULL DEFAULT false
 );
 
 CREATE TABLE "default_settings" (

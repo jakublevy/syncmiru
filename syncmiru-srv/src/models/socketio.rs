@@ -1,7 +1,6 @@
 use chrono::Utc;
 use serde::{Serialize, Deserialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use socketioxide::extract::SocketRef;
 use validator::Validate;
 use crate::validators;
 use crate::models::query::Id;
@@ -41,8 +40,9 @@ pub struct DisplaynameChange {
     pub displayname: String
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Validate)]
 pub struct EmailChangeTkn {
+    #[validate(custom(function = "validators::check_tkn"))]
     pub tkn: String,
     pub tkn_type: EmailChangeTknType
 }
@@ -52,6 +52,21 @@ pub struct EmailChangeTkn {
 pub enum EmailChangeTknType {
     From = 0,
     To = 1
+}
+
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct ChangeEmail {
+    #[validate(custom(function = "validators::check_tkn"))]
+    pub tkn_from: String,
+
+    #[validate(custom(function = "validators::check_tkn"))]
+    pub tkn_to: String,
+
+    #[validate(email, length(max = 320))]
+    pub email_new: String,
+
+    #[validate(custom(function = "validators::check_lang"))]
+    pub lang: String
 }
 
 #[serde_with::serde_as]

@@ -1,3 +1,4 @@
+use std::fmt::format;
 use base64::Engine;
 use lettre::{Message, SmtpTransport, Transport};
 use lettre::message::header::ContentType;
@@ -97,6 +98,30 @@ pub async fn send_password_changed_warning(
     Ok(())
 }
 
+pub async fn send_email_changed_warning(
+    email_conf: &EmailConf,
+    to: &str,
+    srv_url: &str,
+    new_email: &str,
+    username: &str,
+    lang: &str
+) -> Result<()> {
+    send_email(
+        &email_conf,
+        to,
+        srv_url,
+        &t!("email-change-subject", locale = lang),
+        &format!("{} {} {} {} {} {}",
+                &t!("email-change-body-1", locale = lang),
+                username,
+                &t!("email-change-body-2", locale = lang),
+                to,
+                &t!("email-change-body-3", locale = lang),
+                new_email
+        )
+    ).await?;
+    Ok(())
+}
 
 async fn send_email(
     email_conf: &EmailConf,

@@ -1,5 +1,4 @@
 use sqlx::PgPool;
-use crate::config::DbConfig;
 use crate::models::User;
 use crate::models::query::{EmailTknType, Id};
 use crate::models::socketio::UserSession;
@@ -125,6 +124,7 @@ pub async fn get_valid_hashed_tkn(
         user_id = $1
         and reason = $2
         and sent_at > now() - interval '1 seconds' * $3
+        and used = FALSE
         order by sent_at desc
         limit 1
     "#;
@@ -460,6 +460,7 @@ pub async fn get_valid_hashed_email_from_tkn(
         where
         user_id = $1
         and sent_at > now() - interval '1 seconds' * $2
+        and used = FALSE
         order by sent_at desc
         limit 1
     "#;
@@ -484,6 +485,7 @@ pub async fn get_valid_hashed_email_to_tkn(
         where
         user_id = $1
         and sent_at > now() - interval '1 seconds' * $2
+        and used = FALSE
         order by sent_at desc
         limit 1
     "#;
@@ -496,4 +498,66 @@ pub async fn get_valid_hashed_email_to_tkn(
     else {
         Ok(None)
     }
+}
+
+pub async fn update_email_by_uid(db: &PgPool, uid: Id, email: &str) -> Result<()> {
+    sqlx::query("update users set email = $1 where id = $2")
+        .bind(email)
+        .bind(uid)
+        .execute(db)
+        .await?;
+    Ok(())
+}
+
+pub async fn invalidate_last_email_change_tkn(
+    db: &PgPool,
+    uid: Id,
+    valid_time: i64
+) -> Result<()> {
+    let query = r#"
+        update change_email_log
+        set used = TRUE
+        where id = (
+            select id from change_email_log
+            where
+                user_id = $1
+                and sent_at > now() - interval '1 seconds' * $2
+            order by sent_at desc
+            limit 1
+        )
+    "#;
+    sqlx::query(query)
+        .bind(uid)
+        .bind(valid_time)
+        .execute(db)
+        .await?;
+    Ok(())
+}
+
+pub async fn invalidate_email_tkn(
+    db: &PgPool,
+    uid: Id,
+    email_type: EmailTknType,
+    valid_time: i64
+) -> Result<()> {
+    let query = r#"
+        update email_tkn_log
+        set used = TRUE
+        where id = (
+	        select id from email_tkn_log
+	        where
+		        user_id = $1
+                and reason = $2
+                and sent_at > now() - interval '1 seconds' * $3
+            order by sent_at desc
+            limit 1
+        )
+    "#;
+    sqlx::query(query)
+        .bind(uid)
+        .bind(email_type)
+        .bind(valid_time)
+        .execute(db)
+        .await?;
+    Ok(())
 }
