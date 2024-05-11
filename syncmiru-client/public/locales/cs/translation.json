@@ -149,5 +149,6 @@
   "modal-change-email-tkn-to-label": "Kód odeslaný na vyplněný nový email",
   "modal-change-email-tkn-help": "Do políčka vyplňte kód, který byl odeslán na",
   "modal-change-email-resend-success": "Nové emaily byly rozeslány",
-  "modal-change-email-send-error": "Odeslání emailů selhalo, příliš mnoho požadavků v krátkém čase, zkuste to prosím později"
+  "modal-change-email-send-error": "Odeslání emailů selhalo, příliš mnoho požadavků v krátkém čase, zkuste to prosím později",
+  "modal-change-email-change-failed": "Došlo k chybě při změně emailu"
 }

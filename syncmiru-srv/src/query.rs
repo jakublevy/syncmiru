@@ -1,4 +1,4 @@
-use sqlx::PgPool;
+use sqlx::{Executor, PgPool, Postgres, Transaction};
 use crate::models::User;
 use crate::models::query::{EmailTknType, Id};
 use crate::models::socketio::UserSession;
@@ -150,10 +150,10 @@ pub async fn get_verified_unsafe(
     Ok(is_verified.0)
 }
 
-pub async fn set_verified(db: &PgPool, uid: Id) -> Result<()> {
+pub async fn set_verified(db: &mut Transaction<'_, Postgres>, uid: Id) -> Result<()> {
     sqlx::query("update users set verified = TRUE where id = $1")
         .bind(uid)
-        .execute(db).await?;
+        .execute(&mut **db).await?;
     Ok(())
 }
 
@@ -168,11 +168,12 @@ pub async fn email_verified(db: &PgPool, email: &str) -> Result<Option<bool>> {
     }
 }
 
-pub async fn set_user_hash(db: &PgPool, uid: Id, hash: &str) -> Result<()> {
+pub async fn set_user_hash(db: &mut Transaction<'_, Postgres>, uid: Id, hash: &str) -> Result<()> {
     sqlx::query("update users set hash = $1 where id = $2")
         .bind(hash)
         .bind(uid)
-        .execute(db).await?;
+        .execute(&mut **db)
+        .await?;
     Ok(())
 }
 
@@ -500,17 +501,17 @@ pub async fn get_valid_hashed_email_to_tkn(
     }
 }
 
-pub async fn update_email_by_uid(db: &PgPool, uid: Id, email: &str) -> Result<()> {
+pub async fn update_email_by_uid(db: &mut Transaction<'_, Postgres>, uid: Id, email: &str) -> Result<()> {
     sqlx::query("update users set email = $1 where id = $2")
         .bind(email)
         .bind(uid)
-        .execute(db)
+        .execute(&mut **db)
         .await?;
     Ok(())
 }
 
 pub async fn invalidate_last_email_change_tkn(
-    db: &PgPool,
+    db: &mut Transaction<'_, Postgres>,
     uid: Id,
     valid_time: i64
 ) -> Result<()> {
@@ -529,13 +530,13 @@ pub async fn invalidate_last_email_change_tkn(
     sqlx::query(query)
         .bind(uid)
         .bind(valid_time)
-        .execute(db)
+        .execute(&mut **db)
         .await?;
     Ok(())
 }
 
 pub async fn invalidate_email_tkn(
-    db: &PgPool,
+    db: &mut Transaction<'_, Postgres>,
     uid: Id,
     email_type: EmailTknType,
     valid_time: i64
@@ -557,7 +558,7 @@ pub async fn invalidate_email_tkn(
         .bind(uid)
         .bind(email_type)
         .bind(valid_time)
-        .execute(db)
+        .execute(&mut **db)
         .await?;
     Ok(())
 }

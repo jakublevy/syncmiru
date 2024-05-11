@@ -149,5 +149,6 @@
   "modal-change-email-tkn-to-label": "Code sent to filled new email",
   "modal-change-email-tkn-help": "Fill in the code that was sent to",
   "modal-change-email-resend-success": "New emails has been sent",
-  "modal-change-email-send-error": "Sending emails failed, too many requests in a short time, please try again later"
+  "modal-change-email-send-error": "Sending emails failed, too many requests in a short time, please try again later",
+  "modal-change-email-change-failed": "An error occurred while changing the email"
 }

@@ -2,6 +2,7 @@ mod utils;
 
 use std::sync::Arc;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
+use sqlx::Executor;
 use validator::Validate;
 use crate::models::{EmailWithLang};
 use crate::models::query::Id;
@@ -301,16 +302,21 @@ pub async fn change_email(
     )
         .await
         .expect("db error");
-    query::update_email_by_uid(&state.db, uid, &payload.email_new)
+
+    let mut transaction = state.db.begin()
+        .await
+        .expect("db error");
+    query::update_email_by_uid(&mut transaction, uid, &payload.email_new)
         .await
         .expect("db error");
     query::invalidate_last_email_change_tkn(
-        &state.db,
+        &mut transaction,
         uid,
         state.config.email.token_valid_time
     )
         .await
         .expect("db error");
+    transaction.commit().await.expect("db error");
 
     email::send_email_changed_warning(
         &state.config.email,

@@ -97,12 +97,12 @@ export default function EmailSettings(p: Props): ReactElement {
             })
                 .then((ack: SocketIoAck<null>) => {
                     if(ack.status === SocketIoAckType.Err)
-                        showPersistentErrorAlert("Došlo k chybě při změně emailu")
+                        showPersistentErrorAlert(t('modal-change-email-change-failed'))
                     else
                         setEmail(newEmail)
                 })
                 .catch(() => {
-                    showPersistentErrorAlert("Došlo k chybě při změně emailu")
+                    showPersistentErrorAlert(t('modal-change-email-change-failed'))
                 })
                 .finally(() => {
                     p.setLoading(false)
@@ -118,7 +118,7 @@ export default function EmailSettings(p: Props): ReactElement {
         setNewEmail(data.email)
         setOpenSetNewEmailModal(false)
         setOpenVerifyEmailsModal(true)
-        socket!.emitWithAck("send_email_change_verification_emails", {email: newEmail, lang: lang})
+        socket!.emitWithAck("send_email_change_verification_emails", {email: data.email, lang: lang})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
                     showTemporalErrorAlertForModal(t('modal-change-email-send-error'))
