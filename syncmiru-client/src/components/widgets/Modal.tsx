@@ -12,11 +12,13 @@ export function Modal(p: ModalProps): ReactElement {
         >
             <div className="fixed inset-0 bg-black/50" aria-hidden="true"/>
 
-            <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
-                <Dialog.Panel
-                    className="mx-auto max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-darkbg dark:border-gray-700 p-6 min-w-[40rem]">
-                    {p.content}
-                </Dialog.Panel>
+            <div className="fixed flex inset-0 w-screen items-center overflow-y-auto p-4">
+                <div className="m-auto">
+                    <Dialog.Panel
+                        className="mx-auto max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-darkbg dark:border-gray-700 p-6 min-w-[40rem]">
+                        {p.content}
+                    </Dialog.Panel>
+                </div>
             </div>
         </Dialog>
     )

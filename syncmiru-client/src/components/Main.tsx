@@ -22,6 +22,7 @@ import {useHwidHash} from "@hooks/useHwidHash.ts";
 import {DisplaynameChange, User, UserId, UserValue} from "src/models/user.ts";
 import {showPersistentErrorAlert, showPersistentWarningAlert} from "src/utils/alert.ts";
 import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
+import {listen} from "@tauri-apps/api/event";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()

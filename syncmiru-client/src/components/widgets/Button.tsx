@@ -1,7 +1,5 @@
 import React, {ReactElement, ReactNode} from "react";
 import Previous from "@components/svg/Previous.tsx";
-import DoorOut from "@components/svg/DoorOut.tsx";
-import {act} from "react-dom/test-utils";
 import Close from "@components/svg/Close.tsx";
 import Delete from "@components/svg/Delete.tsx";
 import Edit from "@components/svg/Edit.tsx";
