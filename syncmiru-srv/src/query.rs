@@ -562,3 +562,12 @@ pub async fn invalidate_email_tkn(
         .await?;
     Ok(())
 }
+
+pub async fn update_avatar_by_uid(db: &PgPool, uid: Id, avatar: &[u8]) -> Result<()> {
+    sqlx::query("update users set avatar = $1 where id = $2")
+        .bind(avatar)
+        .bind(uid)
+        .execute(db)
+        .await?;
+    Ok(())
+}

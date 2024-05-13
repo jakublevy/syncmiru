@@ -19,7 +19,7 @@ export default function Account(): ReactElement {
     const {t} = useTranslation()
     const clearJwt = useClearJwt()
     const [usernameLoading, setUsernameLoading] = useState<boolean>(true)
-    //const [avatarLoading, setAvatarLoading] = useState<boolean>(true)
+    const [avatarLoading, setAvatarLoading] = useState<boolean>(true)
     const [displaynameLoading, setDisplaynameLoading] = useState<boolean>(true)
     const [emailLoading, setEmailLoading] = useState<boolean>(true)
 
@@ -31,7 +31,7 @@ export default function Account(): ReactElement {
     }
 
     function showContent() {
-        return !usernameLoading && !displaynameLoading && !emailLoading
+        return !usernameLoading && !displaynameLoading && !emailLoading && !avatarLoading
     }
 
     return (
@@ -58,7 +58,9 @@ export default function Account(): ReactElement {
                 <UsernameView
                     setLoading={(b: boolean) => setUsernameLoading(b)}
                 />
-                <AvatarSettings/>
+                <AvatarSettings
+                    setLoading={(b: boolean) => setAvatarLoading(b)}
+                />
                 <DisplaynameSettings
                     setLoading={(b: boolean) => setDisplaynameLoading(b)}
                 />

@@ -150,5 +150,12 @@
   "modal-change-email-tkn-help": "Fill in the code that was sent to",
   "modal-change-email-resend-success": "New emails has been sent",
   "modal-change-email-send-error": "Sending emails failed, too many requests in a short time, please try again later",
-  "modal-change-email-change-failed": "An error occurred while changing the email"
+  "modal-change-email-change-failed": "An error occurred while changing the email",
+
+  "modal-avatar-delete-btn": "Delete",
+  "modal-avatar-change-btn": "Upload new from PC",
+  "modal-avatar-action-title": "Change your avatar",
+  "modal-avatar-edit-title": "Edit the picture",
+  "modal-avatar-res-error": "Your avatar must be at least 128x128 pixels",
+  "modal-avatar-max-size-error": "Maximum avatar size is 5MB"
 }

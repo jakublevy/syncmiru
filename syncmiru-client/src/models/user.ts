@@ -6,7 +6,7 @@ export type UserId = number
 export interface UserValue {
     username: string,
     displayname: string,
-    avatar: Array<number> | undefined
+    avatar: string
 }
 
 export interface UserSessionStrTime {
@@ -23,7 +23,24 @@ export interface UserSession {
     last_access_at: Date
 }
 
-export interface DisplaynameChange {
-    uid: number,
+interface UserPropChange {
+    uid: number
+}
+
+export interface DisplaynameChange extends UserPropChange{
     displayname: string
+}
+
+export interface AvatarChange extends UserPropChange {
+    avatar: Array<number>
+}
+
+export interface EmailChangeTkn {
+    tkn: string
+    tkn_type: EmailChangeTknType
+}
+
+export enum EmailChangeTknType {
+    From = 0,
+    To = 1
 }

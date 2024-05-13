@@ -6,7 +6,7 @@ use sqlx::Executor;
 use validator::Validate;
 use crate::models::{EmailWithLang};
 use crate::models::query::Id;
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange};
 use crate::{crypto, email, query};
 use crate::srvstate::SrvState;
 
@@ -23,6 +23,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("send_email_change_verification_emails", send_email_change_verification_emails);
     s.on("check_email_change_tkn", check_email_change_tkn);
     s.on("change_email", change_email);
+    s.on("set_avatar", set_avatar);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_verified_users(&state.db)
@@ -328,6 +329,33 @@ pub async fn change_email(
     )
         .await
         .expect("email error");
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn set_avatar(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<AvatarBin>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let uid = state.socket2uid(&s).await;
+    query::update_avatar_by_uid(&state.db, uid, &payload.data)
+        .await
+        .expect("db error");
+
+    s
+        .broadcast()
+        .emit("avatar_change", AvatarChange{uid, avatar: payload.data.clone()})
+        .ok();
+
+    s
+        .emit("avatar_change", AvatarChange{uid, avatar: payload.data})
+        .ok();
+
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 

@@ -36,3 +36,4 @@ josekit = "0.8.6"
 openssl = { version = "0.10.64", features = ["vendored"] }
 bimap = "0.6.3"
 chrono = { version = "0.4.38", features = ["serde"] }
+image = "0.25.1"

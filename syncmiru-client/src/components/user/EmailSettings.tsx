@@ -17,7 +17,8 @@ import {
     showTemporalErrorAlertForModal,
     showTemporalSuccessAlertForModal
 } from "src/utils/alert.ts";
-import {EmailChangeTkn, EmailChangeTknType, SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
+import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
+import {EmailChangeTkn, EmailChangeTknType} from "@models/user.ts";
 
 export default function EmailSettings(p: Props): ReactElement {
     const {t} = useTranslation()

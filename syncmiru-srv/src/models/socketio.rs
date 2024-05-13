@@ -69,6 +69,18 @@ pub struct ChangeEmail {
     pub lang: String
 }
 
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct AvatarBin {
+    #[validate(custom(function = "validators::check_avatar"))]
+    pub data: Vec<u8>
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct AvatarChange {
+    pub uid: Id,
+    pub avatar: Vec<u8>
+}
+
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize)]

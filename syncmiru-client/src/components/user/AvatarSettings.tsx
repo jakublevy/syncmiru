@@ -1,29 +1,33 @@
 import DefaultAvatar from "@components/svg/DefaultAvatar.tsx";
-import {BtnPrimary, BtnSecondary, Clickable, EditBtn} from "@components/widgets/Button.tsx";
+import {BtnPrimary, BtnSecondary, Clickable, EditBtn, ZoomResetBtn} from "@components/widgets/Button.tsx";
 import React, {ChangeEvent, ReactElement, useRef, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import Upload from "@components/svg/Upload.tsx";
 import Delete from "@components/svg/Delete.tsx";
 import ExifReader from 'exifreader';
-import {showTemporalErrorAlertForModal} from "src/utils/alert.ts";
+import {showPersistentErrorAlert, showTemporalErrorAlertForModal} from "src/utils/alert.ts";
 import Pic from "@components/svg/Pic.tsx";
 import Slider from "rc-slider";
 import 'rc-slider/assets/index.css';
 import AvatarEditor from 'react-avatar-editor'
-import ZoomReset from "@components/svg/ZoomReset.tsx";
+import {useMainContext} from "@hooks/useMainContext.ts";
+import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 
-export default function AvatarSettings(): ReactElement {
+export default function AvatarSettings(p: Props): ReactElement {
+    const {socket} = useMainContext()
     const {t} = useTranslation()
     const [avatarActionModalOpen, setAvatarActionModalOpen] = useState<boolean>(false)
     const [picEditorModalOpen, setPicEditorModalOpen] = useState<boolean>(false)
     const avatarFileRef = useRef<HTMLInputElement>(null)
     const [avatarFile, setAvatarFile] = useState<File>()
     const [avatarEditorScale, setAvatarEditorScale] = useState<number>(1.0)
+    const avatarEditorRef = useRef<AvatarEditor>(null)
+    const [avatarEditorW, setAvatarEditorW] = useState<number>(256)
+    const [avatarEditorH, setAvatarEditorH] = useState<number>(256)
 
     function editClicked() {
         setAvatarActionModalOpen(true)
-        console.log("TODO")
     }
 
     function deleteAvatarClicked() {
@@ -49,6 +53,11 @@ export default function AvatarSettings(): ReactElement {
         reset()
         const picFile = e.target.files[0]
         const picBuffer = await picFile.arrayBuffer()
+        if(picBuffer.byteLength > 5*1024*1024) {
+            showTemporalErrorAlertForModal(t('modal-avatar-max-size-error'))
+            return;
+        }
+
         const tags = await ExifReader.load(picBuffer);
         if (
             tags["Image Height"]?.value == undefined
@@ -56,12 +65,53 @@ export default function AvatarSettings(): ReactElement {
             || tags["Image Width"]?.value == undefined
             || tags["Image Width"]?.value < 128
         ) {
-            showTemporalErrorAlertForModal("Avatar musí mít rozměry alespoň 128x128 pixelů")
+            showTemporalErrorAlertForModal(t('modal-avatar-res-error'))
             return;
         }
+
         setAvatarFile(picFile)
         setAvatarActionModalOpen(false)
         setPicEditorModalOpen(true)
+    }
+
+    async function setAvatarClicked() {
+        const canvas: HTMLCanvasElement = scaleTo128(avatarEditorRef.current.getImageScaledToCanvas())
+        const blob = await getCanvasBlob(canvas) as Blob
+        const arrBuff = await blob.arrayBuffer()
+        const imgBin = Array.from(new Uint8Array(await blob.arrayBuffer()))
+        const txt = canvas.toDataURL()
+
+        setPicEditorModalOpen(false)
+        p.setLoading(true)
+        socket!.emitWithAck("set_avatar", {data: imgBin})
+            .then((ack: SocketIoAck<null>) => {
+                if(ack.status === SocketIoAckType.Err) {
+                    showPersistentErrorAlert("Error changing picture from srv")
+                }
+            })
+            .catch(() => {
+                showPersistentErrorAlert("Error changing picture from srv")
+            })
+            .finally(() => {
+                p.setLoading(false)
+            })
+    }
+
+    function scaleTo128(canvas: HTMLCanvasElement): HTMLCanvasElement {
+        const canvas128 = document.createElement('canvas');
+        canvas128.width = 128;
+        canvas128.height = 128;
+        const ctx = canvas128.getContext('2d') as CanvasRenderingContext2D;
+        ctx.drawImage(canvas, 0, 0, 128, 128);
+        return canvas128
+    }
+
+    function getCanvasBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
+        return new Promise(function(resolve, reject) {
+            canvas.toBlob(function(blob) {
+                resolve(blob)
+            })
+        })
     }
 
     return (
@@ -73,7 +123,7 @@ export default function AvatarSettings(): ReactElement {
                 <EditBtn className="w-10" onClick={editClicked}/>
             </div>
             <ModalWHeader
-                title="Změna avatara"
+                title={t('modal-avatar-action-title')}
                 open={avatarActionModalOpen}
                 setOpen={setAvatarActionModalOpen}
                 content={
@@ -88,30 +138,31 @@ export default function AvatarSettings(): ReactElement {
                                     onChange={avatarFileChanged}
                                 />
                                 <Upload className="w-8"/>
-                                <p className="mt-2">Nahrát nový z PC</p>
+                                <p className="mt-2">{t('modal-avatar-change-btn')}</p>
                             </div>
                         </Clickable>
                         <div className="w-4"></div>
                         <Clickable className="w-44 h-32 border" onClick={deleteAvatarClicked}>
                             <div className="flex flex-col items-center">
                                 <Delete className="w-8"/>
-                                <p className="mt-2">Odstranit</p>
+                                <p className="mt-2">{t('modal-avatar-delete-btn')}</p>
                             </div>
                         </Clickable>
                     </div>
                 }
             />
             <ModalWHeader
-                title="Úprava obrázku"
+                title={t('modal-avatar-edit-title')}
                 open={picEditorModalOpen}
                 setOpen={setPicEditorModalOpen}
                 content={
                     <>
                         <div className="flex flex-col items-center justify-center gap-y-4">
                             <AvatarEditor
+                                ref={avatarEditorRef}
                                 image={avatarFile}
-                                width={250}
-                                height={250}
+                                width={256}
+                                height={256}
                                 border={50}
                                 borderRadius={9999}
                                 color={[0, 0, 0, 0.8]}
@@ -126,18 +177,22 @@ export default function AvatarSettings(): ReactElement {
                                         max={5}
                                         step={0.001}
                                         defaultValue={1.0}
+                                        value={avatarEditorScale}
                                         onChange={(v) => setAvatarEditorScale(v as number)}
                                     />
                                     <Pic className="w-8"/>
-                                    <BtnSecondary className="w-12 absolute right-0 -mr-24">
-                                        <ZoomReset className="w-full"/>
-                                    </BtnSecondary>
+                                    <ZoomResetBtn
+                                        className="w-10 absolute right-0 -mr-24"
+                                        onClick={() => setAvatarEditorScale(1.0)}
+                                    />
                                 </div>
                             </div>
                         </div>
                         <hr className="-ml-6 -mr-6 mt-4 mb-4"/>
                         <div className="flex gap-3">
-                            <BtnPrimary type="submit">{t('modal-change-action-btn')}</BtnPrimary>
+                            <BtnPrimary
+                                onClick={setAvatarClicked}
+                            >{t('modal-change-action-btn')}</BtnPrimary>
                             <BtnSecondary
                                 onClick={() => setPicEditorModalOpen(false)}>{t('modal-no-action-btn')}</BtnSecondary>
                         </div>
@@ -146,4 +201,8 @@ export default function AvatarSettings(): ReactElement {
             />
         </>
     )
+}
+
+interface Props {
+    setLoading: (b: boolean) => void
 }

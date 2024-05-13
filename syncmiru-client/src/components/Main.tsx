@@ -19,10 +19,11 @@ import UserSettings from "@components/user/UserSettings.tsx";
 import useClearJwt from "@hooks/useClearJwt.ts";
 import {LoginTkns} from "@models/login.ts";
 import {useHwidHash} from "@hooks/useHwidHash.ts";
-import {DisplaynameChange, User, UserId, UserValue} from "src/models/user.ts";
+import {AvatarChange, DisplaynameChange, User, UserId, UserValue} from "src/models/user.ts";
 import {showPersistentErrorAlert, showPersistentWarningAlert} from "src/utils/alert.ts";
 import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
 import {listen} from "@tauri-apps/api/event";
+import {arrayBufferToBase64} from "../utils/encoding.ts";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -51,6 +52,7 @@ export default function Main(): ReactElement {
         s.on('users', onUsers)
         s.on('new_login', onNewLogin)
         s.on('displayname_change', onDisplaynameChange)
+        s.on('avatar_change', onAvatarChange)
         setSocket(s)
         return () => {
             s.disconnect()
@@ -104,6 +106,17 @@ export default function Main(): ReactElement {
         user.displayname = payload.displayname;
         const m = new Map<UserId, UserValue>();
         m.set(payload.uid, user);
+        setUsers((p) => new Map<UserId, UserValue>([...p, ...m]))
+    }
+
+    function onAvatarChange(payload: AvatarChange) {
+        let user = users.get(payload.uid)
+        if(user === undefined)
+            return;
+
+        user.avatar = arrayBufferToBase64(payload.avatar)
+        const m = new Map<UserId, UserValue>();
+        m.set(payload.uid, user)
         setUsers((p) => new Map<UserId, UserValue>([...p, ...m]))
     }
 

@@ -3,6 +3,8 @@ import Previous from "@components/svg/Previous.tsx";
 import Close from "@components/svg/Close.tsx";
 import Delete from "@components/svg/Delete.tsx";
 import Edit from "@components/svg/Edit.tsx";
+import Danger from "@components/svg/Danger.tsx";
+import ZoomReset from "@components/svg/ZoomReset.tsx";
 
 export function Btn(p: BtnProps): ReactElement {
     const {children, ...restParams} = p
@@ -82,25 +84,48 @@ export function Clickable(p: BtnProps): ReactElement {
 }
 
 export function DeleteBtn(p: SvgBtn): ReactElement {
-    const {className, ...restParams} = p
-    return <Clickable
-        className={`bg-red-600 hover:bg-red-800 text-white font-bold py-1.5 px-1.5 border border-red-700 rounded ${className != null ? className : ''}`}
-        {...restParams}>
-        <Delete className="w-full"/>
-    </Clickable>
+    return (
+        <BtnDangerSvg {...p}>
+            <Delete className="w-full"/>
+        </BtnDangerSvg>
+    )
 }
 
 export function EditBtn(p: SvgBtn): ReactElement {
-    const {className, ...restParams} = p
-    return <Btn
-        className={`bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold border py-1.5 px-1.5 rounded ${className != null ? className : ''}`}
-        {...restParams}>
-        <Edit className="w-full"/>
-    </Btn>
+    return (
+        <BtnSecondarySvg {...p}>
+            <Edit className="w-full"/>
+        </BtnSecondarySvg>
+    )
+}
+
+export function ZoomResetBtn(p: SvgBtn): ReactElement {
+    return (
+        <BtnSecondarySvg {...p}>
+            <ZoomReset className="w-full"/>
+        </BtnSecondarySvg>
+    )
 }
 
 type SvgBtn = Omit<BtnProps, "children">
 
+export function BtnSecondarySvg(p: BtnProps): ReactElement {
+    const {className, children, ...restParams} = p
+    return <Btn
+        className={`bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold border py-1.5 px-1.5 rounded ${className != null ? className : ''}`}
+        {...restParams}>
+        {children}
+    </Btn>
+}
+
+export function BtnDangerSvg(p: BtnProps): ReactElement {
+    const {className, children, ...restParams} = p
+    return <Btn
+        className={`bg-red-600 hover:bg-red-800 text-white font-bold py-1.5 px-1.5 border border-red-700 rounded ${className != null ? className : ''}`}
+        {...restParams}>
+        {children}
+    </Btn>
+}
 
 export function NavLink(p: NavlinkProps): ReactElement {
     const {className, children, active, ...restParams} = p

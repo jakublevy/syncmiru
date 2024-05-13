@@ -61,3 +61,20 @@ pub fn check_tkn(tkn: &str) -> Result<(), ValidationError> {
     }
     Ok(())
 }
+
+pub fn check_avatar(data: &[u8]) -> Result<(), ValidationError> {
+    if data.len() < 1 || data.len() > 5242880 {
+        return Err(ValidationError::new("invalid avatar size"))
+    }
+
+    let pic = image::load_from_memory(data)
+        .map_err(|e| ValidationError::new("not a valid picture"))?;
+    println!("{:?}", pic);
+    if pic.width() != 128 {
+        return Err(ValidationError::new("invalid avatar width"))
+    }
+    if pic.height() != 128 {
+        return Err(ValidationError::new("invalid avatar height"))
+    }
+    Ok(())
+}
