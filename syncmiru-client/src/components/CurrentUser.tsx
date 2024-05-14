@@ -1,32 +1,22 @@
-import React, {ReactElement, useEffect, useState} from "react";
+import React, {ReactElement} from "react";
 import DefaultAvatar from "@components/svg/DefaultAvatar.tsx";
 import {Clickable} from "@components/widgets/Button.tsx";
 import Settings from "@components/svg/Settings.tsx";
 import Loading from "@components/Loading.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {useLocation} from "wouter";
-import {UserId, UserValue} from "src/models/user.ts";
+import {UserId, UserValueClient} from "src/models/user.ts";
 
 export default function CurrentUser(): ReactElement {
     const [_, navigate] = useLocation()
-    const {socket, users} = useMainContext()
-    const [myUid, setMyUid] = useState<number>();
-
-    useEffect(() => {
-        if(socket !== undefined)
-            socket.on('me', onMe)
-    }, [socket]);
-
-    function onMe(uid: UserId) {
-        setMyUid(uid)
-    }
+    const {uid, users} = useMainContext()
 
     function userSettingsClicked() {
         navigate('/main/user-settings/account')
     }
 
-    if (myUid !== undefined && users.get(myUid) !== undefined) {
-        const user = users.get(myUid) as UserValue
+    if (users.get(uid) !== undefined) {
+        const user = users.get(uid) as UserValueClient
         return (
             <div className="flex justify-between items-center p-2 h-16">
                 <div className="flex">

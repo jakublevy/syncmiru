@@ -1,6 +1,5 @@
-import DefaultAvatar from "@components/svg/DefaultAvatar.tsx";
 import {BtnPrimary, BtnSecondary, Clickable, EditBtn, ZoomResetBtn} from "@components/widgets/Button.tsx";
-import React, {ChangeEvent, ReactElement, useRef, useState} from "react";
+import React, {ChangeEvent, ReactElement, useEffect, useRef, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import Upload from "@components/svg/Upload.tsx";
@@ -13,9 +12,11 @@ import 'rc-slider/assets/index.css';
 import AvatarEditor from 'react-avatar-editor'
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
+import Avatar from "@components/widgets/Avatar.tsx";
 
 export default function AvatarSettings(p: Props): ReactElement {
-    const {socket} = useMainContext()
+    const {uid, users, socket} = useMainContext()
+    const [avatar, setAvatar] = useState<string>('')
     const {t} = useTranslation()
     const [avatarActionModalOpen, setAvatarActionModalOpen] = useState<boolean>(false)
     const [picEditorModalOpen, setPicEditorModalOpen] = useState<boolean>(false)
@@ -23,8 +24,14 @@ export default function AvatarSettings(p: Props): ReactElement {
     const [avatarFile, setAvatarFile] = useState<File>()
     const [avatarEditorScale, setAvatarEditorScale] = useState<number>(1.0)
     const avatarEditorRef = useRef<AvatarEditor>(null)
-    const [avatarEditorW, setAvatarEditorW] = useState<number>(256)
-    const [avatarEditorH, setAvatarEditorH] = useState<number>(256)
+
+    useEffect(() => {
+        const user = users.get(uid)
+        if(user !== undefined)
+            setAvatar(user.avatar)
+
+        p.setLoading(false)
+    }, [users]);
 
     function editClicked() {
         setAvatarActionModalOpen(true)
@@ -77,9 +84,7 @@ export default function AvatarSettings(p: Props): ReactElement {
     async function setAvatarClicked() {
         const canvas: HTMLCanvasElement = scaleTo128(avatarEditorRef.current.getImageScaledToCanvas())
         const blob = await getCanvasBlob(canvas) as Blob
-        const arrBuff = await blob.arrayBuffer()
         const imgBin = Array.from(new Uint8Array(await blob.arrayBuffer()))
-        const txt = canvas.toDataURL()
 
         setPicEditorModalOpen(false)
         p.setLoading(true)
@@ -118,7 +123,7 @@ export default function AvatarSettings(p: Props): ReactElement {
         <>
             <div className="flex items-center">
                 <p className="w-56">{t('user-settings-account-avatar-label')}</p>
-                <DefaultAvatar className="w-14"/>
+                <Avatar className="w-14" picBase64={avatar}/>
                 <div className="flex-1"></div>
                 <EditBtn className="w-10" onClick={editClicked}/>
             </div>

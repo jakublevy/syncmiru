@@ -1,12 +1,23 @@
-export interface User extends UserValue {
+export interface UserClient extends UserValueClient {
+    id: number
+}
+
+export interface UserSrv extends UserValueSrv {
     id: number
 }
 
 export type UserId = number
-export interface UserValue {
+
+interface UserValueCommon {
     username: string,
     displayname: string,
+}
+export interface UserValueClient extends UserValueCommon{
     avatar: string
+}
+
+export interface UserValueSrv extends UserValueCommon{
+    avatar: number[]
 }
 
 export interface UserSessionStrTime {

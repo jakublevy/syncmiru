@@ -1,14 +1,14 @@
 import React, {ReactElement, useEffect, useState} from "react";
 import DefaultAvatar from "@components/svg/DefaultAvatar.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
-import {UserId, UserValue} from "src/models/user.ts";
+import {UserId, UserValueClient} from "src/models/user.ts";
 
 export default function Users(): ReactElement {
     const {socket, users} = useMainContext()
     const [onlineUsers, setOnlineUsers]
-        = useState<Array<UserValue>>(new Array<UserValue>())
+        = useState<Array<UserValueClient>>(new Array<UserValueClient>())
     const [offlineUsers, setOfflineUsers]
-        = useState<Array<UserValue>>(new Array<UserValue>())
+        = useState<Array<UserValueClient>>(new Array<UserValueClient>())
     const [onlineUids, setOnlineUids] = useState<Array<UserId>>(new Array<UserId>());
 
     useEffect(() => {
@@ -19,14 +19,14 @@ export default function Users(): ReactElement {
     }, [socket]);
 
     useEffect(() => {
-        let on: Array<UserValue> = new Array<UserValue>();
-        let off: Array<UserValue> = new Array<UserValue>();
+        let on: Array<UserValueClient> = new Array<UserValueClient>();
+        let off: Array<UserValueClient> = new Array<UserValueClient>();
         for(const uid of users.keys()) {
             if(onlineUids.includes(uid)) {
-                on.push(users.get(uid) as UserValue);
+                on.push(users.get(uid) as UserValueClient);
             }
             else {
-                off.push(users.get(uid) as UserValue);
+                off.push(users.get(uid) as UserValueClient);
             }
         }
         on = on.sort((a, b) => a.displayname.localeCompare(b.displayname))

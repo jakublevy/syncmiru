@@ -19,11 +19,10 @@ import UserSettings from "@components/user/UserSettings.tsx";
 import useClearJwt from "@hooks/useClearJwt.ts";
 import {LoginTkns} from "@models/login.ts";
 import {useHwidHash} from "@hooks/useHwidHash.ts";
-import {AvatarChange, DisplaynameChange, User, UserId, UserValue} from "src/models/user.ts";
+import {AvatarChange, DisplaynameChange, UserClient, UserId, UserSrv, UserValueClient} from "src/models/user.ts";
 import {showPersistentErrorAlert, showPersistentWarningAlert} from "src/utils/alert.ts";
 import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
-import {listen} from "@tauri-apps/api/event";
-import {arrayBufferToBase64} from "../utils/encoding.ts";
+import {arrayBufferToBase64} from "src/utils/encoding.ts";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -33,12 +32,13 @@ export default function Main(): ReactElement {
     const clearJwt = useClearJwt()
     const homeSrv = useHomeServer();
     const [socket, setSocket] = useState<Socket>();
+    const [uid, setUid] = useState<number>(0)
     const [reconnecting, setReconnecting] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(true)
     const reconnectingRef = useRef<boolean>(false);
 
     const [users, setUsers]
-        = useState<Map<UserId, UserValue>>(new Map<UserId, UserValue>());
+        = useState<Map<UserId, UserValueClient>>(new Map<UserId, UserValueClient>());
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -53,6 +53,7 @@ export default function Main(): ReactElement {
         s.on('new_login', onNewLogin)
         s.on('displayname_change', onDisplaynameChange)
         s.on('avatar_change', onAvatarChange)
+        s.on('me', onMe)
         setSocket(s)
         return () => {
             s.disconnect()
@@ -84,12 +85,12 @@ export default function Main(): ReactElement {
         }
     }
 
-    function onUsers(users: Array<User>) {
-        let m: Map<UserId, UserValue> = new Map<UserId, UserValue>();
+    function onUsers(users: Array<UserSrv>) {
+        let m: Map<UserId, UserValueClient> = new Map<UserId, UserValueClient>();
         for (const user of users)
-            m.set(user.id, {username: user.username, displayname: user.displayname, avatar: user.avatar})
+            m.set(user.id, {username: user.username, displayname: user.displayname, avatar: arrayBufferToBase64(user.avatar)})
 
-        setUsers((p) => new Map<UserId, UserValue>([...p, ...m]))
+        setUsers((p) => new Map<UserId, UserValueClient>([...p, ...m]))
         setLoading(false)
     }
 
@@ -104,9 +105,9 @@ export default function Main(): ReactElement {
             return;
 
         user.displayname = payload.displayname;
-        const m = new Map<UserId, UserValue>();
+        const m = new Map<UserId, UserValueClient>();
         m.set(payload.uid, user);
-        setUsers((p) => new Map<UserId, UserValue>([...p, ...m]))
+        setUsers((p) => new Map<UserId, UserValueClient>([...p, ...m]))
     }
 
     function onAvatarChange(payload: AvatarChange) {
@@ -115,9 +116,13 @@ export default function Main(): ReactElement {
             return;
 
         user.avatar = arrayBufferToBase64(payload.avatar)
-        const m = new Map<UserId, UserValue>();
+        const m = new Map<UserId, UserValueClient>();
         m.set(payload.uid, user)
-        setUsers((p) => new Map<UserId, UserValue>([...p, ...m]))
+        setUsers((p) => new Map<UserId, UserValueClient>([...p, ...m]))
+    }
+
+    function onMe(uid: UserId) {
+        setUid(uid)
     }
 
     function shouldRender() {
@@ -136,7 +141,7 @@ export default function Main(): ReactElement {
         <>
             {reconnecting && <Reconnecting/>}
             {loading && <Loading/>}
-            <MainContext.Provider value={{socket: socket, users: users}}>
+            <MainContext.Provider value={{socket: socket, users: users, uid: uid}}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">
                         <SrvInfo homeSrv={homeSrv}/>

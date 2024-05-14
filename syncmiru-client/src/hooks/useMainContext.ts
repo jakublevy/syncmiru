@@ -1,11 +1,11 @@
 import {createContext, useContext} from "react";
 import {MainContextModel} from "@models/context.ts";
-import {UserId, UserValue} from "src/models/user.ts";
+import {UserId, UserValueClient} from "src/models/user.ts";
 
 export const MainContext = createContext<MainContextModel>(
     {
         socket: undefined,
-        users: new Map<UserId, UserValue>(),
+        users: new Map<UserId, UserValueClient>(),
         setUsers: _ => {}
     })
 
