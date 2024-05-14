@@ -19,6 +19,7 @@ export default function Account(): ReactElement {
     const {t} = useTranslation()
     const clearJwt = useClearJwt()
     const [usernameLoading, setUsernameLoading] = useState<boolean>(true)
+    const [passwordChangeLoading, setPasswordChangeLoading] = useState<boolean>(false)
     const [avatarLoading, setAvatarLoading] = useState<boolean>(true)
     const [displaynameLoading, setDisplaynameLoading] = useState<boolean>(true)
     const [emailLoading, setEmailLoading] = useState<boolean>(true)
@@ -31,7 +32,7 @@ export default function Account(): ReactElement {
     }
 
     function showContent() {
-        return !usernameLoading && !displaynameLoading && !emailLoading && !avatarLoading
+        return !usernameLoading && !displaynameLoading && !emailLoading && !avatarLoading && !passwordChangeLoading
     }
 
     return (
@@ -51,7 +52,9 @@ export default function Account(): ReactElement {
             <div className="ml-8 mr-8 mb-8">
                 <div className="flex gap-x-4">
                     <BtnSecondary onClick={signOutClicked}>{t('user-settings-account-sign-out-btn')}</BtnSecondary>
-                    <PasswordSettings/>
+                    <PasswordSettings
+                        setLoading={(b: boolean) => setPasswordChangeLoading(b)}
+                    />
                 </div>
             </div>
             <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">

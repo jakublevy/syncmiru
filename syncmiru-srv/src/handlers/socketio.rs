@@ -6,7 +6,7 @@ use sqlx::Executor;
 use validator::Validate;
 use crate::models::{EmailWithLang};
 use crate::models::query::Id;
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword};
 use crate::{crypto, email, query};
 use crate::srvstate::SrvState;
 
@@ -23,6 +23,8 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("change_email", change_email);
     s.on("set_avatar", set_avatar);
     s.on("delete_avatar", delete_avatar);
+    s.on("check_password", check_password);
+    s.on("change_password", change_password);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_verified_users(&state.db)
@@ -354,6 +356,54 @@ pub async fn delete_avatar(
         .ok();
 
     ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn check_password(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<Password>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<bool>::ok(Some(false))).ok();
+        return;
+    }
+    let uid = state.socket2uid(&s).await;
+    let password_hash = query::get_user_hash_unsafe(&state.db, uid)
+        .await
+        .expect("db error");
+    if crypto::verify(payload.password, password_hash).await.expect("argon2 error") {
+        ack.send(SocketIoAck::<bool>::ok(Some(true))).ok();
+        return;
+    }
+    ack.send(SocketIoAck::<bool>::ok(Some(false))).ok();
+}
+
+pub async fn change_password(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<ChangePassword>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let uid = state.socket2uid(&s).await;
+    let password_hash = query::get_user_hash_unsafe(&state.db, uid)
+        .await
+        .expect("db error");
+    if crypto::verify(payload.old_password, password_hash).await.expect("argon2 error") {
+        let new_hash = crypto::hash(payload.new_password)
+            .await
+            .expect("argon2 error");
+        query::update_password_by_uid(&state.db, uid, &new_hash)
+            .await
+            .expect("db error");
+        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        return;
+    }
+    ack.send(SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {

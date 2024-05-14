@@ -571,3 +571,12 @@ pub async fn update_avatar_by_uid(db: &PgPool, uid: Id, avatar: &[u8]) -> Result
         .await?;
     Ok(())
 }
+
+pub async fn update_password_by_uid(db: &PgPool, uid: Id, password_hash: &str) -> Result<()> {
+    sqlx::query("update users set hash = $1 where id = $2")
+        .bind(password_hash)
+        .bind(uid)
+        .execute(db)
+        .await?;
+    Ok(())
+}

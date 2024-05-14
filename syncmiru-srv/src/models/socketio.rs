@@ -81,6 +81,21 @@ pub struct AvatarChange {
     pub avatar: Vec<u8>
 }
 
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct Password {
+    #[validate(length(min = 8))]
+    pub password: String
+}
+
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct ChangePassword {
+    #[validate(length(min = 8))]
+    pub old_password: String,
+
+    #[validate(length(min = 8))]
+    pub new_password: String
+}
+
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize)]

@@ -158,5 +158,18 @@
   "modal-avatar-edit-title": "Úprava obrázku",
   "modal-avatar-res-error": "Avatar musí mít rozměry alespoň 128x128 pixelů",
   "modal-avatar-max-size-error": "Maximální velikost avataru je 5MB",
-  "modal-avatar-delete-error": "Došlo k chybě při mazání avataru"
+  "modal-avatar-delete-error": "Došlo k chybě při mazání avataru",
+
+  "modal-change-password-btn": "Změnit heslo",
+  "modal-change-password-not-current-password-error": "Toto není vaše aktuální heslo",
+  "modal-change-password-new-password-not-different-error": "Nové heslo musí být odlišné od aktuálního",
+  "modal-change-password-failed": "Změna hesla selhala",
+  "modal-change-password-success": "Heslo bylo úspěšně změněno",
+  "modal-change-password-title": "Změna hesla",
+  "modal-change-password-old-password-label": "Současné heslo",
+  "modal-change-password-old-password-help": "Vyplňte vaše aktuální heslo do políčka",
+  "modal-change-password-password-label": "Nové heslo",
+  "modal-change-password-password-help": "Vyplňte nové heslo, je vyžadováno alespoň 8 znaků",
+  "modal-change-password-cpassword-label": "Potvrzení nového hesla",
+  "modal-change-password-cpassword-help": "Vyplňte nové heslo ještě jednou pro kontrolu"
 }

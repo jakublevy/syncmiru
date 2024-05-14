@@ -158,5 +158,18 @@
   "modal-avatar-edit-title": "Edit the picture",
   "modal-avatar-res-error": "Your avatar must be at least 128x128 pixels",
   "modal-avatar-max-size-error": "Maximum avatar size is 5MB",
-  "modal-avatar-delete-error": "An error occurred while deleting your avatar"
+  "modal-avatar-delete-error": "An error occurred while deleting your avatar",
+
+  "modal-change-password-btn": "Change password",
+  "modal-change-password-not-current-password-error": "This is not your current password",
+  "modal-change-password-new-password-not-different-error": "New password must be different from the current one",
+  "modal-change-password-failed": "Password change failed",
+  "modal-change-password-success": "Your password has been successfully changed",
+  "modal-change-password-title": "Password change",
+  "modal-change-password-old-password-label": "Current password",
+  "modal-change-password-old-password-help": "Fill in your current password",
+  "modal-change-password-password-label": "New password",
+  "modal-change-password-password-help": "Fill in your new password, at least 8 characters is required",
+  "modal-change-password-cpassword-label": "New password confirmation",
+  "modal-change-password-cpassword-help": "Fill in the new password again to check"
 }

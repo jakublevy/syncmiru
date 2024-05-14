@@ -1,6 +1,6 @@
 import {TFunction} from "i18next";
 import Joi from "joi";
-import {displaynameValidate, emailValidate, passwordValidate} from "src/form/validators.ts";
+import {passwordValidate} from "src/form/validators.ts";
 
 export const usePasswordSchema = (t: TFunction<"translation", undefined>) =>
     Joi
