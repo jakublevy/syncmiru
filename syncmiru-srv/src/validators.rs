@@ -69,7 +69,6 @@ pub fn check_avatar(data: &[u8]) -> Result<(), ValidationError> {
 
     let pic = image::load_from_memory(data)
         .map_err(|e| ValidationError::new("not a valid picture"))?;
-    println!("{:?}", pic);
     if pic.width() != 128 {
         return Err(ValidationError::new("invalid avatar width"))
     }

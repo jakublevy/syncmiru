@@ -157,5 +157,6 @@
   "modal-avatar-action-title": "Změna avatara",
   "modal-avatar-edit-title": "Úprava obrázku",
   "modal-avatar-res-error": "Avatar musí mít rozměry alespoň 128x128 pixelů",
-  "modal-avatar-max-size-error": "Maximální velikost avataru je 5MB"
+  "modal-avatar-max-size-error": "Maximální velikost avataru je 5MB",
+  "modal-avatar-delete-error": "Došlo k chybě při mazání avataru"
 }

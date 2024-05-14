@@ -16,7 +16,7 @@ import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 export default function DisplaynameSettings(p: Props): ReactElement {
     const {t} = useTranslation()
     const [open, setOpen] = useState<boolean>(false)
-    const {socket} = useMainContext()
+    const {socket, users, uid} = useMainContext()
     const [displayname, setDisplayname] = useState<string>("")
 
     const formSchema = Joi.object({
@@ -41,19 +41,18 @@ export default function DisplaynameSettings(p: Props): ReactElement {
     } = useForm<FormFields>({resolver: joiResolver(formSchema)});
 
     useEffect(() => {
-        if (socket !== undefined) {
-            socket.emitWithAck("get_my_displayname")
-                .then((displayname) => setDisplayname(displayname))
-                .catch(() => setDisplayname("N/A"))
-                .finally(() => p.setLoading(false))
-        }
-    }, [socket]);
+        const user = users.get(uid)
+        if(user !== undefined)
+            setDisplayname(user.displayname)
+
+        p.setLoading(false)
+    }, [users]);
 
     function changeDisplayname(data: FormFields) {
         p.setLoading(true)
         setOpen(false)
         socket!
-            .emitWithAck("set_my_displayname", data)
+            .emitWithAck("set_displayname", data)
                 .then((ack: SocketIoAck<null>) => {
                     if(ack.status === SocketIoAckType.Ok) {
                         setDisplayname(data.displayname)

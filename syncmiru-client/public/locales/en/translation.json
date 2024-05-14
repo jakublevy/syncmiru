@@ -157,5 +157,6 @@
   "modal-avatar-action-title": "Change your avatar",
   "modal-avatar-edit-title": "Edit the picture",
   "modal-avatar-res-error": "Your avatar must be at least 128x128 pixels",
-  "modal-avatar-max-size-error": "Maximum avatar size is 5MB"
+  "modal-avatar-max-size-error": "Maximum avatar size is 5MB",
+  "modal-avatar-delete-error": "An error occurred while deleting your avatar"
 }

@@ -4,17 +4,16 @@ import {useMainContext} from "@hooks/useMainContext.ts";
 
 export default function UsernameView(p: Props): ReactElement {
     const {t} = useTranslation()
-    const {socket} = useMainContext()
+    const {users, uid} = useMainContext()
     const [username, setUsername] = useState<string>("")
 
     useEffect(() => {
-        if(socket !== undefined) {
-            socket.emitWithAck("get_my_username")
-                .then((username) => setUsername(username))
-                .catch(() => setUsername("N/A"))
-                .finally(() => p.setLoading(false))
-        }
-    }, [socket]);
+        const user = users.get(uid)
+        if(user !== undefined)
+            setUsername(user.username)
+
+        p.setLoading(false)
+    }, [users]);
 
     return (
         <div className="flex items-center">

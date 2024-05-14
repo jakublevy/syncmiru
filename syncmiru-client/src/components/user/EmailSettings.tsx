@@ -72,7 +72,7 @@ export default function EmailSettings(p: Props): ReactElement {
                 })
                 .finally(() => setResendTimeLoading(false))
 
-            socket.emitWithAck("get_my_email")
+            socket.emitWithAck("get_email")
                 .then((email) => setEmail(email))
                 .catch(() => setEmail("N/A"))
                 .finally(() => setEmailLoading(false))

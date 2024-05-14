@@ -51,14 +51,20 @@ export default function Main(): ReactElement {
         s.on('disconnect', ioDisconnect)
         s.on('users', onUsers)
         s.on('new_login', onNewLogin)
-        s.on('displayname_change', onDisplaynameChange)
-        s.on('avatar_change', onAvatarChange)
         s.on('me', onMe)
+
         setSocket(s)
         return () => {
             s.disconnect()
         };
     }, []);
+
+    useEffect(() => {
+        if(socket !== undefined) {
+            socket.on('displayname_change', onDisplaynameChange)
+            socket.on('avatar_change', onAvatarChange)
+        }
+    }, [socket, users]);
 
     useEffect(() => {
         reconnectingRef.current = reconnecting;

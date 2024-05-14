@@ -15,15 +15,14 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("get_user_sessions", get_user_sessions);
     s.on("delete_session", delete_session);
     s.on("sign_out", sign_out);
-    s.on("get_my_username", get_my_username);
-    s.on("get_my_displayname", get_my_displayname);
-    s.on("get_my_email", get_my_email);
-    s.on("set_my_displayname", set_my_displayname);
+    s.on("set_displayname", set_displayname);
+    s.on("get_email", get_email);
     s.on("get_email_resend_timeout", get_email_resend_timeout);
     s.on("send_email_change_verification_emails", send_email_change_verification_emails);
     s.on("check_email_change_tkn", check_email_change_tkn);
     s.on("change_email", change_email);
     s.on("set_avatar", set_avatar);
+    s.on("delete_avatar", delete_avatar);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_verified_users(&state.db)
@@ -106,31 +105,7 @@ pub async fn sign_out(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.disconnect().expect("disconnect error")
 }
 
-pub async fn get_my_username(
-    State(state): State<Arc<SrvState>>,
-    s: SocketRef,
-    ack: AckSender,
-) {
-    let uid = state.socket2uid(&s).await;
-    let username = query::get_username_by_uid(&state.db, uid)
-        .await
-        .expect("db error");
-    ack.send(username).ok();
-}
-
-pub async fn get_my_displayname(
-    State(state): State<Arc<SrvState>>,
-    s: SocketRef,
-    ack: AckSender
-) {
-    let uid = state.socket2uid(&s).await;
-    let displayname = query::get_displayname_by_uid(&state.db, uid)
-        .await
-        .expect("db error");
-    ack.send(displayname).ok();
-}
-
-pub async fn get_my_email(
+pub async fn get_email(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender
@@ -142,7 +117,7 @@ pub async fn get_my_email(
     ack.send(email).ok();
 }
 
-pub async fn set_my_displayname(
+pub async fn set_displayname(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
@@ -354,6 +329,28 @@ pub async fn set_avatar(
 
     s
         .emit("avatar_change", AvatarChange{uid, avatar: payload.data})
+        .ok();
+
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn delete_avatar(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender
+) {
+    let uid = state.socket2uid(&s).await;
+    query::update_avatar_by_uid(&state.db, uid, &[])
+        .await
+        .expect("db error");
+
+    s
+        .broadcast()
+        .emit("avatar_change", AvatarChange{uid, avatar: vec![]})
+        .ok();
+
+    s
+        .emit("avatar_change", AvatarChange{uid, avatar: vec![]})
         .ok();
 
     ack.send(SocketIoAck::<()>::ok(None)).ok();

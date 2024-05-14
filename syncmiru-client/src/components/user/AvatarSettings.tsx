@@ -38,6 +38,19 @@ export default function AvatarSettings(p: Props): ReactElement {
     }
 
     function deleteAvatarClicked() {
+        p.setLoading(true)
+        socket!.emitWithAck('delete_avatar')
+            .then((ack: SocketIoAck<null>) => {
+                if(ack.status === SocketIoAckType.Err)
+                    showPersistentErrorAlert(t('modal-avatar-delete-error'))
+            })
+            .catch(() => {
+                showPersistentErrorAlert(t('modal-avatar-delete-error'))
+            })
+            .finally(() => {
+                p.setLoading(false)
+                setAvatarActionModalOpen(false)
+            })
         // TODO: delete avatar
     }
 
