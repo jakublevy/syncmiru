@@ -6,6 +6,7 @@ import Loading from "@components/Loading.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {useLocation} from "wouter";
 import {UserId, UserValueClient} from "src/models/user.ts";
+import Avatar from "@components/widgets/Avatar.tsx";
 
 export default function CurrentUser(): ReactElement {
     const [_, navigate] = useLocation()
@@ -20,7 +21,7 @@ export default function CurrentUser(): ReactElement {
         return (
             <div className="flex justify-between items-center p-2 h-16">
                 <div className="flex">
-                    <DefaultAvatar className="w-12 rounded-full mr-3"/>
+                    <Avatar className="w-12 mr-3" picBase64={user.avatar}/>
                     <div className="flex flex-col items-start justify-center">
                         <p>{user.displayname}</p>
                         <p className="text-xs -mt-1">{user.username}</p>
