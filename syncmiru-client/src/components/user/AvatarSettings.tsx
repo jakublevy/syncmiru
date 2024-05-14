@@ -13,9 +13,11 @@ import AvatarEditor from 'react-avatar-editor'
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import Avatar from "@components/widgets/Avatar.tsx";
+import {useUserContext} from "@hooks/useUserContext.ts";
 
 export default function AvatarSettings(p: Props): ReactElement {
-    const {uid, users, socket} = useMainContext()
+    const {uid, socket} = useMainContext()
+    const {users} = useUserContext()
     const [avatar, setAvatar] = useState<string>('')
     const {t} = useTranslation()
     const [avatarActionModalOpen, setAvatarActionModalOpen] = useState<boolean>(false)

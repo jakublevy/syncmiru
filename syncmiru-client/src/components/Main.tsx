@@ -23,6 +23,7 @@ import {AvatarChange, DisplaynameChange, UserClient, UserId, UserSrv, UserValueC
 import {showPersistentErrorAlert, showPersistentWarningAlert} from "src/utils/alert.ts";
 import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
 import {arrayBufferToBase64} from "src/utils/encoding.ts";
+import {UserContext} from "@hooks/useUserContext.ts";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -141,7 +142,8 @@ export default function Main(): ReactElement {
         <>
             {reconnecting && <Reconnecting/>}
             {loading && <Loading/>}
-            <MainContext.Provider value={{socket: socket, users: users, uid: uid}}>
+            <MainContext.Provider value={{socket: socket, uid: uid}}>
+                <UserContext.Provider value={{users: users}}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">
                         <SrvInfo homeSrv={homeSrv}/>
@@ -160,6 +162,7 @@ export default function Main(): ReactElement {
                     </div>
                 </div>
                 {showUserSettings() && <UserSettings/>}
+                </UserContext.Provider>
             </MainContext.Provider>
         </>
     )

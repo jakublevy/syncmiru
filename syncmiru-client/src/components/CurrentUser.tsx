@@ -6,10 +6,12 @@ import Loading from "@components/Loading.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {useLocation} from "wouter";
 import {UserId, UserValueClient} from "src/models/user.ts";
+import {useUserContext} from "@hooks/useUserContext.ts";
 
 export default function CurrentUser(): ReactElement {
     const [_, navigate] = useLocation()
-    const {uid, users} = useMainContext()
+    const {uid} = useMainContext()
+    const {users} = useUserContext()
 
     function userSettingsClicked() {
         navigate('/main/user-settings/account')

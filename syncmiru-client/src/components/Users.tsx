@@ -2,9 +2,11 @@ import React, {ReactElement, useEffect, useState} from "react";
 import DefaultAvatar from "@components/svg/DefaultAvatar.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {UserId, UserValueClient} from "src/models/user.ts";
+import {useUserContext} from "@hooks/useUserContext.ts";
 
 export default function Users(): ReactElement {
-    const {socket, users} = useMainContext()
+    const {socket} = useMainContext()
+    const {users} = useUserContext()
     const [onlineUsers, setOnlineUsers]
         = useState<Array<UserValueClient>>(new Array<UserValueClient>())
     const [offlineUsers, setOfflineUsers]
