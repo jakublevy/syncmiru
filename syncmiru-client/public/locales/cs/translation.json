@@ -149,7 +149,8 @@
   "modal-change-email-tkn-to-label": "Kód odeslaný na vyplněný nový email",
   "modal-change-email-tkn-help": "Do políčka vyplňte kód, který byl odeslán na",
   "modal-change-email-resend-success": "Nové emaily byly rozeslány",
-  "modal-change-email-send-error": "Odeslání emailů selhalo, příliš mnoho požadavků v krátkém čase, zkuste to prosím později",
+  "modal-email-send-error": "Odeslání emailu selhalo, příliš mnoho požadavků v krátkém čase, zkuste to prosím později",
+  "modal-emails-send-error": "Odeslání emailů selhalo, příliš mnoho požadavků v krátkém čase, zkuste to prosím později",
   "modal-change-email-change-failed": "Došlo k chybě při změně emailu",
 
   "modal-avatar-delete-btn": "Smazat",
@@ -171,5 +172,15 @@
   "modal-change-password-password-label": "Nové heslo",
   "modal-change-password-password-help": "Vyplňte nové heslo, je vyžadováno alespoň 8 znaků",
   "modal-change-password-cpassword-label": "Potvrzení nového hesla",
-  "modal-change-password-cpassword-help": "Vyplňte nové heslo ještě jednou pro kontrolu"
+  "modal-change-password-cpassword-help": "Vyplňte nové heslo ještě jednou pro kontrolu",
+
+  "modal-delete-account-confirm-btn": "Nevratně smazat účet",
+  "modal-delete-account-tkn-help": "Sem vložte kód, který byl odeslán na váš email",
+  "modal-delete-account-tkn-label": "Kód pro zrušení účtu",
+  "modal-delete-account-text-1": "Na emailovou adresu",
+  "modal-delete-account-text-2": "byl odeslán ověřující email obsahující 24 místný kód, který pro zrušení účtu vložte níže.",
+  "modal-delete-account-title": "Zrušení účtu",
+  "modal-delete-account-tkn-expired-error": "Platnost kódu pro zrušení účtu již vypršela",
+  "modal-delete-account-delete-error": "Při mazání účtu došlo k chybě",
+  "modal-delete-account-delete-success": "Účet byl nevratně smazán"
 }

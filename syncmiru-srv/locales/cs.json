@@ -13,5 +13,17 @@
   "email-change-subject": "Upozornění: provedena změna emailu",
   "email-change-body-1": "Ahoj,<br>na tvém účtu s uživatelským jménem",
   "email-change-body-2": "došlo ke změně emailu z",
-  "email-change-body-3": "na"
+  "email-change-body-3": "na",
+
+  "email-change-tkn-subject": "Kód pro změnu emailu",
+  "email-change-from-tkn-body-1": "Ahoj,<br>z tvého účtu byla podána žádost na změnu emailu na",
+  "email-change-from-tkn-body-2": ".<br>Tvůj verifikační kód je:",
+
+  "email-change-to-tkn-body": "Ahoj,<br>z tvého účtu byla podána žádost na změnu emailu na tento email.<br>Tvůj verifikační kód je:",
+
+  "account-deleted-subject": "Upozornění: váš účet byl zrušen",
+  "account-deleted-body": "Ahoj,<br>došlo k trvalému zrušení účtu s uživatelským jménem",
+
+  "delete-account-subject": "Kód pro zrušení účtu",
+  "delete-account-body": "Ahoj,<br>z tvého účtu byla podána žádost na vygenerování kódu, pomocí kterého je možné tento účet trvale smazat.<br>Kód pro smazání účtu:"
 }

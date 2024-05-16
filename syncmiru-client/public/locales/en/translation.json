@@ -149,7 +149,8 @@
   "modal-change-email-tkn-to-label": "Code sent to filled new email",
   "modal-change-email-tkn-help": "Fill in the code that was sent to",
   "modal-change-email-resend-success": "New emails has been sent",
-  "modal-change-email-send-error": "Sending emails failed, too many requests in a short time, please try again later",
+  "modal-email-send-error": "Sending email failed, too many requests in a short time, please try again later",
+  "modal-emails-send-error": "Sending emails failed, too many requests in a short time, please try again later",
   "modal-change-email-change-failed": "An error occurred while changing the email",
 
   "modal-avatar-delete-btn": "Delete",
@@ -171,5 +172,15 @@
   "modal-change-password-password-label": "New password",
   "modal-change-password-password-help": "Fill in your new password, at least 8 characters is required",
   "modal-change-password-cpassword-label": "New password confirmation",
-  "modal-change-password-cpassword-help": "Fill in the new password again to check"
+  "modal-change-password-cpassword-help": "Fill in the new password again to check",
+
+  "modal-delete-account-confirm-btn": "Permanently delete your account",
+  "modal-delete-account-tkn-help": "Fill in the code that was sent to your email",
+  "modal-delete-account-tkn-label": "Code for account deletion",
+  "modal-delete-account-text-1": "A verification email has been sent to",
+  "modal-delete-account-text-2": "containing a 24 digit code, please enter the code below to delete your account.",
+  "modal-delete-account-title": "Account deletion",
+  "modal-delete-account-tkn-expired-error": "Account deletion code has expired",
+  "modal-delete-account-delete-error": "An error occurred while deleting the account",
+  "modal-delete-account-delete-success": "The account has been permanently deleted"
 }

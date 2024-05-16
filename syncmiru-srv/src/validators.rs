@@ -36,6 +36,13 @@ pub fn check_displayname_format(displayname: &str) -> Result<(), ValidationError
     Ok(())
 }
 
+pub fn check_password_format(password: &str) -> Result<(), ValidationError> {
+    if password.len() < 8 {
+        return Err(ValidationError::new("too short, min 8 chars required"))
+    }
+    Ok(())
+}
+
 pub fn check_lang(lang: &str) -> Result<(), ValidationError> {
     if lang != "cs" && lang != "en" {
         return Err(ValidationError::new("unknown language"))

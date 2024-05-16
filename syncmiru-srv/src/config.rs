@@ -284,12 +284,13 @@ impl EmailConf {
 pub struct EmailRates {
     pub forgotten_password: Option<Rate>,
     pub verification: Option<Rate>,
-    pub change_email: Option<Rate>
+    pub change_email: Option<Rate>,
+    pub delete_account: Option<Rate>
 }
 
 impl EmailRates {
     pub fn from(rates_yaml: &Yaml) -> Result<Self> {
-        let mut rates = Self { forgotten_password: None, verification: None, change_email: None };
+        let mut rates = Self { forgotten_password: None, verification: None, change_email: None, delete_account: None };
 
         let fp_yaml = &rates_yaml["forgotten_password"];
         if !fp_yaml.is_badvalue() {
@@ -316,6 +317,14 @@ impl EmailRates {
         }
         else {
             warn!("Rate limiting for email change emails is disabled")
+        }
+        let del_yaml = &rates_yaml["delete_account"];
+        if !del_yaml.is_badvalue() {
+            let (del_max, del_per) = parse_rate(&del_yaml)?;
+            rates.delete_account = Some(Rate { max: del_max, per: del_per });
+        }
+        else {
+            warn!("Rate limiting for delete account emails is disabled")
         }
         Ok(rates)
     }

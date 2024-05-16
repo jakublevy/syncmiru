@@ -23,6 +23,7 @@ export default function Account(): ReactElement {
     const [avatarLoading, setAvatarLoading] = useState<boolean>(true)
     const [displaynameLoading, setDisplaynameLoading] = useState<boolean>(true)
     const [emailLoading, setEmailLoading] = useState<boolean>(true)
+    const [deleteAccountLoading, setDeleteAccountLoading] = useState<boolean>(true)
 
     function signOutClicked() {
         clearJwt().then(() => {
@@ -32,7 +33,7 @@ export default function Account(): ReactElement {
     }
 
     function showContent() {
-        return !usernameLoading && !displaynameLoading && !emailLoading && !avatarLoading && !passwordChangeLoading
+        return !usernameLoading && !displaynameLoading && !emailLoading && !avatarLoading && !passwordChangeLoading && !deleteAccountLoading
     }
 
     return (
@@ -74,7 +75,9 @@ export default function Account(): ReactElement {
 
             <hr/>
             <div className="ml-8 mr-8 mt-8">
-                <DeleteAccount/>
+                <DeleteAccount
+                    setLoading={(b: boolean) => setDeleteAccountLoading(b)}
+                />
             </div>
         </div>
         </>

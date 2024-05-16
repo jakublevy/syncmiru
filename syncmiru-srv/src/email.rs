@@ -4,7 +4,7 @@ use lettre::{Message, SmtpTransport, Transport};
 use lettre::message::header::ContentType;
 use crate::config::EmailConf;
 use crate::result::Result;
-use rust_i18n::t;
+use rust_i18n::{locale, t};
 use crate::models::query::Id;
 
 pub async fn send_verification_email(
@@ -50,16 +50,16 @@ pub async fn send_change_emails(
         email_conf,
         to_old,
         srv_url,
-        "Změna emailu",
-        &format!("Ahoj,<br>z tvého účtu byla podána žádost na změnu emailu na {}.<br>Tvůj verifikační kód je: {}", to_new, tkn_to_old)
+        &t!("email-change-tkn-subject", locale = lang),
+        &format!("{} {}{} {}", t!("email-change-from-tkn-body-1", locale = lang), to_new, t!("email-change-from-tkn-body-2", locale = lang), tkn_to_old)
     ).await?;
 
     send_email(
         email_conf,
         to_new,
         srv_url,
-        "Změna emailu",
-        &format!("Ahoj,<br>z tvého účtu byla podána žádost na změnu emailu na tento email.<br>Tvůj verifikační kód je: {}", tkn_to_new)
+        &t!("email-change-tkn-subject", locale = lang),
+        &format!("{} {}", t!("email-change-to-tkn-body", locale = lang), tkn_to_new)
     ).await?;
     Ok(())
 }
@@ -119,6 +119,40 @@ pub async fn send_email_changed_warning(
                 &t!("email-change-body-3", locale = lang),
                 new_email
         )
+    ).await?;
+    Ok(())
+}
+
+pub async fn send_delete_account_email(
+    email_conf: &EmailConf,
+    to: &str,
+    tkn: &str,
+    srv_url: &str,
+    lang: &str
+) -> Result<()> {
+    send_email(
+        &email_conf,
+        to,
+        srv_url,
+        &t!("delete-account-subject", locale = lang),
+        &format!("{} {}", &t!("delete-account-body", locale = lang), tkn)
+    ).await?;
+    Ok(())
+}
+
+pub async fn send_account_deleted_email_warning(
+    email_conf: &EmailConf,
+    to: &str,
+    username: &str,
+    srv_url: &str,
+    lang: &str
+) -> Result<()> {
+    send_email(
+        &email_conf,
+        to,
+        srv_url,
+        &t!("account-deleted-subject", locale = lang),
+        &format!("{} {}", t!("account-deleted-body", locale = lang), username)
     ).await?;
     Ok(())
 }

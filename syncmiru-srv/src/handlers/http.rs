@@ -1,5 +1,3 @@
-mod utils;
-
 use std::borrow::Cow;
 use std::sync::Arc;
 use anyhow::Context;
@@ -8,7 +6,6 @@ use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{Html, IntoResponse};
 use hcaptcha::Hcaptcha;
-use rand::Rng;
 use tower::BoxError;
 use crate::srvstate::SrvState;
 use validator::{Validate};
@@ -19,6 +16,7 @@ use crate::{query, tkn};
 use crate::result::{Result};
 use crate::crypto;
 use crate::email;
+use crate::handlers::utils;
 use crate::models::query::EmailTknType;
 use crate::html;
 
@@ -135,7 +133,10 @@ pub async fn email_verify_send(
     }
     let uid = uid.unwrap();
 
-    utils::check_email_tkn_out_of_quota(&state, uid, EmailTknType::Verify).await?;
+    let out_of_quota = utils::check_email_tkn_out_of_quota(&state, uid, EmailTknType::Verify).await?;
+    if !out_of_quota {
+        return Err(SyncmiruError::UnprocessableEntity("too many requests".to_string()));
+    }
 
     let tkn = crypto::gen_tkn();
     let tkn_hash = crypto::hash(tkn.clone()).await?;
@@ -174,7 +175,10 @@ pub async fn forgotten_password_send(
     }
     let uid = uid.unwrap();
 
-    utils::check_email_tkn_out_of_quota(&state, uid, EmailTknType::ForgottenPassword).await?;
+    let out_of_quota = utils::check_email_tkn_out_of_quota(&state, uid, EmailTknType::ForgottenPassword).await?;
+    if !out_of_quota {
+        return Err(SyncmiruError::UnprocessableEntity("too many requests".to_string()));
+    }
     let tkn = crypto::gen_tkn();
     let tkn_hash = crypto::hash(tkn.clone()).await?;
     query::new_email_tkn(&state.db, uid, EmailTknType::ForgottenPassword, &tkn_hash).await?;

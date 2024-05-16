@@ -83,17 +83,38 @@ pub struct AvatarChange {
 
 #[derive(Debug, Clone, Deserialize, Validate)]
 pub struct Password {
-    #[validate(length(min = 8))]
+    #[validate(custom(function = "validators::check_password_format"))]
     pub password: String
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]
 pub struct ChangePassword {
-    #[validate(length(min = 8))]
+    #[validate(custom(function = "validators::check_password_format"))]
     pub old_password: String,
 
-    #[validate(length(min = 8))]
+    #[validate(custom(function = "validators::check_password_format"))]
     pub new_password: String
+}
+
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct Language {
+    #[validate(custom(function = "validators::check_lang"))]
+    pub lang: String
+}
+
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct Tkn {
+    #[validate(custom(function = "validators::check_tkn"))]
+    pub tkn: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct TknWithLang {
+    #[validate(custom(function = "validators::check_tkn"))]
+    pub tkn: String,
+
+    #[validate(custom(function = "validators::check_lang"))]
+    pub lang: String
 }
 
 #[serde_with::serde_as]

@@ -1,10 +1,65 @@
-use crate::models::query::{Id};
+use std::time::Duration;
+use rand::Rng;
+use crate::config::Rate;
+use crate::models::query::{EmailTknType, Id};
 use crate::models::socketio::{EmailChangeTkn, EmailChangeTknType};
 use crate::{crypto, query};
 use crate::srvstate::SrvState;
 use crate::result::Result;
 
-pub(super) async fn is_email_out_of_quota(
+pub(super) async fn check_email_tkn_out_of_quota(
+    state: &SrvState,
+    uid: Id,
+    email_type: EmailTknType,
+) -> Result<bool> {
+    let mut out_of_quota = false;
+    if state.config.email.rates.is_some() {
+        let email_rates = state.config.email.rates.unwrap();
+        let rates_opt: Option<Rate> = match email_type {
+            EmailTknType::ForgottenPassword => email_rates.forgotten_password,
+            EmailTknType::Verify => email_rates.verification,
+            EmailTknType::DeleteAccount => email_rates.delete_account
+        };
+        if rates_opt.is_some() {
+            let rates = rates_opt.unwrap();
+            out_of_quota = query::out_of_email_tkn_quota(
+                &state.db,
+                uid,
+                &email_type,
+                rates.max,
+                rates.per,
+            ).await?;
+        }
+
+        if out_of_quota {
+            return Ok(false);
+        }
+
+        let waited = query::waited_before_last_email_tkn(
+            &state.db,
+            uid,
+            &email_type,
+            state.config.email.wait_before_resend,
+        ).await?;
+
+        if !waited {
+            return Ok(false);
+        }
+        Ok(true)
+    }
+    else {
+        Ok(true)
+    }
+}
+
+pub(super) async fn random_sleep(from_millis: u64, to_millis: u64) {
+    let sleep_duration = rand::thread_rng().gen_range(
+        Duration::from_millis(from_millis)..=Duration::from_millis(to_millis)
+    );
+    tokio::time::sleep(sleep_duration).await;
+}
+
+pub(super) async fn is_change_email_out_of_quota(
     state: &SrvState,
     uid: Id,
 ) -> Result<bool> {

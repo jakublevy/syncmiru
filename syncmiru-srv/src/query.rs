@@ -580,3 +580,11 @@ pub async fn update_password_by_uid(db: &PgPool, uid: Id, password_hash: &str) -
         .await?;
     Ok(())
 }
+
+pub async fn delete_user_by_uid(db: &PgPool, uid: Id) -> Result<()> {
+    sqlx::query("delete from users where id = $1")
+        .bind(uid)
+        .execute(db)
+        .await?;
+    Ok(())
+}

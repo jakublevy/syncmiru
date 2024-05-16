@@ -1,6 +1,7 @@
 CREATE TYPE "email_reason" AS ENUM (
   'forgotten_password',
-  'verify'
+  'verify',
+  'delete_account'
 );
 
 CREATE TYPE "default_conf" AS ENUM (
@@ -66,10 +67,10 @@ CREATE TABLE "default_settings" (
                                     "playback_speed" decimal(3,2) NOT NULL
 );
 
-ALTER TABLE "users" ADD FOREIGN KEY ("reg_tkn_id") REFERENCES "reg_tkn" ("id");
+ALTER TABLE "users" ADD FOREIGN KEY ("reg_tkn_id") REFERENCES "reg_tkn" ("id") on delete set null;
 
-ALTER TABLE "session" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+ALTER TABLE "session" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") on delete cascade;
 
-ALTER TABLE "email_tkn_log" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+ALTER TABLE "email_tkn_log" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") on delete cascade;
 
-ALTER TABLE "change_email_log" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+ALTER TABLE "change_email_log" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") on delete cascade;

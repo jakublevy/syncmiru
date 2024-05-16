@@ -1,13 +1,11 @@
-mod utils;
-
 use std::sync::Arc;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
-use sqlx::Executor;
 use validator::Validate;
 use crate::models::{EmailWithLang};
-use crate::models::query::Id;
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword};
+use crate::models::query::{EmailTknType, Id};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, Tkn};
 use crate::{crypto, email, query};
+use crate::handlers::utils;
 use crate::srvstate::SrvState;
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -25,6 +23,9 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("delete_avatar", delete_avatar);
     s.on("check_password", check_password);
     s.on("change_password", change_password);
+    s.on("send_delete_account_email", send_delete_account_email);
+    s.on("check_delete_account_tkn", check_delete_account_tkn);
+    s.on("delete_account", delete_account);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_verified_users(&state.db)
@@ -165,7 +166,7 @@ pub async fn send_email_change_verification_emails(
     }
     let uid = state.socket2uid(&s).await;
 
-    let out_of_quota = utils::is_email_out_of_quota(&state, uid)
+    let out_of_quota = utils::is_change_email_out_of_quota(&state, uid)
         .await
         .expect("change_email_out_of_quota error");
     if out_of_quota {
@@ -223,12 +224,7 @@ pub async fn check_email_change_tkn(
         .await
         .expect("checking email tkn error");
 
-    if tkn_valid {
-        ack.send(SocketIoAck::<bool>::ok(Some(true))).ok();
-    }
-    else {
-        ack.send(SocketIoAck::<bool>::ok(Some(false))).ok();
-    }
+    ack.send(SocketIoAck::<bool>::ok(Some(tkn_valid))).ok();
 }
 
 pub async fn change_email(
@@ -404,6 +400,141 @@ pub async fn change_password(
         return;
     }
     ack.send(SocketIoAck::<()>::err()).ok();
+}
+
+pub async fn send_delete_account_email(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<Language>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let uid = state.socket2uid(&s).await;
+    let email = query::get_email_by_uid(&state.db, uid)
+        .await
+        .expect("db error");
+
+    let out_of_quota = utils::check_email_tkn_out_of_quota(
+        &state, uid, EmailTknType::DeleteAccount
+    )
+        .await
+        .expect("check_email_tkn quota error");
+    if !out_of_quota {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return
+    }
+
+    let tkn = crypto::gen_tkn();
+    let tkn_hash = crypto::hash(tkn.clone())
+        .await
+        .expect("argon2 error");
+    query::new_email_tkn(&state.db, uid, EmailTknType::DeleteAccount, &tkn_hash)
+        .await
+        .expect("db error");
+    email::send_delete_account_email(
+        &state.config.email,
+        &email,
+        &tkn,
+        &state.config.srv.url,
+        &payload.lang
+    )
+        .await
+        .expect("email error");
+
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn check_delete_account_tkn(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<Tkn>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+
+    let uid = state.socket2uid(&s).await;
+
+    let hashed_tkn_opt = query::get_valid_hashed_tkn(
+        &state.db,
+        uid,
+        EmailTknType::DeleteAccount,
+        state.config.email.token_valid_time)
+        .await
+        .expect("invalid or expired token");
+
+    if hashed_tkn_opt.is_none() {
+        ack.send(SocketIoAck::<bool>::ok(Some(false))).ok();
+        return;
+    }
+    let hashed_tkn = hashed_tkn_opt.unwrap();
+
+    let tkn_valid = crypto::verify(payload.tkn, hashed_tkn)
+        .await
+        .expect("argon2 error");
+
+    ack.send(SocketIoAck::<bool>::ok(Some(tkn_valid))).ok();
+}
+
+pub async fn delete_account(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<TknWithLang>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+
+    let uid = state.socket2uid(&s).await;
+
+    let hashed_tkn_opt = query::get_valid_hashed_tkn(
+        &state.db,
+        uid,
+        EmailTknType::DeleteAccount,
+        state.config.email.token_valid_time)
+        .await
+        .expect("invalid or expired token");
+
+    if hashed_tkn_opt.is_none() {
+        ack.send(SocketIoAck::<bool>::ok(Some(false))).ok();
+        return;
+    }
+    let hashed_tkn = hashed_tkn_opt.unwrap();
+
+    let tkn_valid = crypto::verify(payload.tkn, hashed_tkn)
+        .await
+        .expect("argon2 error");
+
+    if !tkn_valid {
+        ack.send(SocketIoAck::<bool>::ok(Some(false))).ok();
+        return;
+    }
+    let username = query::get_username_by_uid(&state.db, uid)
+        .await
+        .expect("db error");
+    let email = query::get_email_by_uid(&state.db, uid)
+        .await
+        .expect("db error");
+    query::delete_user_by_uid(&state.db, uid)
+        .await
+        .expect("db error");
+    email::send_account_deleted_email_warning(
+        &state.config.email,
+        &email,
+        &username,
+        &state.config.srv.url,
+        &payload.lang
+    )
+        .await
+        .expect("email error");
+    ack.send(SocketIoAck::<bool>::ok(Some(true))).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {

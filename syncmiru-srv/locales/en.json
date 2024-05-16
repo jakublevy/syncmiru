@@ -13,5 +13,17 @@
   "email-change-subject": "Warning: Email changed",
   "email-change-body-1": "Hi,<br>on your account with the user name",
   "email-change-body-2": "an email change was performed from",
-  "email-change-body-3": "to"
+  "email-change-body-3": "to",
+
+  "email-change-tkn-subject": "Code to change your email",
+  "email-change-from-tkn-body-1": "Hi,<br>from your account there has been a request to change an email to",
+  "email-change-from-tkn-body-2": ".<br>Your verification code is:",
+
+  "email-change-to-tkn-body": "Hi,<br>a request has been made from your account to change your email to this email.<br>Your verification code is:",
+
+  "account-deleted-subject": "Warning: your account has been deleted",
+  "account-deleted-body": "Hi,<br>permanent deletion has occurred to your account with the username",
+
+  "delete-account-subject": "A code to delete your account",
+  "delete-account-body": "Hi,<br>A request has been made from your account to generate a code to permanently delete your account.<br>A code to delete your account:"
 }

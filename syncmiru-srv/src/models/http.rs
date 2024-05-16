@@ -22,7 +22,7 @@ pub struct RegForm {
     #[validate(email, length(max = 320))]
     pub email: String,
 
-    #[validate(length(min = 8))]
+    #[validate(custom(function = "validators::check_password_format"))]
     pub password: String,
 
     #[captcha]
@@ -77,7 +77,7 @@ pub struct ForgottenPasswordChange {
     #[validate(email, length(max = 320))]
     pub email: String,
 
-    #[validate(length(min = 8))]
+    #[validate(custom(function = "validators::check_password_format"))]
     pub password: String,
 
     #[validate(custom(function = "validators::check_lang"))]
@@ -89,7 +89,7 @@ pub struct Login {
     #[validate(email, length(max = 320))]
     pub email: String,
 
-    #[validate(length(min = 8))]
+    #[validate(custom(function = "validators::check_password_format"))]
     pub password: String,
 
     #[validate(length(min = 3))]

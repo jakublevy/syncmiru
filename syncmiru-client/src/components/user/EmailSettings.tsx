@@ -122,14 +122,14 @@ export default function EmailSettings(p: Props): ReactElement {
         socket!.emitWithAck("send_email_change_verification_emails", {email: data.email, lang: lang})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
-                    showTemporalErrorAlertForModal(t('modal-change-email-send-error'))
+                    showTemporalErrorAlertForModal(t('modal-emails-send-error'))
                     setResendTimeout(0)
                 }
                 else
                     setResendTimeout(resendTimeoutDefault.current)
             })
             .catch(() => {
-                showTemporalErrorAlertForModal(t('modal-change-email-send-error'))
+                showTemporalErrorAlertForModal(t('modal-emails-send-error'))
                 setResendTimeout(0)
             })
             .finally(() => {
@@ -195,12 +195,12 @@ export default function EmailSettings(p: Props): ReactElement {
                     setResendTimeout(resendTimeoutDefault.current)
                 }
                 else {
-                    showTemporalErrorAlertForModal(t('modal-change-email-send-error'))
+                    showTemporalErrorAlertForModal(t('modal-emails-send-error'))
                     setResendTimeout(0)
                 }
             })
             .catch(() => {
-                showTemporalErrorAlertForModal(t('modal-change-email-send-error'))
+                showTemporalErrorAlertForModal(t('modal-emails-send-error'))
                 setResendTimeout(0)
             })
             .finally(() => {
@@ -274,10 +274,10 @@ export default function EmailSettings(p: Props): ReactElement {
                 setOpen={setOpenVerifyEmailsModal}
                 content={
                     <>
-                        <p>{t('modal-change-email-text-1')} {t('from-temporal')} <b>{email}</b> {t('to-temporal')} <b>{newEmail}</b>. {t('modal-change-email-text-2')}</p>
-                        <div className="mt-4 mb-4">
+                        <p className="mb-4">{t('modal-change-email-text-1')} {t('from-temporal')} <b>{email}</b> {t('to-temporal')} <b>{newEmail}</b>. {t('modal-change-email-text-2')}</p>
+                        {(!tknFromValid || !tknToValid) && <div className="mb-4">
                             <BtnTimeout text={t('emails-not-received')} timeout={resendTimeout} onClick={resendEmails}/>
-                        </div>
+                        </div>}
                         <div className="flex gap-8">
                             <div className="mb-3 flex-1">
                                 <div className="flex justify-between">
