@@ -51,7 +51,6 @@ export default function AvatarSettings(p: Props): ReactElement {
                 p.setLoading(false)
                 setAvatarActionModalOpen(false)
             })
-        // TODO: delete avatar
     }
 
     function uploadNewAvatarClicked() {
@@ -104,11 +103,11 @@ export default function AvatarSettings(p: Props): ReactElement {
         socket!.emitWithAck("set_avatar", {data: imgBin})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
-                    showPersistentErrorAlert("Error changing picture from srv")
+                    showPersistentErrorAlert(t('modal-avatar-change-error'))
                 }
             })
             .catch(() => {
-                showPersistentErrorAlert("Error changing picture from srv")
+                showPersistentErrorAlert(t('modal-avatar-change-error'))
             })
             .finally(() => {
                 p.setLoading(false)

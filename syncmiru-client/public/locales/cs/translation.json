@@ -53,6 +53,7 @@
   "cpassword-help": "Vaše heslo ještě jednou pro kontrolu",
   "register-create-account-msg": "Založit účet",
   "already-have-account-msg": "Máte již účet?",
+  "register-failed": "Registrace selhala",
 
   "new-email-has-been-sent-msg": "Nový email byl odeslán",
   "email-verify-title": "Ověření emailu",
@@ -70,6 +71,7 @@
   "forgotten-password-change-password-btn": "Změnit heslo",
   "forgotten-password-text-1": "Pokud byl nalezen účet, tak na uvedenou emailovou adresu",
   "forgotten-password-text-2": "byl odeslán ověřující email obsahující 24 místný kód, který pro změnu hesla vložte níže.",
+  "forgotten-password-change-password-error": "Došlo k chybě při nastavování nového hesla",
 
   "deps-update-title": "Aktualizace závislostí",
   "deps-update-text-1": "K dispozici jsou následující aktualizace závislostí.",
@@ -149,7 +151,7 @@
   "modal-change-email-tkn-to-label": "Kód odeslaný na vyplněný nový email",
   "modal-change-email-tkn-help": "Do políčka vyplňte kód, který byl odeslán na",
   "modal-change-email-resend-success": "Nové emaily byly rozeslány",
-  "modal-email-send-error": "Odeslání emailu selhalo, příliš mnoho požadavků v krátkém čase, zkuste to prosím později",
+  "email-send-error": "Odeslání emailu selhalo, příliš mnoho požadavků v krátkém čase, zkuste to prosím později",
   "modal-emails-send-error": "Odeslání emailů selhalo, příliš mnoho požadavků v krátkém čase, zkuste to prosím později",
   "modal-change-email-change-failed": "Došlo k chybě při změně emailu",
 
@@ -160,6 +162,7 @@
   "modal-avatar-res-error": "Avatar musí mít rozměry alespoň 128x128 pixelů",
   "modal-avatar-max-size-error": "Maximální velikost avataru je 5MB",
   "modal-avatar-delete-error": "Došlo k chybě při mazání avataru",
+  "modal-avatar-change-error": "Došlo k chybě při změně avataru",
 
   "modal-change-password-btn": "Změnit heslo",
   "modal-change-password-not-current-password-error": "Toto není vaše aktuální heslo",

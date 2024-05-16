@@ -69,7 +69,7 @@ export default function Register({regPubAllowed}: Props): ReactElement {
             })
             .catch((e) => {
                 setValue('captcha', '')
-                showPersistentErrorAlert(e)
+                showPersistentErrorAlert(t('register-failed'))
             })
             .finally(() => setLoading(false))
     }

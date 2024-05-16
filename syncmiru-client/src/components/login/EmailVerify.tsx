@@ -32,7 +32,7 @@ export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
 
     useEffect(() => {
         if(verEmailError !== undefined)
-            showPersistentErrorAlert(verEmailError)
+            showPersistentErrorAlert(t('email-send-error'))
     }, [verEmailError]);
 
     function resendEmail() {
@@ -44,7 +44,7 @@ export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
             })
             .catch((e) => {
                 setResendTimeout(0)
-                showPersistentErrorAlert(e)
+                showPersistentErrorAlert(t('email-send-error'))
             })
             .finally(() => setLoading(false))
     }

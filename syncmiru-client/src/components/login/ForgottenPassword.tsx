@@ -49,7 +49,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
 
     useEffect(() => {
         if (fpError !== undefined) {
-            showPersistentErrorAlert(fpError)
+            showPersistentErrorAlert(t('email-send-error'))
             setResendTimeout(0)
         } else {
             setResendTimeout(waitBeforeResend)
@@ -70,7 +70,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
             })
             .catch((e) => {
                 setResendTimeout(0)
-                showPersistentErrorAlert(e)
+                showPersistentErrorAlert(t('email-send-error'))
             })
             .finally(() => setLoading(false))
     }
@@ -105,7 +105,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
                 navigate('/forgotten-password-changed')
             })
             .catch((e: string) => {
-                showPersistentErrorAlert(e)
+                showPersistentErrorAlert(t('forgotten-password-change-password-error'))
             })
             .finally(() => setLoading(false))
     }

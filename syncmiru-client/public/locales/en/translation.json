@@ -53,6 +53,7 @@
   "cpassword-help": "Your password once again for checking.",
   "register-create-account-msg": "Create an account",
   "already-have-account-msg": "Already have an account?",
+  "register-failed": "Registration failed",
 
   "new-email-has-been-sent-msg": "New email has been sent",
   "email-verify-title": "Email verification",
@@ -70,6 +71,7 @@
   "forgotten-password-change-password-btn": "Change the password",
   "forgotten-password-text-1": "If an account has been found, a verification email has been sent to the email address",
   "forgotten-password-text-2": "containing a 24-digit code, which you can enter below to change your password.",
+  "forgotten-password-change-password-error": "An error occurred while setting a new password",
 
   "deps-update-title": "Dependencies update",
   "deps-update-text-1": "The following dependency updates are available.",
@@ -149,7 +151,7 @@
   "modal-change-email-tkn-to-label": "Code sent to filled new email",
   "modal-change-email-tkn-help": "Fill in the code that was sent to",
   "modal-change-email-resend-success": "New emails has been sent",
-  "modal-email-send-error": "Sending email failed, too many requests in a short time, please try again later",
+  "email-send-error": "Sending email failed, too many requests in a short time, please try again later",
   "modal-emails-send-error": "Sending emails failed, too many requests in a short time, please try again later",
   "modal-change-email-change-failed": "An error occurred while changing the email",
 
@@ -160,6 +162,7 @@
   "modal-avatar-res-error": "Your avatar must be at least 128x128 pixels",
   "modal-avatar-max-size-error": "Maximum avatar size is 5MB",
   "modal-avatar-delete-error": "An error occurred while deleting your avatar",
+  "modal-avatar-change-error": "An error occurred while changing the avatar",
 
   "modal-change-password-btn": "Change password",
   "modal-change-password-not-current-password-error": "This is not your current password",

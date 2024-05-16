@@ -65,14 +65,14 @@ export default function DeleteAccount(p: Props): ReactElement {
         socket!.emitWithAck("send_delete_account_email", {lang: lang})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
-                    showTemporalErrorAlertForModal(t('modal-email-send-error'))
+                    showTemporalErrorAlertForModal(t('email-send-error'))
                     setResendTimeout(0)
                 }
                 else
                     setResendTimeout(resendTimeoutDefault.current)
             })
             .catch(() => {
-                showTemporalErrorAlertForModal(t('modal-email-send-error'))
+                showTemporalErrorAlertForModal(t('email-send-error'))
                 setResendTimeout(0)
             })
     }
@@ -91,7 +91,7 @@ export default function DeleteAccount(p: Props): ReactElement {
         socket!.emitWithAck("send_delete_account_email", {lang: lang})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
-                    showTemporalErrorAlertForModal(t('modal-email-send-error'))
+                    showTemporalErrorAlertForModal(t('email-send-error'))
                     setResendTimeout(0)
                 }
                 else {
@@ -100,7 +100,7 @@ export default function DeleteAccount(p: Props): ReactElement {
                 }
             })
             .catch(() => {
-                showTemporalErrorAlertForModal(t('modal-email-send-error'))
+                showTemporalErrorAlertForModal(t('email-send-error'))
                 setResendTimeout(0)
             })
             .finally(() => {
