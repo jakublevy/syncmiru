@@ -15,7 +15,7 @@ export const usernameValidate = (username: string): boolean => {
 
 export const displaynameValidate = (displayname: string): boolean => {
     return displayname.length >= 4
-        && displayname.length <= 24
+        && displayname.length <= 16
         && !/^\s$/.test(displayname[0])
         && !/^\s$/.test(displayname[displayname.length - 1])
 }

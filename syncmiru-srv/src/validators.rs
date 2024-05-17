@@ -24,7 +24,7 @@ async fn check_username_unique(username: &str, db: &PgPool) -> Result<(), Valida
 }
 
 pub fn check_displayname_format(displayname: &str) -> Result<(), ValidationError> {
-    if displayname.len() < 4 || displayname.len() > 24 {
+    if displayname.len() < 4 || displayname.len() > 16 {
         return Err(ValidationError::new("invalid length"))
     }
     if displayname.chars().next().unwrap().is_whitespace() {

@@ -50,8 +50,8 @@ export default function Users(): ReactElement {
             {onlineUsers.map((u, i) => {
                 return (
                     <div className="flex items-center p-1 pl-3 ml-1 mr-1 hover:bg-gray-100 dark:hover:bg-gray-700" key={i}>
-                        <Avatar className="w-10 mr-2" key={`${i}_avatar`} picBase64={u.avatar}/>
-                        <p key={`${i}_displayname`}>{u.displayname}</p>
+                        <Avatar className="min-w-10 w-10 mr-2" key={`${i}_avatar`} picBase64={u.avatar}/>
+                        <p className="break-words max-w-[10.4rem]" key={`${i}_displayname`}>{u.displayname}</p>
                     </div>
                 )
             })}
@@ -60,8 +60,8 @@ export default function Users(): ReactElement {
             {offlineUsers.map((u, i) => {
                 return (
                     <div className="flex items-center p-1 pl-3 ml-1 mr-1 opacity-30 hover:bg-gray-300 dark:hover:bg-gray-600" key={i}>
-                        <Avatar className="w-10 mr-2" key={`${i}_avatar`} picBase64={u.avatar}/>
-                        <p key={`${i}_displayname`}>{u.displayname}</p>
+                        <Avatar className="min-w-10 w-10 mr-2" key={`${i}_avatar`} picBase64={u.avatar}/>
+                        <p className="break-words max-w-[10.4rem]" key={`${i}_displayname`}>{u.displayname}</p>
                     </div>
                 )
             })}
