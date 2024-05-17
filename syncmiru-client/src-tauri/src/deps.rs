@@ -206,6 +206,12 @@ impl DepsAvailable {
     }
 }
 
+#[derive(Serialize)]
+pub struct DepsVersion {
+    managed: bool,
+    mpv: String,
+    yt_dlp: String
+}
 
 
 #[cfg(test)]

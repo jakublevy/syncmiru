@@ -185,5 +185,8 @@
   "modal-delete-account-title": "Account deletion",
   "modal-delete-account-tkn-expired-error": "Account deletion code has expired",
   "modal-delete-account-delete-error": "An error occurred while deleting the account",
-  "modal-delete-account-delete-success": "The account has been permanently deleted"
+  "modal-delete-account-delete-success": "The account has been permanently deleted",
+
+  "user-settings-about-title": "About",
+  "user-settings-about-version-label": "Version"
 }

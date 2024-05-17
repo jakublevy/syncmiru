@@ -185,5 +185,8 @@
   "modal-delete-account-title": "Zrušení účtu",
   "modal-delete-account-tkn-expired-error": "Platnost kódu pro zrušení účtu již vypršela",
   "modal-delete-account-delete-error": "Při mazání účtu došlo k chybě",
-  "modal-delete-account-delete-success": "Účet byl nevratně smazán"
+  "modal-delete-account-delete-success": "Účet byl nevratně smazán",
+
+  "user-settings-about-title": "O programu",
+  "user-settings-about-version-label": "Verze"
 }

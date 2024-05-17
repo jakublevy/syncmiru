@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use crate::appstate::AppState;
 use crate::config::appdata;
-use crate::deps::{DepsAvailable, DepsVersions, download, latest_mpv_download_link, latest_yt_dlp_download_link};
+use crate::deps::{DepsAvailable, DepsVersion, DepsVersions, download, latest_mpv_download_link, latest_yt_dlp_download_link};
 use crate::deps::utils::{delete_mpv, delete_yt_dlp, decompress_yt_dlp_archive, decompress_mpv_archive, mpv_dir};
 use crate::files::{delete_tmp, syncmiru_data_dir};
 use crate::result::Result;
@@ -75,4 +75,12 @@ pub async fn yt_dlp_start_downloading(window: tauri::Window, state: tauri::State
     appdata.yt_dlp_version = Some(yt_dlp_release.version);
     appdata.deps_managed = true;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn get_deps_version(state: tauri::State<'_, AppState>) -> Result<DepsVersion> {
+    // TODO: return the version from config if managed (windows}
+    // else return the current version of program in path using --version
+    let tmp = DepsVersion { managed: true, mpv: "v0.37.0".to_string(), yt_dlp: "2024.03.10".to_string() };
+    Ok(tmp)
 }

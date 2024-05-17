@@ -7,6 +7,7 @@ import Appearance from "@components/user/Appearance.tsx";
 import {navigateToUserSettingsAppearance} from "src/utils/navigate.ts";
 import {useTranslation} from "react-i18next";
 import Devices from "@components/user/Devices.tsx";
+import About from "@components/user/About.tsx";
 
 export default function UserSettings(): ReactElement {
     const [location, navigate] = useLocation()
@@ -38,14 +39,6 @@ export default function UserSettings(): ReactElement {
                 </div>
                 <div className="m-1">
                     <NavLink
-                        onClick={() => navigate(Link.Player)}
-                        active={isActive(Link.Player)}
-                        className="w-full text-left p-1">
-                        {t('user-settings-nav-player')}
-                    </NavLink>
-                </div>
-                <div className="m-1">
-                    <NavLink
                         onClick={() => navigate(Link.Devices)}
                         active={isActive(Link.Devices)}
                         className="w-full text-left p-1">
@@ -66,6 +59,7 @@ export default function UserSettings(): ReactElement {
                 {isActive(Link.Account) && <Account/>}
                 {isActive(Link.Appearance) && <Appearance/>}
                 {isActive(Link.Devices) && <Devices/>}
+                {isActive(Link.About) && <About/>}
             </div>
         </Card>
     )
@@ -74,7 +68,6 @@ export default function UserSettings(): ReactElement {
 enum Link {
     Account = "/main/user-settings/account",
     Appearance = "/main/user-settings/appearance",
-    Player = "/main/user-settings/player",
     Devices = "/main/user-settings/devices",
     About = "/main/user-settings/about",
 }

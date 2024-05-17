@@ -1,5 +1,4 @@
 import React, {ReactElement} from "react";
-import Log from "@components/Log.tsx";
 import Mpv from "@components/Mpv.tsx";
 import Playlist from "@components/Playlist.tsx";
 import {Panel, PanelGroup, PanelResizeHandle} from "react-resizable-panels";
@@ -28,7 +27,6 @@ export default function Middle(): ReactElement {
                     <Mpv/>
                 </Panel>
             </PanelGroup>
-            <Log/>
         </div>
     )
 }
