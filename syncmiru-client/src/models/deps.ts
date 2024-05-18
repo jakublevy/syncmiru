@@ -1,6 +1,8 @@
 export interface DepsState {
     mpv: boolean,
     yt_dlp: boolean,
+    mpv_ver: string,
+    yt_dlp_ver: string,
     managed: boolean
 }
 

@@ -157,6 +157,8 @@ async fn download(window: &tauri::Window, release: &DepRelease, dst: &str, event
 pub struct DepsAvailable {
     mpv: bool,
     yt_dlp: bool,
+    mpv_ver: String,
+    yt_dlp_ver: String,
     managed: bool
 }
 
@@ -171,6 +173,8 @@ impl DepsAvailable {
 
         let mut mpv_res = false;
         let mut yt_dlp_res = false;
+        let mut mpv_ver = "".to_string();
+        let mut yt_dlp_ver = "".to_string();
 
         let mpv_output_r = Command::new(mpv)
             .arg("--version")
@@ -179,10 +183,14 @@ impl DepsAvailable {
             let mpv_stdout_output = String::from_utf8_lossy(mpv_output.stdout.as_slice());
             let mpv_stdout_first = mpv_stdout_output
                 .split_whitespace()
-                .take(1)
-                .collect::<String>();
+                .take(2)
+                .collect::<Vec<&str>>()
+                .join(" ");
 
-            mpv_res = mpv_stdout_first == "mpv"
+            mpv_res = mpv_stdout_first.starts_with("mpv");
+            if mpv_res {
+                mpv_ver = mpv_stdout_first.split_whitespace().nth(1).unwrap().to_string();
+            }
         }
 
         let yt_dlp_output = Command::new(yt_dlp)
@@ -197,22 +205,17 @@ impl DepsAvailable {
                 .to_string();
 
             yt_dlp_res = yt_dlp_version.len() == 10;
+            if yt_dlp_res {
+                yt_dlp_ver = yt_dlp_version;
+            }
         }
 
-        Ok(Self { mpv: mpv_res, yt_dlp: yt_dlp_res, managed: deps_managed })
+        Ok(Self { mpv: mpv_res, yt_dlp: yt_dlp_res, managed: deps_managed, mpv_ver, yt_dlp_ver })
     }
     pub fn all_available(&self) -> bool {
         self.mpv && self.yt_dlp
     }
 }
-
-#[derive(Serialize)]
-pub struct DepsVersion {
-    managed: bool,
-    mpv: String,
-    yt_dlp: String
-}
-
 
 #[cfg(test)]
 mod tests {
@@ -237,6 +240,8 @@ mod tests {
         let s = DepsAvailable::from_params(false).unwrap();
         assert_eq!(s.mpv, true);
         assert_eq!(s.yt_dlp, true);
+        assert_eq!(s.mpv_ver, "1c9c2f5".to_string());
+        assert_eq!(s.yt_dlp_ver, "2024.04.09".to_string());
         assert_eq!(s.all_available(), true);
     }
 

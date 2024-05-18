@@ -4,10 +4,12 @@ import {navigateToMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
 import {useTranslation} from "react-i18next";
 import {SYNCMIRU_VERSION} from "src/utils/constants.ts";
+import {useDepsState} from "@hooks/useDepsState.ts";
 
 export default function About(): ReactElement {
     const [_, navigate] = useLocation()
     const {t} = useTranslation()
+    const depsState = useDepsState()
     return (
         <div className="flex flex-col">
             <div className="flex items-center m-8">
@@ -20,20 +22,27 @@ export default function About(): ReactElement {
                     <p className="w-56">{t('user-settings-about-version-label')}</p>
                     <p className="font-bold">Syncmiru {SYNCMIRU_VERSION}</p>
                 </div>
-                <div className="flex items-center">
-                    <p className="w-56">Verze mpv</p>
-                    <p className="font-bold">mpv v0.37.0</p>
-                </div>
-                <div className="flex items-center">
-                    <p className="w-56">Verze yt-dlp</p>
-                    <p className="font-bold">yt-dlp 2024.03.10</p>
+            </div>
+            <div className="m-8">
+                <h2 className="text-xl font-semibold">{t('user-settings-about-deps-title')}</h2>
+                <div className="flex flex-col mt-6 gap-y-6">
+                    <div className="flex items-center">
+                        <p className="w-56">{t('user-settings-about-deps-managed-title')}</p>
+                        <p className="font-bold">{depsState.managed ? t('user-settings-about-deps-managed-true') : t('user-settings-about-deps-managed-false')}</p>
+                    </div>
+                    <div className="flex items-center">
+                        <p className="w-56">{t('user-settings-about-deps-mpv-version')}</p>
+                        <p className="font-bold">{depsState.mpv_ver}</p>
+                    </div>
+                    <div className="flex items-center">
+                        <p className="w-56">{t('user-settings-about-deps-yt-dlp-version')}</p>
+                        <p className="font-bold">{depsState.yt_dlp_ver}</p>
+                    </div>
                 </div>
             </div>
             <hr/>
             <div className="ml-8 mr-8 mt-8">
-                <BtnTextPrimary>
-                    Zobrazit licence
-                </BtnTextPrimary>
+                <BtnTextPrimary>{t('user-settings-about-view-license')}</BtnTextPrimary>
             </div>
         </div>
     )

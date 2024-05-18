@@ -188,5 +188,12 @@
   "modal-delete-account-delete-success": "Účet byl nevratně smazán",
 
   "user-settings-about-title": "O programu",
-  "user-settings-about-version-label": "Verze"
+  "user-settings-about-version-label": "Verze",
+  "user-settings-about-deps-title": "Závislosti",
+  "user-settings-about-deps-managed-title": "Správce závislostí",
+  "user-settings-about-deps-managed-true": "Syncmiru",
+  "user-settings-about-deps-managed-false": "Systém",
+  "user-settings-about-deps-mpv-version": "Verze mpv",
+  "user-settings-about-deps-yt-dlp-version": "Verze yt-dlp",
+  "user-settings-about-view-license": "Zobrazit licence"
 }

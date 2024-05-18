@@ -188,5 +188,12 @@
   "modal-delete-account-delete-success": "The account has been permanently deleted",
 
   "user-settings-about-title": "About",
-  "user-settings-about-version-label": "Version"
+  "user-settings-about-version-label": "Version",
+  "user-settings-about-deps-title": "Dependencies",
+  "user-settings-about-deps-managed-title": "Managed by",
+  "user-settings-about-deps-managed-true": "Syncmiru",
+  "user-settings-about-deps-managed-false": "System",
+  "user-settings-about-deps-mpv-version": "mpv version",
+  "user-settings-about-deps-yt-dlp-version": "yt-dlp version",
+  "user-settings-about-view-license": "View licences"
 }

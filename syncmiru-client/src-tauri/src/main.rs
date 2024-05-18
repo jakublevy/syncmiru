@@ -40,7 +40,6 @@ fn main() -> Result<()> {
             deps::frontend::mpv_start_downloading,
             deps::frontend::yt_dlp_start_downloading,
             deps::frontend::get_deps_versions_fetch,
-            deps::frontend::get_deps_version,
             login::frontend::get_home_srv,
             login::frontend::set_home_srv,
             login::frontend::can_auto_login,
