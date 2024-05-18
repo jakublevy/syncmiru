@@ -195,5 +195,15 @@
   "user-settings-about-deps-managed-false": "Systém",
   "user-settings-about-deps-mpv-version": "Verze mpv",
   "user-settings-about-deps-yt-dlp-version": "Verze yt-dlp",
-  "user-settings-about-view-license": "Zobrazit licence"
+  "user-settings-about-view-license": "Zobrazit licence",
+  "user-settings-about-open-license-window-error": "Došlo k chybě při otevření okna",
+
+  "license-nav-syncmiru": "Syncmiru",
+  "license-nav-acknowledgements": "Závislosti",
+  "license-nav-licenses": "Licence",
+  "license-syncmiru-title": "Aplikace Syncmiru",
+  "license-syncmiru-text": "Aplikace Syncmiru původně vznikla jako diplomová práce na MFF UK.",
+  "license-acknowledgements-title": "Seznam závislostí",
+  "license-acknowledgements-text": "Vývoj aplikace se neobešel bez použití celé řady existujících frameworků, balíčků a knihoven. Pouze díky nim bylo možné vývoj aplikace Syncmiru zdárně dokončit.",
+  "license-licenses-title": "Licence"
 }

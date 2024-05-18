@@ -11,6 +11,7 @@ mod files;
 mod login;
 mod sys;
 mod player;
+mod license;
 
 #[macro_use]
 extern crate rust_i18n;
@@ -53,6 +54,7 @@ fn main() -> Result<()> {
             login::frontend::get_forgotten_password_tkn_valid,
             login::frontend::forgotten_password_change_password,
             login::frontend::new_login,
+            license::open_license_window,
         ])
         .on_window_event(handle_window_event)
         .manage(appstate)

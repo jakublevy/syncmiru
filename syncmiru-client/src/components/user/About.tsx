@@ -5,11 +5,21 @@ import {useLocation} from "wouter";
 import {useTranslation} from "react-i18next";
 import {SYNCMIRU_VERSION} from "src/utils/constants.ts";
 import {useDepsState} from "@hooks/useDepsState.ts";
+import {invoke} from "@tauri-apps/api/core";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
 
 export default function About(): ReactElement {
     const [_, navigate] = useLocation()
     const {t} = useTranslation()
     const depsState = useDepsState()
+
+    function viewLicenseClicked() {
+        invoke('open_license_window', {})
+            .catch(() => {
+                showPersistentErrorAlert(t('user-settings-about-open-license-window-error'))
+            })
+    }
+
     return (
         <div className="flex flex-col">
             <div className="flex items-center m-8">
@@ -42,7 +52,9 @@ export default function About(): ReactElement {
             </div>
             <hr/>
             <div className="ml-8 mr-8 mt-8">
-                <BtnTextPrimary>{t('user-settings-about-view-license')}</BtnTextPrimary>
+                <BtnTextPrimary
+                    onClick={viewLicenseClicked}
+                >{t('user-settings-about-view-license')}</BtnTextPrimary>
             </div>
         </div>
     )

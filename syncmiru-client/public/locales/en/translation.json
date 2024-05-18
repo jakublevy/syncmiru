@@ -195,5 +195,15 @@
   "user-settings-about-deps-managed-false": "System",
   "user-settings-about-deps-mpv-version": "mpv version",
   "user-settings-about-deps-yt-dlp-version": "yt-dlp version",
-  "user-settings-about-view-license": "View licences"
+  "user-settings-about-view-license": "View licences",
+  "user-settings-about-open-license-window-error": "An error occurred when opening the window",
+
+  "license-nav-syncmiru": "Syncmiru",
+  "license-nav-acknowledgements": "Dependencies",
+  "license-nav-licenses": "Licenses",
+  "license-syncmiru-title": "Syncmiru application",
+  "license-syncmiru-text": "The Syncmiru application was originally developed as a master thesis at MFF CUNI.",
+  "license-acknowledgements-title": "List of dependencies",
+  "license-acknowledgements-text": "The development of the application could not be done without using a whole range of existing frameworks, packages and libraries. Thanks to them, the Syncmiru application could be created.",
+  "license-licenses-title": "Licenses"
 }
