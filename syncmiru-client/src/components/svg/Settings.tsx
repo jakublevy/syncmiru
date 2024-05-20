@@ -1,4 +1,9 @@
-export default function Settings({className}: Props) {
+import {ReactElement} from "react";
+
+// Source: https://www.svgrepo.com/svg/501352/settings
+// License: MIT
+
+export default function Settings({className}: Props): ReactElement {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -1,7 +1,9 @@
+import {ReactElement} from "react";
+
 // Source: https://www.svgrepo.com/svg/391673/resize-vertical
 // License: MIT
 
-export default function ResizableIndicator({className}: Props) {
+export default function ResizableIndicator({className}: Props): ReactElement {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"

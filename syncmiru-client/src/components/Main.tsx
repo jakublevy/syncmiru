@@ -23,6 +23,7 @@ import {AvatarChange, DisplaynameChange, UserClient, UserId, UserSrv, UserValueC
 import {showPersistentErrorAlert, showPersistentWarningAlert} from "src/utils/alert.ts";
 import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
 import {arrayBufferToBase64} from "src/utils/encoding.ts";
+import SrvSettings from "@components/srv/SrvSettings.tsx";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -143,6 +144,10 @@ export default function Main(): ReactElement {
         return location.startsWith("/main/user-settings") && shouldRender()
     }
 
+    function showSrvSettings() {
+        return location.startsWith("/main/srv-settings") && shouldRender()
+    }
+
     return (
         <>
             {reconnecting && <Reconnecting/>}
@@ -166,6 +171,7 @@ export default function Main(): ReactElement {
                     </div>
                 </div>
                 {showUserSettings() && <UserSettings/>}
+                {showSrvSettings() && <SrvSettings/>}
             </MainContext.Provider>
         </>
     )

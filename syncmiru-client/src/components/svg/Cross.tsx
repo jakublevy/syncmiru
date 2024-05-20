@@ -1,5 +1,4 @@
 import {ReactElement} from "react";
-import Check from "@components/svg/Check.tsx";
 
 // Source: https://www.svgrepo.com/svg/522086/cross
 // License: CC Attribution

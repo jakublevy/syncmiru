@@ -1,7 +1,7 @@
+import {ReactElement} from "react";
+
 // Source: https://www.svgrepo.com/svg/304503/session-leave
 // License: Public Domain
-
-import {ReactElement} from "react";
 
 export default function DoorOut({className}: Props): ReactElement {
     return (

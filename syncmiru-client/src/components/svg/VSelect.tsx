@@ -1,5 +1,3 @@
-import Check from "@components/svg/Check.tsx";
-
 export default function VSelect({className}: Props) {
     return (
         <svg

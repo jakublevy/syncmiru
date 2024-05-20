@@ -1,5 +1,8 @@
 import {ReactElement} from "react";
 
+// Source: https://www.svgrepo.com/svg/342945/zoom-reset
+// License: PD License
+
 export default function ZoomReset({className}: Props): ReactElement {
     return (
         <svg

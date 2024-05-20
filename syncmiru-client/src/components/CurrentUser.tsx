@@ -1,11 +1,10 @@
 import React, {ReactElement} from "react";
-import DefaultAvatar from "@components/svg/DefaultAvatar.tsx";
 import {Clickable} from "@components/widgets/Button.tsx";
 import Settings from "@components/svg/Settings.tsx";
 import Loading from "@components/Loading.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {useLocation} from "wouter";
-import {UserId, UserValueClient} from "src/models/user.ts";
+import {UserValueClient} from "src/models/user.ts";
 import Avatar from "@components/widgets/Avatar.tsx";
 
 export default function CurrentUser(): ReactElement {
@@ -20,10 +19,10 @@ export default function CurrentUser(): ReactElement {
         const user = users.get(uid) as UserValueClient
         return (
             <div className="flex justify-between items-center p-2 h-16">
-                <div className="flex">
+                <div className="flex items-center">
                     <Avatar className="min-w-12 w-12 mr-3" picBase64={user.avatar}/>
                     <div className="flex flex-col items-start justify-center">
-                        <p className="text-sm break-words max-w-[7.2rem]">{user.displayname}</p>
+                        <p className="break-words max-w-[7.2rem]">{user.displayname}</p>
                         <p className="text-xs -mt-1">{user.username}</p>
                     </div>
                 </div>

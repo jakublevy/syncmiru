@@ -1,7 +1,9 @@
+import {ReactElement} from "react";
+
 // Source: https://iconduck.com/emojis/36209/party-popper
 // License: Apache 2.0
 
-export default function Party({className}: Props) {
+export default function Party({className}: Props): ReactElement {
     return (
         <svg
             id="Layer_1"

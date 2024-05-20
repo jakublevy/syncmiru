@@ -67,7 +67,6 @@
         visibility: visible;
         line-height: 1.5;
         font-size: 12px;
-        background-color: rgba(0, 0, 0, 0.05);
         padding: 1px;
         opacity: 0.9;
     }
@@ -82,9 +81,9 @@
         text-align: left;
         text-decoration: none;
         background-color: #f9fafb;
-        border-radius: 3px;
+        border-radius: 0.5rem;
+        box-shadow: 0 3px 7px rgba(0, 0, 0, 0.133), 0 0.6px 2px rgba(0, 0, 0, 0.1);
         min-height: 34px;
-        border: 1px solid #b1b1b1;
     }
 
     .rc-tooltip-arrow,
@@ -291,7 +290,6 @@
         visibility: visible;
         line-height: 1.5;
         font-size: 12px;
-        background-color: rgba(0, 0, 0, 0.05);
         padding: 1px;
         opacity: 0.9;
     }
@@ -306,9 +304,9 @@
         text-align: left;
         text-decoration: none;
         background-color: #262626;
-        border-radius: 3px;
+        border-radius: 0.5rem;
         min-height: 34px;
-        border: 1px solid #b1b1b1;
+        box-shadow: 0 3px 7px rgba(55, 65, 81, 0.133), 0 0.6px 2px rgba(55, 65, 81, 0.1);
     }
 
     .rc-tooltip-arrow,
