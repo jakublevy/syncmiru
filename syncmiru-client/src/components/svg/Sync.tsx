@@ -17,7 +17,7 @@ export default function Sync({className}: Props): ReactElement {
         >
             <style>
                 {
-                    ".st0{fill:none;stroke:#000;stroke-width:66.6667;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:133.3333}"
+                    ".st0{fill:none;stroke-width:66.6667;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:133.3333}"
                 }
             </style>
             <path
