@@ -23,7 +23,7 @@ export default function CurrentUser(): ReactElement {
                 <div className="flex">
                     <Avatar className="min-w-12 w-12 mr-3" picBase64={user.avatar}/>
                     <div className="flex flex-col items-start justify-center">
-                        <p className="text-sm break-words max-w-[7.3rem]">{user.displayname}</p>
+                        <p className="text-sm break-words max-w-[7.2rem]">{user.displayname}</p>
                         <p className="text-xs -mt-1">{user.username}</p>
                     </div>
                 </div>

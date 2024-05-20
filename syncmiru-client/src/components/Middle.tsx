@@ -9,7 +9,7 @@ export default function Middle(): ReactElement {
         <div className="flex flex-col flex-grow h-max">
             <PanelGroup direction="vertical">
                 <Panel
-                    defaultSize={25}
+                    defaultSize={30}
                     minSize={20}
                     style={{overflow: "auto"}}
                 >
@@ -21,7 +21,7 @@ export default function Middle(): ReactElement {
                     </div>
                 </PanelResizeHandle>
                 <Panel
-                    defaultSize={25}
+                    defaultSize={50}
                     minSize={20}
                 >
                     <Mpv/>

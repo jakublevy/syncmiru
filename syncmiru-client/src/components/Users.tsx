@@ -1,13 +1,10 @@
 import React, {ReactElement, useEffect, useState} from "react";
-import DefaultAvatar from "@components/svg/DefaultAvatar.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {UserId, UserValueClient} from "src/models/user.ts";
 import Avatar from "@components/widgets/Avatar.tsx";
+import 'src/rc-tooltip.css'
+import Tooltip from "rc-tooltip";
 import {Clickable} from "@components/widgets/Button.tsx";
-import {Tooltip} from "react-tooltip";
-import Question from "@components/svg/Question.tsx";
-import ClickableTooltip from "@components/widgets/ClickableTooltip.tsx";
-import useCSSTheme from "@hooks/useCSSTheme.ts";
 
 export default function Users(): ReactElement {
     const {socket, users} = useMainContext()
@@ -16,6 +13,8 @@ export default function Users(): ReactElement {
     const [offlineUsers, setOfflineUsers]
         = useState<Array<UserValueClient>>(new Array<UserValueClient>())
     const [onlineUids, setOnlineUids] = useState<Array<UserId>>(new Array<UserId>());
+    const [clickedOnlineIdx, setClickedOnlineIdx] = useState<number>(-1)
+    const [clickedOfflineIdx, setClickedOfflineIdx] = useState<number>(-1)
 
     useEffect(() => {
         if (socket !== undefined) {
@@ -48,50 +47,83 @@ export default function Users(): ReactElement {
         setOnlineUids((p) => p.filter(x => x !== uid))
     }
 
+    function tooltipOnlineVisibilityChanged(visible: boolean, idx: number) {
+        if(!visible)
+            setClickedOnlineIdx(-1)
+        else
+            setClickedOnlineIdx(idx)
+    }
+
+    function tooltipOfflineVisibilityChanged(visible: boolean, idx: number) {
+        if(!visible)
+            setClickedOfflineIdx(-1)
+        else
+            setClickedOfflineIdx(idx)
+    }
+
     return (
         <div className="flex flex-col overflow-auto h-dvh -mt-1">
             {onlineUsers.length > 0 && <p className="text-xs pt-4 pl-4 pb-1">Online ({onlineUsers.length})</p>}
             {onlineUsers.map((u, i) => {
                 return (
-                    <div key={i}>
-                        <a key={`${i}_info`} data-tooltip-id={`${i}_info`}>
+                    <Tooltip onVisibleChange={(e) => tooltipOnlineVisibilityChanged(e, i)}
+                             key={i}
+                             placement="bottom"
+                             trigger={['click']}
+                             overlay={
+                        <div key={`${i}`} className="flex items-center w-[12.3rem]">
+                            <Avatar key={`${i}_avatar`} className="min-w-20 w-20 mr-3" picBase64={u.avatar}/>
+                            <div key={`${i}_flex`} className="flex flex-col items-start justify-center">
+                                <p key={`${i}_displayname`}
+                                   className="break-words max-w-[7.1rem] text-xl">{u.displayname}</p>
+                                <p key={`${i}_username`} className="text-sm -mt-1">{u.username}</p>
+                            </div>
+                        </div>
+                    }>
+                        <a href="#">
                             <div key={`${i}_flex`} className="flex items-center">
-                            <Clickable key={`${i}_clickable`} className="p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left">
-                                    <Avatar className="min-w-10 w-10 mr-2" key={`${i}_avatar`} picBase64={u.avatar}/>
+                                <Clickable key={`${i}_clickable`}
+                                           className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${i === clickedOnlineIdx ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
+                                    <Avatar className="min-w-10 w-10 mr-2" key={`${i}_avatar`}
+                                            picBase64={u.avatar}/>
                                     <p className="break-words max-w-[10.4rem]"
                                        key={`${i}_displayname`}>{u.displayname}</p>
-                            </Clickable>
-                        </div>
+                                </Clickable>
+                            </div>
                         </a>
-                        <ClickableTooltip
-                            key={`${i}_tooltip`}
-                            id={`${i}_info`}
-                            place="bottom"
-                            render={(p) => {
-                                return (
-                                    <div key={`${i}`} className="flex items-center w-[12rem]">
-                                        <Avatar key={`${i}_avatar`} className="min-w-20 w-20 mr-3" picBase64={u.avatar}/>
-                                        <div key={`${i}_flex`} className="flex flex-col items-start justify-center">
-                                            <p key={`${i}_displayname`} className="break-words max-w-[7.3rem] text-xl">{u.displayname}</p>
-                                            <p key={`${i}_username`} className="text-sm -mt-1">{u.username}</p>
-                                        </div>
-                                    </div>
-                                )
-                            }}
-                        />
-                    </div>
+                    </Tooltip>
                 )
             })}
 
             {offlineUsers.length > 0 && <p className="text-xs pt-4 pl-4 pb-1">Offline ({offlineUsers.length})</p>}
             {offlineUsers.map((u, i) => {
                 return (
-                    <div
-                        className="flex items-center p-1 pl-3 ml-1 mr-1 opacity-30 hover:bg-gray-300 dark:hover:bg-gray-600"
-                        key={i}>
-                        <Avatar className="min-w-10 w-10 mr-2" key={`${i}_avatar`} picBase64={u.avatar}/>
-                        <p className="break-words max-w-[10.4rem]" key={`${i}_displayname`}>{u.displayname}</p>
-                    </div>
+                    <Tooltip onVisibleChange={(e) => tooltipOfflineVisibilityChanged(e, i)}
+                             key={i}
+                             placement="bottom"
+                             trigger={['click']}
+                             overlay={
+                                 <div key={`${i}`} className="flex items-center w-[12.3rem]">
+                                     <Avatar key={`${i}_avatar`} className="min-w-20 w-20 mr-3" picBase64={u.avatar}/>
+                                     <div key={`${i}_flex`} className="flex flex-col items-start justify-center">
+                                         <p key={`${i}_displayname`}
+                                            className="break-words max-w-[7.1rem] text-xl">{u.displayname}</p>
+                                         <p key={`${i}_username`} className="text-sm -mt-1">{u.username}</p>
+                                     </div>
+                                 </div>
+                             }>
+                        <a href="#">
+                            <div key={`${i}_flex`} className="flex items-center">
+                                <Clickable key={`${i}_clickable`}
+                                           className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${i === clickedOfflineIdx ? 'bg-gray-100 dark:bg-gray-700' : 'opacity-30 hover:opacity-100'}`}>
+                                    <Avatar className="min-w-10 w-10 mr-2" key={`${i}_avatar`}
+                                            picBase64={u.avatar}/>
+                                    <p className="break-words max-w-[10.4rem]"
+                                       key={`${i}_displayname`}>{u.displayname}</p>
+                                </Clickable>
+                            </div>
+                        </a>
+                    </Tooltip>
                 )
             })}
         </div>
