@@ -1,4 +1,4 @@
-import {Language, Theme} from "@models/config.tsx";
+import {Theme} from "@models/config.tsx";
 import {usePromise} from "@mittwald/react-use-promise";
 import {invoke} from "@tauri-apps/api/core";
 

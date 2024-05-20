@@ -29,10 +29,10 @@ export default function Acknowledgements(): ReactElement {
                 <pre className="border text-sm w-full h-[calc(100dvh-14.9rem)] overflow-y-auto">
                     {deps.sort((d1, d2) => d1.name.localeCompare(d2.name)).map((d, i) => {
                         return (
-                            <>
+                            <p key={i}>
                                 {d.name} &lt;{d.url}&gt;&#10;{d.copyright}{d.copyright !== '' && <>&#10;</>}{d.license}
                                 {i + 1 < deps.length && <>&#10;&#10;</>}
-                            </>
+                            </p>
                         )
                     })}
                 </pre>

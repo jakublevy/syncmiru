@@ -77,10 +77,10 @@ export default function Licenses(): ReactElement {
                 <pre className="border text-sm w-full h-[calc(100dvh-9rem)] text-wrap overflow-y-auto">
                     {licenses.sort((l1, l2) => l1.name.localeCompare(l2.name)).map((l, i) => {
                         return (
-                            <>
+                            <p key={i}>
                                 <b>{l.name}</b>&#10;{l.text}
                                 {i + 1 < licenses.length && <>&#10;&#10;</>}
-                            </>
+                            </p>
                         )
                     })}
                 </pre>

@@ -12,7 +12,6 @@ export default function HCaptchaThemeAware(p: HCaptchaProps): ReactElement {
     }, [shownTheme]);
 
     listen<string>('tauri://theme-changed', (e) => {
-        console.log('captcha expired')
         if(p.onExpire !== undefined)
             p.onExpire()
 
@@ -24,26 +23,7 @@ export default function HCaptchaThemeAware(p: HCaptchaProps): ReactElement {
 
     return (
         <HCaptcha
-            onExpire={p.onExpire}
-            onOpen={p.onOpen}
-            onClose={p.onClose}
-            onChalExpired={p.onChalExpired}
-            onError={p.onError}
-            onVerify={p.onVerify}
-            onLoad={p.onLoad}
-            languageOverride={p.languageOverride}
-            sitekey={p.sitekey}
-            size={p.size}
-            tabIndex={p.tabIndex}
-            id={p.id}
-            reCaptchaCompat={p.reCaptchaCompat}
-            loadAsync={p.loadAsync}
-            scriptLocation={p.scriptLocation}
-            sentry={p.sentry}
-            cleanup={p.cleanup}
-            custom={p.custom}
-            secureApi={p.secureApi}
-            scriptSource={p.scriptSource}
+            {...p}
             theme={theme}
         />
     )
