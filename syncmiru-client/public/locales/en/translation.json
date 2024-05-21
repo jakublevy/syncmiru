@@ -131,7 +131,7 @@
 
   "modal-delete-title": "Confirm deletion",
   "modal-delete-delete-btn": "Delete",
-  "modal-no-action-btn": "Keep",
+  "modal-keep-btn": "Keep",
   "modal-change-action-btn": "Change",
 
   "modal-change-displayname-title": "Display name change",
@@ -205,5 +205,10 @@
   "license-syncmiru-text": "The Syncmiru application was originally developed as a master thesis at MFF CUNI.",
   "license-acknowledgements-title": "List of dependencies",
   "license-acknowledgements-text": "The development of the application could not be done without using a whole range of existing frameworks, packages and libraries. Thanks to them, the Syncmiru application could be created.",
-  "license-licenses-title": "Licenses"
+  "license-licenses-title": "Licenses",
+
+  "title-invalid-format": "This name is invalid",
+  "modal-cancel-btn": "Cancel",
+  "modal-create-action-btn": "Create",
+  "max-regs-invalid-format": "This is not a valid positive number"
 }

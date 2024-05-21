@@ -211,7 +211,7 @@ export default function AvatarSettings(p: Props): ReactElement {
                                 onClick={setAvatarClicked}
                             >{t('modal-change-action-btn')}</BtnPrimary>
                             <BtnSecondary
-                                onClick={() => setPicEditorModalOpen(false)}>{t('modal-no-action-btn')}</BtnSecondary>
+                                onClick={() => setPicEditorModalOpen(false)}>{t('modal-keep-btn')}</BtnSecondary>
                         </div>
                     </>
                 }

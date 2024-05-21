@@ -240,7 +240,7 @@ export default function EmailSettings(p: Props): ReactElement {
                 content={
                     <form onSubmit={handleSubmit(changeEmail)} noValidate>
                         <div className="flex justify-between">
-                            <Label htmlFor="displayname">{t('email-label')}</Label>
+                            <Label htmlFor="email">{t('email-label')}</Label>
                             <Help
                                 tooltipId="email-help"
                                 className="w-4"
@@ -263,7 +263,7 @@ export default function EmailSettings(p: Props): ReactElement {
                         <hr className="-ml-6 -mr-6 mt-4 mb-4"/>
                         <div className="flex gap-3">
                             <BtnPrimary type="submit">{t('modal-change-action-btn')}</BtnPrimary>
-                            <BtnSecondary onClick={() => setOpenSetNewEmailModal(false)}>{t('modal-no-action-btn')}</BtnSecondary>
+                            <BtnSecondary onClick={() => setOpenSetNewEmailModal(false)}>{t('modal-keep-btn')}</BtnSecondary>
                         </div>
                     </form>
                 }

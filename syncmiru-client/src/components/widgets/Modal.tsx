@@ -74,7 +74,7 @@ export function ModalDelete(p: ModalDeleteProps
                             setOpen(false);
                             onDeleteConfirmed()
                         }}>{t('modal-delete-delete-btn')}</BtnDanger>
-                        <BtnSecondary onClick={() => setOpen(false)}>{t('modal-no-action-btn')}</BtnSecondary>
+                        <BtnSecondary onClick={() => setOpen(false)}>{t('modal-keep-btn')}</BtnSecondary>
                     </div>
                 </>
 

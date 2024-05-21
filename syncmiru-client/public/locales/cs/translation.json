@@ -131,7 +131,7 @@
 
   "modal-delete-title": "Potvrzení smazání",
   "modal-delete-delete-btn": "Smazat",
-  "modal-no-action-btn": "Ponechat",
+  "modal-keep-btn": "Ponechat",
   "modal-change-action-btn": "Změnit",
 
   "modal-change-displayname-title": "Změna zobrazeného jména",
@@ -205,5 +205,10 @@
   "license-syncmiru-text": "Aplikace Syncmiru původně vznikla jako diplomová práce na MFF UK.",
   "license-acknowledgements-title": "Seznam závislostí",
   "license-acknowledgements-text": "Vývoj aplikace se neobešel bez použití celé řady existujících frameworků, balíčků a knihoven. Pouze díky nim bylo možné vývoj aplikace Syncmiru zdárně dokončit.",
-  "license-licenses-title": "Licence"
+  "license-licenses-title": "Licence",
+
+  "title-invalid-format": "Tento název není platný",
+  "modal-cancel-btn": "Zrušit",
+  "modal-create-action-btn": "Vytvořit",
+  "max-regs-invalid-format": "Toto není platné kladné číslo"
 }

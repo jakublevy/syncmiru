@@ -134,7 +134,7 @@ export default function PasswordSettings(p: Props): ReactElement {
                         <div className="flex gap-3">
                             <BtnPrimary type="submit">{t('modal-change-action-btn')}</BtnPrimary>
                             <BtnSecondary
-                                onClick={() => setPasswordChangeModalOpen(false)}>{t('modal-no-action-btn')}</BtnSecondary>
+                                onClick={() => setPasswordChangeModalOpen(false)}>{t('modal-keep-btn')}</BtnSecondary>
                         </div>
                     </form>
                 }

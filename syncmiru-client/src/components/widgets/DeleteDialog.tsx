@@ -30,7 +30,7 @@ export default function DeleteDialog({open, setOpen, content, onDeleteConfirmed}
                     <hr className="-ml-6 -mr-6 mt-4 mb-4"/>
                     <div className="flex gap-3">
                         <BtnDanger onClick={() => {setOpen(false); onDeleteConfirmed()}}>{t('modal-delete-delete-btn')}</BtnDanger>
-                        <BtnSecondary onClick={() => setOpen(false)}>{t('modal-no-action-btn')}</BtnSecondary>
+                        <BtnSecondary onClick={() => setOpen(false)}>{t('modal-keep-btn')}</BtnSecondary>
                     </div>
                 </Dialog.Panel>
             </div>

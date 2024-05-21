@@ -16,6 +16,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("set_displayname", set_displayname);
     s.on("get_email", get_email);
     s.on("get_email_resend_timeout", get_email_resend_timeout);
+    s.on("get_reg_pub_allowed", get_reg_pub_allowed);
     s.on("send_email_change_verification_emails", send_email_change_verification_emails);
     s.on("check_email_change_tkn", check_email_change_tkn);
     s.on("change_email", change_email);
@@ -154,6 +155,14 @@ pub async fn get_email_resend_timeout(
     ack.send(state.config.email.wait_before_resend + 1).ok();
 }
 
+pub async fn get_reg_pub_allowed(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+) {
+    ack.send(state.config.reg_pub.allowed).ok();
+}
+
 pub async fn send_email_change_verification_emails(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
@@ -276,6 +285,11 @@ pub async fn change_email(
     )
         .await
         .expect("db error");
+
+    if email_old == payload.email_new {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
 
     let mut transaction = state.db.begin()
         .await

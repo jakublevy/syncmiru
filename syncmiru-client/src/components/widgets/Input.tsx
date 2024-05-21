@@ -15,7 +15,7 @@ export const Input
                   ref={ref}
                   className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
                     focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700
-                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className}`}
+                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className || ''}`}
     />
 })
 
@@ -28,7 +28,7 @@ export const EmailInput
         maxLength={320}
         className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
                     focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700 
-                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className}`}
+                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className || ''}`}
     />
 })
 
@@ -43,7 +43,7 @@ export const DisplaynameInput
         maxLength={16}
         className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
                     focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700 
-                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className}`}
+                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className || ''}`}
     />
 })
 type DisplaynamePropsOmitted = Omit<InputProps, "type" | "maxLength">
@@ -69,7 +69,7 @@ export const UsernameInput
         pattern="[a-z]{4,16}"
         className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
                     focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700 
-                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className}`}
+                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className || ''}`}
     />
 })
 
@@ -147,11 +147,14 @@ export interface InputProps {
     disabled?: boolean,
     readOnly?: boolean,
     id?: string,
+    min?: number | string,
+    max?: number | string,
     name?: string,
     value?: string,
     pattern?: string,
     maxLength?: number,
     tabIndex?: number,
+    checked?: boolean
     autoComplete?: AutocompleteType,
     onBlur?: (e: FocusEvent<HTMLInputElement>) => void,
     onInput?: (e: ChangeEvent<HTMLInputElement>) => void,

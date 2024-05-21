@@ -20,6 +20,20 @@ export const displaynameValidate = (displayname: string): boolean => {
         && !/^\s$/.test(displayname[displayname.length - 1])
 }
 
+export const regTknNameValidate = (regTknName: string): boolean => {
+    return regTknName.length >= 1 && regTknName.length <= 16
+}
+
+export const maxRegsValidate = (maxRegs: string): boolean => {
+    try {
+        let n = parseInt(maxRegs)
+        return n >= 1
+    }
+    catch (e) {
+        return false
+    }
+}
+
 export const tknValidate = (tkn: string): boolean => {
     if(tkn.length !== 24)
         return false

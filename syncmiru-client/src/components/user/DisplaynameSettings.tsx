@@ -104,7 +104,7 @@ export default function DisplaynameSettings(p: Props): ReactElement {
                         <hr className="-ml-6 -mr-6 mt-4 mb-4"/>
                         <div className="flex gap-3">
                             <BtnPrimary type="submit">{t('modal-change-action-btn')}</BtnPrimary>
-                            <BtnSecondary onClick={() => setOpen(false)}>{t('modal-no-action-btn')}</BtnSecondary>
+                            <BtnSecondary onClick={() => setOpen(false)}>{t('modal-keep-btn')}</BtnSecondary>
                         </div>
                     </form>
                 }
