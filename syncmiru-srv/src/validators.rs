@@ -84,3 +84,19 @@ pub fn check_avatar(data: &[u8]) -> Result<(), ValidationError> {
     }
     Ok(())
 }
+
+pub fn check_reg_tkn_name(name: &str) -> Result<(), ValidationError> {
+    if name.len() < 1 || name.len() > 16 {
+        return Err(ValidationError::new("invalid name length"));
+    }
+    Ok(())
+}
+
+pub fn check_reg_tkn_max_regs(max_regs_opt: &Option<i32>) -> Result<(), ValidationError> {
+    if let Some(max_regs) = max_regs_opt {
+        if *max_regs < 1 {
+            return Err(ValidationError::new("invalid max_regs value"))
+        }
+    }
+    Ok(())
+}

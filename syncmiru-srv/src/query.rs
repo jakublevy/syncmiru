@@ -1,3 +1,4 @@
+use std::cmp::max;
 use sqlx::{Executor, PgPool, Postgres, Transaction};
 use crate::models::User;
 use crate::models::query::{EmailTknType, Id};
@@ -584,6 +585,32 @@ pub async fn update_password_by_uid(db: &PgPool, uid: Id, password_hash: &str) -
 pub async fn delete_user_by_uid(db: &PgPool, uid: Id) -> Result<()> {
     sqlx::query("delete from users where id = $1")
         .bind(uid)
+        .execute(db)
+        .await?;
+    Ok(())
+}
+
+pub async fn reg_tkn_name_unique(db: &PgPool, name: &str) -> Result<bool> {
+    let unique: (bool, ) = sqlx::query_as("select COUNT(*) = 0 from reg_tkn where name = $1 limit 1")
+        .bind(name.to_string())
+        .fetch_one(db).await?;
+    Ok(unique.0)
+}
+
+pub async fn new_reg_tkn(
+    db: &PgPool,
+    name: &str,
+    key: &str,
+    max_reg: Option<i32>
+) -> Result<()> {
+    let query = r#"
+    insert into reg_tkn (name, key, max_reg)
+    values ($1, $2, $3)
+    "#;
+    sqlx::query(query)
+        .bind(name)
+        .bind(key)
+        .bind(max_reg)
         .execute(db)
         .await?;
     Ok(())

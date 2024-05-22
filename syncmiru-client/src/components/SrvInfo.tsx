@@ -5,9 +5,11 @@ import "src/react-menu.css";
 import Wrench from "@components/svg/Wrench.tsx";
 import Play from "@components/svg/Play.tsx";
 import {useLocation} from "wouter";
+import {useTranslation} from "react-i18next";
 
 export default function SrvInfo({homeSrv}: Props): ReactElement {
     const [_, navigate] = useLocation()
+    const {t} = useTranslation()
 
     function srvSettingsClicked() {
         navigate('/main/srv-settings/reg-tkns')
@@ -28,13 +30,13 @@ export default function SrvInfo({homeSrv}: Props): ReactElement {
             <MenuItem onClick={srvSettingsClicked} className="w-[14rem]">
                 <div className="flex gap-x-3">
                     <Wrench className="h-6 w-6"/>
-                    <p>Nastavení serveru</p>
+                    <p>{t('srv-info-settings')}</p>
                 </div>
             </MenuItem>
             <MenuItem>
                 <div className="flex gap-x-3">
                     <Play className="h-6 w-6"/>
-                    <p>Vytvořit místnost</p>
+                    <p>{t('srv-info-create-room')}</p>
                 </div>
             </MenuItem>
         </Menu>

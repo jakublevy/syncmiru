@@ -207,8 +207,20 @@
   "license-acknowledgements-text": "Vývoj aplikace se neobešel bez použití celé řady existujících frameworků, balíčků a knihoven. Pouze díky nim bylo možné vývoj aplikace Syncmiru zdárně dokončit.",
   "license-licenses-title": "Licence",
 
+  "srv-info-settings": "Nastavení serveru",
+  "srv-info-create-room": "Vytvořit místnost",
+
+  "srv-settings-nav-reg-tkns": "Registrační tokeny",
+  "srv-settings-nav-rooms": "Místnosti",
+
   "title-invalid-format": "Tento název není platný",
   "modal-cancel-btn": "Zrušit",
   "modal-create-action-btn": "Vytvořit",
-  "max-regs-invalid-format": "Toto není platné kladné číslo"
+  "max-regs-invalid-format": "Toto není platné kladné číslo",
+  "modal-create-reg-tkn-title": "Nový registrační token",
+  "modal-reg-tkn-name-label": "Název",
+  "modal-reg-tkn-name-help": "Vyplňte neduplicitní název registračního tokenu",
+  "modal-reg-tkn-limit-label": "Omezení počtu registrací",
+  "modal-reg-tkn-max-regs-label": "Maximální počet registrací",
+  "modal-reg-tkn-max-regs-help": "Vyplňte maximální počet registrací, které<br>bude možné pomocí tokenu uskutečnit"
 }

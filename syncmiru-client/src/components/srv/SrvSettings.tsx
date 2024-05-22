@@ -23,7 +23,7 @@ export default function SrvSettings(): ReactElement {
                         onClick={() => navigate(Link.RegTkns)}
                         active={isActive(Link.RegTkns)}
                         className="w-full text-left p-1">
-                        Registrační tokeny
+                        {t('srv-settings-nav-reg-tkns')}
                     </NavLink>
                 </div>
                 <div className="m-1">
@@ -31,7 +31,7 @@ export default function SrvSettings(): ReactElement {
                         onClick={() => navigate(Link.Rooms)}
                         active={isActive(Link.Rooms)}
                         className="w-full text-left p-1">
-                        Místnosti
+                        {t('srv-settings-nav-rooms')}
                     </NavLink>
                 </div>
                 <div className="h-16"></div>

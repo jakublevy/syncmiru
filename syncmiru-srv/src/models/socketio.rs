@@ -117,6 +117,15 @@ pub struct TknWithLang {
     pub lang: String
 }
 
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct RegTknCreate {
+    #[validate(custom(function = "validators::check_reg_tkn_name"))]
+    pub reg_tkn_name: String,
+
+    #[validate(custom(function = "validators::check_reg_tkn_max_regs"))]
+    pub max_regs: Option<i32>
+}
+
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize)]

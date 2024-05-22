@@ -10,8 +10,11 @@ import {joiResolver} from "@hookform/resolvers/joi";
 import {useRegTknNameSchema} from "@hooks/fieldSchema.ts";
 import {useTranslation} from "react-i18next";
 import {maxRegsValidate} from "src/form/validators.ts";
+import {SocketIoAck} from "@models/socketio.ts";
+import {useMainContext} from "@hooks/useMainContext.ts";
 
-export default function RegTknCreate(): ReactElement {
+export default function RegTknCreate(p: Props): ReactElement {
+    const {socket} = useMainContext()
     const [regTknCreateModalOpen, setRegTknCreateModalOpen] = useState<boolean>(false);
     const [limitEnable, setLimitEnable] = useState<boolean>(false);
     const [showMaxRegsEmptyError, setShowMaxRegsEmptyError] = useState<boolean>(false);
@@ -47,6 +50,20 @@ export default function RegTknCreate(): ReactElement {
             return
         }
         console.log(JSON.stringify(data))
+        setRegTknCreateModalOpen(false)
+        let sendData: SendData = {reg_tkn_name: data.regTknName}
+        if(data.maxRegs !== '')
+            sendData.max_regs = parseInt(data.maxRegs)
+
+        p.setLoading(true)
+        socket!.emitWithAck("create_reg_tkn", sendData)
+            .then((ack: SocketIoAck<null>) => {
+
+            })
+            .catch(() => {
+
+            })
+            .finally(() => p.setLoading(false))
     }
 
     function onLimitEnableChanged(e: ChangeEvent<HTMLInputElement>) {
@@ -61,18 +78,18 @@ export default function RegTknCreate(): ReactElement {
             >Vytvořit token
             </BtnSecondary>
             <ModalWHeader
-                title="Nový registrační token"
+                title={t('modal-create-reg-tkn-title')}
                 open={regTknCreateModalOpen}
                 setOpen={setRegTknCreateModalOpen}
                 content={
                     <form onSubmit={handleSubmit(createRegTkn)} noValidate>
                         <div className="flex flex-col">
                             <div className="flex justify-between">
-                                <Label htmlFor="regTknName">Název</Label>
+                                <Label htmlFor="regTknName">{t('modal-reg-tkn-name-label')}</Label>
                                 <Help
                                     tooltipId="regTknName-help"
                                     className="w-4"
-                                    content="TODO"
+                                    content={t('modal-reg-tkn-name-help')}
                                 />
                             </div>
                             <Input
@@ -88,16 +105,16 @@ export default function RegTknCreate(): ReactElement {
                                 <div>
                                     <Input id="limitEnable" type="checkbox" checked={limitEnable} onChange={onLimitEnableChanged}/>
                                 </div>
-                                <Label className="mt-1" htmlFor="limitEnable">Omezení počtu registrací</Label>
+                                <Label className="mt-1" htmlFor="limitEnable">{t('modal-reg-tkn-limit-label')}</Label>
                             </div>
 
                             {limitEnable && <div>
                                 <div className="flex justify-between mt-4">
-                                    <Label htmlFor="maxRegs">Maximální počet registrací</Label>
+                                    <Label htmlFor="maxRegs">{t('modal-reg-tkn-max-regs-label')}</Label>
                                     <Help
                                         tooltipId="maxRegs-help"
                                         className="w-4"
-                                        content="TODO"
+                                        content={t('modal-reg-tkn-max-regs-help')}
                                     />
                                 </div>
                                 <Input
@@ -127,7 +144,16 @@ export default function RegTknCreate(): ReactElement {
     )
 }
 
+interface Props {
+    setLoading: (b: boolean) => void
+}
+
 interface FormFields {
     regTknName: string
     maxRegs: string
+}
+
+interface SendData {
+    reg_tkn_name: string,
+    max_regs?: number
 }

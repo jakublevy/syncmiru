@@ -207,8 +207,20 @@
   "license-acknowledgements-text": "The development of the application could not be done without using a whole range of existing frameworks, packages and libraries. Thanks to them, the Syncmiru application could be created.",
   "license-licenses-title": "Licenses",
 
+  "srv-info-settings": "Server settings",
+  "srv-info-create-room": "Create new room",
+
+  "srv-settings-nav-reg-tkns": "Registration tokens",
+  "srv-settings-nav-rooms": "Rooms",
+
   "title-invalid-format": "This name is invalid",
   "modal-cancel-btn": "Cancel",
   "modal-create-action-btn": "Create",
-  "max-regs-invalid-format": "This is not a valid positive number"
+  "max-regs-invalid-format": "This is not a valid positive number",
+  "modal-create-reg-tkn-title": "New registration token",
+  "modal-reg-tkn-name-label": "Name",
+  "modal-reg-tkn-name-help": "Fill in the non-duplicated name of the registration token",
+  "modal-reg-tkn-limit-label": "Limit the number of registrations",
+  "modal-reg-tkn-max-regs-label": "Maximum number of registrations",
+  "modal-reg-tkn-max-regs-help": "Fill in the maximum number of registrations<br> that can be made with the token"
 }

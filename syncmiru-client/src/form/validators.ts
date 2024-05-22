@@ -26,8 +26,8 @@ export const regTknNameValidate = (regTknName: string): boolean => {
 
 export const maxRegsValidate = (maxRegs: string): boolean => {
     try {
-        let n = parseInt(maxRegs)
-        return n >= 1
+        let n = parseFloat(maxRegs)
+        return n >= 1 && n <= 2147483647 && Number.isInteger(n)
     }
     catch (e) {
         return false

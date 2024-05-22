@@ -12,9 +12,10 @@ export default function RegTknsList(): ReactElement {
     const {socket} = useMainContext()
     const [loading, setLoading] = useState<boolean>(true)
     const [regPubAllowed, setRegPubAllowed] = useState<boolean>(false)
+    const [newRegTknLoading, setNewRegTknLoading] = useState<boolean>(false)
 
     useEffect(() => {
-        if(socket !== undefined) {
+        if (socket !== undefined) {
             socket.emitWithAck("get_reg_pub_allowed")
                 .then((regPubAllowed: boolean) => {
                     setRegPubAllowed(regPubAllowed)
@@ -23,35 +24,41 @@ export default function RegTknsList(): ReactElement {
         }
     }, [socket]);
 
-    if (loading)
-        return (
-            <div className="flex justify-center items-center h-full">
-                <Loading/>
-            </div>
-        )
+    function showContent() {
+        return !loading && !newRegTknLoading
+    }
 
     return (
-        <div className="flex flex-col">
-            <div className="flex items-center m-8">
-                <h1 className="text-2xl font-bold">Registrační tokeny – přehled</h1>
-                <div className="flex-1"></div>
-                <CloseBtn onClick={() => navigateToMain(navigate)}></CloseBtn>
+        <>
+            {!showContent() &&
+                <div className="flex justify-center items-center h-full">
+                    <Loading/>
+                </div>
+            }
+            <div className={`flex flex-col ${showContent() ? '' : 'hidden'}`}>
+                <div className="flex items-center m-8">
+                    <h1 className="text-2xl font-bold">Registrační tokeny – přehled</h1>
+                    <div className="flex-1"></div>
+                    <CloseBtn onClick={() => navigateToMain(navigate)}></CloseBtn>
+                </div>
+                {regPubAllowed && <div className="ml-8 mr-8">
+                    <WarningBanner
+                        title="Veřejné registrace jsou povoleny"
+                        content="Registrační tokeny nejsou vyžadovány pro vytvoření uživatelského účtu."
+                    />
+                </div>}
+                <div className="ml-8 mr-8 flex gap-x-4">
+                    <RegTknCreate
+                        setLoading={(b) => setNewRegTknLoading(b)}
+                    />
+                </div>
+                <div className="flex flex-col ml-8 mr-8 mb-8 mt-4 gap-y-6">
+                    <h2 className="text-xl font-semibold">Seznam validních registračních tokenů</h2>
+                </div>
+                <div className="flex flex-col m-8 gap-y-6">
+                    <h2 className="text-xl font-semibold">Seznam využitých registračních tokenů</h2>
+                </div>
             </div>
-            {regPubAllowed && <div className="ml-8 mr-8">
-                <WarningBanner
-                    title="Veřejné registrace jsou povoleny"
-                    content="Registrační tokeny nejsou vyžadovány pro vytvoření uživatelského účtu."
-                />
-            </div>}
-            <div className="ml-8 mr-8 flex gap-x-4">
-                <RegTknCreate/>
-            </div>
-            <div className="flex flex-col ml-8 mr-8 mb-8 mt-4 gap-y-6">
-                <h2 className="text-xl font-semibold">Seznam validních registračních tokenů</h2>
-            </div>
-            <div className="flex flex-col m-8 gap-y-6">
-                <h2 className="text-xl font-semibold">Seznam využitých registračních tokenů</h2>
-            </div>
-        </div>
+        </>
     )
 }
