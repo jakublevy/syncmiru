@@ -1,8 +1,7 @@
-use std::cmp::max;
 use sqlx::{Executor, PgPool, Postgres, Transaction};
 use crate::models::User;
-use crate::models::query::{EmailTknType, Id};
-use crate::models::socketio::UserSession;
+use crate::models::query::{EmailTknType, Id, RegTkn};
+use crate::models::query::UserSession;
 use crate::result::Result;
 
 pub async fn username_unique(db: &PgPool, username: &str) -> Result<bool> {
@@ -614,4 +613,32 @@ pub async fn new_reg_tkn(
         .execute(db)
         .await?;
     Ok(())
+}
+
+pub async fn get_active_reg_tkns(db: &PgPool) -> Result<Vec<RegTkn>> {
+    let query = r#"
+        select reg_tkn.id, reg_tkn.name, reg_tkn.key, reg_tkn.max_reg from reg_tkn
+        full outer join users on users.reg_tkn_id = reg_tkn.id
+        where
+			reg_tkn.id is not NULL and (
+				reg_tkn.max_reg is NULL
+            	or (select COUNT(*) from users where reg_tkn_id = reg_tkn.id) < reg_tkn.max_reg
+			)
+    "#;
+    let reg_tkns = sqlx::query_as::<_, RegTkn>(query)
+        .fetch_all(db)
+        .await?;
+    Ok(reg_tkns)
+}
+
+pub async fn get_inactive_reg_tkns(db: &PgPool) -> Result<Vec<RegTkn>> {
+    let query = r#"
+        select reg_tkn.id, reg_tkn.name, reg_tkn.key, reg_tkn.max_reg from reg_tkn
+        join users on users.reg_tkn_id = reg_tkn.id
+        where (select COUNT(*) from users where reg_tkn_id = reg_tkn.id) = reg_tkn.max_reg
+    "#;
+    let reg_tkns = sqlx::query_as::<_, RegTkn>(query)
+        .fetch_all(db)
+        .await?;
+    Ok(reg_tkns)
 }

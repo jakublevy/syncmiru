@@ -68,7 +68,7 @@
         line-height: 1.5;
         font-size: 12px;
         padding: 1px;
-        opacity: 0.9;
+        opacity: 1;
     }
 
     .rc-tooltip-hidden {
@@ -291,7 +291,7 @@
         line-height: 1.5;
         font-size: 12px;
         padding: 1px;
-        opacity: 0.9;
+        opacity: 1;
     }
 
     .rc-tooltip-hidden {

@@ -217,10 +217,25 @@
   "modal-cancel-btn": "Zrušit",
   "modal-create-action-btn": "Vytvořit",
   "max-regs-invalid-format": "Toto není platné kladné číslo",
+  "modal-reg-tkn-create-btn": "Vytvořit token",
   "modal-create-reg-tkn-title": "Nový registrační token",
   "modal-reg-tkn-name-label": "Název",
   "modal-reg-tkn-name-help": "Vyplňte neduplicitní název registračního tokenu",
   "modal-reg-tkn-limit-label": "Omezení počtu registrací",
   "modal-reg-tkn-max-regs-label": "Maximální počet registrací",
-  "modal-reg-tkn-max-regs-help": "Vyplňte maximální počet registrací, které<br>bude možné pomocí tokenu uskutečnit"
+  "modal-reg-tkn-max-regs-help": "Vyplňte maximální počet registrací, které<br>bude možné pomocí tokenu uskutečnit",
+  "modal-reg-tkn-create-error": "Došlo k chybě při vytváření registračního tokenu",
+  "modal-reg-tkn-fetch-error": "Došlo k chybě při získávání validních registračních tokenů",
+  "modal-inactive-reg-tkn-fetch-error": "Došlo k chybě při získávání využitých registračních tokenů",
+
+  "datatable-no-data": "Žádná data nejsou k dispozici",
+
+  "active-reg-tkn-name-header": "Název",
+  "active-reg-tkn-max-regs-header": "Max počet registrací",
+
+  "reg-tkns-list-title": "Registrační tokeny – přehled",
+  "reg-tkns-list-banner-title": "Veřejné registrace jsou povoleny",
+  "reg-tkns-list-banner-text": "Registrační tokeny nejsou vyžadovány pro vytvoření uživatelského účtu.",
+  "reg-tkns-list-active-title": "Seznam validních registračních tokenů",
+  "reg-tkns-list-inactive-title": "Seznam využitých registračních tokenů"
 }

@@ -10,8 +10,9 @@ import {joiResolver} from "@hookform/resolvers/joi";
 import {useRegTknNameSchema} from "@hooks/fieldSchema.ts";
 import {useTranslation} from "react-i18next";
 import {maxRegsValidate} from "src/form/validators.ts";
-import {SocketIoAck} from "@models/socketio.ts";
+import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {useMainContext} from "@hooks/useMainContext.ts";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
 
 export default function RegTknCreate(p: Props): ReactElement {
     const {socket} = useMainContext()
@@ -49,7 +50,6 @@ export default function RegTknCreate(p: Props): ReactElement {
             setShowMaxRegsEmptyError(true)
             return
         }
-        console.log(JSON.stringify(data))
         setRegTknCreateModalOpen(false)
         let sendData: SendData = {reg_tkn_name: data.regTknName}
         if(data.maxRegs !== '')
@@ -58,10 +58,12 @@ export default function RegTknCreate(p: Props): ReactElement {
         p.setLoading(true)
         socket!.emitWithAck("create_reg_tkn", sendData)
             .then((ack: SocketIoAck<null>) => {
+                if(ack.status === SocketIoAckType.Err)
+                    showPersistentErrorAlert(t('modal-reg-tkn-create-error'))
 
             })
             .catch(() => {
-
+                showPersistentErrorAlert(t('modal-reg-tkn-create-error'))
             })
             .finally(() => p.setLoading(false))
     }
@@ -75,7 +77,7 @@ export default function RegTknCreate(p: Props): ReactElement {
         <>
             <BtnSecondary
                 onClick={createRegTknClicked}
-            >Vytvořit token
+            >{t('modal-reg-tkn-create-btn')}
             </BtnSecondary>
             <ModalWHeader
                 title={t('modal-create-reg-tkn-title')}
@@ -153,7 +155,7 @@ interface FormFields {
     maxRegs: string
 }
 
-interface SendData {
+export interface SendData {
     reg_tkn_name: string,
     max_regs?: number
 }

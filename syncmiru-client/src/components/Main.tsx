@@ -19,7 +19,7 @@ import UserSettings from "@components/user/UserSettings.tsx";
 import useClearJwt from "@hooks/useClearJwt.ts";
 import {LoginTkns} from "@models/login.ts";
 import {useHwidHash} from "@hooks/useHwidHash.ts";
-import {AvatarChange, DisplaynameChange, UserClient, UserId, UserSrv, UserValueClient} from "src/models/user.ts";
+import {AvatarChange, DisplaynameChange, UserId, UserSrv, UserValueClient} from "src/models/user.ts";
 import {showPersistentErrorAlert, showPersistentWarningAlert} from "src/utils/alert.ts";
 import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
 import {arrayBufferToBase64} from "src/utils/encoding.ts";
@@ -64,6 +64,7 @@ export default function Main(): ReactElement {
         if(socket !== undefined) {
             socket.on('displayname_change', onDisplaynameChange)
             socket.on('avatar_change', onAvatarChange)
+            socket.on("del_users", onDelUsers);
         }
     }, [socket, users]);
 
@@ -99,6 +100,15 @@ export default function Main(): ReactElement {
 
         setUsers((p) => new Map<UserId, UserValueClient>([...p, ...m]))
         setLoading(false)
+    }
+
+    function onDelUsers(delUids: Array<UserId>) {
+        let m: Map<UserId, UserValueClient> = new Map<UserId, UserValueClient>();
+        for (const [id, user] of users) {
+            if(!delUids.includes(id))
+                m.set(id, user)
+        }
+        setUsers(m)
     }
 
     function onNewLogin() {

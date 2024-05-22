@@ -11,12 +11,14 @@ export default function ClickableTooltip(p: Props): ReactElement {
         setTheme(shownTheme)
     }, [shownTheme]);
 
-    listen<string>('tauri://theme-changed', (e) => {
-        if(e.payload === CSSTheme.Light)
-            setTheme(CSSTheme.Light)
-        else
-            setTheme(CSSTheme.Dark)
-    })
+    useEffect(() => {
+        listen<string>('tauri://theme-changed', (e) => {
+            if(e.payload === CSSTheme.Light)
+                setTheme(CSSTheme.Light)
+            else
+                setTheme(CSSTheme.Dark)
+        })
+    }, []);
 
     return (
         <Tooltip

@@ -2,7 +2,7 @@ use std::sync::Arc;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang};
-use crate::models::query::{EmailTknType, Id};
+use crate::models::query::{EmailTknType, Id, RegTkn};
 use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, Tkn, RegTknCreate};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
@@ -28,6 +28,8 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("check_delete_account_tkn", check_delete_account_tkn);
     s.on("delete_account", delete_account);
     s.on("create_reg_tkn", create_reg_tkn);
+    s.on("active_reg_tkns", active_reg_tkns);
+    s.on("inactive_reg_tkns", inactive_reg_tkns);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_verified_users(&state.db)
@@ -540,6 +542,9 @@ pub async fn delete_account(
     query::delete_user_by_uid(&state.db, uid)
         .await
         .expect("db error");
+
+    s.broadcast().emit("del_users", [[uid]]).ok();
+
     email::send_account_deleted_email_warning(
         &state.config.email,
         &email,
@@ -579,6 +584,28 @@ pub async fn create_reg_tkn(
         .await
         .expect("db error");
     ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn active_reg_tkns(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender
+) {
+    let active_reg_tkns = query::get_active_reg_tkns(&state.db)
+        .await
+        .expect("db error");
+    ack.send(SocketIoAck::<Vec<RegTkn>>::ok(Some(active_reg_tkns))).ok();
+}
+
+pub async fn inactive_reg_tkns(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender
+) {
+    let inactive_reg_tkns = query::get_inactive_reg_tkns(&state.db)
+        .await
+        .expect("db error");
+    ack.send(SocketIoAck::<Vec<RegTkn>>::ok(Some(inactive_reg_tkns))).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {

@@ -6,12 +6,18 @@ import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {WarningBanner} from "@components/widgets/Banner.tsx";
 import RegTknCreate from "@components/srv/RegTknCreate.tsx";
+import {useTranslation} from "react-i18next";
+import RegTknsActiveList from "@components/srv/RegTknActiveList.tsx";
+import RegTknInactiveList from "@components/srv/RegTknInactiveList.tsx";
 
 export default function RegTknsList(): ReactElement {
     const [_, navigate] = useLocation()
+    const {t} = useTranslation()
     const {socket} = useMainContext()
-    const [loading, setLoading] = useState<boolean>(true)
+    const [regPubFetching, setRegPubFetching] = useState<boolean>(true)
     const [regPubAllowed, setRegPubAllowed] = useState<boolean>(false)
+    const [activeRegTknsLoading, setActiveRegTknsLoading] = useState<boolean>(true)
+    const [inactiveRegTknsLoading, setInactiveRegTknsLoading] = useState<boolean>(true)
     const [newRegTknLoading, setNewRegTknLoading] = useState<boolean>(false)
 
     useEffect(() => {
@@ -20,12 +26,13 @@ export default function RegTknsList(): ReactElement {
                 .then((regPubAllowed: boolean) => {
                     setRegPubAllowed(regPubAllowed)
                 })
-                .finally(() => setLoading(false))
+                .finally(() => setRegPubFetching(false))
         }
     }, [socket]);
 
+
     function showContent() {
-        return !loading && !newRegTknLoading
+        return !regPubFetching && !newRegTknLoading && !activeRegTknsLoading && !inactiveRegTknsLoading
     }
 
     return (
@@ -37,14 +44,14 @@ export default function RegTknsList(): ReactElement {
             }
             <div className={`flex flex-col ${showContent() ? '' : 'hidden'}`}>
                 <div className="flex items-center m-8">
-                    <h1 className="text-2xl font-bold">Registrační tokeny – přehled</h1>
+                    <h1 className="text-2xl font-bold">{t('reg-tkns-list-title')}</h1>
                     <div className="flex-1"></div>
                     <CloseBtn onClick={() => navigateToMain(navigate)}></CloseBtn>
                 </div>
                 {regPubAllowed && <div className="ml-8 mr-8">
                     <WarningBanner
-                        title="Veřejné registrace jsou povoleny"
-                        content="Registrační tokeny nejsou vyžadovány pro vytvoření uživatelského účtu."
+                        title={t('reg-tkns-list-banner-title')}
+                        content={t('reg-tkns-list-banner-text')}
                     />
                 </div>}
                 <div className="ml-8 mr-8 flex gap-x-4">
@@ -52,11 +59,17 @@ export default function RegTknsList(): ReactElement {
                         setLoading={(b) => setNewRegTknLoading(b)}
                     />
                 </div>
-                <div className="flex flex-col ml-8 mr-8 mb-8 mt-4 gap-y-6">
-                    <h2 className="text-xl font-semibold">Seznam validních registračních tokenů</h2>
+                <div className="flex flex-col ml-8 mr-8 mb-8 mt-4 gap-y-2">
+                    <h2 className="text-xl font-semibold">{t('reg-tkns-list-active-title')}</h2>
+                    <RegTknsActiveList
+                        setLoading={(b) => setActiveRegTknsLoading(b)}
+                    />
                 </div>
-                <div className="flex flex-col m-8 gap-y-6">
-                    <h2 className="text-xl font-semibold">Seznam využitých registračních tokenů</h2>
+                <div className="flex flex-col m-8 gap-y-2">
+                    <h2 className="text-xl font-semibold">{t('reg-tkns-list-inactive-title')}</h2>
+                    <RegTknInactiveList
+                        setLoading={(b) => setInactiveRegTknsLoading(b)}
+                    />
                 </div>
             </div>
         </>

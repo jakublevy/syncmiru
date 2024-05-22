@@ -217,10 +217,25 @@
   "modal-cancel-btn": "Cancel",
   "modal-create-action-btn": "Create",
   "max-regs-invalid-format": "This is not a valid positive number",
+  "modal-reg-tkn-create-btn": "Create new token",
   "modal-create-reg-tkn-title": "New registration token",
   "modal-reg-tkn-name-label": "Name",
   "modal-reg-tkn-name-help": "Fill in the non-duplicated name of the registration token",
   "modal-reg-tkn-limit-label": "Limit the number of registrations",
   "modal-reg-tkn-max-regs-label": "Maximum number of registrations",
-  "modal-reg-tkn-max-regs-help": "Fill in the maximum number of registrations<br> that can be made with the token"
+  "modal-reg-tkn-max-regs-help": "Fill in the maximum number of registrations<br> that can be made with the token",
+  "modal-reg-tkn-create-error": "An error occurred while creating a registration token",
+  "modal-active-reg-tkn-fetch-error": "An error occurred while obtaining valid registration tokens",
+  "modal-inactive-reg-tkn-fetch-error": "An error occurred while obtaining used registration tokens",
+
+  "datatable-no-data": "No data available",
+
+  "reg-tkn-name-header": "Name",
+  "reg-tkn-max-regs-header": "Max registration count",
+
+  "reg-tkns-list-title": "Registration tokens – overview",
+  "reg-tkns-list-banner-title": "Public registrations are enabled",
+  "reg-tkns-list-banner-text": "Registration tokens are not required to create an user account.",
+  "reg-tkns-list-active-title": "The list of valid registration tokens",
+  "reg-tkns-list-inactive-title": "The list of used registration tokens"
 }

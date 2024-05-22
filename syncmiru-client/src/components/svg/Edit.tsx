@@ -12,12 +12,12 @@ export default function Edit({className}: Props): ReactElement {
             y="0px"
             viewBox="0 0 733.3 733.3"
             xmlSpace="preserve"
-            fill="currentColor"
+            stroke="#000"
             className={className || ''}
         >
             <style>
                 {
-                    ".st0{fill:none;stroke:#000;stroke-width:66.6667;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:133.3333}"
+                    ".st0{fill:none;stroke-width:66.6667;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:133.3333}"
                 }
             </style>
             <g id="Complete">

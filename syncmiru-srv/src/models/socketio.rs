@@ -14,14 +14,6 @@ pub struct LoginTkns {
     pub jwt: String
 }
 
-#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
-pub struct UserSession {
-    pub id: Id,
-    pub device_name: String,
-    pub os: String,
-    pub last_access_at: chrono::DateTime<Utc>
-}
-
 #[derive(Debug, Copy, Clone, Deserialize, Validate)]
 pub struct IdStruct {
     #[validate(range(min = 1))]

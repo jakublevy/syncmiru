@@ -5,6 +5,8 @@ import Delete from "@components/svg/Delete.tsx";
 import Edit from "@components/svg/Edit.tsx";
 import Danger from "@components/svg/Danger.tsx";
 import ZoomReset from "@components/svg/ZoomReset.tsx";
+import Copy from "@components/svg/Copy.tsx";
+import View from "@components/svg/View.tsx";
 
 export function Btn(p: BtnProps): ReactElement {
     const {children, ...restParams} = p
@@ -95,6 +97,22 @@ export function EditBtn(p: SvgBtn): ReactElement {
     return (
         <BtnSecondarySvg {...p}>
             <Edit className="w-full"/>
+        </BtnSecondarySvg>
+    )
+}
+
+export function CopyBtn(p: SvgBtn): ReactElement {
+    return (
+        <BtnSecondarySvg {...p}>
+            <Copy className="w-full"/>
+        </BtnSecondarySvg>
+    )
+}
+
+export function ViewBtn(p: SvgBtn): ReactElement {
+    return (
+        <BtnSecondarySvg {...p}>
+            <View className="w-full"/>
         </BtnSecondarySvg>
     )
 }

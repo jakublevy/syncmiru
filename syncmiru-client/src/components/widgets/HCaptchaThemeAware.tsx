@@ -11,15 +11,17 @@ export default function HCaptchaThemeAware(p: HCaptchaProps): ReactElement {
         setTheme(shownTheme)
     }, [shownTheme]);
 
-    listen<string>('tauri://theme-changed', (e) => {
-        if(p.onExpire !== undefined)
-            p.onExpire()
+    useEffect(() => {
+        listen<string>('tauri://theme-changed', (e) => {
+            if(p.onExpire !== undefined)
+                p.onExpire()
 
-        if(e.payload === CSSTheme.Light)
-            setTheme(CSSTheme.Light)
-        else
-            setTheme(CSSTheme.Dark)
-    })
+            if(e.payload === CSSTheme.Light)
+                setTheme(CSSTheme.Light)
+            else
+                setTheme(CSSTheme.Dark)
+        })
+    }, []);
 
     return (
         <HCaptcha
