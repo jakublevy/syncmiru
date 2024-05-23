@@ -123,7 +123,7 @@
 
   "theme-changed-windows-warning": "Na OS Windows se z technických důvodů změna motivu projeví až po restartu aplikace",
 
-  "sessions-delete-error": "Došlo k chybě při smazání zařízení",
+  "sessions-delete-error": "Došlo k chybě při mazání zařízení",
   "sessions-devices": "Zařízení",
   "sessions-current": "Aktuální zařízení",
   "sessions-inactive": "Další zařízení",
@@ -241,6 +241,9 @@
   "reg-tkns-list-inactive-title": "Seznam využitých registračních tokenů",
   "reg-tkns-copy-1": "Registrační token",
   "reg-tkns-copy-2": "zkopírován",
+
+  "modal-reg-tkn-delete-text": "Chcete opravdu smazat registrační token s názvem",
+  "reg-tkn-delete-error": "Došlo k chybě při mazání registračního tokenu",
 
   "search-placeholder": "Hledat"
 }

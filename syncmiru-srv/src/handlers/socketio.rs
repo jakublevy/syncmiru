@@ -31,6 +31,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("active_reg_tkns", active_reg_tkns);
     s.on("inactive_reg_tkns", inactive_reg_tkns);
     s.on("check_reg_tkn_name_unique", check_reg_tkn_name_unique);
+    s.on("delete_reg_tkn", delete_reg_tkn);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_verified_users(&state.db)
@@ -609,6 +610,38 @@ pub async fn inactive_reg_tkns(
     ack.send(SocketIoAck::<Vec<RegTkn>>::ok(Some(inactive_reg_tkns))).ok();
 }
 
+pub async fn check_reg_tkn_name_unique(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<RegTknName>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<bool>::err()).ok();
+        return;
+    }
+    let unique = query::reg_tkn_name_unique(&state.db, &payload.reg_tkn_name)
+        .await
+        .expect("db error");
+    ack.send(SocketIoAck::<bool>::ok(Some(unique))).ok();
+}
+
+pub async fn delete_reg_tkn(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<IdStruct>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    query::delete_reg_tkn(&state.db, payload.id)
+        .await
+        .expect("db error");
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
     let mut uid_opt: Option<Id>;
     {
@@ -630,20 +663,4 @@ pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
         .await
         .expect("db error");
     s.broadcast().emit("offline", uid).ok();
-}
-
-pub async fn check_reg_tkn_name_unique(
-    State(state): State<Arc<SrvState>>,
-    s: SocketRef,
-    ack: AckSender,
-    Data(payload): Data<RegTknName>
-) {
-    if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<bool>::err()).ok();
-        return;
-    }
-    let unique = query::reg_tkn_name_unique(&state.db, &payload.reg_tkn_name)
-        .await
-        .expect("db error");
-    ack.send(SocketIoAck::<bool>::ok(Some(unique))).ok();
 }

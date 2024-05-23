@@ -642,3 +642,11 @@ pub async fn get_inactive_reg_tkns(db: &PgPool) -> Result<Vec<RegTkn>> {
         .await?;
     Ok(reg_tkns)
 }
+
+pub async fn delete_reg_tkn(db: &PgPool, id: Id) -> Result<()> {
+    sqlx::query("delete from reg_tkn where id = $1")
+        .bind(id)
+        .execute(db)
+        .await?;
+    Ok(())
+}

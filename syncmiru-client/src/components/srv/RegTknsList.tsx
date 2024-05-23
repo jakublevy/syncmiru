@@ -7,8 +7,8 @@ import Loading from "@components/Loading.tsx";
 import {WarningBanner} from "@components/widgets/Banner.tsx";
 import RegTknCreate from "@components/srv/RegTknCreate.tsx";
 import {useTranslation} from "react-i18next";
-import RegTknsActiveList from "@components/srv/RegTknActiveList.tsx";
-import RegTknInactiveList from "@components/srv/RegTknInactiveList.tsx";
+import {RegTknType} from "@components/srv/RegTknTable.tsx";
+import RegTknsTable from "@components/srv/RegTknTable.tsx";
 
 export default function RegTknsList(): ReactElement {
     const [_, navigate] = useLocation()
@@ -61,13 +61,15 @@ export default function RegTknsList(): ReactElement {
                 </div>
                 <div className="flex flex-col ml-8 mr-8 mb-8 mt-4 gap-y-4">
                     <h2 className="text-xl font-semibold">{t('reg-tkns-list-active-title')}</h2>
-                    <RegTknsActiveList
+                    <RegTknsTable
+                        regTknType={RegTknType.Active}
                         setLoading={(b) => setActiveRegTknsLoading(b)}
                     />
                 </div>
                 <div className="flex flex-col m-8 gap-y-2">
                     <h2 className="text-xl font-semibold">{t('reg-tkns-list-inactive-title')}</h2>
-                    <RegTknInactiveList
+                    <RegTknsTable
+                        regTknType={RegTknType.Inactive}
                         setLoading={(b) => setInactiveRegTknsLoading(b)}
                     />
                 </div>
