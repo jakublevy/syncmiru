@@ -6,7 +6,7 @@ use crate::result::Result;
 
 pub async fn username_unique(db: &PgPool, username: &str) -> Result<bool> {
     let unique: (bool, ) = sqlx::query_as("select COUNT(*) = 0 from users where username = $1 limit 1")
-        .bind(username.to_string())
+        .bind(username)
         .fetch_one(db).await?;
 
     Ok(unique.0)
@@ -14,7 +14,7 @@ pub async fn username_unique(db: &PgPool, username: &str) -> Result<bool> {
 
 pub async fn email_unique(db: &PgPool, email: &str) -> Result<bool> {
     let unique: (bool, ) = sqlx::query_as("select COUNT(*) = 0 from users where email = $1 limit 1")
-        .bind(email.to_string())
+        .bind(email)
         .fetch_one(db).await?;
 
     Ok(unique.0)
@@ -591,7 +591,7 @@ pub async fn delete_user_by_uid(db: &PgPool, uid: Id) -> Result<()> {
 
 pub async fn reg_tkn_name_unique(db: &PgPool, name: &str) -> Result<bool> {
     let unique: (bool, ) = sqlx::query_as("select COUNT(*) = 0 from reg_tkn where name = $1 limit 1")
-        .bind(name.to_string())
+        .bind(name)
         .fetch_one(db).await?;
     Ok(unique.0)
 }

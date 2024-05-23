@@ -7,9 +7,8 @@ import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import Joi from "joi";
 import {useForm} from "react-hook-form";
 import {joiResolver} from "@hookform/resolvers/joi";
-import {useRegTknNameSchema} from "@hooks/fieldSchema.ts";
 import {useTranslation} from "react-i18next";
-import {maxRegsValidate} from "src/form/validators.ts";
+import {maxRegsValidate, regTknNameValidate} from "src/form/validators.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
@@ -21,7 +20,21 @@ export default function RegTknCreate(p: Props): ReactElement {
     const [showMaxRegsEmptyError, setShowMaxRegsEmptyError] = useState<boolean>(false);
     const {t} = useTranslation()
     const formSchema = Joi.object({
-        regTknName: useRegTknNameSchema(t),
+        regTknName: Joi
+            .string()
+            .required()
+            .messages({"string.empty": t('required-field-error')})
+            .custom((v: string, h) => {
+                if(!regTknNameValidate(v))
+                    return h.message({custom: t('title-invalid-format')})
+                return v
+            })
+            .external(async (v: string, h) => {
+                let ack = await socket!.emitWithAck("check_reg_tkn_name_unique", {reg_tkn_name: v})
+                if(ack.status === SocketIoAckType.Err || (ack.status === SocketIoAckType.Ok && !ack.payload))
+                    return h.message({external: t('modal-reg-tkn-name-not-unique')})
+                return v
+            }),
         maxRegs: Joi
             .string()
             .allow('')

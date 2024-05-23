@@ -3,7 +3,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang};
 use crate::models::query::{EmailTknType, Id, RegTkn};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, Tkn, RegTknCreate};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, Tkn, RegTknCreate, RegTknName};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -30,6 +30,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("create_reg_tkn", create_reg_tkn);
     s.on("active_reg_tkns", active_reg_tkns);
     s.on("inactive_reg_tkns", inactive_reg_tkns);
+    s.on("check_reg_tkn_name_unique", check_reg_tkn_name_unique);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_verified_users(&state.db)
@@ -629,4 +630,20 @@ pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
         .await
         .expect("db error");
     s.broadcast().emit("offline", uid).ok();
+}
+
+pub async fn check_reg_tkn_name_unique(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<RegTknName>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<bool>::err()).ok();
+        return;
+    }
+    let unique = query::reg_tkn_name_unique(&state.db, &payload.reg_tkn_name)
+        .await
+        .expect("db error");
+    ack.send(SocketIoAck::<bool>::ok(Some(unique))).ok();
 }

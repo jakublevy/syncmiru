@@ -2,12 +2,18 @@ import React, {
     ChangeEvent,
     forwardRef,
     KeyboardEvent,
-    FocusEvent,
+    FocusEvent, useState,
 } from "react";
 import {emailValidate, usernameValidate, tknValidate} from "src/form/validators.ts";
 import useSWR from "swr";
 import {invoke} from "@tauri-apps/api/core";
 import {withSrvValidate} from "@components/hoc/withSrvValidate.tsx";
+import Search from "@components/svg/Search.tsx";
+import {useLanguage} from "@hooks/useLanguage.ts";
+import {useTranslation} from "react-i18next";
+import {Btn, Clickable} from "@components/widgets/Button.tsx";
+import Cross from "@components/svg/Cross.tsx";
+import CrossLight from "@components/svg/CrossLight.tsx";
 
 export const Input
     = forwardRef<HTMLInputElement, InputProps>((p, ref) => {
@@ -140,6 +146,54 @@ export const ForgottenPasswordTknSrvValidate = withSrvValidate(Input,
         }
     })
 
+export const SearchInput
+    = forwardRef<HTMLInputElement, SearchProps>((p, ref) => {
+
+    const {onChange, value, setValue, ...passParams} = p
+    const {t} = useTranslation()
+
+    function searchInputOnChange(e: ChangeEvent<HTMLInputElement>) {
+        setValue(e.target.value)
+        if (onChange !== undefined)
+            onChange(e)
+    }
+
+    function clearBtnClicked() {
+       setValue('')
+    }
+
+    return (
+        <div className={`relative ${p.className || ""}`}>
+            <Input
+                {...passParams}
+                ref={ref}
+                onChange={searchInputOnChange}
+                type="text"
+                placeHolder={t('search-placeholder')}
+                className="pr-10"
+                value={value}
+            />
+            {value === '' ?
+                <Search className="w-7 absolute top-2 right-1.5"/>
+                : <Btn
+                    className="rounded hover:bg-gray-200 p-1 dark:hover:bg-gray-600 w-7 absolute top-2 right-1.5"
+                    onClick={clearBtnClicked}
+                >
+                    <CrossLight/>
+                </Btn>
+            }
+        </div>
+    )
+})
+
+export interface SearchProps {
+    value: string
+    setValue: (s: string) => void,
+    className?: string,
+    tabIndex?: number,
+    onChange?: (e: ChangeEvent<HTMLInputElement>) => void,
+}
+
 export interface InputProps {
     type?: InputType,
     className?: string,
@@ -154,7 +208,8 @@ export interface InputProps {
     pattern?: string,
     maxLength?: number,
     tabIndex?: number,
-    checked?: boolean
+    checked?: boolean,
+    placeHolder?: string,
     autoComplete?: AutocompleteType,
     onBlur?: (e: FocusEvent<HTMLInputElement>) => void,
     onInput?: (e: ChangeEvent<HTMLInputElement>) => void,

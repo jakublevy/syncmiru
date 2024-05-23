@@ -59,7 +59,7 @@ export default function RegTknsList(): ReactElement {
                         setLoading={(b) => setNewRegTknLoading(b)}
                     />
                 </div>
-                <div className="flex flex-col ml-8 mr-8 mb-8 mt-4 gap-y-2">
+                <div className="flex flex-col ml-8 mr-8 mb-8 mt-4 gap-y-4">
                     <h2 className="text-xl font-semibold">{t('reg-tkns-list-active-title')}</h2>
                     <RegTknsActiveList
                         setLoading={(b) => setActiveRegTknsLoading(b)}

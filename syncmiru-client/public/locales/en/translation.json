@@ -227,6 +227,7 @@
   "modal-reg-tkn-create-error": "An error occurred while creating a registration token",
   "modal-active-reg-tkn-fetch-error": "An error occurred while obtaining valid registration tokens",
   "modal-inactive-reg-tkn-fetch-error": "An error occurred while obtaining used registration tokens",
+  "modal-reg-tkn-name-not-unique": "A registration token with this name already exists",
 
   "datatable-no-data": "No data available",
 
@@ -237,5 +238,9 @@
   "reg-tkns-list-banner-title": "Public registrations are enabled",
   "reg-tkns-list-banner-text": "Registration tokens are not required to create an user account.",
   "reg-tkns-list-active-title": "The list of valid registration tokens",
-  "reg-tkns-list-inactive-title": "The list of used registration tokens"
+  "reg-tkns-list-inactive-title": "The list of used registration tokens",
+  "reg-tkns-copy-1": "Registration token",
+  "reg-tkns-copy-2": "copied",
+
+  "search-placeholder": "Search"
 }

@@ -118,6 +118,12 @@ pub struct RegTknCreate {
     pub max_regs: Option<i32>
 }
 
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct RegTknName {
+    #[validate(custom(function = "validators::check_reg_tkn_name"))]
+    pub reg_tkn_name: String,
+}
+
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize)]

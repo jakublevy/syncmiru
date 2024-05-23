@@ -227,6 +227,7 @@
   "modal-reg-tkn-create-error": "Došlo k chybě při vytváření registračního tokenu",
   "modal-reg-tkn-fetch-error": "Došlo k chybě při získávání validních registračních tokenů",
   "modal-inactive-reg-tkn-fetch-error": "Došlo k chybě při získávání využitých registračních tokenů",
+  "modal-reg-tkn-name-not-unique": "Registrační token s tímto názvem již existuje",
 
   "datatable-no-data": "Žádná data nejsou k dispozici",
 
@@ -237,5 +238,9 @@
   "reg-tkns-list-banner-title": "Veřejné registrace jsou povoleny",
   "reg-tkns-list-banner-text": "Registrační tokeny nejsou vyžadovány pro vytvoření uživatelského účtu.",
   "reg-tkns-list-active-title": "Seznam validních registračních tokenů",
-  "reg-tkns-list-inactive-title": "Seznam využitých registračních tokenů"
+  "reg-tkns-list-inactive-title": "Seznam využitých registračních tokenů",
+  "reg-tkns-copy-1": "Registrační token",
+  "reg-tkns-copy-2": "zkopírován",
+
+  "search-placeholder": "Hledat"
 }

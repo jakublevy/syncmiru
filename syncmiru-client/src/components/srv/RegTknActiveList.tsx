@@ -3,16 +3,18 @@ import {useMainContext} from "@hooks/useMainContext.ts";
 import {ReactElement, useEffect, useState} from "react";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {RegTkn} from "@models/srv.ts";
-import {showPersistentErrorAlert} from "src/utils/alert.ts";
+import {showPersistentErrorAlert, showTemporalSuccessAlertForModal} from "src/utils/alert.ts";
 import {TableColumn} from "react-data-table-component";
 import {CopyBtn, DeleteBtn, ViewBtn} from "@components/widgets/Button.tsx";
 import 'src/utils/datatable-themes.ts'
 import DataTableThemeAware from "@components/widgets/DataTableThemeAware.tsx";
+import {SearchInput} from "@components/widgets/Input.tsx";
 
 export default function RegTknsActiveList(p: Props): ReactElement {
     const {t} = useTranslation()
     const {socket} = useMainContext()
     const [regTkns, setRegTkns] = useState<Array<RegTkn>>([])
+    const [search, setSearch] = useState<string>('')
 
     const columns: TableColumn<RegTkn>[] = [
         {
@@ -46,10 +48,13 @@ export default function RegTknsActiveList(p: Props): ReactElement {
         },
         {
             name: '',
-            cell: (reg_tkn) => {
+            cell: (regTkn) => {
                 return (
                     <div className="flex gap-x-2">
-                        <CopyBtn className="w-8"/>
+                        <CopyBtn
+                            className="w-8"
+                            onClick={() => copyRegTkn(regTkn)}
+                        />
                         <ViewBtn className="w-8"/>
                         <DeleteBtn className="w-8"/>
                     </div>
@@ -68,8 +73,6 @@ export default function RegTknsActiveList(p: Props): ReactElement {
                         showPersistentErrorAlert(t('modal-active-reg-tkn-fetch-error'))
                     else
                         setRegTkns(ack.payload as Array<RegTkn>)
-
-                    console.log(JSON.stringify(ack.payload))
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('modal-active-reg-tkn-fetch-error'))
@@ -84,11 +87,34 @@ export default function RegTknsActiveList(p: Props): ReactElement {
         // TODO: implement
     }
 
+    async function copyRegTkn(regTkn: RegTkn) {
+        await navigator.clipboard.writeText(regTkn.key);
+        showTemporalSuccessAlertForModal(`${t('reg-tkns-copy-1')} "${regTkn.name}" ${t('reg-tkns-copy-2')}`)
+    }
+
     return (
-        <DataTableThemeAware
-            columns={columns}
-            data={regTkns}
-        />
+        <div className="flex flex-col">
+            <SearchInput value={search} setValue={setSearch}/>
+            <DataTableThemeAware
+                columns={columns}
+                data={
+                regTkns.filter(item => {
+                    if(item.name.includes(search)) {
+                        return item
+                    }
+                    if(item.max_reg == null) {
+                        if(search.trim() === "∞")
+                            return item
+                    }
+                    else {
+                        if(item.max_reg.toString().includes(search)){
+                            return item
+                        }
+                    }
+                })
+            }
+            />
+        </div>
     )
 }
 
