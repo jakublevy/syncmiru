@@ -576,22 +576,25 @@ pub async fn create_reg_tkn(
         ack.send(SocketIoAck::<()>::err()).ok();
         return
     }
-    let reg_tkn = crypto::gen_tkn();
+    let key = crypto::gen_tkn();
     let reg_tkn_id = query::new_reg_tkn(
         &state.db,
         &payload.reg_tkn_name,
-        &reg_tkn,
+        &key,
         payload.max_regs
     )
         .await
         .expect("db error");
 
-    s.emit("active_reg_tkns", [[
-        RegTkn{ id: reg_tkn_id,
-            max_reg: payload.max_regs,
-            name: payload.reg_tkn_name,
-            key: reg_tkn }]])
-        .ok();
+    let reg_tkn = RegTkn{
+        id: reg_tkn_id,
+        max_reg: payload.max_regs,
+        name: payload.reg_tkn_name,
+        key
+    };
+
+    s.emit("active_reg_tkns", [[&reg_tkn]]).ok();
+    s.broadcast().emit("active_reg_tkns", [[reg_tkn]]).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 
@@ -646,6 +649,8 @@ pub async fn delete_reg_tkn(
     query::delete_reg_tkn(&state.db, payload.id)
         .await
         .expect("db error");
+
+    s.broadcast().emit("del_active_reg_tkns", [[payload.id]]).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 

@@ -55,6 +55,7 @@ export default function RegTknCreate(p: Props): ReactElement {
 
     function createRegTknClicked() {
         reset()
+        setLimitEnable(false)
         setRegTknCreateModalOpen(true)
     }
 

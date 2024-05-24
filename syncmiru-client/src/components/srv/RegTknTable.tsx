@@ -2,7 +2,7 @@ import {useTranslation} from "react-i18next";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {ReactElement, useEffect, useState} from "react";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
-import {RegTkn} from "@models/srv.ts";
+import {RegTkn, RegTknId, RegTknValue} from "@models/srv.ts";
 import {showPersistentErrorAlert, showTemporalSuccessAlertForModal} from "src/utils/alert.ts";
 import {TableColumn} from "react-data-table-component";
 import {CopyBtn, DeleteBtn, ViewBtn} from "@components/widgets/Button.tsx";
@@ -10,13 +10,15 @@ import 'src/utils/datatable-themes.ts'
 import DataTableThemeAware from "@components/widgets/DataTableThemeAware.tsx";
 import {SearchInput} from "@components/widgets/Input.tsx";
 import {ModalDelete} from "@components/widgets/Modal.tsx";
+import {M} from "vite/dist/node/types.d-aGj9QkWt";
 
 export default function RegTknsTable(p: Props): ReactElement {
     const {t} = useTranslation()
     const {socket} = useMainContext()
-    const [regTkns, setRegTkns] = useState<Array<RegTkn>>([])
+    const [regTkns, setRegTkns]
+        = useState<Map<RegTknId, RegTknValue>>(new Map<RegTknId, RegTknValue>())
     const [search, setSearch] = useState<string>('')
-    const [deletingRegTkn, setDeletingRegTkn] = useState<RegTkn>({id: 0, max_reg: 0, key: '', name: ''})
+    const [deletingRegTknId, setDeletingRegTknId] = useState<RegTknId>(0)
     const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false)
 
     const columns: TableColumn<RegTkn>[] = [
@@ -73,12 +75,23 @@ export default function RegTknsTable(p: Props): ReactElement {
         if (socket !== undefined) {
             if (p.regTknType === RegTknType.Active) {
                 socket.on("active_reg_tkns", onRegTkns)
+                socket.on("del_active_reg_tkns", onDeleteRegTkns)
                 socket.emitWithAck("active_reg_tkns")
                     .then((ack: SocketIoAck<Array<RegTkn>>) => {
                         if (ack.status === SocketIoAckType.Err)
                             showPersistentErrorAlert(t('modal-active-reg-tkn-fetch-error'))
-                        else
-                            setRegTkns(ack.payload as Array<RegTkn>)
+                        else {
+                            const m: Map<RegTknId, RegTknValue> = new Map<RegTknId, RegTknValue>()
+                            for (const regTkn of ack.payload as Array<RegTkn>) {
+                                m.set(regTkn.id,
+                                    {
+                                        max_reg: regTkn.max_reg,
+                                        name: regTkn.name,
+                                        key: regTkn.key
+                                    } as RegTknValue)
+                            }
+                            setRegTkns(m)
+                        }
                     })
                     .catch(() => {
                         showPersistentErrorAlert(t('modal-active-reg-tkn-fetch-error'))
@@ -90,11 +103,22 @@ export default function RegTknsTable(p: Props): ReactElement {
                 socket.emitWithAck("inactive_reg_tkns")
                     .then((ack: SocketIoAck<Array<RegTkn>>) => {
                         socket.on("inactive_reg_tkns", onRegTkns)
+                        socket.on("del_inactive_reg_tkns", onDeleteRegTkns)
                         if (ack.status === SocketIoAckType.Err)
                             showPersistentErrorAlert(t('modal-inactive-reg-tkn-fetch-error'))
 
-                        else
-                            setRegTkns(ack.payload as Array<RegTkn>)
+                        else {
+                            const m: Map<RegTknId, RegTknValue> = new Map<RegTknId, RegTknValue>()
+                            for (const regTkn of ack.payload as Array<RegTkn>) {
+                                m.set(regTkn.id,
+                                    {
+                                        max_reg: regTkn.max_reg,
+                                        name: regTkn.name,
+                                        key: regTkn.key
+                                    } as RegTknValue)
+                            }
+                            setRegTkns(m)
+                        }
                     })
                     .catch(() => {
                         showPersistentErrorAlert(t('modal-inactive-reg-tkn-fetch-error'))
@@ -107,71 +131,102 @@ export default function RegTknsTable(p: Props): ReactElement {
     }, [socket]);
 
     function onRegTkns(regTkns: Array<RegTkn>) {
-        console.log(JSON.stringify(regTkns))
-        setRegTkns((p) => [...p, ...regTkns])
+        const m: Map<RegTknId, RegTknValue> = new Map<RegTknId, RegTknValue>()
+        for (const regTkn of regTkns) {
+            m.set(regTkn.id,
+                {
+                    max_reg: regTkn.max_reg,
+                    name: regTkn.name,
+                    key: regTkn.key
+                } as RegTknValue)
+        }
+        setRegTkns((p) => new Map<RegTknId, RegTknValue>([...p, ...m]))
     }
 
-    async function copyRegTkn(regTkn: RegTkn) {
-        await navigator.clipboard.writeText(regTkn.key);
-        showTemporalSuccessAlertForModal(`${t('reg-tkns-copy-1')} "${regTkn.name}" ${t('reg-tkns-copy-2')}`)
+    function onDeleteRegTkns(delRegTknIds: Array<RegTknId>) {
+        setRegTkns((regTkns) => {
+            const m: Map<RegTknId, RegTknValue> = new Map<RegTknId, RegTknValue>()
+            for (const [id, val] of regTkns) {
+                if(!delRegTknIds.includes(id))
+                    m.set(id,
+                        {
+                            max_reg: val.max_reg,
+                            name: val.name,
+                            key: val.key
+                        } as RegTknValue)
+            }
+            return m
+        })
     }
 
-    function deleteRegTkn(regTkn: RegTkn) {
-        setDeletingRegTkn(regTkn)
-        setShowDeleteDialog(true)
-    }
+async function copyRegTkn(regTkn: RegTkn) {
+    await navigator.clipboard.writeText(regTkn.key);
+    showTemporalSuccessAlertForModal(`${t('reg-tkns-copy-1')} "${regTkn.name}" ${t('reg-tkns-copy-2')}`)
+}
 
-    function regTknDeleteConfirmed() {
-        p.setLoading(true)
-        socket!.emitWithAck("delete_reg_tkn", {id: deletingRegTkn.id})
-            .then((ack: SocketIoAck<null>) => {
-                if(ack.status === SocketIoAckType.Ok) {
-                    const filtered = regTkns.filter(x => x.id !== deletingRegTkn.id)
-                    setRegTkns(filtered)
-                }
-                else {
-                    showPersistentErrorAlert(t('reg-tkn-delete-error'))
-                }
-            })
-            .catch(() => {
+function deleteRegTkn(regTkn: RegTkn) {
+    setDeletingRegTknId(regTkn.id)
+    setShowDeleteDialog(true)
+}
+
+function regTknDeleteConfirmed() {
+    p.setLoading(true)
+    socket!.emitWithAck("delete_reg_tkn", {id: deletingRegTknId})
+        .then((ack: SocketIoAck<null>) => {
+            if (ack.status === SocketIoAckType.Ok) {
+                let m: Map<RegTknId, RegTknValue> = new Map<RegTknId, RegTknValue>();
+                setRegTkns((regTkns) => {
+                    for (const [id, val] of regTkns) {
+                        if(id !== deletingRegTknId)
+                            m.set(id, val)
+                    }
+                    return m
+                })
+            } else {
                 showPersistentErrorAlert(t('reg-tkn-delete-error'))
-            })
-            .finally(() => p.setLoading(false))
-    }
+            }
+        })
+        .catch(() => {
+            showPersistentErrorAlert(t('reg-tkn-delete-error'))
+        })
+        .finally(() => p.setLoading(false))
+}
 
-    return (
-        <>
-            <div className="flex flex-col">
-                <SearchInput value={search} setValue={setSearch}/>
-                <DataTableThemeAware
-                    columns={columns}
-                    data={
-                        regTkns.filter(item => {
-                            if (item.name.includes(search)) {
+return (
+    <>
+        <div className="flex flex-col">
+            <SearchInput value={search} setValue={setSearch}/>
+            <DataTableThemeAware
+                columns={columns}
+                data={
+                    Array.from(regTkns, ([k, v]) => {
+                        return {id: k, key: v.key, name: v.name, max_reg: v.max_reg} as RegTkn
+                    }).filter(item => {
+                        if (item.name.includes(search)) {
+                            return item
+                        }
+                        if (item.max_reg == null) {
+                            if (search.trim() === "∞")
+                                return item
+                        } else {
+                            if (item.max_reg.toString().includes(search)) {
                                 return item
                             }
-                            if (item.max_reg == null) {
-                                if (search.trim() === "∞")
-                                    return item
-                            } else {
-                                if (item.max_reg.toString().includes(search)) {
-                                    return item
-                                }
-                            }
-                        })
-                    }
-                />
-            </div>
-            <ModalDelete
-                onDeleteConfirmed={regTknDeleteConfirmed}
-                content={
-                    <p>{t('modal-reg-tkn-delete-text')} "{deletingRegTkn.name}"?</p>
+                        }
+                    })
                 }
-                open={showDeleteDialog}
-                setOpen={setShowDeleteDialog}
             />
-        </>
-    )
+        </div>
+        <ModalDelete
+            onDeleteConfirmed={regTknDeleteConfirmed}
+            content={
+             <p>{t('modal-reg-tkn-delete-text')} "{regTkns.get(deletingRegTknId)?.name}"?</p>
+            }
+            open={showDeleteDialog}
+            setOpen={setShowDeleteDialog}
+        />
+    </>
+)
 }
 
 interface Props {
