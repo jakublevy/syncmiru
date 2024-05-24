@@ -601,18 +601,18 @@ pub async fn new_reg_tkn(
     name: &str,
     key: &str,
     max_reg: Option<i32>
-) -> Result<()> {
+) -> Result<Id> {
     let query = r#"
     insert into reg_tkn (name, key, max_reg)
-    values ($1, $2, $3)
+    values ($1, $2, $3) returning id
     "#;
-    sqlx::query(query)
+    let id: (Id, ) = sqlx::query_as(query)
         .bind(name)
         .bind(key)
         .bind(max_reg)
-        .execute(db)
+        .fetch_one(db)
         .await?;
-    Ok(())
+    Ok(id.0)
 }
 
 pub async fn get_active_reg_tkns(db: &PgPool) -> Result<Vec<RegTkn>> {

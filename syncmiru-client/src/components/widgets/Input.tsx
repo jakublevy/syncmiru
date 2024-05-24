@@ -169,7 +169,7 @@ export const SearchInput
                 ref={ref}
                 onChange={searchInputOnChange}
                 type="text"
-                placeHolder={t('search-placeholder')}
+                placeholder={t('search-placeholder')}
                 className="pr-10"
                 value={value}
             />
@@ -209,7 +209,7 @@ export interface InputProps {
     maxLength?: number,
     tabIndex?: number,
     checked?: boolean,
-    placeHolder?: string,
+    placeholder?: string,
     autoComplete?: AutocompleteType,
     onBlur?: (e: FocusEvent<HTMLInputElement>) => void,
     onInput?: (e: ChangeEvent<HTMLInputElement>) => void,

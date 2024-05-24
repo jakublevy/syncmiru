@@ -87,9 +87,9 @@ export default function RegTknsTable(p: Props): ReactElement {
                         p.setLoading(false)
                     })
             } else {
-                socket.on("inactive_reg_tkns", onRegTkns)
                 socket.emitWithAck("inactive_reg_tkns")
                     .then((ack: SocketIoAck<Array<RegTkn>>) => {
+                        socket.on("inactive_reg_tkns", onRegTkns)
                         if (ack.status === SocketIoAckType.Err)
                             showPersistentErrorAlert(t('modal-inactive-reg-tkn-fetch-error'))
 
@@ -107,7 +107,8 @@ export default function RegTknsTable(p: Props): ReactElement {
     }, [socket]);
 
     function onRegTkns(regTkns: Array<RegTkn>) {
-        // TODO: implement
+        console.log(JSON.stringify(regTkns))
+        setRegTkns((p) => [...p, ...regTkns])
     }
 
     async function copyRegTkn(regTkn: RegTkn) {

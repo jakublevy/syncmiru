@@ -21,8 +21,8 @@ pub struct UserSession {
 
 #[derive(Debug, Clone, Serialize, sqlx::FromRow)]
 pub struct RegTkn {
-    id: Id,
-    name: String,
-    key: String,
-    max_reg: Option<i32>
+    pub id: Id,
+    pub name: String,
+    pub key: String,
+    pub max_reg: Option<i32>
 }

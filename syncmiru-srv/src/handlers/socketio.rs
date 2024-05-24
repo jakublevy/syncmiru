@@ -577,7 +577,7 @@ pub async fn create_reg_tkn(
         return
     }
     let reg_tkn = crypto::gen_tkn();
-    query::new_reg_tkn(
+    let reg_tkn_id = query::new_reg_tkn(
         &state.db,
         &payload.reg_tkn_name,
         &reg_tkn,
@@ -585,6 +585,13 @@ pub async fn create_reg_tkn(
     )
         .await
         .expect("db error");
+
+    s.emit("active_reg_tkns", [[
+        RegTkn{ id: reg_tkn_id,
+            max_reg: payload.max_regs,
+            name: payload.reg_tkn_name,
+            key: reg_tkn }]])
+        .ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 
