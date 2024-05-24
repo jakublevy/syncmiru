@@ -7,8 +7,9 @@ import Loading from "@components/Loading.tsx";
 import {WarningBanner} from "@components/widgets/Banner.tsx";
 import RegTknCreate from "@components/srv/RegTknCreate.tsx";
 import {useTranslation} from "react-i18next";
-import {RegTknType} from "@components/srv/RegTknTable.tsx";
 import RegTknsTable from "@components/srv/RegTknTable.tsx";
+import {RegTkn, RegTknType} from "@models/srv.ts";
+import RegTknView from "@components/srv/RegTknView.tsx";
 
 export default function RegTknsList(): ReactElement {
     const [_, navigate] = useLocation()
@@ -19,6 +20,8 @@ export default function RegTknsList(): ReactElement {
     const [activeRegTknsLoading, setActiveRegTknsLoading] = useState<boolean>(true)
     const [inactiveRegTknsLoading, setInactiveRegTknsLoading] = useState<boolean>(true)
     const [newRegTknLoading, setNewRegTknLoading] = useState<boolean>(false)
+    const [regTknForDetail, setRegTknForDetail] = useState<RegTkn>()
+    const [regTknType, setRegTknType] = useState<RegTknType>()
 
     useEffect(() => {
         if (socket !== undefined) {
@@ -35,6 +38,24 @@ export default function RegTknsList(): ReactElement {
         return !regPubFetching && !newRegTknLoading && !activeRegTknsLoading && !inactiveRegTknsLoading
     }
 
+    function showListContent() {
+        return showContent() && regTknForDetail === undefined
+    }
+
+    function showDetailContent() {
+        return showContent() && regTknForDetail !== undefined && regTknType !== undefined
+    }
+
+    function viewDetail(regTkn: RegTkn, regTknType: RegTknType) {
+        setRegTknType(regTknType)
+        setRegTknForDetail(regTkn)
+    }
+
+    function backFromDetail() {
+        setRegTknType(undefined)
+        setRegTknForDetail(undefined)
+    }
+
     return (
         <>
             {!showContent() &&
@@ -42,7 +63,7 @@ export default function RegTknsList(): ReactElement {
                     <Loading/>
                 </div>
             }
-            <div className={`flex flex-col ${showContent() ? '' : 'hidden'}`}>
+            <div className={`flex flex-col ${showListContent() ? '' : 'hidden'}`}>
                 <div className="flex items-center m-8">
                     <h1 className="text-2xl font-bold">{t('reg-tkns-list-title')}</h1>
                     <div className="flex-1"></div>
@@ -62,6 +83,7 @@ export default function RegTknsList(): ReactElement {
                 <div className="flex flex-col ml-8 mr-8 mb-8 mt-4 gap-y-4">
                     <h2 className="text-xl font-semibold">{t('reg-tkns-list-active-title')}</h2>
                     <RegTknsTable
+                        viewDetail={(regTkn) => viewDetail(regTkn, RegTknType.Active)}
                         regTknType={RegTknType.Active}
                         setLoading={(b) => setActiveRegTknsLoading(b)}
                     />
@@ -69,11 +91,18 @@ export default function RegTknsList(): ReactElement {
                 <div className="flex flex-col m-8 gap-y-2">
                     <h2 className="text-xl font-semibold">{t('reg-tkns-list-inactive-title')}</h2>
                     <RegTknsTable
+                        viewDetail={(regTkn) => viewDetail(regTkn, RegTknType.Inactive)}
                         regTknType={RegTknType.Inactive}
                         setLoading={(b) => setInactiveRegTknsLoading(b)}
                     />
                 </div>
             </div>
+            {showDetailContent() && <RegTknView
+                regTkn={regTknForDetail as RegTkn}
+                regTknType={regTknType as RegTknType}
+                backClicked={backFromDetail}
+            />
+            }
         </>
     )
 }

@@ -1,6 +1,6 @@
 use sqlx::{Executor, PgPool, Postgres, Transaction};
 use crate::models::User;
-use crate::models::query::{EmailTknType, Id, RegTkn};
+use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn};
 use crate::models::query::UserSession;
 use crate::result::Result;
 
@@ -649,4 +649,43 @@ pub async fn delete_reg_tkn(db: &PgPool, id: Id) -> Result<()> {
         .execute(db)
         .await?;
     Ok(())
+}
+
+pub async fn get_reg_tkn_info(db: &PgPool, reg_tkn_id: Id) -> Result<Vec<RegDetail>> {
+    let query = r#"
+        select users.id, users.reg_at from reg_tkn
+        join users on users.reg_tkn_id = reg_tkn.id
+        where reg_tkn.id = $1
+    "#;
+    let reg_details = sqlx::query_as::<_, RegDetail>(query)
+        .bind(reg_tkn_id)
+        .fetch_all(db)
+        .await?;
+    Ok(reg_details)
+}
+
+pub async fn reg_tkn_exists(
+    db: &PgPool,
+    reg_tkn: &str
+) -> Result<bool> {
+    let exists: (bool,) = sqlx::query_as(
+        "select count(*) = 1 from reg_tkn where key = $1 limit 1"
+    )
+        .bind(reg_tkn)
+        .fetch_one(db)
+        .await?;
+    Ok(exists.0)
+}
+
+pub async fn get_reg_tkn_by_key(
+    db: &PgPool,
+    key: &str,
+) -> Result<RegTkn> {
+    let reg_tkn: RegTkn = sqlx::query_as::<_, RegTkn>(
+        "select id, name, key, max_reg from reg_tkn where key = $1"
+    )
+        .bind(key)
+        .fetch_one(db)
+        .await?;
+    Ok(reg_tkn)
 }

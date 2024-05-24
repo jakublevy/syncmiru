@@ -9,7 +9,7 @@ use crate::result::Result;
 use crate::config::jwt;
 use tauri::Manager;
 use whoami::fallible::hostname;
-use crate::login::{ServiceStatus, RegData, BooleanResp, HttpMethod, TknEmail, ForgottenPasswordChange, LoginForm, NewLogin, Jwt};
+use crate::login::{ServiceStatus, RegData, BooleanResp, HttpMethod, TknEmail, ForgottenPasswordChange, LoginForm, NewLogin, Jwt, Tkn};
 use crate::{sys};
 
 #[tauri::command]
@@ -170,4 +170,16 @@ pub async fn new_login(state: tauri::State<'_, AppState>, data: String) -> Resul
     ).await?)?;
     jwt::write(&payload.jwt)?;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn reg_tkn_valid(state: tauri::State<'_, AppState>, data: String) -> Result<bool> {
+    let home_srv = state.read_home_srv().await?;
+    let tkn: Tkn = serde_json::from_str(&data)?;
+    let tkn_valid: BooleanResp = serde_json::from_value(super::req_json(
+        &(home_srv + "/reg-tkn-valid"),
+        HttpMethod::Get,
+        Some(serde_json::to_value(tkn)?),
+    ).await?)?;
+    Ok(tkn_valid.resp)
 }

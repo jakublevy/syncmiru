@@ -108,3 +108,8 @@ pub struct NewLogin {
 pub struct Jwt {
     jwt: String
 }
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct Tkn {
+    pub tkn: String,
+}

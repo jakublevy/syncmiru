@@ -2,14 +2,20 @@ import {ReactElement, useState} from "react";
 import Card from "@components/widgets/Card.tsx";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
-import {EmailInput, EmailInputSrvValidate, Input, UsernameInputSrvValidate} from "@components/widgets/Input.tsx";
+import {
+    EmailInput,
+    EmailInputSrvValidate,
+    Input,
+    RegTknSrvValidate,
+    UsernameInputSrvValidate
+} from "@components/widgets/Input.tsx";
 import {DisplaynameInput} from "@components/widgets/Input.tsx";
 import {BtnPrimary, BtnTextPrimary} from "@components/widgets/Button.tsx";
 import {useLocation} from "wouter";
 import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
 import HCaptchaThemeAware from "@components/widgets/HCaptchaThemeAware.tsx";
-import {useForm} from "react-hook-form";
+import {useForm, useWatch} from "react-hook-form";
 import Joi from 'joi'
 import {joiResolver} from "@hookform/resolvers/joi";
 import Loading from "@components/Loading.tsx";
@@ -30,6 +36,7 @@ export default function Register({regPubAllowed}: Props): ReactElement {
 
     const [unique, setUnique]
         = useState<Unique>({email: true, username: true})
+    const [regTknValid, setRegTknValid] = useState<boolean>(false)
 
     const formSchema: Joi.ObjectSchema<RegFormFields> = useRegFormSchema(regPubAllowed, t)
 
@@ -37,9 +44,12 @@ export default function Register({regPubAllowed}: Props): ReactElement {
         register,
         handleSubmit,
         setValue ,
+        watch,
         trigger,
         formState: {errors}
     } = useForm<RegFormFields>({resolver: joiResolver(formSchema)});
+
+    const regTkn = watch('regTkn')
 
     function navigateBack() {
         navigate("/login-form/main")
@@ -59,8 +69,11 @@ export default function Register({regPubAllowed}: Props): ReactElement {
         }
         if(regPubAllowed)
             send.captcha = data.captcha
-        else
+        else {
+            if(!regTknValid)
+                return
             send.reg_tkn = data.regTkn
+        }
 
         setLoading(true)
         sendRegistration(send)
@@ -97,6 +110,10 @@ export default function Register({regPubAllowed}: Props): ReactElement {
         }})
     }
 
+    function regTknValidationChanged(valid: boolean) {
+        setRegTknValid(valid)
+    }
+
     if(loading)
         return <Loading/>
 
@@ -121,14 +138,20 @@ export default function Register({regPubAllowed}: Props): ReactElement {
                                         content="TODO"
                                     />
                                 </div>
-                                <Input
+                                <RegTknSrvValidate
                                     id="regTkn"
                                     required
+                                    maxLength={24}
+                                    onSrvValidationChanged={regTknValidationChanged}
                                     {...register('regTkn')}
                                 />
                                 {errors.regTkn
                                     ? <p className="text-danger font-semibold">{errors.regTkn.message}</p>
-                                    : <p className="text-danger invisible font-semibold">L</p>
+                                    : <>
+                                        {!regTknValid && (regTkn !== undefined && regTkn !== '') && <p className="text-danger font-semibold">Neplatný nebo již použitý token</p> }
+                                        {regTknValid && <p className="text-success font-semibold">Token je validní</p>}
+                                        {(regTkn === undefined || regTkn === '') && <p className="text-danger invisible font-semibold">L</p>}
+                                    </>
                                 }
                             </div>
                         </div>

@@ -25,3 +25,7 @@ export interface LoginTkns {
     jwt: string,
     hwid_hash: string
 }
+
+export interface Tkn {
+    tkn: string
+}

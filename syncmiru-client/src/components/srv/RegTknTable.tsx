@@ -2,7 +2,7 @@ import {useTranslation} from "react-i18next";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {ReactElement, useEffect, useState} from "react";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
-import {RegTkn, RegTknId, RegTknValue} from "@models/srv.ts";
+import {RegTkn, RegTknId, RegTknType, RegTknValue} from "@models/srv.ts";
 import {showPersistentErrorAlert, showTemporalSuccessAlertForModal} from "src/utils/alert.ts";
 import {TableColumn} from "react-data-table-component";
 import {CopyBtn, DeleteBtn, ViewBtn} from "@components/widgets/Button.tsx";
@@ -10,7 +10,7 @@ import 'src/utils/datatable-themes.ts'
 import DataTableThemeAware from "@components/widgets/DataTableThemeAware.tsx";
 import {SearchInput} from "@components/widgets/Input.tsx";
 import {ModalDelete} from "@components/widgets/Modal.tsx";
-import {M} from "vite/dist/node/types.d-aGj9QkWt";
+import {copyRegTkn} from "../../utils/regTkn.ts";
 
 export default function RegTknsTable(p: Props): ReactElement {
     const {t} = useTranslation()
@@ -58,9 +58,12 @@ export default function RegTknsTable(p: Props): ReactElement {
                     <div className="flex gap-x-2">
                         {p.regTknType === RegTknType.Active && <CopyBtn
                             className="w-8"
-                            onClick={() => copyRegTkn(regTkn)}
+                            onClick={() => copyRegTkn(regTkn, t)}
                         />}
-                        <ViewBtn className="w-8"/>
+                        <ViewBtn
+                            className="w-8"
+                            onClick={() => p.viewDetail(regTkn)}
+                        />
                         <DeleteBtn
                             onClick={() => deleteRegTkn(regTkn)}
                             className="w-8"
@@ -130,6 +133,17 @@ export default function RegTknsTable(p: Props): ReactElement {
         }
     }, [socket]);
 
+    useEffect(() => {
+        if(socket !== undefined) {
+            if (p.regTknType === RegTknType.Active) {
+                socket.on("del_active_reg_tkns", onDeleteRegTkns)
+            }
+            else {
+                socket.on("del_inactive_reg_tkns", onDeleteRegTkns)
+            }
+        }
+    }, [deletingRegTknId]);
+
     function onRegTkns(regTkns: Array<RegTkn>) {
         const m: Map<RegTknId, RegTknValue> = new Map<RegTknId, RegTknValue>()
         for (const regTkn of regTkns) {
@@ -144,6 +158,9 @@ export default function RegTknsTable(p: Props): ReactElement {
     }
 
     function onDeleteRegTkns(delRegTknIds: Array<RegTknId>) {
+        if(delRegTknIds.includes(deletingRegTknId))
+            setShowDeleteDialog(false)
+
         setRegTkns((regTkns) => {
             const m: Map<RegTknId, RegTknValue> = new Map<RegTknId, RegTknValue>()
             for (const [id, val] of regTkns) {
@@ -158,11 +175,6 @@ export default function RegTknsTable(p: Props): ReactElement {
             return m
         })
     }
-
-async function copyRegTkn(regTkn: RegTkn) {
-    await navigator.clipboard.writeText(regTkn.key);
-    showTemporalSuccessAlertForModal(`${t('reg-tkns-copy-1')} "${regTkn.name}" ${t('reg-tkns-copy-2')}`)
-}
 
 function deleteRegTkn(regTkn: RegTkn) {
     setDeletingRegTknId(regTkn.id)
@@ -232,9 +244,5 @@ return (
 interface Props {
     setLoading: (b: boolean) => void
     regTknType: RegTknType
-}
-
-export enum RegTknType {
-    Active,
-    Inactive
+    viewDetail: (regTkn: RegTkn) => void
 }

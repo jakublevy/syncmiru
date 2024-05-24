@@ -27,3 +27,9 @@ pub struct EmailWithLang {
     #[validate(custom(function = "validators::check_lang"))]
     pub lang: String
 }
+
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct Tkn {
+    #[validate(custom(function = "validators::check_tkn"))]
+    pub tkn: String,
+}

@@ -146,6 +146,27 @@ export const ForgottenPasswordTknSrvValidate = withSrvValidate(Input,
         }
     })
 
+export const RegTknSrvValidate = withSrvValidate(Input,
+    {
+        validate: tknValidate,
+        swr: (value: string, validate: (v: string) => boolean) => {
+            return useSWR(["reg_tkn_valid", value], ([cmd, value]) => {
+                const send = {tkn: value}
+                if (validate(value))
+                    return invoke<boolean>(cmd, {data: JSON.stringify(send)})
+
+                return false
+            }, {
+                revalidateOnFocus: false,
+                revalidateOnMount: false,
+                revalidateOnReconnect: true,
+                refreshWhenOffline: false,
+                refreshWhenHidden: false,
+            })
+        }
+    }
+)
+
 export const SearchInput
     = forwardRef<HTMLInputElement, SearchProps>((p, ref) => {
 

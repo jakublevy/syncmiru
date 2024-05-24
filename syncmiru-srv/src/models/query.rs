@@ -26,3 +26,9 @@ pub struct RegTkn {
     pub key: String,
     pub max_reg: Option<i32>
 }
+
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct RegDetail {
+    reg_at: chrono::DateTime<Utc>,
+    uid: Id
+}

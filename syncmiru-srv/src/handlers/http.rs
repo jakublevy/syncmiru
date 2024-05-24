@@ -11,7 +11,7 @@ use crate::srvstate::SrvState;
 use validator::{Validate};
 use crate::error::SyncmiruError;
 use crate::models::http::{RegForm, ServiceStatus, Username, BooleanResp, Email, EmailVerify, TknEmail, ForgottenPasswordChange, Login, Jwt};
-use crate::models::EmailWithLang;
+use crate::models::{EmailWithLang, Tkn};
 use crate::{query, tkn};
 use crate::result::{Result};
 use crate::crypto;
@@ -60,6 +60,7 @@ pub async fn register(
             &hashed_password,
         ).await?;
     } else {
+        
         // TODO: check reg_tkn
         // TODO: update DB using transaction
     }
@@ -297,6 +298,28 @@ pub async fn new_login(
     }
 
     Ok(Json(Jwt { jwt }))
+}
+
+pub async fn reg_tkn_valid(
+    State(state): State<Arc<SrvState>>,
+    Json(payload): Json<Tkn>
+) -> Result<Json<BooleanResp>> {
+    payload.validate()?;
+    let exists = query::reg_tkn_exists(&state.db, &payload.tkn).await?;
+    if !exists {
+        return Err(SyncmiruError::UnprocessableEntity("invalid registration token".to_string()))
+    }
+    let reg_tkn = query::get_reg_tkn_by_key(
+        &state.db,
+        &payload.tkn
+    ).await?;
+    if let Some(n) = reg_tkn.max_reg {
+        let reg_details = query::get_reg_tkn_info(&state.db, reg_tkn.id).await?;
+        Ok(Json(BooleanResp { resp: reg_details.len() < n as usize }))
+    }
+    else {
+        Ok(Json(BooleanResp{ resp: true }))
+    }
 }
 
 pub async fn error(error: BoxError) -> impl IntoResponse {

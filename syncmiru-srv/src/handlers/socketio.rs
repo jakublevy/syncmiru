@@ -1,9 +1,9 @@
 use std::sync::Arc;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
-use crate::models::{EmailWithLang};
-use crate::models::query::{EmailTknType, Id, RegTkn};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, Tkn, RegTknCreate, RegTknName};
+use crate::models::{EmailWithLang, Tkn};
+use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -32,6 +32,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("inactive_reg_tkns", inactive_reg_tkns);
     s.on("check_reg_tkn_name_unique", check_reg_tkn_name_unique);
     s.on("delete_reg_tkn", delete_reg_tkn);
+    s.on("get_reg_tkn_info", get_reg_tkn_info);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_verified_users(&state.db)
@@ -652,6 +653,22 @@ pub async fn delete_reg_tkn(
 
     s.broadcast().emit("del_active_reg_tkns", [[payload.id]]).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn get_reg_tkn_info(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<IdStruct>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<Vec<RegDetail>>::err()).ok();
+        return;
+    }
+    let tkn_detail = query::get_reg_tkn_info(&state.db, payload.id)
+        .await
+        .expect("db error");
+    ack.send(SocketIoAck::<Vec<RegDetail>>::ok(Some(tkn_detail))).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {

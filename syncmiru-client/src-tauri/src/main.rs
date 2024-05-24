@@ -54,6 +54,7 @@ fn main() -> Result<()> {
             login::frontend::get_forgotten_password_tkn_valid,
             login::frontend::forgotten_password_change_password,
             login::frontend::new_login,
+            login::frontend::reg_tkn_valid,
             license::open_license_window,
         ])
         .on_window_event(handle_window_event)
