@@ -21,7 +21,7 @@ export default function AvatarSettings(p: Props): ReactElement {
     const [avatarActionModalOpen, setAvatarActionModalOpen] = useState<boolean>(false)
     const [picEditorModalOpen, setPicEditorModalOpen] = useState<boolean>(false)
     const avatarFileRef = useRef<HTMLInputElement>(null)
-    const [avatarFile, setAvatarFile] = useState<File>()
+    const [avatarFile, setAvatarFile] = useState<File | string>('')
     const [avatarEditorScale, setAvatarEditorScale] = useState<number>(1.0)
     const avatarEditorRef = useRef<AvatarEditor>(null)
 
@@ -94,7 +94,7 @@ export default function AvatarSettings(p: Props): ReactElement {
     }
 
     async function setAvatarClicked() {
-        const canvas: HTMLCanvasElement = scaleTo128(avatarEditorRef.current.getImageScaledToCanvas())
+        const canvas: HTMLCanvasElement = scaleTo128(avatarEditorRef.current!.getImageScaledToCanvas())
         const blob = await getCanvasBlob(canvas) as Blob
         const imgBin = Array.from(new Uint8Array(await blob.arrayBuffer()))
 
