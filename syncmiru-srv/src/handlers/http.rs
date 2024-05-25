@@ -60,9 +60,31 @@ pub async fn register(
             &hashed_password,
         ).await?;
     } else {
-        
-        // TODO: check reg_tkn
-        // TODO: update DB using transaction
+        if payload.reg_tkn.is_none() {
+            return Err(SyncmiruError::UnprocessableEntity("reg_tkn".to_string()));
+        }
+        let reg_tkn_key = payload.reg_tkn.unwrap();
+        let mut transaction = state.db.begin().await?;
+        let reg_tkn_opt = query::get_reg_tkn_by_key_for_update(&mut transaction, &reg_tkn_key).await?;
+        if reg_tkn_opt.is_none() {
+            return Err(SyncmiruError::UnprocessableEntity("reg_tkn".to_string()));
+        }
+        let reg_tkn = reg_tkn_opt.unwrap();
+        if let Some(n) = reg_tkn.max_reg {
+            let reg_details = query::get_reg_tkn_info(&state.db, reg_tkn.id).await?;
+            if reg_details.len() >= n as usize {
+                return Err(SyncmiruError::UnprocessableEntity("reg_tkn".to_string()));
+            }
+        }
+        query::new_user_w_reg_tkn(
+            &mut transaction,
+            &payload.username,
+            &payload.displayname,
+            &payload.email,
+            &hashed_password,
+            reg_tkn.id
+        ).await?;
+        transaction.commit().await?;
     }
     Ok(())
 }

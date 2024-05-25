@@ -69,6 +69,15 @@ pub fn check_tkn(tkn: &str) -> Result<(), ValidationError> {
     Ok(())
 }
 
+pub fn check_reg_tkn(tkn_opt: &Option<String>) -> Result<(), ValidationError> {
+    if let Some(tkn) = tkn_opt {
+        check_tkn(tkn)
+    }
+    else {
+        Ok(())
+    }
+}
+
 pub fn check_avatar(data: &[u8]) -> Result<(), ValidationError> {
     if data.len() < 1 || data.len() > 5242880 {
         return Err(ValidationError::new("invalid avatar size"))

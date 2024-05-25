@@ -27,12 +27,32 @@ pub async fn new_user(
     email: &str,
     hash: &str
 ) -> Result<()> {
-    sqlx::query("INSERT INTO public.users(username, display_name, email, hash, reg_tkn_id) VALUES ($1, $2, $3, $4, NULL)")
+    sqlx::query("INSERT INTO users (username, display_name, email, hash, reg_tkn_id) VALUES ($1, $2, $3, $4, NULL)")
         .bind(username)
         .bind(displayname)
         .bind(email)
         .bind(hash)
-        .execute(db).await?;
+        .execute(db)
+        .await?;
+    Ok(())
+}
+
+pub async fn new_user_w_reg_tkn(
+    db: &mut Transaction<'_, Postgres>,
+    username: &str,
+    displayname: &str,
+    email: &str,
+    hash: &str,
+    reg_tkn_id: Id
+) -> Result<()> {
+    sqlx::query("INSERT INTO users (username, display_name, email, hash, reg_tkn_id) VALUES ($1, $2, $3, $4, $5)")
+        .bind(username)
+        .bind(displayname)
+        .bind(email)
+        .bind(hash)
+        .bind(reg_tkn_id)
+        .execute(&mut **db)
+        .await?;
     Ok(())
 }
 
@@ -682,10 +702,21 @@ pub async fn get_reg_tkn_by_key(
     key: &str,
 ) -> Result<RegTkn> {
     let reg_tkn: RegTkn = sqlx::query_as::<_, RegTkn>(
-        "select id, name, key, max_reg from reg_tkn where key = $1"
+        "select id, name, key, max_reg from reg_tkn where key = $1 limit 1"
     )
         .bind(key)
         .fetch_one(db)
         .await?;
     Ok(reg_tkn)
+}
+
+pub async fn get_reg_tkn_by_key_for_update(db: &mut Transaction<'_, Postgres>, key: &str) -> Result<Option<RegTkn>> {
+    if let Some(reg_tkn) = sqlx::query_as::<_, RegTkn>("select id, name, key, max_reg from reg_tkn where key = $1 for update limit 1")
+        .bind(key)
+        .fetch_optional(&mut **db).await? {
+        Ok(Some(reg_tkn))
+    }
+    else {
+        Ok(None)
+    }
 }

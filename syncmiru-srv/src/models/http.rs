@@ -28,7 +28,8 @@ pub struct RegForm {
     #[captcha]
     pub captcha: String,
 
-    pub reg_tkn: String,
+    #[validate(custom(function = "validators::check_reg_tkn"))]
+    pub reg_tkn: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]
