@@ -3,14 +3,14 @@ import {useMainContext} from "@hooks/useMainContext.ts";
 import {ReactElement, useEffect, useState} from "react";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {RegTkn, RegTknId, RegTknType, RegTknValue} from "@models/srv.ts";
-import {showPersistentErrorAlert, showTemporalSuccessAlertForModal} from "src/utils/alert.ts";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {TableColumn} from "react-data-table-component";
 import {CopyBtn, DeleteBtn, ViewBtn} from "@components/widgets/Button.tsx";
 import 'src/utils/datatable-themes.ts'
 import DataTableThemeAware from "@components/widgets/DataTableThemeAware.tsx";
 import {SearchInput} from "@components/widgets/Input.tsx";
 import {ModalDelete} from "@components/widgets/Modal.tsx";
-import {copyRegTkn} from "../../utils/regTkn.ts";
+import {copyRegTkn} from "src/utils/regTkn.ts";
 
 export default function RegTknsTable(p: Props): ReactElement {
     const {t} = useTranslation()
@@ -56,14 +56,14 @@ export default function RegTknsTable(p: Props): ReactElement {
             cell: (regTkn) => {
                 return (
                     <div className="flex gap-x-2">
-                        {p.regTknType === RegTknType.Active && <CopyBtn
-                            className="w-8"
-                            onClick={() => copyRegTkn(regTkn, t)}
-                        />}
                         <ViewBtn
                             className="w-8"
                             onClick={() => p.viewDetail(regTkn)}
                         />
+                        {p.regTknType === RegTknType.Active && <CopyBtn
+                            className="w-8"
+                            onClick={() => copyRegTkn(regTkn, t)}
+                        />}
                         <DeleteBtn
                             onClick={() => deleteRegTkn(regTkn)}
                             className="w-8"

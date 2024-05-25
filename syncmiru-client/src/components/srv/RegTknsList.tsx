@@ -1,59 +1,23 @@
-import React, {ReactElement, useEffect, useState} from "react";
+import React, {ReactElement, useState} from "react";
 import {CloseBtn} from "@components/widgets/Button.tsx";
 import {navigateToMain} from "src/utils/navigate.ts";
-import {useLocation} from "wouter";
-import {useMainContext} from "@hooks/useMainContext.ts";
-import Loading from "@components/Loading.tsx";
 import {WarningBanner} from "@components/widgets/Banner.tsx";
 import RegTknCreate from "@components/srv/RegTknCreate.tsx";
-import {useTranslation} from "react-i18next";
 import RegTknsTable from "@components/srv/RegTknTable.tsx";
 import {RegTkn, RegTknType} from "@models/srv.ts";
-import RegTknView from "@components/srv/RegTknView.tsx";
+import {useTranslation} from "react-i18next";
+import {useLocation} from "wouter";
+import Loading from "@components/Loading.tsx";
 
-export default function RegTknsList(): ReactElement {
+export default function RegTknsList(p: Props): ReactElement {
+    const {t} = useTranslation();
     const [_, navigate] = useLocation()
-    const {t} = useTranslation()
-    const {socket} = useMainContext()
-    const [regPubFetching, setRegPubFetching] = useState<boolean>(true)
-    const [regPubAllowed, setRegPubAllowed] = useState<boolean>(false)
     const [activeRegTknsLoading, setActiveRegTknsLoading] = useState<boolean>(true)
     const [inactiveRegTknsLoading, setInactiveRegTknsLoading] = useState<boolean>(true)
     const [newRegTknLoading, setNewRegTknLoading] = useState<boolean>(false)
-    const [regTknForDetail, setRegTknForDetail] = useState<RegTkn>()
-    const [regTknType, setRegTknType] = useState<RegTknType>()
-
-    useEffect(() => {
-        if (socket !== undefined) {
-            socket.emitWithAck("get_reg_pub_allowed")
-                .then((regPubAllowed: boolean) => {
-                    setRegPubAllowed(regPubAllowed)
-                })
-                .finally(() => setRegPubFetching(false))
-        }
-    }, [socket]);
-
 
     function showContent() {
-        return !regPubFetching && !newRegTknLoading && !activeRegTknsLoading && !inactiveRegTknsLoading
-    }
-
-    function showListContent() {
-        return showContent() && regTknForDetail === undefined
-    }
-
-    function showDetailContent() {
-        return showContent() && regTknForDetail !== undefined && regTknType !== undefined
-    }
-
-    function viewDetail(regTkn: RegTkn, regTknType: RegTknType) {
-        setRegTknType(regTknType)
-        setRegTknForDetail(regTkn)
-    }
-
-    function backFromDetail() {
-        setRegTknType(undefined)
-        setRegTknForDetail(undefined)
+        return !activeRegTknsLoading && !inactiveRegTknsLoading && !newRegTknLoading
     }
 
     return (
@@ -63,13 +27,13 @@ export default function RegTknsList(): ReactElement {
                     <Loading/>
                 </div>
             }
-            <div className={`flex flex-col ${showListContent() ? '' : 'hidden'}`}>
+            <div className={`flex flex-col ${!showContent() ? 'hidden' : ''}`}>
                 <div className="flex items-center m-8">
-                    <h1 className="text-2xl font-bold">{t('reg-tkns-list-title')}</h1>
+                <h1 className="text-2xl font-bold">{t('reg-tkns-list-title')}</h1>
                     <div className="flex-1"></div>
                     <CloseBtn onClick={() => navigateToMain(navigate)}></CloseBtn>
                 </div>
-                {regPubAllowed && <div className="ml-8 mr-8">
+                {p.regPubAllowed && <div className="ml-8 mr-8">
                     <WarningBanner
                         title={t('reg-tkns-list-banner-title')}
                         content={t('reg-tkns-list-banner-text')}
@@ -83,7 +47,7 @@ export default function RegTknsList(): ReactElement {
                 <div className="flex flex-col ml-8 mr-8 mb-8 mt-4 gap-y-4">
                     <h2 className="text-xl font-semibold">{t('reg-tkns-list-active-title')}</h2>
                     <RegTknsTable
-                        viewDetail={(regTkn) => viewDetail(regTkn, RegTknType.Active)}
+                        viewDetail={(regTkn) => p.viewDetail(regTkn, RegTknType.Active)}
                         regTknType={RegTknType.Active}
                         setLoading={(b) => setActiveRegTknsLoading(b)}
                     />
@@ -91,18 +55,17 @@ export default function RegTknsList(): ReactElement {
                 <div className="flex flex-col m-8 gap-y-2">
                     <h2 className="text-xl font-semibold">{t('reg-tkns-list-inactive-title')}</h2>
                     <RegTknsTable
-                        viewDetail={(regTkn) => viewDetail(regTkn, RegTknType.Inactive)}
+                        viewDetail={(regTkn) => p.viewDetail(regTkn, RegTknType.Inactive)}
                         regTknType={RegTknType.Inactive}
                         setLoading={(b) => setInactiveRegTknsLoading(b)}
                     />
                 </div>
             </div>
-            {showDetailContent() && <RegTknView
-                regTkn={regTknForDetail as RegTkn}
-                regTknType={regTknType as RegTknType}
-                backClicked={backFromDetail}
-            />
-            }
         </>
     )
+}
+
+interface Props {
+    regPubAllowed: boolean
+    viewDetail: (regTkn: RegTkn, regTknType: RegTknType) => void
 }

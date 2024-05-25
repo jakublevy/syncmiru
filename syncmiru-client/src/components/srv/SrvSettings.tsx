@@ -3,7 +3,7 @@ import {NavLink} from "@components/widgets/Button.tsx";
 import Card from "@components/widgets/Card.tsx";
 import {useLocation} from "wouter";
 import {useTranslation} from "react-i18next";
-import RegTknsList from "@components/srv/RegTknsList.tsx";
+import RegTkns from "@components/srv/RegTkns.tsx";
 import DefaultRoom from "@components/srv/DefaultRoom.tsx";
 
 export default function SrvSettings(): ReactElement {
@@ -37,7 +37,7 @@ export default function SrvSettings(): ReactElement {
                 <div className="h-16"></div>
             </div>
             <div className="border-l border-gray-200 dark:border-gray-700 w-[38rem] overflow-auto">
-                {isActive(Link.RegTkns) && <RegTknsList/>}
+                {isActive(Link.RegTkns) && <RegTkns/>}
                 {isActive(Link.Rooms) && <DefaultRoom/>}
             </div>
         </Card>
