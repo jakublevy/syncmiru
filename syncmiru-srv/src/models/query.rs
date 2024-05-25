@@ -30,5 +30,7 @@ pub struct RegTkn {
 #[derive(Debug, Clone, Serialize, sqlx::FromRow)]
 pub struct RegDetail {
     reg_at: chrono::DateTime<Utc>,
+
+    #[sqlx(rename = "id")]
     uid: Id
 }

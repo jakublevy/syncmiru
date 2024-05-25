@@ -22,7 +22,7 @@ export default function RegTknView(p: Props): ReactElement {
             socket.emitWithAck("get_reg_tkn_info", {id: p.regTkn.id})
                 .then((ack: SocketIoAck<Array<RegDetail>>) => {
                     if (ack.status === SocketIoAckType.Err) {
-                        showPersistentErrorAlert("")
+                        showPersistentErrorAlert("Došlo k chybě při získávání detailů registračního tokenu")
                         p.backClicked()
                     }
                     else {
@@ -30,7 +30,7 @@ export default function RegTknView(p: Props): ReactElement {
                     }
                 })
                 .catch(() => {
-                    showPersistentErrorAlert("")
+                    showPersistentErrorAlert("Došlo k chybě při získávání detailů registračního tokenu")
                     p.backClicked()
                 })
                 .finally(() => setLoading(false))
@@ -85,10 +85,10 @@ export default function RegTknView(p: Props): ReactElement {
                     <p className="w-52">Token</p>
                     <p className="font-bold">{p.regTkn.key}</p>
                     <div className="flex-1"></div>
-                    <CopyBtn
+                    {p.regTknType === RegTknType.Active && <CopyBtn
                         className="w-10"
                         onClick={() => copyRegTkn(p.regTkn, t)}
-                    />
+                    />}
                 </div>
             </div>
             <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
