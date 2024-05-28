@@ -2,17 +2,15 @@ import React, {
     ChangeEvent,
     forwardRef,
     KeyboardEvent,
-    FocusEvent, useState,
+    FocusEvent, useRef, MouseEvent
 } from "react";
 import {emailValidate, usernameValidate, tknValidate} from "src/form/validators.ts";
 import useSWR from "swr";
 import {invoke} from "@tauri-apps/api/core";
 import {withSrvValidate} from "@components/hoc/withSrvValidate.tsx";
 import Search from "@components/svg/Search.tsx";
-import {useLanguage} from "@hooks/useLanguage.ts";
 import {useTranslation} from "react-i18next";
-import {Btn, Clickable} from "@components/widgets/Button.tsx";
-import Cross from "@components/svg/Cross.tsx";
+import {Btn} from "@components/widgets/Button.tsx";
 import CrossLight from "@components/svg/CrossLight.tsx";
 
 export const Input
@@ -172,6 +170,7 @@ export const SearchInput
 
     const {onChange, value, setValue, ...passParams} = p
     const {t} = useTranslation()
+    const divRef = useRef<HTMLDivElement>(null)
 
     function searchInputOnChange(e: ChangeEvent<HTMLInputElement>) {
         setValue(e.target.value)
@@ -183,8 +182,26 @@ export const SearchInput
        setValue('')
     }
 
+    function parentAreaClicked() {
+        if(divRef !== null && divRef.current != null) {
+            const input = divRef.current.children[0] as HTMLInputElement
+            if(input != null && document.activeElement !== input)
+                input.focus()
+
+        }
+    }
+
+    function parentAreaMouseDown(e: MouseEvent<HTMLDivElement>) {
+        e.preventDefault()
+    }
+
     return (
-        <div className={`relative ${p.className || ""}`}>
+        <div
+            className={`relative cursor-text ${p.className || ""}`}
+            onClick={parentAreaClicked}
+            onMouseDown={parentAreaMouseDown}
+            ref={divRef}
+        >
             <Input
                 {...passParams}
                 ref={ref}

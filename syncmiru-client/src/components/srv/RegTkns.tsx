@@ -5,6 +5,7 @@ import Loading from "@components/Loading.tsx";
 import {RegTkn, RegTknType} from "@models/srv.ts";
 import RegTknView from "@components/srv/RegTknView.tsx";
 import RegTknsList from "@components/srv/RegTknsList.tsx";
+import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 
 export default function RegTkns(): ReactElement {
     const [_, navigate] = useLocation()

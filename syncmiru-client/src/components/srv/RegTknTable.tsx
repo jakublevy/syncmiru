@@ -23,6 +23,7 @@ export default function RegTknsTable(p: Props): ReactElement {
 
     const columns: TableColumn<RegTkn>[] = [
         {
+            id: 'name',
             name: t('reg-tkn-name-header'),
             selector: row => row.name,
             sortable: true
@@ -209,19 +210,20 @@ return (
         <div className="flex flex-col">
             <SearchInput value={search} setValue={setSearch}/>
             <DataTableThemeAware
+                defaultSortFieldId="name"
                 columns={columns}
                 data={
                     Array.from(regTkns, ([k, v]) => {
                         return {id: k, key: v.key, name: v.name, max_reg: v.max_reg} as RegTkn
                     }).filter(item => {
-                        if (item.name.includes(search)) {
+                        const s = search.toLowerCase()
+                        if (item.name.toLowerCase().includes(s))
                             return item
-                        }
                         if (item.max_reg == null) {
-                            if (search.trim() === "∞")
+                            if (s.trim() === "∞")
                                 return item
                         } else {
-                            if (item.max_reg.toString().includes(search)) {
+                            if (item.max_reg.toString().includes(s)) {
                                 return item
                             }
                         }

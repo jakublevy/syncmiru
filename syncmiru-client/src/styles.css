@@ -17,6 +17,11 @@ html, body, #root {
     justify-content: safe center;
 }
 
+.rdt_TableCol div:first-child {
+    white-space: normal !important;
+    overflow: visible !important;
+}
+
 @media (prefers-color-scheme: dark) {
     * {
         color: #eeeeee;

@@ -245,5 +245,6 @@
   "modal-reg-tkn-delete-text": "Chcete opravdu smazat registrační token s názvem",
   "reg-tkn-delete-error": "Došlo k chybě při mazání registračního tokenu",
 
-  "search-placeholder": "Hledat"
+  "search-placeholder": "Hledat",
+  "reg-at-label": "Registrován"
 }

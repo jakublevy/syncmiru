@@ -9,6 +9,8 @@ import Loading from "@components/Loading.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
+import {ModalDelete} from "@components/widgets/Modal.tsx";
+import RegTknUsedTable from "@components/srv/RegTknUsedTable.tsx";
 
 export default function RegTknView(p: Props): ReactElement {
     const [_, navigate] = useLocation()
@@ -16,6 +18,7 @@ export default function RegTknView(p: Props): ReactElement {
     const {socket, users} = useMainContext()
     const [loading, setLoading] = useState<boolean>(true)
     const [regDetails, setRegDetails] = useState<Array<RegDetail>>([])
+    const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false)
 
     useEffect(() => {
         if (socket !== undefined) {
@@ -24,9 +27,10 @@ export default function RegTknView(p: Props): ReactElement {
                     if (ack.status === SocketIoAckType.Err) {
                         showPersistentErrorAlert("Došlo k chybě při získávání detailů registračního tokenu")
                         p.backClicked()
-                    }
-                    else {
-                        setRegDetails(ack.payload as Array<RegDetail>)
+                    } else {
+                        setRegDetails((ack.payload as Array<RegDetail>).map(r => {
+                            return {uid: r.uid, reg_at: new Date(r.reg_at)}
+                        }))
                     }
                 })
                 .catch(() => {
@@ -38,13 +42,29 @@ export default function RegTknView(p: Props): ReactElement {
     }, [socket]);
 
     useEffect(() => {
-        if(socket !== undefined) {
+        if (socket !== undefined) {
             // TODO: prepare for datatable
         }
     }, [socket, regDetails]);
 
     function deleteRegTkn() {
-        // TODO:
+        setShowDeleteDialog(true)
+    }
+
+    function regTknDeleteConfirmed() {
+        setLoading(true)
+        socket!.emitWithAck("delete_reg_tkn", {id: p.regTkn.id})
+            .then((ack: SocketIoAck<null>) => {
+                if (ack.status === SocketIoAckType.Ok) {
+                    p.backClicked()
+                } else {
+                    showPersistentErrorAlert(t('reg-tkn-delete-error'))
+                }
+            })
+            .catch(() => {
+                showPersistentErrorAlert(t('reg-tkn-delete-error'))
+            })
+            .finally(() => setLoading(false))
     }
 
     if (loading)
@@ -55,55 +75,69 @@ export default function RegTknView(p: Props): ReactElement {
         )
 
     return (
-        <div className="flex flex-col">
-            <div className="flex items-center m-8">
-                <BackBtn onClick={p.backClicked} className="mr-4"/>
-                <h1 className="text-2xl font-bold">Detail registračního tokenu</h1>
-                <div className="flex-1"></div>
-                <CloseBtn onClick={() => navigateToMain(navigate)}></CloseBtn>
-            </div>
-            <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
-                <div className="flex items-center">
-                    <p className="w-52">Název</p>
-                    <p className="font-bold">{p.regTkn.name}</p>
-                </div>
-            </div>
-            <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
-                <div className="flex items-center">
-                    <p className="w-52">Max počet registrací</p>
-                    <p className="font-bold">{p.regTkn.max_reg == null ? '∞' : p.regTkn.max_reg}</p>
-                </div>
-            </div>
-            <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
-                <div className="flex items-center">
-                    <p className="w-52">Počet využití</p>
-                    <p className="font-bold">{regDetails.length}</p>
-                </div>
-            </div>
-            <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
-                <div className="flex items-center">
-                    <p className="w-52">Token</p>
-                    <p className="font-bold">{p.regTkn.key}</p>
+        <>
+            <div className="flex flex-col">
+                <div className="flex items-center m-8">
+                    <BackBtn onClick={p.backClicked} className="mr-4"/>
+                    <h1 className="text-2xl font-bold">Detail registračního tokenu</h1>
                     <div className="flex-1"></div>
-                    {p.regTknType === RegTknType.Active && <CopyBtn
-                        className="w-10"
-                        onClick={() => copyRegTkn(p.regTkn, t)}
-                    />}
+                    <CloseBtn onClick={() => navigateToMain(navigate)}></CloseBtn>
                 </div>
-            </div>
-            <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
-                <div className="flex items-center">
-                    <p className="w-52">Smazat registrační token</p>
-                    <div className="flex-1"></div>
-                    <DeleteBtn
-                        className="w-10"
+                <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
+                    <div className="flex items-center">
+                        <p className="w-52">Název</p>
+                        <p className="font-bold">{p.regTkn.name}</p>
+                    </div>
+                </div>
+                <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
+                    <div className="flex items-center">
+                        <p className="w-52">Max počet registrací</p>
+                        <p className="font-bold">{p.regTkn.max_reg == null ? '∞' : p.regTkn.max_reg}</p>
+                    </div>
+                </div>
+                <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
+                    <div className="flex items-center">
+                        <p className="w-52">Počet využití</p>
+                        <p className="font-bold">{regDetails.length}</p>
+                    </div>
+                </div>
+                <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
+                    <div className="flex items-center">
+                        <p className="w-52">Token</p>
+                        <p className="font-bold">{p.regTkn.key}</p>
+                        <div className="flex-1"></div>
+                        {p.regTknType === RegTknType.Active && <CopyBtn
+                            className="w-10"
+                            onClick={() => copyRegTkn(p.regTkn, t)}
+                        />}
+                    </div>
+                </div>
+                <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
+                    <div className="flex items-center">
+                        <p className="w-52">Smazat registrační token</p>
+                        <div className="flex-1"></div>
+                        <DeleteBtn
+                            className="w-10"
+                            onClick={deleteRegTkn}
+                        />
+                    </div>
+                </div>
+                <div className="flex flex-col ml-8 mr-8 mb-8 mt-4 gap-y-4">
+                    <h2 className="text-xl font-semibold">Využito k registraci osob</h2>
+                    <RegTknUsedTable
+                        regDetails={regDetails}
                     />
                 </div>
             </div>
-            <div className="flex flex-col ml-8 mr-8 mb-8 mt-4 gap-y-4">
-                <h2 className="text-xl font-semibold">Využito k registraci osob</h2>
-            </div>
-        </div>
+            <ModalDelete
+                onDeleteConfirmed={regTknDeleteConfirmed}
+                content={
+                    <p>{t('modal-reg-tkn-delete-text')} "{p.regTkn.name}"?</p>
+                }
+                open={showDeleteDialog}
+                setOpen={setShowDeleteDialog}
+            />
+        </>
     )
 }
 

@@ -245,5 +245,6 @@
   "modal-reg-tkn-delete-text": "Do you really want to delete the registration token with the name",
   "reg-tkn-delete-error": "An error occurred while deleting the registration token",
 
-  "search-placeholder": "Search"
+  "search-placeholder": "Search",
+  "reg-at-label": "Registered at"
 }

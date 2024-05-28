@@ -52,7 +52,7 @@ export default function RegTknsList(p: Props): ReactElement {
                         setLoading={(b) => setActiveRegTknsLoading(b)}
                     />
                 </div>
-                <div className="flex flex-col m-8 gap-y-2">
+                <div className="flex flex-col m-8 gap-y-4">
                     <h2 className="text-xl font-semibold">{t('reg-tkns-list-inactive-title')}</h2>
                     <RegTknsTable
                         viewDetail={(regTkn) => p.viewDetail(regTkn, RegTknType.Inactive)}
