@@ -71,8 +71,7 @@ pub async fn register(
         }
         let reg_tkn = reg_tkn_opt.unwrap();
         if let Some(n) = reg_tkn.max_reg {
-            let reg_details = query::get_reg_tkn_info(&state.db, reg_tkn.id).await?;
-            if reg_details.len() >= n as usize {
+            if reg_tkn.used >= n {
                 return Err(SyncmiruError::UnprocessableEntity("reg_tkn".to_string()));
             }
         }
@@ -337,8 +336,7 @@ pub async fn reg_tkn_valid(
         &payload.tkn
     ).await?;
     if let Some(n) = reg_tkn.max_reg {
-        let reg_details = query::get_reg_tkn_info(&state.db, reg_tkn.id).await?;
-        Ok(Json(BooleanResp { resp: reg_details.len() < n as usize }))
+        Ok(Json(BooleanResp { resp: reg_tkn.used < n }))
     }
     else {
         Ok(Json(BooleanResp{ resp: true }))

@@ -702,7 +702,7 @@ pub async fn get_reg_tkn_by_key(
     key: &str,
 ) -> Result<RegTkn> {
     let reg_tkn: RegTkn = sqlx::query_as::<_, RegTkn>(
-        "select id, name, key, max_reg from reg_tkn where key = $1 limit 1"
+        "select id, name, key, max_reg, used from reg_tkn where key = $1 limit 1"
     )
         .bind(key)
         .fetch_one(db)
