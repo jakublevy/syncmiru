@@ -27,6 +27,9 @@ export default function Users(): ReactElement {
         let on: Array<UserValueClient> = new Array<UserValueClient>();
         let off: Array<UserValueClient> = new Array<UserValueClient>();
         for (const uid of users.keys()) {
+            if(!users.get(uid)?.verified)
+                continue
+
             if (onlineUids.includes(uid)) {
                 on.push(users.get(uid) as UserValueClient);
             } else {

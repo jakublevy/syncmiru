@@ -16,7 +16,9 @@ pub struct User {
     #[sqlx(rename = "display_name")]
     pub displayname: String,
 
-    pub avatar: Option<Vec<u8>>
+    pub avatar: Option<Vec<u8>>,
+
+    pub verified: bool
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]

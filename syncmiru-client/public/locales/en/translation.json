@@ -246,5 +246,6 @@
   "reg-tkn-delete-error": "An error occurred while deleting the registration token",
 
   "search-placeholder": "Search",
-  "reg-at-label": "Registered at"
+  "reg-at-label": "Registered at",
+  "verified-label": "Verified"
 }

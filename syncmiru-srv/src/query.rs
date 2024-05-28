@@ -275,9 +275,9 @@ pub async fn exists_session_with_hwid(
     Ok(exists.0)
 }
 
-pub async fn get_verified_users(db: &PgPool) -> Result<Vec<User>> {
+pub async fn get_users(db: &PgPool) -> Result<Vec<User>> {
     let users = sqlx::query_as::<_, User>(
-        "select id, username, display_name, avatar from users where verified = TRUE"
+        "select id, username, display_name, avatar, verified from users"
     )
         .fetch_all(db)
         .await?;
@@ -286,7 +286,7 @@ pub async fn get_verified_users(db: &PgPool) -> Result<Vec<User>> {
 
 pub async fn get_user(db: &PgPool, uid: Id) -> Result<User> {
     let user = sqlx::query_as::<_, User>(
-        "select id, username, display_name, avatar from users where id = $1 limit 1"
+        "select id, username, display_name, avatar, verified from users where id = $1 limit 1"
     )
         .bind(uid)
         .fetch_one(db)
@@ -673,7 +673,7 @@ pub async fn delete_reg_tkn(db: &PgPool, id: Id) -> Result<()> {
 
 pub async fn get_reg_tkn_info(db: &PgPool, reg_tkn_id: Id) -> Result<Vec<RegDetail>> {
     let query = r#"
-        select users.id, users.reg_at from reg_tkn
+        select users.id, users.reg_at, users.verified from reg_tkn
         join users on users.reg_tkn_id = reg_tkn.id
         where reg_tkn.id = $1
     "#;

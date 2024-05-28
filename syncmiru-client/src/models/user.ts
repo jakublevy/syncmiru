@@ -11,6 +11,7 @@ export type UserId = number
 interface UserValueCommon {
     username: string,
     displayname: string,
+    verified: boolean,
 }
 export interface UserValueClient extends UserValueCommon{
     avatar: string

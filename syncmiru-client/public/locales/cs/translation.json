@@ -246,5 +246,6 @@
   "reg-tkn-delete-error": "Došlo k chybě při mazání registračního tokenu",
 
   "search-placeholder": "Hledat",
-  "reg-at-label": "Registrován"
+  "reg-at-label": "Registrován",
+  "verified-label": "Ověřen"
 }

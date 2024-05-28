@@ -1,4 +1,4 @@
-import {ReactElement, useEffect, useState} from "react";
+import {ReactElement, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {useTranslation} from "react-i18next";
 import {RegDetail} from "@models/srv.ts";
@@ -9,17 +9,14 @@ import DataTableThemeAware from "@components/widgets/DataTableThemeAware.tsx";
 import Avatar from "@components/widgets/Avatar.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
 import {Language} from "@models/config.tsx";
+import Check from "@components/svg/Check.tsx";
+import Cross from "@components/svg/Cross.tsx";
 
 export default function RegTknUsedTable(p: Props): ReactElement {
     const {t} = useTranslation()
     const lang = useLanguage()
     const {users} = useMainContext()
     const [search, setSearch] = useState<string>('')
-
-    useEffect(() => {
-        console.log('users changed')
-        console.log(JSON.stringify(users))
-    }, [users]);
 
     const columns: TableColumn<TableUser>[] = [
         {
@@ -50,6 +47,25 @@ export default function RegTknUsedTable(p: Props): ReactElement {
                 const y = b.reg_at.getTime()
                 return x < y ? -1 : x == y ? 0 : 1
             }
+        },
+        {
+            name: t('verified-label'),
+            cell: (user) => {
+                return <>{user.verified ? <Check className="w-4"/> : <Cross className="w-4"/>}</>
+            },
+            sortable: true,
+            sortFunction: (a, b) => {
+                if(a.verified) {
+                    if(b.verified)
+                        return 0
+                    return -1
+                }
+                else {
+                    if(!b.verified)
+                        return 0
+                    return 1
+                }
+            }
         }
     ]
 
@@ -65,7 +81,8 @@ export default function RegTknUsedTable(p: Props): ReactElement {
                 username: user.username,
                 displayname: user.displayname,
                 avatar: user.avatar,
-                reg_at: regDetail.reg_at
+                reg_at: regDetail.reg_at,
+                verified: user.verified
             })
         }
         return tableData
@@ -107,5 +124,6 @@ interface TableUser {
     avatar: string,
     username: string,
     displayname: string,
-    reg_at: Date
+    reg_at: Date,
+    verified: boolean
 }

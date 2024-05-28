@@ -96,7 +96,12 @@ export default function Main(): ReactElement {
     function onUsers(users: Array<UserSrv>) {
         let m: Map<UserId, UserValueClient> = new Map<UserId, UserValueClient>();
         for (const user of users)
-            m.set(user.id, {username: user.username, displayname: user.displayname, avatar: arrayBufferToBase64(user.avatar)})
+            m.set(user.id, {
+                username: user.username,
+                displayname: user.displayname,
+                avatar: arrayBufferToBase64(user.avatar),
+                verified: user.verified
+            })
 
         setUsers((p) => new Map<UserId, UserValueClient>([...p, ...m]))
         setLoading(false)

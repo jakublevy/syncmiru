@@ -39,7 +39,7 @@ export default function RegTknView(p: Props): ReactElement {
                 })
                 .finally(() => setLoading(false))
         }
-    }, [socket]);
+    }, [socket, users]);
 
     function deleteRegTkn() {
         setShowDeleteDialog(true)
