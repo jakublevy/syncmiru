@@ -41,12 +41,6 @@ export default function RegTknView(p: Props): ReactElement {
         }
     }, [socket]);
 
-    useEffect(() => {
-        if (socket !== undefined) {
-            // TODO: prepare for datatable
-        }
-    }, [socket, regDetails]);
-
     function deleteRegTkn() {
         setShowDeleteDialog(true)
     }

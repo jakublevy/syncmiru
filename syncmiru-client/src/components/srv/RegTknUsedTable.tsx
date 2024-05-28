@@ -1,4 +1,4 @@
-import {ReactElement, useState} from "react";
+import {ReactElement, useEffect, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {useTranslation} from "react-i18next";
 import {RegDetail} from "@models/srv.ts";
@@ -15,6 +15,11 @@ export default function RegTknUsedTable(p: Props): ReactElement {
     const lang = useLanguage()
     const {users} = useMainContext()
     const [search, setSearch] = useState<string>('')
+
+    useEffect(() => {
+        console.log('users changed')
+        console.log(JSON.stringify(users))
+    }, [users]);
 
     const columns: TableColumn<TableUser>[] = [
         {
@@ -39,7 +44,12 @@ export default function RegTknUsedTable(p: Props): ReactElement {
             cell: (user) => {
                 return <DateTimeLocalPretty datetime={user.reg_at}/>
             },
-            sortable: true
+            sortable: true,
+            sortFunction: (a, b) => {
+                const x = a.reg_at.getTime()
+                const y = b.reg_at.getTime()
+                return x < y ? -1 : x == y ? 0 : 1
+            }
         }
     ]
 
