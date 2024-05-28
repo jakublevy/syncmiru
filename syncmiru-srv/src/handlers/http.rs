@@ -326,6 +326,7 @@ pub async fn reg_tkn_valid(
     State(state): State<Arc<SrvState>>,
     Json(payload): Json<Tkn>
 ) -> Result<Json<BooleanResp>> {
+    println!("reg tkn check");
     payload.validate()?;
     let exists = query::reg_tkn_exists(&state.db, &payload.tkn).await?;
     if !exists {

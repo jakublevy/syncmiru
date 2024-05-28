@@ -25,12 +25,25 @@ export const withSrvValidate = (
 
         const [value, setValue] = useState<string>('')
 
-        const {data: isValid, error} = conf.swr(value, conf.validate, validationArgs)
+        const {data, error} = conf.swr(value, conf.validate, validationArgs)
+        const [isValid, setIsValid] = useState<boolean>()
 
         useEffect(() => {
-            if(error !== undefined && onSrvValidationError !== undefined)
-                onSrvValidationError(error)
+            if(error !== undefined) {
+                setIsValid(false)
+                if (onSrvValidationError !== undefined)
+                    onSrvValidationError(error)
+            }
         }, [error]);
+
+        useEffect(() => {
+            if(error !== undefined) {
+                setIsValid(false)
+            }
+            else {
+                setIsValid(data)
+            }
+        }, [data]);
 
         useEffect(() => {
             if (isValid !== undefined)

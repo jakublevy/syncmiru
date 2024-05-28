@@ -36,7 +36,9 @@ export default function Register({regPubAllowed}: Props): ReactElement {
 
     const [unique, setUnique]
         = useState<Unique>({email: true, username: true})
+
     const [regTknValid, setRegTknValid] = useState<boolean>(false)
+    const [regTknError, setRegTknError] = useState<boolean>(false)
 
     const formSchema: Joi.ObjectSchema<RegFormFields> = useRegFormSchema(regPubAllowed, t)
 
@@ -110,7 +112,13 @@ export default function Register({regPubAllowed}: Props): ReactElement {
     }
 
     function regTknValidationChanged(valid: boolean) {
+        console.log(`valid = ${valid}`)
         setRegTknValid(valid)
+    }
+
+    function regTknValidationError(error: string) {
+        console.log('error')
+        setRegTknError(true)
     }
 
     if(loading)
@@ -142,6 +150,7 @@ export default function Register({regPubAllowed}: Props): ReactElement {
                                     required
                                     maxLength={24}
                                     onSrvValidationChanged={regTknValidationChanged}
+                                    onSrvValidationError={regTknValidationError}
                                     {...register('regTkn')}
                                 />
                                 {errors.regTkn
