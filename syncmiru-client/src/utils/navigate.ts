@@ -60,7 +60,13 @@ export function navigateToLoginFormMain(
 
 export function navigateToRegister(navigate: NavigateFunc<void>) {
     mutate('get_service_status', undefined).then(() =>
-        navigate('/register')
+        mutate('reg_tkn_valid', undefined).then(() =>
+            mutate('get_username_unique', undefined).then(() =>
+                mutate('get_email_unique', undefined).then(() =>
+                    navigate('/register')
+                )
+            )
+        )
     )
 }
 
@@ -70,7 +76,8 @@ export function navigateToForgottenPassword(
 ) {
     mutate('get_service_status', undefined).then(() => {
         mutate('req_forgotten_password_email', undefined).then(() => {
-            navigate('/forgotten-password', {state: forgottenPasswordHistoryState})
+            mutate('get_forgotten_password_tkn_valid', undefined).then(() =>
+                navigate('/forgotten-password', {state: forgottenPasswordHistoryState}))
         })
     })
 }

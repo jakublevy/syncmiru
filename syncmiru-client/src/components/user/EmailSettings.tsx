@@ -19,6 +19,7 @@ import {
 } from "src/utils/alert.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {EmailChangeTkn, EmailChangeTknType} from "@models/user.ts";
+import {mutate} from "swr";
 
 export default function EmailSettings(p: Props): ReactElement {
     const {t} = useTranslation()
@@ -62,6 +63,10 @@ export default function EmailSettings(p: Props): ReactElement {
         reset,
         formState: {errors}
     } = useForm<FormFields>({resolver: joiResolver(formSchema)});
+
+    useEffect(() => {
+        mutate('get_email_unique', undefined)
+    }, []);
 
     useEffect(() => {
         if (socket !== undefined) {
