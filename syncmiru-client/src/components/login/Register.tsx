@@ -64,8 +64,7 @@ export default function Register({regPubAllowed}: Props): ReactElement {
             username: data.username,
             displayname: data.displayname,
             password: data.password,
-            captcha: '',
-            reg_tkn: ''
+            captcha: ''
         }
         if(regPubAllowed)
             send.captcha = data.captcha

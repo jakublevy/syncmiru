@@ -24,7 +24,8 @@ pub struct RegTkn {
     pub id: Id,
     pub name: String,
     pub key: String,
-    pub max_reg: Option<i32>
+    pub max_reg: Option<i32>,
+    pub used: i32
 }
 
 #[derive(Debug, Clone, Serialize, sqlx::FromRow)]

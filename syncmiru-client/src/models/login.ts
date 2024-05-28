@@ -18,14 +18,10 @@ export interface RegData {
     email: string,
     password: string,
     captcha: string,
-    reg_tkn: string
+    reg_tkn?: string
 }
 
 export interface LoginTkns {
     jwt: string,
     hwid_hash: string
-}
-
-export interface Tkn {
-    tkn: string
 }

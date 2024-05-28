@@ -76,6 +76,7 @@ pub async fn register(
                 return Err(SyncmiruError::UnprocessableEntity("reg_tkn".to_string()));
             }
         }
+        query::reg_tkn_increment_used_by_id(&mut transaction, reg_tkn.id).await?;
         query::new_user_w_reg_tkn(
             &mut transaction,
             &payload.username,

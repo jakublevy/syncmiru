@@ -72,7 +72,7 @@ pub struct RegData {
     email: String,
     password: String,
     captcha: String,
-    reg_tkn: String,
+    reg_tkn: Option<String>,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

@@ -232,7 +232,8 @@
   "datatable-no-data": "No data available",
 
   "reg-tkn-name-header": "Name",
-  "reg-tkn-max-regs-header": "Max registration count",
+  "reg-tkn-max-regs-header": "Max registrations",
+  "reg-tkn-used-header": "# of uses",
 
   "reg-tkns-list-title": "Registration tokens – overview",
   "reg-tkns-list-banner-title": "Public registrations are enabled",
@@ -247,5 +248,10 @@
 
   "search-placeholder": "Search",
   "reg-at-label": "Registered at",
-  "verified-label": "Verified"
+  "verified-label": "Verified",
+
+  "reg-tkn-view-max-regs": "Max registration count",
+  "reg-tkn-view-used": "The number of uses",
+  "reg-tkn-view-delete-tkn": "Delete the registration token",
+  "reg-tkn-view-details-title": "Used to register"
 }

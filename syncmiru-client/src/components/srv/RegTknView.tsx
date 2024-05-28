@@ -79,20 +79,20 @@ export default function RegTknView(p: Props): ReactElement {
                 </div>
                 <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
                     <div className="flex items-center">
-                        <p className="w-52">Název</p>
+                        <p className="w-52">{t('reg-tkn-name-header')}</p>
                         <p className="font-bold">{p.regTkn.name}</p>
                     </div>
                 </div>
                 <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
                     <div className="flex items-center">
-                        <p className="w-52">Max počet registrací</p>
+                        <p className="w-52">{t('reg-tkn-view-max-regs')}</p>
                         <p className="font-bold">{p.regTkn.max_reg == null ? '∞' : p.regTkn.max_reg}</p>
                     </div>
                 </div>
                 <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
                     <div className="flex items-center">
-                        <p className="w-52">Počet využití</p>
-                        <p className="font-bold">{regDetails.length}</p>
+                        <p className="w-52">{t('reg-tkn-view-used')}</p>
+                        <p className="font-bold">{p.regTkn.used}</p>
                     </div>
                 </div>
                 <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
@@ -108,7 +108,7 @@ export default function RegTknView(p: Props): ReactElement {
                 </div>
                 <div className="flex flex-col ml-8 mr-8 mb-8 gap-y-6">
                     <div className="flex items-center">
-                        <p className="w-52">Smazat registrační token</p>
+                        <p className="w-52">{t('reg-tkn-view-delete-tkn')}</p>
                         <div className="flex-1"></div>
                         <DeleteBtn
                             className="w-10"
@@ -117,7 +117,7 @@ export default function RegTknView(p: Props): ReactElement {
                     </div>
                 </div>
                 <div className="flex flex-col ml-8 mr-8 mb-8 mt-4 gap-y-4">
-                    <h2 className="text-xl font-semibold">Využito k registraci osob</h2>
+                    <h2 className="text-xl font-semibold">{t('reg-tkn-view-details-title')}</h2>
                     <RegTknUsedTable
                         regDetails={regDetails}
                     />

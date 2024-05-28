@@ -4,7 +4,8 @@ export type RegTknId = number
 export interface RegTknValue {
     name: string,
     key: string
-    max_reg?: number
+    max_reg?: number,
+    used: number
 }
 
 export interface RegTkn extends RegTknValue {

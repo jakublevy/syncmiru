@@ -53,6 +53,11 @@ export default function RegTknsTable(p: Props): ReactElement {
             sortable: true
         },
         {
+            name: t('reg-tkn-used-header'),
+            selector: row => row.used,
+            sortable: true
+        },
+        {
             name: '',
             cell: (regTkn) => {
                 return (
@@ -91,7 +96,8 @@ export default function RegTknsTable(p: Props): ReactElement {
                                     {
                                         max_reg: regTkn.max_reg,
                                         name: regTkn.name,
-                                        key: regTkn.key
+                                        key: regTkn.key,
+                                        used: regTkn.used
                                     } as RegTknValue)
                             }
                             setRegTkns(m)
@@ -118,7 +124,8 @@ export default function RegTknsTable(p: Props): ReactElement {
                                     {
                                         max_reg: regTkn.max_reg,
                                         name: regTkn.name,
-                                        key: regTkn.key
+                                        key: regTkn.key,
+                                        used: regTkn.used
                                     } as RegTknValue)
                             }
                             setRegTkns(m)
@@ -152,7 +159,8 @@ export default function RegTknsTable(p: Props): ReactElement {
                 {
                     max_reg: regTkn.max_reg,
                     name: regTkn.name,
-                    key: regTkn.key
+                    key: regTkn.key,
+                    used: regTkn.used
                 } as RegTknValue)
         }
         setRegTkns((p) => new Map<RegTknId, RegTknValue>([...p, ...m]))
@@ -170,7 +178,8 @@ export default function RegTknsTable(p: Props): ReactElement {
                         {
                             max_reg: val.max_reg,
                             name: val.name,
-                            key: val.key
+                            key: val.key,
+                            used: val.used
                         } as RegTknValue)
             }
             return m
@@ -214,7 +223,7 @@ return (
                 columns={columns}
                 data={
                     Array.from(regTkns, ([k, v]) => {
-                        return {id: k, key: v.key, name: v.name, max_reg: v.max_reg} as RegTkn
+                        return {id: k, key: v.key, name: v.name, max_reg: v.max_reg, used: v.used} as RegTkn
                     }).filter(item => {
                         const s = search.toLowerCase()
                         if (item.name.toLowerCase().includes(s))

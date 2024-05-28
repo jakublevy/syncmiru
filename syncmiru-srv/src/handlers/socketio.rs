@@ -591,6 +591,7 @@ pub async fn create_reg_tkn(
         id: reg_tkn_id,
         max_reg: payload.max_regs,
         name: payload.reg_tkn_name,
+        used: 0,
         key
     };
 

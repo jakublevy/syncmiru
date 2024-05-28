@@ -637,7 +637,7 @@ pub async fn new_reg_tkn(
 
 pub async fn get_active_reg_tkns(db: &PgPool) -> Result<Vec<RegTkn>> {
     let query = r#"
-        select reg_tkn.id, reg_tkn.name, reg_tkn.key, reg_tkn.max_reg from reg_tkn
+        select reg_tkn.id, reg_tkn.name, reg_tkn.key, reg_tkn.max_reg, reg_tkn.used from reg_tkn
         full outer join users on users.reg_tkn_id = reg_tkn.id
         where
 			reg_tkn.id is not NULL and (
@@ -653,7 +653,7 @@ pub async fn get_active_reg_tkns(db: &PgPool) -> Result<Vec<RegTkn>> {
 
 pub async fn get_inactive_reg_tkns(db: &PgPool) -> Result<Vec<RegTkn>> {
     let query = r#"
-        select reg_tkn.id, reg_tkn.name, reg_tkn.key, reg_tkn.max_reg from reg_tkn
+        select reg_tkn.id, reg_tkn.name, reg_tkn.key, reg_tkn.max_reg, reg_tkn.used from reg_tkn
         join users on users.reg_tkn_id = reg_tkn.id
         where (select COUNT(*) from users where reg_tkn_id = reg_tkn.id) = reg_tkn.max_reg
     "#;
@@ -719,4 +719,12 @@ pub async fn get_reg_tkn_by_key_for_update(db: &mut Transaction<'_, Postgres>, k
     else {
         Ok(None)
     }
+}
+
+pub async fn reg_tkn_increment_used_by_id(db: &mut Transaction<'_, Postgres>, id: Id) -> Result<()> {
+    sqlx::query("update reg_tkn set used = used + 1 where id = $1")
+        .bind(id)
+        .execute(&mut **db)
+        .await?;
+    Ok(())
 }

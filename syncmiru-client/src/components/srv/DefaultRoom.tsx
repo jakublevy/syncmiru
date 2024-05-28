@@ -4,7 +4,7 @@ import {CloseBtn} from "@components/widgets/Button.tsx";
 import {navigateToMain} from "src/utils/navigate.ts";
 
 export default function DefaultRoom(): ReactElement {
-    const [location, navigate] = useLocation()
+    const [_, navigate] = useLocation()
     return (
         <div className="flex flex-col">
             <div className="flex items-center m-8">

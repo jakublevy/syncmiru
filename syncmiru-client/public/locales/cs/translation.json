@@ -231,8 +231,9 @@
 
   "datatable-no-data": "Žádná data nejsou k dispozici",
 
-  "active-reg-tkn-name-header": "Název",
-  "active-reg-tkn-max-regs-header": "Max počet registrací",
+  "reg-tkn-name-header": "Název",
+  "reg-tkn-max-regs-header": "Max # registrací",
+  "reg-tkn-used-header": "# použití",
 
   "reg-tkns-list-title": "Registrační tokeny – přehled",
   "reg-tkns-list-banner-title": "Veřejné registrace jsou povoleny",
@@ -247,5 +248,10 @@
 
   "search-placeholder": "Hledat",
   "reg-at-label": "Registrován",
-  "verified-label": "Ověřen"
+  "verified-label": "Ověřen",
+
+  "reg-tkn-view-max-regs": "Max počet registrací",
+  "reg-tkn-view-used": "Počet použití",
+  "reg-tkn-view-delete-tkn": "Smazat registrační token",
+  "reg-tkn-view-details-title": "Použit k registraci"
 }
