@@ -253,5 +253,23 @@
   "reg-tkn-view-max-regs": "Max registration count",
   "reg-tkn-view-used": "The number of uses",
   "reg-tkn-view-delete-tkn": "Delete the registration token",
-  "reg-tkn-view-details-title": "Used to register"
+  "reg-tkn-view-details-title": "Used to register",
+
+  "email-not-received-error": "An error occurred while obtaining your email",
+
+  "default-room-title": "Default room settings",
+  "default-room-player-title": "Player settings",
+  "default-room-sync-title": "Sync settings",
+  "playback-title": "Playback speed",
+  "default-room-desync-tolerance-title": "Desync tolerance",
+  "default-room-desync-tolerance-help": "The maximum possible deviation of the players, which is not addressed.",
+  "default-room-major-desync-min-title": "Major desync min",
+  "default-room-major-desync-min-help": "Minimum value defining a large deviation.",
+  "default-room-major-desync-action-title": "On major desync",
+  "default-room-major-desync-action-help": "An action that happens when major desync occurs.",
+
+  "playback-speed-title": "Change the playback speed",
+  "playback-speed-label": "Playback speed:",
+  "playback-change-error": "An error occurred while changing the playback speed",
+  "playback-received-error": "An error occurred while receiving the playback speed"
 }

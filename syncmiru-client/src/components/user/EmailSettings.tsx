@@ -78,8 +78,18 @@ export default function EmailSettings(p: Props): ReactElement {
                 .finally(() => setResendTimeLoading(false))
 
             socket.emitWithAck("get_email")
-                .then((email) => setEmail(email))
-                .catch(() => setEmail("N/A"))
+                .then((ack: SocketIoAck<string>) => {
+                    if(ack.status === SocketIoAckType.Err) {
+                        showPersistentErrorAlert(t('email-not-received-error'))
+                    }
+                    else {
+                        setEmail(ack.payload as string)
+                    }
+                })
+                .catch(() => {
+                    showPersistentErrorAlert(t('email-not-received-error'))
+                    setEmail("N/A")
+                })
                 .finally(() => setEmailLoading(false))
         }
     }, [socket]);

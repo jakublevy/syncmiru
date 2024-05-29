@@ -14,7 +14,7 @@ import {copyRegTkn} from "src/utils/regTkn.ts";
 
 export default function RegTknsTable(p: Props): ReactElement {
     const {t} = useTranslation()
-    const {socket} = useMainContext()
+    const {socket, users} = useMainContext()
     const [regTkns, setRegTkns]
         = useState<Map<RegTknId, RegTknValue>>(new Map<RegTknId, RegTknValue>())
     const [search, setSearch] = useState<string>('')
@@ -139,7 +139,7 @@ export default function RegTknsTable(p: Props): ReactElement {
                     })
             }
         }
-    }, [socket]);
+    }, [socket, users]);
 
     useEffect(() => {
         if(socket !== undefined) {

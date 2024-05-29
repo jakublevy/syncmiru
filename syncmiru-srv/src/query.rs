@@ -1,7 +1,9 @@
+use rust_decimal::Decimal;
 use sqlx::{Executor, PgPool, Postgres, Transaction};
 use crate::models::User;
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn};
 use crate::models::query::UserSession;
+use crate::models::socketio::PlaybackSpeed;
 use crate::result::Result;
 
 pub async fn username_unique(db: &PgPool, username: &str) -> Result<bool> {
@@ -637,13 +639,8 @@ pub async fn new_reg_tkn(
 
 pub async fn get_active_reg_tkns(db: &PgPool) -> Result<Vec<RegTkn>> {
     let query = r#"
-        select reg_tkn.id, reg_tkn.name, reg_tkn.key, reg_tkn.max_reg, reg_tkn.used from reg_tkn
-        full outer join users on users.reg_tkn_id = reg_tkn.id
-        where
-			reg_tkn.id is not NULL and (
-				reg_tkn.max_reg is NULL
-            	or (select COUNT(*) from users where reg_tkn_id = reg_tkn.id) < reg_tkn.max_reg
-			)
+        select id, name, key, max_reg, used from reg_tkn
+        where used < max_reg
     "#;
     let reg_tkns = sqlx::query_as::<_, RegTkn>(query)
         .fetch_all(db)
@@ -653,9 +650,8 @@ pub async fn get_active_reg_tkns(db: &PgPool) -> Result<Vec<RegTkn>> {
 
 pub async fn get_inactive_reg_tkns(db: &PgPool) -> Result<Vec<RegTkn>> {
     let query = r#"
-        select reg_tkn.id, reg_tkn.name, reg_tkn.key, reg_tkn.max_reg, reg_tkn.used from reg_tkn
-        join users on users.reg_tkn_id = reg_tkn.id
-        where (select COUNT(*) from users where reg_tkn_id = reg_tkn.id) = reg_tkn.max_reg
+        select id, name, key, max_reg, used from reg_tkn
+        where max_reg <= used
     "#;
     let reg_tkns = sqlx::query_as::<_, RegTkn>(query)
         .fetch_all(db)
@@ -711,7 +707,7 @@ pub async fn get_reg_tkn_by_key(
 }
 
 pub async fn get_reg_tkn_by_key_for_update(db: &mut Transaction<'_, Postgres>, key: &str) -> Result<Option<RegTkn>> {
-    if let Some(reg_tkn) = sqlx::query_as::<_, RegTkn>("select id, name, key, max_reg from reg_tkn where key = $1 for update limit 1")
+    if let Some(reg_tkn) = sqlx::query_as::<_, RegTkn>("select id, name, key, max_reg, used from reg_tkn where key = $1 for update limit 1")
         .bind(key)
         .fetch_optional(&mut **db).await? {
         Ok(Some(reg_tkn))
@@ -725,6 +721,28 @@ pub async fn reg_tkn_increment_used_by_id(db: &mut Transaction<'_, Postgres>, id
     sqlx::query("update reg_tkn set used = used + 1 where id = $1")
         .bind(id)
         .execute(&mut **db)
+        .await?;
+    Ok(())
+}
+
+pub async fn get_default_playback_speed(
+    db: &PgPool,
+) -> Result<Decimal> {
+
+    let default_speed: (Decimal,) = sqlx::query_as("select playback_speed from settings limit 1")
+        .fetch_one(db)
+        .await?;
+    Ok(default_speed.0)
+}
+
+pub async fn set_default_playback_speed(
+    db: &PgPool,
+    playback_speed: &Decimal
+) -> Result<()> {
+
+    sqlx::query("update settings set playback_speed = $1")
+        .bind(playback_speed)
+        .execute(db)
         .await?;
     Ok(())
 }

@@ -1,4 +1,5 @@
 use chrono::Utc;
+use rust_decimal::Decimal;
 use serde::{Serialize, Deserialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use validator::Validate;
@@ -116,6 +117,12 @@ pub struct RegTknCreate {
 pub struct RegTknName {
     #[validate(custom(function = "validators::check_reg_tkn_name"))]
     pub reg_tkn_name: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct PlaybackSpeed {
+    #[validate(custom(function = "validators::check_playback_speed"))]
+    pub playback_speed: Decimal
 }
 
 #[serde_with::serde_as]

@@ -1,9 +1,10 @@
 use std::sync::Arc;
+use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -33,6 +34,8 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("check_reg_tkn_name_unique", check_reg_tkn_name_unique);
     s.on("delete_reg_tkn", delete_reg_tkn);
     s.on("get_reg_tkn_info", get_reg_tkn_info);
+    s.on("get_default_playback_speed", get_default_playback_speed);
+    s.on("set_default_playback_speed", set_default_playback_speed);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_users(&state.db)
@@ -124,7 +127,7 @@ pub async fn get_email(
     let email = query::get_email_by_uid(&state.db, uid)
         .await
         .expect("db error");
-    ack.send(email).ok();
+    ack.send(SocketIoAck::<String>::ok(Some(email))).ok();
 }
 
 pub async fn set_displayname(
@@ -670,6 +673,35 @@ pub async fn get_reg_tkn_info(
         .await
         .expect("db error");
     ack.send(SocketIoAck::<Vec<RegDetail>>::ok(Some(tkn_detail))).ok();
+}
+
+pub async fn get_default_playback_speed(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender
+) {
+    let default_playback_speed = query::get_default_playback_speed(&state.db)
+        .await
+        .expect("db error");
+    ack.send(SocketIoAck::<Decimal>::ok(Some(default_playback_speed))).ok();
+}
+
+pub async fn set_default_playback_speed(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<PlaybackSpeed>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    query::set_default_playback_speed(&state.db, &payload.playback_speed)
+        .await
+        .expect("db error");
+
+    s.broadcast().emit("default_playback_speed", payload.playback_speed).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {

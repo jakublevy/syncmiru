@@ -1,3 +1,5 @@
+use rust_decimal::Decimal;
+use rust_decimal_macros::dec;
 use sqlx::PgPool;
 use validator::ValidationError;
 use crate::query;
@@ -106,6 +108,13 @@ pub fn check_reg_tkn_max_regs(max_regs_opt: &Option<i32>) -> Result<(), Validati
         if *max_regs < 1 {
             return Err(ValidationError::new("invalid max_regs value"))
         }
+    }
+    Ok(())
+}
+
+pub fn check_playback_speed(playback_speed: &Decimal) -> Result<(), ValidationError> {
+    if playback_speed < &dec!(1.0) || playback_speed > &dec!(2.0) {
+        return Err(ValidationError::new("invalid playback_speed value"))
     }
     Ok(())
 }

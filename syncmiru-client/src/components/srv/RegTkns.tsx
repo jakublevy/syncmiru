@@ -1,5 +1,4 @@
 import React, {ReactElement, useEffect, useState} from "react";
-import {useLocation} from "wouter";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {RegTkn, RegTknType} from "@models/srv.ts";
@@ -7,7 +6,6 @@ import RegTknView from "@components/srv/RegTknView.tsx";
 import RegTknsList from "@components/srv/RegTknsList.tsx";
 
 export default function RegTkns(): ReactElement {
-    const [_, navigate] = useLocation()
     const {socket} = useMainContext()
     const [regPubFetching, setRegPubFetching] = useState<boolean>(true)
     const [regPubAllowed, setRegPubAllowed] = useState<boolean>(false)
