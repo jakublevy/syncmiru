@@ -40,7 +40,8 @@
     "rc-slider": "^10.6.2",
     "rc-tooltip": "^6.2.0",
     "@szhsin/react-menu": "^4.1.0",
-    "react-data-table-component": "^7.6.2"
+    "react-data-table-component": "^7.6.2",
+    "decimal.js": "^10.4.3"
   },
   "devDependencies": {
     "@tauri-apps/cli": ">=2.0.0-beta.0",

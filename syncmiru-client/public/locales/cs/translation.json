@@ -264,9 +264,9 @@
   "default-room-desync-tolerance-title": "Tolerance desynchronizace",
   "default-room-desync-tolerance-help": "Maximální možná odchylka přehrávačů, která se neřeší.",
   "default-room-major-desync-min-title": "Min pro velkou odchylku",
-  "default-room-major-desync-min-help": "Minimální hodnota definující velkou odchylku",
+  "default-room-major-desync-min-help": "Minimální hodnota definující velkou odchylku.",
   "default-room-major-desync-action-title": "Při velké odchylce",
-  "default-room-major-desync-action-help": "Akce, která má nastat při velké odchylce",
+  "default-room-major-desync-action-help": "Akce, která má nastat při velké odchylce.",
 
   "playback-speed-title": "Změna rychlosti přehrávání",
   "playback-speed-label": "Rychlost přehrávání:",

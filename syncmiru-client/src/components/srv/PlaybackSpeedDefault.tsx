@@ -6,11 +6,12 @@ import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import Slider from "rc-slider";
 import {ModalWHeader} from "@components/widgets/Modal.tsx";
+import Decimal from "decimal.js";
 
 export default function PlaybackSpeedDefault(p: Props): ReactElement {
     const {t} = useTranslation()
     const {socket} = useMainContext()
-    const [playbackSpeed, setPlaybackSpeed] = useState<number>()
+    const [playbackSpeed, setPlaybackSpeed] = useState<Decimal>()
     const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
     const [sliderPlaybackSpeed, setSliderPlaybackSpeed] = useState<number>(1.0)
 
@@ -22,9 +23,9 @@ export default function PlaybackSpeedDefault(p: Props): ReactElement {
                     if (ack.status === SocketIoAckType.Err) {
                         showPersistentErrorAlert(t('playback-received-error'))
                     } else {
-                        const speed = parseFloat(ack.payload as string)
+                        const speed = new Decimal(ack.payload as string)
                         setPlaybackSpeed(speed)
-                        setSliderPlaybackSpeed(speed)
+                        setSliderPlaybackSpeed(speed.toNumber())
                     }
                 })
                 .catch(() => {
@@ -36,13 +37,13 @@ export default function PlaybackSpeedDefault(p: Props): ReactElement {
         }
     }, [socket]);
 
-    function onPlaybackSpeed(speed: number) {
-        setPlaybackSpeed(speed)
+    function onPlaybackSpeed(speed: string) {
+        setPlaybackSpeed(new Decimal(speed))
     }
 
     function editClicked() {
         if(playbackSpeed !== undefined)
-            setSliderPlaybackSpeed(playbackSpeed)
+            setSliderPlaybackSpeed(playbackSpeed.toNumber())
 
         setEditModalOpen(true)
     }
@@ -54,7 +55,7 @@ export default function PlaybackSpeedDefault(p: Props): ReactElement {
                     showPersistentErrorAlert(t('playback-change-error'))
                 }
                 else {
-                    setPlaybackSpeed(sliderPlaybackSpeed)
+                    setPlaybackSpeed(new Decimal(sliderPlaybackSpeed))
                 }
             })
             .catch(() => {
