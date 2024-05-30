@@ -746,3 +746,25 @@ pub async fn set_default_playback_speed(
         .await?;
     Ok(())
 }
+
+pub async fn get_default_desync_tolerance(
+    db: &PgPool,
+) -> Result<Decimal> {
+
+    let default_desync_tolerance: (Decimal,) = sqlx::query_as("select desync_tolerance from settings limit 1")
+        .fetch_one(db)
+        .await?;
+    Ok(default_desync_tolerance.0)
+}
+
+pub async fn set_default_desync_tolerance(
+    db: &PgPool,
+    desync_tolerance: &Decimal
+) -> Result<()> {
+
+    sqlx::query("update settings set desync_tolerance = $1")
+        .bind(desync_tolerance)
+        .execute(db)
+        .await?;
+    Ok(())
+}

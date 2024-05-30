@@ -7,6 +7,7 @@ import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import Slider from "rc-slider";
 import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import Decimal from "decimal.js";
+import {createMarks} from "src/utils/slider.ts";
 
 export default function PlaybackSpeedDefault(p: Props): ReactElement {
     const {t} = useTranslation()
@@ -66,7 +67,7 @@ export default function PlaybackSpeedDefault(p: Props): ReactElement {
             })
     }
 
-    function sliderSpeedChanged(v: number | number[]) {
+    function sliderValueChanged(v: number | number[]) {
         setSliderPlaybackSpeed(v as number)
     }
 
@@ -93,16 +94,9 @@ export default function PlaybackSpeedDefault(p: Props): ReactElement {
                                 min={1.0}
                                 max={2.0}
                                 step={0.01}
-                                defaultValue={1.0}
-                                marks={{
-                                    1: "1.00x",
-                                    1.25: "1.25x",
-                                    1.5: "1.50x",
-                                    1.75: "1.75x",
-                                    2: "2.00x",
-                                }}
+                                marks={createMarks(1, 2, 0.25, 2, 'x')}
                                 value={sliderPlaybackSpeed}
-                                onChange={sliderSpeedChanged}
+                                onChange={sliderValueChanged}
                             />
                         </div>
                         <hr className="-ml-6 -mr-6 mt-4 mb-4"/>

@@ -271,5 +271,10 @@
   "playback-speed-title": "Change the playback speed",
   "playback-speed-label": "Playback speed:",
   "playback-change-error": "An error occurred while changing the playback speed",
-  "playback-received-error": "An error occurred while receiving the playback speed"
+  "playback-received-error": "An error occurred while receiving the playback speed",
+
+  "desync-tolerance-title": "Change the desync tolerance",
+  "desync-tolerance-label": "Desync tolerance:",
+  "desync-tolerance-received-error": "An error occurred while receiving the desync tolerance",
+  "desync-tolerance-change-error": "An error occurred while changing the desync tolerance"
 }

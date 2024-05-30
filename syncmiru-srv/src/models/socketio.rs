@@ -125,6 +125,12 @@ pub struct PlaybackSpeed {
     pub playback_speed: Decimal
 }
 
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct DesyncTolerance {
+    #[validate(custom(function = "validators::check_desync_tolerance"))]
+    pub desync_tolerance: Decimal
+}
+
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize)]

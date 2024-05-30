@@ -13,7 +13,7 @@ export default function DefaultRoom(): ReactElement {
     const [_, navigate] = useLocation()
     const {t} = useTranslation()
     const [playbackSpeedLoading, setPlaybackSpeedLoading] = useState<boolean>(true)
-    const [desyncToleranceLoading, setDesyncToleranceLoading] = useState<boolean>(false)
+    const [desyncToleranceLoading, setDesyncToleranceLoading] = useState<boolean>(true)
     const [majorDesyncMinLoading, setMajorDesyncMinLoading] = useState<boolean>(false)
     const [majorDesyncActionLoading, setMajorDesyncActionLoading] = useState<boolean>(false)
 

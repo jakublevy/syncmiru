@@ -4,7 +4,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -36,6 +36,8 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("get_reg_tkn_info", get_reg_tkn_info);
     s.on("get_default_playback_speed", get_default_playback_speed);
     s.on("set_default_playback_speed", set_default_playback_speed);
+    s.on("get_default_desync_tolerance", get_default_desync_tolerance);
+    s.on("set_default_desync_tolerance", set_default_desync_tolerance);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_users(&state.db)
@@ -701,6 +703,35 @@ pub async fn set_default_playback_speed(
         .expect("db error");
 
     s.broadcast().emit("default_playback_speed", payload.playback_speed).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn get_default_desync_tolerance(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender
+) {
+    let default_playback_speed = query::get_default_desync_tolerance(&state.db)
+        .await
+        .expect("db error");
+    ack.send(SocketIoAck::<Decimal>::ok(Some(default_playback_speed))).ok();
+}
+
+pub async fn set_default_desync_tolerance(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<DesyncTolerance>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    query::set_default_desync_tolerance(&state.db, &payload.desync_tolerance)
+        .await
+        .expect("db error");
+
+    s.broadcast().emit("default_desync_tolerance", payload.desync_tolerance).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 

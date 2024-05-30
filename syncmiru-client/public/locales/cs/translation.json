@@ -271,5 +271,10 @@
   "playback-speed-title": "Změna rychlosti přehrávání",
   "playback-speed-label": "Rychlost přehrávání:",
   "playback-change-error": "Došlo k chybě při změně hodnoty rychlosti přehrávání",
-  "playback-received-error": "Došlo k chybě při získávání hodnoty rychlosti přehrávání"
+  "playback-received-error": "Došlo k chybě při získávání hodnoty rychlosti přehrávání",
+
+  "desync-tolerance-title": "Změna tolerance desynchronizace",
+  "desync-tolerance-label": "Tolerance desynchronizace:",
+  "desync-tolerance-received-error": "Došlo k chybě při získávání hodnoty tolerance desynchronizace",
+  "desync-tolerance-change-error": "Došlo k chybě při změně hodnoty tolerance desynchronizace"
 }
