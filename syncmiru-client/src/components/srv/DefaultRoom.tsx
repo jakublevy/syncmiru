@@ -15,17 +15,13 @@ export default function DefaultRoom(): ReactElement {
     const [playbackSpeedLoading, setPlaybackSpeedLoading] = useState<boolean>(true)
     const [desyncToleranceLoading, setDesyncToleranceLoading] = useState<boolean>(true)
     const [minorDesyncPlaybackSlowLoading, setMinorDesyncPlaybackSlowLoading] = useState<boolean>(true)
-    const [minorDesyncActionLoading, setMinorDesyncActionLoading] = useState<boolean>(false)
     const [majorDesyncMinLoading, setMajorDesyncMinLoading] = useState<boolean>(true)
-    const [majorDesyncActionLoading, setMajorDesyncActionLoading] = useState<boolean>(false)
 
     function showContent() {
         return !playbackSpeedLoading
             && !desyncToleranceLoading
             && !majorDesyncMinLoading
-            && !majorDesyncActionLoading
             && !minorDesyncPlaybackSlowLoading
-            && !minorDesyncActionLoading
     }
 
     return (

@@ -278,7 +278,7 @@
   "desync-tolerance-received-error": "An error occurred while receiving the desync tolerance",
   "desync-tolerance-change-error": "An error occurred while changing the desync tolerance",
 
-  "minor-desync-playback-slow-title": "Edit the minor desync playback slow",
+  "minor-desync-playback-slow-title": "Change the minor desync playback slow",
   "minor-desync-playback-slow-label": "Minor desync playback slow:",
   "minor-desync-playback-slow-received-error": "An error occurred while receiving the minor desync playback slow",
   "minor-desync-playback-slow-change-error": "An error occurred while changing the minor desync playback slow",

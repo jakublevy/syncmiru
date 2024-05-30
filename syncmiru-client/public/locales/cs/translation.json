@@ -278,8 +278,8 @@
   "desync-tolerance-received-error": "Došlo k chybě při získávání hodnoty tolerance desynchronizace",
   "desync-tolerance-change-error": "Došlo k chybě při změně hodnoty tolerance desynchronizace",
 
-  "minor-desync-playback-slow-title": "Snížení rychlosti přehrávání při malé odchylce",
-  "minor-desync-playback-slow-label": "Změna snížení rychlosti přehrávání při malé odchylce:",
+  "minor-desync-playback-slow-title": "Změna snížení rychlosti přehrávání při malé odchylce",
+  "minor-desync-playback-slow-label": "Snížení rychlosti přehrávání při malé odchylce:",
   "minor-desync-playback-slow-received-error": "Došlo k chybě při získávání hodnoty snížení rychlosti přehrávání při malé odchylce",
   "minor-desync-playback-slow-change-error": "Došlo k chybě při úpravě hodnoty snížení rychlosti přehrávání při malé odchylce",
 
