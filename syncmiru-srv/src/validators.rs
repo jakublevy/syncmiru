@@ -125,3 +125,17 @@ pub fn check_desync_tolerance(desync_tolerance: &Decimal) -> Result<(), Validati
     }
     Ok(())
 }
+
+pub fn check_major_desync_min(major_desync_min: &Decimal) -> Result<(), ValidationError> {
+    if major_desync_min < &dec!(4.0) || major_desync_min > &dec!(10.0) {
+        return Err(ValidationError::new("invalid major_desync_min value"))
+    }
+    Ok(())
+}
+
+pub fn check_minor_desync_playback_change(minor_desync_playback_change: &Decimal) -> Result<(), ValidationError> {
+    if minor_desync_playback_change < &dec!(0.01) || minor_desync_playback_change > &dec!(0.1) {
+        return Err(ValidationError::new("invalid minor_desync_playback_change value"))
+    }
+    Ok(())
+}

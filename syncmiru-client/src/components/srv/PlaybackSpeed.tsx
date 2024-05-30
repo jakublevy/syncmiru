@@ -9,7 +9,7 @@ import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import Decimal from "decimal.js";
 import {createMarks} from "src/utils/slider.ts";
 
-export default function PlaybackSpeedDefault(p: Props): ReactElement {
+export default function PlaybackSpeed(p: Props): ReactElement {
     const {t} = useTranslation()
     const {socket} = useMainContext()
     const [playbackSpeed, setPlaybackSpeed] = useState<Decimal>()
@@ -50,6 +50,8 @@ export default function PlaybackSpeedDefault(p: Props): ReactElement {
     }
 
     function changeClicked() {
+        p.setLoading(true)
+        setEditModalOpen(false)
         socket!.emitWithAck("set_default_playback_speed", {playback_speed: sliderPlaybackSpeed})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
@@ -63,7 +65,7 @@ export default function PlaybackSpeedDefault(p: Props): ReactElement {
                 showPersistentErrorAlert(t('playback-change-error'))
             })
             .finally(() => {
-                setEditModalOpen(false)
+                p.setLoading(false)
             })
     }
 
@@ -91,8 +93,8 @@ export default function PlaybackSpeedDefault(p: Props): ReactElement {
                         </div>
                         <div className="pl-1.5 pr-1.5 mb-4">
                             <Slider
-                                min={1.0}
-                                max={2.0}
+                                min={1}
+                                max={2}
                                 step={0.01}
                                 marks={createMarks(1, 2, 0.25, 2, 'x')}
                                 value={sliderPlaybackSpeed}

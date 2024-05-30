@@ -267,6 +267,10 @@
   "default-room-major-desync-min-help": "Minimum value defining a large deviation.",
   "default-room-major-desync-action-title": "On major desync",
   "default-room-major-desync-action-help": "An action that happens when major desync occurs.",
+  "default-room-minor-desync-playback-change-title": "Minor desync playback change",
+  "default-room-minor-desync-playback-change-help": "The playback speed will be changed by the set value during the minor desync.",
+  "default-room-minor-desync-action-title": "On minor desync",
+  "default-room-minor-desync-action-help": "An action that happens when minor desync occurs.",
 
   "playback-speed-title": "Change the playback speed",
   "playback-speed-label": "Playback speed:",
@@ -276,5 +280,15 @@
   "desync-tolerance-title": "Change the desync tolerance",
   "desync-tolerance-label": "Desync tolerance:",
   "desync-tolerance-received-error": "An error occurred while receiving the desync tolerance",
-  "desync-tolerance-change-error": "An error occurred while changing the desync tolerance"
+  "desync-tolerance-change-error": "An error occurred while changing the desync tolerance",
+
+  "minor-desync-playback-change-title": "Edit the minor desync playback change",
+  "minor-desync-playback-change-label": "Minor desync playback change:",
+  "minor-desync-playback-change-received-error": "An error occurred while receiving the minor desync playback change",
+  "minor-desync-playback-change-change-error": "An error occurred while changing the minor desync playback change",
+
+  "major-desync-min-title": "Change the major desync min",
+  "major-desync-min-label": "Major desync min:",
+  "major-desync-min-received-error": "An error occurred while receiving the major desync min",
+  "major-desync-min-change-error": "An error occurred while changing the major desync min"
 }

@@ -4,7 +4,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackChange};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -38,6 +38,10 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("set_default_playback_speed", set_default_playback_speed);
     s.on("get_default_desync_tolerance", get_default_desync_tolerance);
     s.on("set_default_desync_tolerance", set_default_desync_tolerance);
+    s.on("get_default_major_desync_min", get_default_major_desync_min);
+    s.on("set_default_major_desync_min", set_default_major_desync_min);
+    s.on("get_default_minor_desync_playback_change", get_default_minor_desync_playback_change);
+    s.on("set_default_minor_desync_playback_change", set_default_minor_desync_playback_change);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_users(&state.db)
@@ -732,6 +736,64 @@ pub async fn set_default_desync_tolerance(
         .expect("db error");
 
     s.broadcast().emit("default_desync_tolerance", payload.desync_tolerance).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn get_default_major_desync_min(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender
+) {
+    let default_major_desync_min = query::get_default_major_desync_min(&state.db)
+        .await
+        .expect("db error");
+    ack.send(SocketIoAck::<Decimal>::ok(Some(default_major_desync_min))).ok();
+}
+
+pub async fn set_default_major_desync_min(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<MajorDesyncMin>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    query::set_default_major_desync_min(&state.db, &payload.major_desync_min)
+        .await
+        .expect("db error");
+
+    s.broadcast().emit("default_major_desync_min", payload.major_desync_min).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn get_default_minor_desync_playback_change(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender
+) {
+    let minor_desync_playback_change = query::get_default_minor_desync_playback_change(&state.db)
+        .await
+        .expect("db error");
+    ack.send(SocketIoAck::<Decimal>::ok(Some(minor_desync_playback_change))).ok();
+}
+
+pub async fn set_default_minor_desync_playback_change(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<MinorDesyncPlaybackChange>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    query::set_default_minor_desync_playback_change(&state.db, &payload.minor_desync_playback_change)
+        .await
+        .expect("db error");
+
+    s.broadcast().emit("default_minor_desync_playback_change", payload.minor_desync_playback_change).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 

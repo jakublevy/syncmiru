@@ -10,7 +10,7 @@ import {createMarks} from "src/utils/slider.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 
-export default function DesyncToleranceDefault(p: Props): ReactElement {
+export default function DesyncTolerance(p: Props): ReactElement {
     const {t} = useTranslation()
     const {socket} = useMainContext()
     const [desyncTolerance, setDesyncTolerance] = useState<Decimal>();
@@ -55,6 +55,8 @@ export default function DesyncToleranceDefault(p: Props): ReactElement {
     }
 
     function changeClicked() {
+        p.setLoading(true)
+        setEditModalOpen(false)
         socket!.emitWithAck("set_default_desync_tolerance", {desync_tolerance: sliderDesyncTolerance})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
@@ -68,7 +70,7 @@ export default function DesyncToleranceDefault(p: Props): ReactElement {
                 showPersistentErrorAlert(t('desync-tolerance-change-error'))
             })
             .finally(() => {
-                setEditModalOpen(false)
+                p.setLoading(false)
             })
     }
 
@@ -95,10 +97,10 @@ export default function DesyncToleranceDefault(p: Props): ReactElement {
                         </div>
                         <div className="pl-1.5 pr-1.5 mb-4">
                             <Slider
-                                min={1.0}
-                                max={3.0}
+                                min={1}
+                                max={3}
                                 step={0.1}
-                                marks={createMarks(1.0, 3.0, 0.5, 1, 's')}
+                                marks={createMarks(1, 3, 0.5, 1, 's')}
                                 value={sliderDesyncTolerance}
                                 onChange={sliderValueChanged}
                             />

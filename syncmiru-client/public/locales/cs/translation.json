@@ -267,6 +267,10 @@
   "default-room-major-desync-min-help": "Minimální hodnota definující velkou odchylku.",
   "default-room-major-desync-action-title": "Při velké odchylce",
   "default-room-major-desync-action-help": "Akce, která má nastat při velké odchylce.",
+  "default-room-minor-desync-playback-change-title": "Změna rychlosti přehrávání při malé odchylce",
+  "default-room-minor-desync-playback-change-help": "Rychlost přehrávání bude při malé odchylce změněna o nastavenou hodnotu",
+  "default-room-minor-desync-action-title": "Při malé odchylce",
+  "default-room-minor-desync-action-help": "Akce, která má nastat při malé odchylce.",
 
   "playback-speed-title": "Změna rychlosti přehrávání",
   "playback-speed-label": "Rychlost přehrávání:",
@@ -276,5 +280,15 @@
   "desync-tolerance-title": "Změna tolerance desynchronizace",
   "desync-tolerance-label": "Tolerance desynchronizace:",
   "desync-tolerance-received-error": "Došlo k chybě při získávání hodnoty tolerance desynchronizace",
-  "desync-tolerance-change-error": "Došlo k chybě při změně hodnoty tolerance desynchronizace"
+  "desync-tolerance-change-error": "Došlo k chybě při změně hodnoty tolerance desynchronizace",
+
+  "minor-desync-playback-change-title": "Úprava změny rychlosti přehrávání při malé odchylce",
+  "minor-desync-playback-change-label": "Změna rychlosti přehrávání při malé odchylce:",
+  "minor-desync-playback-change-received-error": "Došlo k chybě při získávání hodnoty změny rychlosti přehrávání při malé odchylce",
+  "minor-desync-playback-change-change-error": "Došlo k chybě při úpravě hodnoty změny rychlosti přehrávání při malé odchylce",
+
+  "major-desync-min-title": "Změna min pro velkou odchylku",
+  "major-desync-min-label": "Min pro velkou odchylku:",
+  "major-desync-min-received-error": "Došlo k chybě při získávání hodnoty min velké odchylky",
+  "major-desync-min-change-error": "Došlo k chybě při změně hodnoty min velké odchylky",
 }

@@ -3,7 +3,6 @@ use sqlx::{Executor, PgPool, Postgres, Transaction};
 use crate::models::User;
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn};
 use crate::models::query::UserSession;
-use crate::models::socketio::PlaybackSpeed;
 use crate::result::Result;
 
 pub async fn username_unique(db: &PgPool, username: &str) -> Result<bool> {
@@ -728,7 +727,6 @@ pub async fn reg_tkn_increment_used_by_id(db: &mut Transaction<'_, Postgres>, id
 pub async fn get_default_playback_speed(
     db: &PgPool,
 ) -> Result<Decimal> {
-
     let default_speed: (Decimal,) = sqlx::query_as("select playback_speed from settings limit 1")
         .fetch_one(db)
         .await?;
@@ -739,7 +737,6 @@ pub async fn set_default_playback_speed(
     db: &PgPool,
     playback_speed: &Decimal
 ) -> Result<()> {
-
     sqlx::query("update settings set playback_speed = $1")
         .bind(playback_speed)
         .execute(db)
@@ -750,7 +747,6 @@ pub async fn set_default_playback_speed(
 pub async fn get_default_desync_tolerance(
     db: &PgPool,
 ) -> Result<Decimal> {
-
     let default_desync_tolerance: (Decimal,) = sqlx::query_as("select desync_tolerance from settings limit 1")
         .fetch_one(db)
         .await?;
@@ -761,9 +757,49 @@ pub async fn set_default_desync_tolerance(
     db: &PgPool,
     desync_tolerance: &Decimal
 ) -> Result<()> {
-
     sqlx::query("update settings set desync_tolerance = $1")
         .bind(desync_tolerance)
+        .execute(db)
+        .await?;
+    Ok(())
+}
+
+pub async fn get_default_major_desync_min(
+    db: &PgPool,
+) -> Result<Decimal> {
+    let default_major_desync_min: (Decimal,) = sqlx::query_as("select major_desync_min from settings limit 1")
+        .fetch_one(db)
+        .await?;
+    Ok(default_major_desync_min.0)
+}
+
+pub async fn set_default_major_desync_min(
+    db: &PgPool,
+    major_desync_min: &Decimal
+) -> Result<()> {
+    sqlx::query("update settings set major_desync_min = $1")
+        .bind(major_desync_min)
+        .execute(db)
+        .await?;
+    Ok(())
+}
+
+pub async fn get_default_minor_desync_playback_change(
+    db: &PgPool,
+) -> Result<Decimal> {
+
+    let default_major_desync_min: (Decimal,) = sqlx::query_as("select minor_desync_playback_change from settings limit 1")
+        .fetch_one(db)
+        .await?;
+    Ok(default_major_desync_min.0)
+}
+
+pub async fn set_default_minor_desync_playback_change(
+    db: &PgPool,
+    minor_desync_playback_change: &Decimal
+) -> Result<()> {
+    sqlx::query("update settings set minor_desync_playback_change = $1")
+        .bind(minor_desync_playback_change)
         .execute(db)
         .await?;
     Ok(())

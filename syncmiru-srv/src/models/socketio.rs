@@ -131,6 +131,18 @@ pub struct DesyncTolerance {
     pub desync_tolerance: Decimal
 }
 
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct MajorDesyncMin {
+    #[validate(custom(function = "validators::check_major_desync_min"))]
+    pub major_desync_min: Decimal
+}
+
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct MinorDesyncPlaybackChange {
+    #[validate(custom(function = "validators::check_minor_desync_playback_change"))]
+    pub minor_desync_playback_change: Decimal
+}
+
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize)]

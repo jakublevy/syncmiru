@@ -3,22 +3,31 @@ import {useLocation} from "wouter";
 import {CloseBtn} from "@components/widgets/Button.tsx";
 import {navigateToMain} from "src/utils/navigate.ts";
 import {useTranslation} from "react-i18next";
-import PlaybackSpeedDefault from "@components/srv/PlaybackSpeedDefault.tsx";
-import DesyncToleranceDefault from "@components/srv/DesyncToleranceDefault.tsx";
-import MajorDesyncMinDefault from "@components/srv/MajorDesyncMinDefault.tsx";
-import MajorDesyncActionDefault from "@components/srv/MajorDesyncActionDefault.tsx";
+import PlaybackSpeed from "@components/srv/PlaybackSpeed.tsx";
+import DesyncTolerance from "@components/srv/DesyncTolerance.tsx";
+import MajorDesyncMin from "@components/srv/MajorDesyncMin.tsx";
+import MajorDesyncAction from "@components/srv/MajorDesyncAction.tsx";
 import Loading from "@components/Loading.tsx";
+import MinorDesyncPlaybackChange from "@components/srv/MinorDesyncPlaybackChange.tsx";
+import MinorDesyncAction from "@components/srv/MinorDesyncAction.tsx";
 
 export default function DefaultRoom(): ReactElement {
     const [_, navigate] = useLocation()
     const {t} = useTranslation()
     const [playbackSpeedLoading, setPlaybackSpeedLoading] = useState<boolean>(true)
     const [desyncToleranceLoading, setDesyncToleranceLoading] = useState<boolean>(true)
-    const [majorDesyncMinLoading, setMajorDesyncMinLoading] = useState<boolean>(false)
+    const [minorDesyncPlaybackChangeLoading, setMinorDesyncPlaybackChangeLoading] = useState<boolean>(true)
+    const [minorDesyncActionLoading, setMinorDesyncActionLoading] = useState<boolean>(false)
+    const [majorDesyncMinLoading, setMajorDesyncMinLoading] = useState<boolean>(true)
     const [majorDesyncActionLoading, setMajorDesyncActionLoading] = useState<boolean>(false)
 
     function showContent() {
-        return !playbackSpeedLoading && !desyncToleranceLoading && !majorDesyncMinLoading && !majorDesyncActionLoading
+        return !playbackSpeedLoading
+            && !desyncToleranceLoading
+            && !majorDesyncMinLoading
+            && !majorDesyncActionLoading
+            && !minorDesyncPlaybackChangeLoading
+            && !minorDesyncActionLoading
     }
 
     return (
@@ -37,7 +46,7 @@ export default function DefaultRoom(): ReactElement {
                 <div className="m-8">
                     <h2 className="text-xl font-semibold">{t('default-room-player-title')}</h2>
                     <div className="flex flex-col mt-4 gap-y-6">
-                        <PlaybackSpeedDefault
+                        <PlaybackSpeed
                             setLoading={(b) => setPlaybackSpeedLoading(b)}
                         />
                     </div>
@@ -45,13 +54,19 @@ export default function DefaultRoom(): ReactElement {
                 <div className="m-8">
                     <h2 className="text-xl font-semibold">{t('default-room-sync-title')}</h2>
                     <div className="flex flex-col mt-4 gap-y-6">
-                        <DesyncToleranceDefault
+                        <DesyncTolerance
                             setLoading={(b) => setDesyncToleranceLoading(b)}
                         />
-                        <MajorDesyncMinDefault
+                        <MinorDesyncPlaybackChange
+                            setLoading={(b) => setMinorDesyncPlaybackChangeLoading(b)}
+                        />
+                        <MinorDesyncAction
+                            setLoading={(b) => setMinorDesyncActionLoading(b)}
+                        />
+                        <MajorDesyncMin
                             setLoading={(b) => setMajorDesyncMinLoading(b)}
                         />
-                        <MajorDesyncActionDefault
+                        <MajorDesyncAction
                             setLoading={(b) => setMajorDesyncActionLoading(b)}
                         />
                     </div>
