@@ -6,17 +6,15 @@ import {useTranslation} from "react-i18next";
 import PlaybackSpeed from "@components/srv/PlaybackSpeed.tsx";
 import DesyncTolerance from "@components/srv/DesyncTolerance.tsx";
 import MajorDesyncMin from "@components/srv/MajorDesyncMin.tsx";
-import MajorDesyncAction from "@components/srv/MajorDesyncAction.tsx";
 import Loading from "@components/Loading.tsx";
-import MinorDesyncPlaybackChange from "@components/srv/MinorDesyncPlaybackChange.tsx";
-import MinorDesyncAction from "@components/srv/MinorDesyncAction.tsx";
+import MinorDesyncPlaybackSlow from "@components/srv/MinorDesyncPlaybackSlow.tsx";
 
 export default function DefaultRoom(): ReactElement {
     const [_, navigate] = useLocation()
     const {t} = useTranslation()
     const [playbackSpeedLoading, setPlaybackSpeedLoading] = useState<boolean>(true)
     const [desyncToleranceLoading, setDesyncToleranceLoading] = useState<boolean>(true)
-    const [minorDesyncPlaybackChangeLoading, setMinorDesyncPlaybackChangeLoading] = useState<boolean>(true)
+    const [minorDesyncPlaybackSlowLoading, setMinorDesyncPlaybackSlowLoading] = useState<boolean>(true)
     const [minorDesyncActionLoading, setMinorDesyncActionLoading] = useState<boolean>(false)
     const [majorDesyncMinLoading, setMajorDesyncMinLoading] = useState<boolean>(true)
     const [majorDesyncActionLoading, setMajorDesyncActionLoading] = useState<boolean>(false)
@@ -26,7 +24,7 @@ export default function DefaultRoom(): ReactElement {
             && !desyncToleranceLoading
             && !majorDesyncMinLoading
             && !majorDesyncActionLoading
-            && !minorDesyncPlaybackChangeLoading
+            && !minorDesyncPlaybackSlowLoading
             && !minorDesyncActionLoading
     }
 
@@ -57,17 +55,11 @@ export default function DefaultRoom(): ReactElement {
                         <DesyncTolerance
                             setLoading={(b) => setDesyncToleranceLoading(b)}
                         />
-                        <MinorDesyncPlaybackChange
-                            setLoading={(b) => setMinorDesyncPlaybackChangeLoading(b)}
-                        />
-                        <MinorDesyncAction
-                            setLoading={(b) => setMinorDesyncActionLoading(b)}
+                        <MinorDesyncPlaybackSlow
+                            setLoading={(b) => setMinorDesyncPlaybackSlowLoading(b)}
                         />
                         <MajorDesyncMin
                             setLoading={(b) => setMajorDesyncMinLoading(b)}
-                        />
-                        <MajorDesyncAction
-                            setLoading={(b) => setMajorDesyncActionLoading(b)}
                         />
                     </div>
                 </div>

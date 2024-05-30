@@ -12,29 +12,29 @@ import {createMarks} from "src/utils/slider.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 
-export default function MinorDesyncPlaybackChange(p: Props): ReactElement {
+export default function MinorDesyncPlaybackSlow(p: Props): ReactElement {
     const {t} = useTranslation()
     const {socket} = useMainContext()
     const lang = useLanguage()
-    const [playbackSpeedChange, setPlaybackSpeedChange] = useState<Decimal>()
+    const [playbackSpeedSlow, setPlaybackSpeedSlow] = useState<Decimal>()
     const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
-    const [sliderPlaybackSpeedChange, setSliderPlaybackSpeedChange] = useState<number>(0.05)
+    const [sliderPlaybackSpeedSlow, setSliderPlaybackSpeedSlow] = useState<number>(0.05)
 
     useEffect(() => {
         if (socket !== undefined) {
-            socket.on('default_minor_desync_playback_change', onMinorDesyncPlaybackChange)
-            socket.emitWithAck("get_default_minor_desync_playback_change")
+            socket.on('default_minor_desync_playback_slow', onMinorDesyncPlaybackSlow)
+            socket.emitWithAck("get_default_minor_desync_playback_slow")
                 .then((ack: SocketIoAck<string>) => {
                     if (ack.status === SocketIoAckType.Err) {
-                        showPersistentErrorAlert(t('minor-desync-playback-change-received-error'))
+                        showPersistentErrorAlert(t('minor-desync-playback-slow-received-error'))
                     } else {
                         const speed = new Decimal(ack.payload as string)
-                        setPlaybackSpeedChange(speed)
-                        setSliderPlaybackSpeedChange(speed.toNumber())
+                        setPlaybackSpeedSlow(speed)
+                        setSliderPlaybackSpeedSlow(speed.toNumber())
                     }
                 })
                 .catch(() => {
-                    showPersistentErrorAlert(t('minor-desync-playback-change-received-error'))
+                    showPersistentErrorAlert(t('minor-desync-playback-slow-received-error'))
                 })
                 .finally(() => {
                     p.setLoading(false)
@@ -42,13 +42,13 @@ export default function MinorDesyncPlaybackChange(p: Props): ReactElement {
         }
     }, [socket]);
 
-    function onMinorDesyncPlaybackChange(speed: string) {
-        setPlaybackSpeedChange(new Decimal(speed))
+    function onMinorDesyncPlaybackSlow(speed: string) {
+        setPlaybackSpeedSlow(new Decimal(speed))
     }
 
     function editClicked() {
-        if(playbackSpeedChange !== undefined)
-            setSliderPlaybackSpeedChange(playbackSpeedChange.toNumber())
+        if(playbackSpeedSlow !== undefined)
+            setSliderPlaybackSpeedSlow(playbackSpeedSlow.toNumber())
 
         setEditModalOpen(true)
     }
@@ -56,17 +56,17 @@ export default function MinorDesyncPlaybackChange(p: Props): ReactElement {
     function changeClicked() {
         p.setLoading(true)
         setEditModalOpen(false)
-        socket!.emitWithAck("set_default_minor_desync_playback_change", {minor_desync_playback_change: sliderPlaybackSpeedChange})
+        socket!.emitWithAck("set_default_minor_desync_playback_slow", {minor_desync_playback_slow: sliderPlaybackSpeedSlow})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
-                    showPersistentErrorAlert(t('minor-desync-playback-change-change-error'))
+                    showPersistentErrorAlert(t('minor-desync-playback-slow-change-error'))
                 }
                 else {
-                    setPlaybackSpeedChange(new Decimal(sliderPlaybackSpeedChange))
+                    setPlaybackSpeedSlow(new Decimal(sliderPlaybackSpeedSlow))
                 }
             })
             .catch(() => {
-                showPersistentErrorAlert(t('minor-desync-playback-change-change-error'))
+                showPersistentErrorAlert(t('minor-desync-playback-slow-change-error'))
             })
             .finally(() => {
                 p.setLoading(false)
@@ -74,7 +74,7 @@ export default function MinorDesyncPlaybackChange(p: Props): ReactElement {
     }
 
     function sliderValueChanged(v: number | number[]) {
-        setSliderPlaybackSpeedChange(v as number)
+        setSliderPlaybackSpeedSlow(v as number)
     }
 
 
@@ -82,23 +82,23 @@ export default function MinorDesyncPlaybackChange(p: Props): ReactElement {
         <>
             <div className="flex items-center">
                 <div className="w-64 flex items-center gap-x-1">
-                    <p className={`${lang === Language.Czech ? 'w-48' : ""}`}>{t('default-room-minor-desync-playback-change-title')}</p>
-                    <Help className="w-4" tooltipId="minor-desync-playback-change-help"
-                          content={t('default-room-minor-desync-playback-change-help')}/>
+                    <p className={`${lang === Language.Czech ? 'w-[12.1rem]' : ""}`}>{t('default-room-minor-desync-playback-slow-title')}</p>
+                    <Help className="w-4" tooltipId="minor-desync-playback-slow-help"
+                          content={t('default-room-minor-desync-playback-slow-help')}/>
                 </div>
-                <p className="font-bold">{playbackSpeedChange !== undefined ? `${playbackSpeedChange.toFixed(2)}x` : 'N/A'}</p>
+                <p className="font-bold">{playbackSpeedSlow !== undefined ? `${playbackSpeedSlow.toFixed(2)}x` : 'N/A'}</p>
                 <div className="flex-1"></div>
                 <EditBtn className="w-10" onClick={editClicked}/>
             </div>
             <ModalWHeader
-                title={t('minor-desync-playback-change-title')}
+                title={t('minor-desync-playback-slow-title')}
                 open={editModalOpen}
                 setOpen={setEditModalOpen}
                 content={
                     <div className="flex flex-col">
                         <div className="flex mb-2">
-                            <p>{t('minor-desync-playback-change-label')}&nbsp;</p>
-                            <p className="font-bold">{sliderPlaybackSpeedChange.toFixed(2)}x</p>
+                            <p>{t('minor-desync-playback-slow-label')}&nbsp;</p>
+                            <p className="font-bold">{sliderPlaybackSpeedSlow.toFixed(2)}x</p>
                         </div>
                         <div className="pl-1.5 pr-1.5 mb-4">
                             <Slider
@@ -106,7 +106,7 @@ export default function MinorDesyncPlaybackChange(p: Props): ReactElement {
                                 max={0.1}
                                 step={0.01}
                                 marks={createMarks(0.01, 0.1, 0.01, 2, 'x')}
-                                value={sliderPlaybackSpeedChange}
+                                value={sliderPlaybackSpeedSlow}
                                 onChange={sliderValueChanged}
                             />
                         </div>

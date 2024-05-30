@@ -133,9 +133,9 @@ pub fn check_major_desync_min(major_desync_min: &Decimal) -> Result<(), Validati
     Ok(())
 }
 
-pub fn check_minor_desync_playback_change(minor_desync_playback_change: &Decimal) -> Result<(), ValidationError> {
-    if minor_desync_playback_change < &dec!(0.01) || minor_desync_playback_change > &dec!(0.1) {
-        return Err(ValidationError::new("invalid minor_desync_playback_change value"))
+pub fn check_minor_desync_playback_slow(minor_desync_playback_slow: &Decimal) -> Result<(), ValidationError> {
+    if minor_desync_playback_slow < &dec!(0.01) || minor_desync_playback_slow > &dec!(0.1) {
+        return Err(ValidationError::new("invalid minor_desync_playback_slow value"))
     }
     Ok(())
 }

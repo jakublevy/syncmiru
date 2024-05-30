@@ -784,21 +784,21 @@ pub async fn set_default_major_desync_min(
     Ok(())
 }
 
-pub async fn get_default_minor_desync_playback_change(
+pub async fn get_default_minor_desync_playback_slow(
     db: &PgPool,
 ) -> Result<Decimal> {
 
-    let default_major_desync_min: (Decimal,) = sqlx::query_as("select minor_desync_playback_change from settings limit 1")
+    let default_major_desync_min: (Decimal,) = sqlx::query_as("select minor_desync_playback_slow from settings limit 1")
         .fetch_one(db)
         .await?;
     Ok(default_major_desync_min.0)
 }
 
-pub async fn set_default_minor_desync_playback_change(
+pub async fn set_default_minor_desync_playback_slow(
     db: &PgPool,
     minor_desync_playback_change: &Decimal
 ) -> Result<()> {
-    sqlx::query("update settings set minor_desync_playback_change = $1")
+    sqlx::query("update settings set minor_desync_playback_slow = $1")
         .bind(minor_desync_playback_change)
         .execute(db)
         .await?;

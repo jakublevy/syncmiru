@@ -138,9 +138,9 @@ pub struct MajorDesyncMin {
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]
-pub struct MinorDesyncPlaybackChange {
-    #[validate(custom(function = "validators::check_minor_desync_playback_change"))]
-    pub minor_desync_playback_change: Decimal
+pub struct MinorDesyncPlaybackSlow {
+    #[validate(custom(function = "validators::check_minor_desync_playback_slow"))]
+    pub minor_desync_playback_slow: Decimal
 }
 
 #[serde_with::serde_as]
