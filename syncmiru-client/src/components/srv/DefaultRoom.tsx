@@ -31,7 +31,7 @@ export default function DefaultRoom(): ReactElement {
                     <Loading/>
                 </div>
             }
-            {<div className={`flex flex-col ${showContent() ? '' : 'hidden'}`}>
+            <div className={`flex flex-col ${showContent() ? '' : 'hidden'}`}>
                 <div className="flex items-center m-8">
                     <h1 className="text-2xl font-bold">{t('default-room-title')}</h1>
                     <div className="flex-1"></div>
@@ -59,7 +59,7 @@ export default function DefaultRoom(): ReactElement {
                         />
                     </div>
                 </div>
-            </div> }
+            </div>
         </>
     )
 }

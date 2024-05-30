@@ -5,8 +5,11 @@ import Avatar from "@components/widgets/Avatar.tsx";
 import 'src/rc-tooltip.css'
 import Tooltip from "rc-tooltip";
 import {Clickable} from "@components/widgets/Button.tsx";
+import {SearchInput} from "@components/widgets/Input.tsx";
+import {useTranslation} from "react-i18next";
 
 export default function Users(): ReactElement {
+    const {t} = useTranslation()
     const {socket, users} = useMainContext()
     const [onlineUsers, setOnlineUsers]
         = useState<Array<UserValueClient>>(new Array<UserValueClient>())
@@ -15,6 +18,17 @@ export default function Users(): ReactElement {
     const [onlineUids, setOnlineUids] = useState<Array<UserId>>(new Array<UserId>());
     const [clickedOnlineIdx, setClickedOnlineIdx] = useState<number>(-1)
     const [clickedOfflineIdx, setClickedOfflineIdx] = useState<number>(-1)
+
+    const [searchValue, setSearchValue] = useState<string>("")
+    const searchValueLC = searchValue.toLowerCase()
+
+    const onlineUsersFiltered
+        = onlineUsers.filter(x =>
+        x.displayname.toLowerCase().includes(searchValueLC) || x.username.toLowerCase().includes(searchValueLC))
+
+    const offlineUsersFiltered
+        = offlineUsers.filter(x =>
+        x.displayname.toLowerCase().includes(searchValueLC) || x.username.toLowerCase().includes(searchValueLC))
 
     useEffect(() => {
         if (socket !== undefined) {
@@ -66,8 +80,11 @@ export default function Users(): ReactElement {
 
     return (
         <div className="flex flex-col overflow-auto h-dvh -mt-1">
-            {onlineUsers.length > 0 && <p className="text-xs pt-4 pl-4 pb-1">Online ({onlineUsers.length})</p>}
-            {onlineUsers.map((u, i) => {
+            <SearchInput className="mt-3 ml-3 mr-3" value={searchValue} setValue={setSearchValue}/>
+            {onlineUsersFiltered.length === 0 && offlineUsersFiltered.length === 0
+                && <p className="text-center mt-4">{t('users-no-user-exists-filter')}</p>}
+            {onlineUsersFiltered.length > 0 && <p className="text-xs pt-4 pl-4 pb-1">Online ({onlineUsersFiltered.length})</p>}
+            {onlineUsersFiltered.map((u, i) => {
                 return (
                     <Tooltip onVisibleChange={(e) => tooltipOnlineVisibilityChanged(e, i)}
                              key={i}
@@ -98,8 +115,8 @@ export default function Users(): ReactElement {
                 )
             })}
 
-            {offlineUsers.length > 0 && <p className="text-xs pt-4 pl-4 pb-1">Offline ({offlineUsers.length})</p>}
-            {offlineUsers.map((u, i) => {
+            {offlineUsersFiltered.length > 0 && <p className="text-xs pt-4 pl-4 pb-1">Offline ({offlineUsersFiltered.length})</p>}
+            {offlineUsersFiltered.map((u, i) => {
                 return (
                     <Tooltip onVisibleChange={(e) => tooltipOfflineVisibilityChanged(e, i)}
                              key={i}

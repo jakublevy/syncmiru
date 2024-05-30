@@ -192,7 +192,9 @@ export const SearchInput
     }
 
     function parentAreaMouseDown(e: MouseEvent<HTMLDivElement>) {
-        e.preventDefault()
+        const target = e.target as HTMLElement
+        if(target.tagName !== 'INPUT')
+            e.preventDefault()
     }
 
     return (

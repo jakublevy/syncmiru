@@ -286,5 +286,7 @@
   "major-desync-min-title": "Change the major desync min",
   "major-desync-min-label": "Major desync min:",
   "major-desync-min-received-error": "An error occurred while receiving the major desync min",
-  "major-desync-min-change-error": "An error occurred while changing the major desync min"
+  "major-desync-min-change-error": "An error occurred while changing the major desync min",
+
+  "users-no-user-exists-filter": "No users matching filter"
 }
