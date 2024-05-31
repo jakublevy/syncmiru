@@ -11,7 +11,7 @@ import {withSrvValidate} from "@components/hoc/withSrvValidate.tsx";
 import Search from "@components/svg/Search.tsx";
 import {useTranslation} from "react-i18next";
 import {Btn} from "@components/widgets/Button.tsx";
-import CrossLight from "@components/svg/CrossLight.tsx";
+import Cross from "@components/svg/Cross.tsx";
 
 export const Input
     = forwardRef<HTMLInputElement, InputProps>((p, ref) => {
@@ -219,7 +219,7 @@ export const SearchInput
                     className="rounded hover:bg-gray-200 p-1 dark:hover:bg-gray-600 w-7 absolute top-2 right-1.5"
                     onClick={clearBtnClicked}
                 >
-                    <CrossLight/>
+                    <Cross fill="currentColor"/>
                 </Btn>
             }
         </div>

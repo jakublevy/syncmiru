@@ -15,6 +15,10 @@ export default function SrvInfo({homeSrv}: Props): ReactElement {
         navigate('/main/srv-settings/reg-tkns')
     }
 
+    function createRoomClicked() {
+        
+    }
+
     return (
         <Menu
             gap={8}
@@ -33,7 +37,7 @@ export default function SrvInfo({homeSrv}: Props): ReactElement {
                     <p>{t('srv-info-settings')}</p>
                 </div>
             </MenuItem>
-            <MenuItem>
+            <MenuItem onClick={createRoomClicked}>
                 <div className="flex gap-x-3">
                     <Play className="h-6 w-6"/>
                     <p>{t('srv-info-create-room')}</p>
