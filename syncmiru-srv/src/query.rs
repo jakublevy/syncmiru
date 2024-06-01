@@ -1,8 +1,9 @@
 use rust_decimal::Decimal;
 use sqlx::{Executor, PgPool, Postgres, Transaction};
 use crate::models::User;
-use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn};
+use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomSettings};
 use crate::models::query::UserSession;
+use crate::models::socketio::DesyncTolerance;
 use crate::result::Result;
 
 pub async fn username_unique(db: &PgPool, username: &str) -> Result<bool> {
@@ -803,4 +804,50 @@ pub async fn set_default_minor_desync_playback_slow(
         .execute(db)
         .await?;
     Ok(())
+}
+
+pub async fn room_name_unique(db: &PgPool, name: &str) -> Result<bool> {
+    let unique: (bool, ) = sqlx::query_as("select COUNT(*) = 0 from room where name = $1 limit 1")
+        .bind(name)
+        .fetch_one(db)
+        .await?;
+    Ok(unique.0)
+}
+
+pub async fn get_default_room_settings(db: &PgPool) -> Result<RoomSettings> {
+    let query = r#"
+        select
+            playback_speed, desync_tolerance,
+            minor_desync_playback_slow, major_desync_min
+        from settings
+    "#;
+    let room_settings: RoomSettings = sqlx::query_as::<_, RoomSettings>(query)
+        .fetch_one(db)
+        .await?;
+    Ok(room_settings)
+}
+
+pub async fn new_room(
+    db: &PgPool,
+    name: &str,
+    playback_speed: &Decimal,
+    desync_tolerance: &Decimal,
+    minor_desync_playback_slow: &Decimal,
+    major_desync_min: &Decimal
+) -> Result<Id> {
+    let query = r#"
+    INSERT INTO room
+    (name, playback_speed, desync_tolerance, minor_desync_playback_slow, major_desync_min)
+    VALUES ($1, $2, $3, $4, $5)
+    returning id
+    "#;
+    let id: (Id, ) = sqlx::query_as(query)
+        .bind(name)
+        .bind(playback_speed)
+        .bind(desync_tolerance)
+        .bind(minor_desync_playback_slow)
+        .bind(major_desync_min)
+        .fetch_one(db)
+        .await?;
+    Ok(id.0)
 }

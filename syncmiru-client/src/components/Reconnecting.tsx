@@ -15,6 +15,7 @@ export default function Reconnecting(): ReactElement {
         setLoading(true)
         clearJwt().then(() => navigateToLoginFormMain(navigate))
     }
+
     if(loading)
         return <Loading/>
 

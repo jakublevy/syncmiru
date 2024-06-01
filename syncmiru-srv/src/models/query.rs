@@ -1,4 +1,5 @@
 use chrono::Utc;
+use rust_decimal::Decimal;
 use serde::Serialize;
 
 #[derive(sqlx::Type)]
@@ -34,4 +35,12 @@ pub struct RegDetail {
 
     #[sqlx(rename = "id")]
     uid: Id
+}
+
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct RoomSettings {
+    pub playback_speed: Decimal,
+    pub desync_tolerance: Decimal,
+    pub minor_desync_playback_slow: Decimal,
+    pub major_desync_min: Decimal
 }

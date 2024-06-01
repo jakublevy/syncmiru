@@ -2,11 +2,14 @@ import {ReactElement, ReactNode} from 'react'
 import {Dialog} from '@headlessui/react'
 import {BtnDanger, BtnSecondary, CloseBtn} from "@components/widgets/Button.tsx";
 import {useTranslation} from "react-i18next";
+import {useMainContext} from "@hooks/useMainContext.ts";
 
 export function Modal(p: ModalProps): ReactElement {
+    const {reconnecting} = useMainContext()
+
     return (
         <Dialog
-            open={p.open}
+            open={p.open && !reconnecting}
             onClose={() => p.setOpen(false)}
             className="relative z-50"
         >

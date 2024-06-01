@@ -288,5 +288,11 @@
   "major-desync-min-received-error": "Došlo k chybě při získávání hodnoty min velké odchylky",
   "major-desync-min-change-error": "Došlo k chybě při změně hodnoty min velké odchylky",
 
-  "users-no-user-exists-filter": "Žádní uživatelé dle filtru"
+  "users-no-user-exists-filter": "Žádní uživatelé dle filtru",
+
+  "modal-create-room-title": "Vytvoření nové místnosti",
+  "modal-create-room-name-label": "Název",
+  "modal-create-room-name-help": "Sem vyplňte neduplicitní název místnosti.",
+  "modal-create-room-not-unique": "Místnost s tímto názvem již existuje",
+  "modal-create-room-error": "Došlo k chybě při vytváření nové místnosti"
 }

@@ -96,9 +96,9 @@ pub fn check_avatar(data: &[u8]) -> Result<(), ValidationError> {
     Ok(())
 }
 
-pub fn check_reg_tkn_name(name: &str) -> Result<(), ValidationError> {
-    if name.len() < 1 || name.len() > 16 {
-        return Err(ValidationError::new("invalid name length"));
+pub fn check_reg_tkn_name(reg_tkn_name: &str) -> Result<(), ValidationError> {
+    if reg_tkn_name.len() < 1 || reg_tkn_name.len() > 16 {
+        return Err(ValidationError::new("invalid reg_tkn_name length"));
     }
     Ok(())
 }
@@ -136,6 +136,13 @@ pub fn check_major_desync_min(major_desync_min: &Decimal) -> Result<(), Validati
 pub fn check_minor_desync_playback_slow(minor_desync_playback_slow: &Decimal) -> Result<(), ValidationError> {
     if minor_desync_playback_slow < &dec!(0.01) || minor_desync_playback_slow > &dec!(0.1) {
         return Err(ValidationError::new("invalid minor_desync_playback_slow value"))
+    }
+    Ok(())
+}
+
+pub fn check_room_name(room_name: &str) -> Result<(), ValidationError> {
+    if room_name.len() < 1 || room_name.len() > 16 {
+        return Err(ValidationError::new("invalid room_name length"));
     }
     Ok(())
 }

@@ -143,6 +143,22 @@ pub struct MinorDesyncPlaybackSlow {
     pub minor_desync_playback_slow: Decimal
 }
 
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct RoomName {
+    #[validate(custom(function = "validators::check_room_name"))]
+    pub room_name: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct Room {
+    pub id: Id,
+    pub name: String,
+    pub playback_speed: Decimal,
+    pub desync_tolerance: Decimal,
+    pub minor_desync_playback_slow: Decimal,
+    pub major_desync_min: Decimal
+}
+
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize)]

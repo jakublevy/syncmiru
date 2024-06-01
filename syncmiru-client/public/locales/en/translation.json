@@ -288,5 +288,11 @@
   "major-desync-min-received-error": "An error occurred while receiving the major desync min",
   "major-desync-min-change-error": "An error occurred while changing the major desync min",
 
-  "users-no-user-exists-filter": "No users matching filter"
+  "users-no-user-exists-filter": "No users matching filter",
+
+  "modal-create-room-title": "Create new room",
+  "modal-create-room-name-label": "Name",
+  "modal-create-room-name-help": "Fill in a unique room name.",
+  "modal-create-room-not-unique": "A room with this name already exists",
+  "modal-create-room-error": "An error occurred while creating new room"
 }

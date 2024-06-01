@@ -4,7 +4,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, Room};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -42,6 +42,8 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("set_default_major_desync_min", set_default_major_desync_min);
     s.on("get_default_minor_desync_playback_slow", get_default_minor_desync_playback_slow);
     s.on("set_default_minor_desync_playback_slow", set_default_minor_desync_playback_slow);
+    s.on("check_room_name_unique", check_room_name_unique);
+    s.on("create_room", create_room);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_users(&state.db)
@@ -795,6 +797,67 @@ pub async fn set_default_minor_desync_playback_slow(
 
     s.broadcast().emit("default_minor_desync_playback_slow", payload.minor_desync_playback_slow).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn check_room_name_unique(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<RoomName>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<bool>::err()).ok();
+        return;
+    }
+    let unique = query::room_name_unique(&state.db, &payload.room_name)
+        .await
+        .expect("db error");
+    ack.send(SocketIoAck::<bool>::ok(Some(unique))).ok();
+}
+
+pub async fn create_room(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<RoomName>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<Room>::err()).ok();
+        return;
+    }
+    let unique = query::room_name_unique(&state.db, &payload.room_name)
+        .await
+        .expect("db error");
+    if !unique {
+        ack.send(SocketIoAck::<Room>::err()).ok();
+        return
+    }
+    let default_room_settings = query::get_default_room_settings(&state.db)
+        .await
+        .expect("db error");
+
+    let room_id = query::new_room(
+        &state.db,
+        &payload.room_name,
+        &default_room_settings.playback_speed,
+        &default_room_settings.desync_tolerance,
+        &default_room_settings.minor_desync_playback_slow,
+        &default_room_settings.major_desync_min
+    )
+        .await
+        .expect("db error");
+
+    let room = Room {
+        id: room_id,
+        name: payload.room_name,
+        playback_speed: default_room_settings.playback_speed,
+        desync_tolerance: default_room_settings.desync_tolerance,
+        minor_desync_playback_slow: default_room_settings.minor_desync_playback_slow,
+        major_desync_min: default_room_settings.major_desync_min
+    };
+    s.broadcast().emit("rooms", [[&room]]).ok();
+    s.emit("rooms", [[&room]]).ok();
+    ack.send(SocketIoAck::<Room>::ok(Some(room))).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {

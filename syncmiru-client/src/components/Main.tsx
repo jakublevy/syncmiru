@@ -19,11 +19,13 @@ import UserSettings from "@components/user/UserSettings.tsx";
 import useClearJwt from "@hooks/useClearJwt.ts";
 import {LoginTkns} from "@models/login.ts";
 import {useHwidHash} from "@hooks/useHwidHash.ts";
-import {AvatarChange, DisplaynameChange, UserId, UserSrv, UserValueClient} from "src/models/user.ts";
+import {AvatarChange, DisplaynameChange, UserId, UserMap, UserSrv, UserValueClient} from "src/models/user.ts";
 import {showPersistentErrorAlert, showPersistentWarningAlert} from "src/utils/alert.ts";
 import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
 import {arrayBufferToBase64} from "src/utils/encoding.ts";
 import SrvSettings from "@components/srv/SrvSettings.tsx";
+import {RoomId, RoomMap, RoomValueClient} from "@models/room.ts";
+import {boolean} from "joi";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -34,12 +36,15 @@ export default function Main(): ReactElement {
     const homeSrv = useHomeServer();
     const [socket, setSocket] = useState<Socket>();
     const [uid, setUid] = useState<number>(0)
+    const [rooms, setRooms] = useState<RoomMap>(new Map<RoomId, RoomValueClient>())
+    const [playlistLoading, setPlaylistLoading] = useState<boolean>(false)
+    const [roomsLoading, setRoomsLoading] = useState<boolean>(false)
     const [reconnecting, setReconnecting] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(true)
     const reconnectingRef = useRef<boolean>(false);
 
     const [users, setUsers]
-        = useState<Map<UserId, UserValueClient>>(new Map<UserId, UserValueClient>());
+        = useState<UserMap>(new Map<UserId, UserValueClient>());
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -94,7 +99,7 @@ export default function Main(): ReactElement {
     }
 
     function onUsers(users: Array<UserSrv>) {
-        let m: Map<UserId, UserValueClient> = new Map<UserId, UserValueClient>();
+        let m: UserMap = new Map<UserId, UserValueClient>();
         for (const user of users)
             m.set(user.id, {
                 username: user.username,
@@ -108,7 +113,7 @@ export default function Main(): ReactElement {
     }
 
     function onDelUsers(delUids: Array<UserId>) {
-        let m: Map<UserId, UserValueClient> = new Map<UserId, UserValueClient>();
+        let m: UserMap = new Map<UserId, UserValueClient>();
         for (const [id, user] of users) {
             if(!delUids.includes(id))
                 m.set(id, user)
@@ -167,7 +172,19 @@ export default function Main(): ReactElement {
         <>
             {reconnecting && <Reconnecting/>}
             {loading && <Loading/>}
-            <MainContext.Provider value={{socket: socket, users: users, uid: uid}}>
+            <MainContext.Provider
+                value={{
+                    socket: socket,
+                    users: users,
+                    uid: uid,
+                    reconnecting: reconnecting,
+                    rooms: rooms,
+                    setRooms: setRooms,
+                    playlistLoading: playlistLoading,
+                    setPlaylistLoading: setPlaylistLoading,
+                    roomsLoading: roomsLoading,
+                    setRoomsLoading: setRoomsLoading
+            }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">
                         <SrvInfo homeSrv={homeSrv}/>

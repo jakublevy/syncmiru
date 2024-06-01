@@ -17,6 +17,8 @@ export interface UserValueClient extends UserValueCommon{
     avatar: string
 }
 
+export type UserMap = Map<UserId, UserValueClient>
+
 export interface UserValueSrv extends UserValueCommon{
     avatar: number[]
 }

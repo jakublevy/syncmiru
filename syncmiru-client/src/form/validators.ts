@@ -50,3 +50,7 @@ export const tknValidate = (tkn: string): boolean => {
     }
     return true
 }
+
+export const roomNameValidate = (roomName: string): boolean => {
+    return roomName.length >= 1 && roomName.length <= 16
+}
