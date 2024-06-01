@@ -3,8 +3,8 @@ use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
-use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, Room};
+use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, Room};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -44,6 +44,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("set_default_minor_desync_playback_slow", set_default_minor_desync_playback_slow);
     s.on("check_room_name_unique", check_room_name_unique);
     s.on("create_room", create_room);
+    s.on("get_rooms", get_rooms);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_users(&state.db)
@@ -822,14 +823,14 @@ pub async fn create_room(
     Data(payload): Data<RoomName>
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<Room>::err()).ok();
+        ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
     let unique = query::room_name_unique(&state.db, &payload.room_name)
         .await
         .expect("db error");
     if !unique {
-        ack.send(SocketIoAck::<Room>::err()).ok();
+        ack.send(SocketIoAck::<()>::err()).ok();
         return
     }
     let default_room_settings = query::get_default_room_settings(&state.db)
@@ -857,7 +858,18 @@ pub async fn create_room(
     };
     s.broadcast().emit("rooms", [[&room]]).ok();
     s.emit("rooms", [[&room]]).ok();
-    ack.send(SocketIoAck::<Room>::ok(Some(room))).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn get_rooms(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender
+) {
+    let rooms = query::get_rooms(&state.db)
+        .await
+        .expect("db error");
+    ack.send(SocketIoAck::<Vec<Room>>::ok(Some(rooms))).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {

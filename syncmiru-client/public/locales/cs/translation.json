@@ -294,5 +294,12 @@
   "modal-create-room-name-label": "Název",
   "modal-create-room-name-help": "Sem vyplňte neduplicitní název místnosti.",
   "modal-create-room-not-unique": "Místnost s tímto názvem již existuje",
-  "modal-create-room-error": "Došlo k chybě při vytváření nové místnosti"
+  "modal-create-room-error": "Došlo k chybě při vytváření nové místnosti",
+
+  "rooms-fetch-error": "Došlo k chybě při získávání místností serveru",
+
+  "room-settings-nav-general": "Obecné",
+  "room-settings-nav-sync": "Synchronizace",
+  "room-settings-general-title": "Obecné nastavení",
+  "room-settings-sync-title": "Nastavení přehráváče a synchronizace"
 }

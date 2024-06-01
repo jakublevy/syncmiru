@@ -44,3 +44,13 @@ pub struct RoomSettings {
     pub minor_desync_playback_slow: Decimal,
     pub major_desync_min: Decimal
 }
+
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct Room {
+    pub id: Id,
+    pub name: String,
+    pub playback_speed: Decimal,
+    pub desync_tolerance: Decimal,
+    pub minor_desync_playback_slow: Decimal,
+    pub major_desync_min: Decimal
+}

@@ -294,5 +294,12 @@
   "modal-create-room-name-label": "Name",
   "modal-create-room-name-help": "Fill in a unique room name.",
   "modal-create-room-not-unique": "A room with this name already exists",
-  "modal-create-room-error": "An error occurred while creating new room"
+  "modal-create-room-error": "An error occurred while creating new room",
+
+  "rooms-fetch-error": "An error occured while fetching the server rooms",
+
+  "room-settings-nav-general": "General",
+  "room-settings-nav-sync": "Synchronization",
+  "room-settings-general-title": "General settings",
+  "room-settings-sync-title": "Player and synchronization settings"
 }

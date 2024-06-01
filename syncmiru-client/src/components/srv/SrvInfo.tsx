@@ -1,11 +1,11 @@
 import {ReactElement, useState} from "react";
 import VSelect from "@components/svg/VSelect.tsx";
 import {Menu, MenuButton, MenuItem} from "@szhsin/react-menu";
-import "src/react-menu.css";
+import "../../react-menu.css";
 import Wrench from "@components/svg/Wrench.tsx";
 import {useLocation} from "wouter";
 import {useTranslation} from "react-i18next";
-import RoomCreate from "@components/RoomCreate.tsx";
+import RoomCreate from "@components/rooms/RoomCreate.tsx";
 
 export default function SrvInfo({homeSrv}: Props): ReactElement {
     const [_, navigate] = useLocation()

@@ -2,16 +2,16 @@ import {ReactElement, useEffect, useRef, useState} from "react";
 import {useLocation} from "wouter";
 import {useTranslation} from "react-i18next";
 import Reconnecting from "@components/Reconnecting.tsx";
-import SrvInfo from "@components/SrvInfo.tsx";
-import Rooms from "@components/Rooms.tsx";
-import JoinedRoom from "@components/JoinedRoom.tsx";
-import CurrentUser from "@components/CurrentUser.tsx";
+import SrvInfo from "@components/srv/SrvInfo.tsx";
+import Rooms from "@components/rooms/Rooms.tsx";
+import JoinedRoom from "@components/rooms/JoinedRoom.tsx";
+import CurrentUser from "@components/user/CurrentUser.tsx";
 import ButtonPanel from "@components/ButtonPanel.tsx";
 import Middle from "@components/Middle.tsx";
 import {useJwt} from "@hooks/useJwt.tsx";
 import {io, Socket} from "socket.io-client";
 import {useHomeServer} from "@hooks/useHomeServer.ts";
-import Users from "@components/Users.tsx";
+import Users from "@components/user/Users.tsx";
 import {MainContext} from "@hooks/useMainContext";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import Loading from "@components/Loading.tsx";
@@ -25,7 +25,8 @@ import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
 import {arrayBufferToBase64} from "src/utils/encoding.ts";
 import SrvSettings from "@components/srv/SrvSettings.tsx";
 import {RoomId, RoomMap, RoomValueClient} from "@models/room.ts";
-import {boolean} from "joi";
+import {set} from "react-hook-form";
+import RoomSettings from "@components/rooms/RoomSettings.tsx";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -168,6 +169,10 @@ export default function Main(): ReactElement {
         return location.startsWith("/main/srv-settings") && shouldRender()
     }
 
+    function showRoomSettings() {
+        return location.startsWith("/main/room-settings") && shouldRender()
+    }
+
     return (
         <>
             {reconnecting && <Reconnecting/>}
@@ -178,10 +183,10 @@ export default function Main(): ReactElement {
                     users: users,
                     uid: uid,
                     reconnecting: reconnecting,
-                    rooms: rooms,
-                    setRooms: setRooms,
                     playlistLoading: playlistLoading,
                     setPlaylistLoading: setPlaylistLoading,
+                    rooms: rooms,
+                    setRooms: setRooms,
                     roomsLoading: roomsLoading,
                     setRoomsLoading: setRoomsLoading
             }}>
@@ -204,6 +209,7 @@ export default function Main(): ReactElement {
                 </div>
                 {showUserSettings() && <UserSettings/>}
                 {showSrvSettings() && <SrvSettings/>}
+                {showRoomSettings() && <RoomSettings/>}
             </MainContext.Provider>
         </>
     )

@@ -1,8 +1,8 @@
 import React, {ReactElement, useEffect, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
-import {UserId, UserValueClient} from "src/models/user.ts";
+import {UserId, UserValueClient} from "@models/user.ts";
 import Avatar from "@components/widgets/Avatar.tsx";
-import 'src/rc-tooltip.css'
+import '../../rc-tooltip.css'
 import Tooltip from "rc-tooltip";
 import {Clickable} from "@components/widgets/Button.tsx";
 import {SearchInput} from "@components/widgets/Input.tsx";

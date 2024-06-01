@@ -3,7 +3,7 @@ import Play from "@components/svg/Play.tsx";
 import {MenuItem} from "@szhsin/react-menu";
 import {useTranslation} from "react-i18next";
 import Joi from "joi";
-import {roomNameValidate} from "src/form/validators.ts";
+import {roomNameValidate} from "../../form/validators.ts";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import {useForm} from "react-hook-form";
@@ -13,13 +13,13 @@ import {Input} from "@components/widgets/Input.tsx";
 import Help from "@components/widgets/Help.tsx";
 import {BtnPrimary, BtnSecondary} from "@components/widgets/Button.tsx";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
-import {showPersistentErrorAlert} from "../utils/alert.ts";
+import {showPersistentErrorAlert} from "../../utils/alert.ts";
 import {RoomId, RoomMap, RoomSrv, RoomValueClient} from "@models/room.ts";
 import Decimal from "decimal.js";
 
 export default function RoomCreate(): ReactElement {
     const {t} = useTranslation()
-    const {socket, setRooms, setRoomsLoading} = useMainContext()
+    const {socket, setRoomsLoading} = useMainContext()
     const [createRoomModalOpen, setCreateRoomModalOpen] = useState<boolean>(false);
     const formSchema = Joi.object({
         roomName: Joi
@@ -55,23 +55,9 @@ export default function RoomCreate(): ReactElement {
         setRoomsLoading(true)
         setCreateRoomModalOpen(false)
         socket!.emitWithAck("create_room", {room_name: data.roomName})
-            .then((ack: SocketIoAck<RoomSrv>) => {
+            .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err)
                     showPersistentErrorAlert(t('modal-create-room-error'))
-                else {
-                    const m: RoomMap = new Map<RoomId, RoomValueClient>()
-                    const room: RoomSrv = ack.payload as RoomSrv
-                    m.set(room.id, {
-                        name: room.name,
-                        desync_tolerance: new Decimal(room.desync_tolerance),
-                        major_desync_min: new Decimal(room.major_desync_min),
-                        minor_desync_playback_slow: new Decimal(room.minor_desync_playback_slow),
-                        playback_speed: new Decimal(room.playback_speed)
-                    })
-                    setRooms(p => {
-                        return new Map<RoomId, RoomValueClient>([...p, ...m])
-                    })
-                }
             })
             .catch(() => {
                 showPersistentErrorAlert(t('modal-create-room-error'))

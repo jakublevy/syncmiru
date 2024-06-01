@@ -1,3 +1,5 @@
+import {RoomId} from "@models/room.ts";
+
 export interface LoginFormHistoryState {
     email?: string,
     homeSrvError?: boolean
@@ -22,4 +24,8 @@ export interface ForgottenPasswordHistoryState {
 
 export interface MpvDownloadHistoryState {
     yt_dlp: boolean
+}
+
+export interface RoomSettingsHistoryState {
+    rid: RoomId
 }

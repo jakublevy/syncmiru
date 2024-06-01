@@ -12,8 +12,8 @@ export const MainContext = createContext<MainContextModel>(
         reconnecting: false,
         playlistLoading: false,
         rooms: new Map<RoomId, RoomValueClient>(),
-        roomsLoading: false,
         setRooms: (v) => {},
+        roomsLoading: false,
         setRoomsLoading: (v) => {},
         setPlaylistLoading: (v) => {}
     })

@@ -4,7 +4,7 @@ import Settings from "@components/svg/Settings.tsx";
 import Loading from "@components/Loading.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {useLocation} from "wouter";
-import {UserValueClient} from "src/models/user.ts";
+import {UserValueClient} from "@models/user.ts";
 import Avatar from "@components/widgets/Avatar.tsx";
 
 export default function CurrentUser(): ReactElement {
