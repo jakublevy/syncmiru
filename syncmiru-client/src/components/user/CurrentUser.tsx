@@ -1,4 +1,4 @@
-import React, {ReactElement} from "react";
+import React, {ReactElement, useEffect} from "react";
 import {Clickable} from "@components/widgets/Button.tsx";
 import Settings from "@components/svg/Settings.tsx";
 import Loading from "@components/Loading.tsx";
@@ -10,6 +10,10 @@ import Avatar from "@components/widgets/Avatar.tsx";
 export default function CurrentUser(): ReactElement {
     const [_, navigate] = useLocation()
     const {uid, users} = useMainContext()
+
+    useEffect(() => {
+        console.log(uid)
+    }, [uid]);
 
     function userSettingsClicked() {
         navigate('/main/user-settings/account')

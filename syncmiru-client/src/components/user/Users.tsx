@@ -1,14 +1,18 @@
 import React, {ReactElement, useEffect, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
-import {UserId, UserValueClient} from "@models/user.ts";
+import {UserId, UserSrv, UserValueClient} from "@models/user.ts";
 import Avatar from "@components/widgets/Avatar.tsx";
 import '../../rc-tooltip.css'
 import Tooltip from "rc-tooltip";
 import {Clickable} from "@components/widgets/Button.tsx";
 import {SearchInput} from "@components/widgets/Input.tsx";
 import {useTranslation} from "react-i18next";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
+import {navigateToLoginFormMain} from "src/utils/navigate.ts";
+import {useLocation} from "wouter";
 
 export default function Users(): ReactElement {
+    const [location, navigate] = useLocation()
     const {t} = useTranslation()
     const {socket, users} = useMainContext()
     const [onlineUsers, setOnlineUsers]
@@ -34,6 +38,14 @@ export default function Users(): ReactElement {
         if (socket !== undefined) {
             socket.on('online', onOnline)
             socket.on('offline', onOffline)
+
+            socket.emitWithAck("get_online")
+                .then((uids: Array<UserId>) => {
+                    setOnlineUids((p) => [...p, ...uids])
+                })
+                .catch(() => {
+                    navigateToLoginFormMain(navigate)
+                })
         }
     }, [socket]);
 
@@ -56,8 +68,8 @@ export default function Users(): ReactElement {
         setOfflineUsers(off)
     }, [users, onlineUids]);
 
-    function onOnline(uids: Array<UserId>) {
-        setOnlineUids((p) => [...p, ...uids])
+    function onOnline(uid: UserId) {
+        setOnlineUids((p) => [...p, uid])
     }
 
     function onOffline(uid: UserId) {

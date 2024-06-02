@@ -31,13 +31,10 @@ export default function Rooms(): ReactElement {
             socket.on('del_rooms', onDeleteRooms)
 
             socket.emitWithAck("get_rooms")
-                .then((ack: SocketIoAck<Array<RoomSrv>>) => {
-                    if (ack.status === SocketIoAckType.Err)
-                        showPersistentErrorAlert(t('rooms-fetch-error'))
-                    else
-                        addRoomsFromSrv(ack.payload as Array<RoomSrv>)
+                .then((rooms: Array<RoomSrv>) => {
+                    addRoomsFromSrv(rooms)
                 })
-                .catch(() => {
+                .catch((e) => {
                     showPersistentErrorAlert(t('rooms-fetch-error'))
                 })
                 .finally(() => {

@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
@@ -11,6 +10,9 @@ use crate::srvstate::SrvState;
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on_disconnect(disconnect);
+    s.on("get_users", get_users);
+    s.on("get_me", get_me);
+    s.on("get_online", get_online);
     s.on("get_user_sessions", get_user_sessions);
     s.on("delete_session", delete_session);
     s.on("sign_out", sign_out);
@@ -49,21 +51,42 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("delete_room", delete_room);
 
     let uid = state.socket2uid(&s).await;
-    let users = query::get_users(&state.db)
-        .await
-        .expect("db error");
     let user = query::get_user(&state.db, uid)
         .await
         .expect("db error");
 
-    s.emit("users", [&users]).ok();
-    s.broadcast().emit("users", [[user]]).ok();
-    s.emit("me", uid).ok();
+    s.broadcast().emit("users", user).ok();
+    s.broadcast().emit("online", uid).ok();
+}
 
+pub async fn get_users(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender
+) {
+    let users = query::get_users(&state.db)
+        .await
+        .expect("db error");
+    ack.send([users]).ok();
+}
+
+pub async fn get_me(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender
+) {
+    let uid = state.socket2uid(&s).await;
+    ack.send(uid).ok();
+}
+
+pub async fn get_online(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender
+) {
     let online_uids_lock = state.socket_uid.read().await;
     let online_uids = online_uids_lock.right_values().collect::<Vec<&Id>>();
-    s.emit("online", [&online_uids]).ok();
-    s.broadcast().emit("online", [[uid]]).ok();
+    ack.send([online_uids]).ok();
 }
 
 pub async fn get_user_sessions(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -138,7 +161,7 @@ pub async fn get_email(
     let email = query::get_email_by_uid(&state.db, uid)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<String>::ok(Some(email))).ok();
+    ack.send(email).ok();
 }
 
 pub async fn set_displayname(
@@ -384,8 +407,7 @@ pub async fn delete_avatar(
     s
         .emit("avatar_change", AvatarChange{uid, avatar: vec![]})
         .ok();
-
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    ack.send({}).ok();
 }
 
 pub async fn check_password(
@@ -622,7 +644,7 @@ pub async fn active_reg_tkns(
     let active_reg_tkns = query::get_active_reg_tkns(&state.db)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<Vec<RegTkn>>::ok(Some(active_reg_tkns))).ok();
+    ack.send([active_reg_tkns]).ok();
 }
 
 pub async fn inactive_reg_tkns(
@@ -633,7 +655,7 @@ pub async fn inactive_reg_tkns(
     let inactive_reg_tkns = query::get_inactive_reg_tkns(&state.db)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<Vec<RegTkn>>::ok(Some(inactive_reg_tkns))).ok();
+    ack.send([inactive_reg_tkns]).ok();
 }
 
 pub async fn check_reg_tkn_name_unique(
@@ -694,7 +716,7 @@ pub async fn get_default_playback_speed(
     let default_playback_speed = query::get_default_playback_speed(&state.db)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<Decimal>::ok(Some(default_playback_speed))).ok();
+    ack.send(default_playback_speed).ok();
 }
 
 pub async fn set_default_playback_speed(
@@ -720,10 +742,10 @@ pub async fn get_default_desync_tolerance(
     s: SocketRef,
     ack: AckSender
 ) {
-    let default_playback_speed = query::get_default_desync_tolerance(&state.db)
+    let default_desync_tolerance = query::get_default_desync_tolerance(&state.db)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<Decimal>::ok(Some(default_playback_speed))).ok();
+    ack.send(default_desync_tolerance).ok();
 }
 
 pub async fn set_default_desync_tolerance(
@@ -752,7 +774,7 @@ pub async fn get_default_major_desync_min(
     let default_major_desync_min = query::get_default_major_desync_min(&state.db)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<Decimal>::ok(Some(default_major_desync_min))).ok();
+    ack.send(default_major_desync_min).ok();
 }
 
 pub async fn set_default_major_desync_min(
@@ -781,7 +803,7 @@ pub async fn get_default_minor_desync_playback_slow(
     let minor_desync_playback_slow = query::get_default_minor_desync_playback_slow(&state.db)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<Decimal>::ok(Some(minor_desync_playback_slow))).ok();
+    ack.send(minor_desync_playback_slow).ok();
 }
 
 pub async fn set_default_minor_desync_playback_slow(
@@ -871,7 +893,7 @@ pub async fn get_rooms(
     let rooms = query::get_rooms(&state.db)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<Vec<Room>>::ok(Some(rooms))).ok();
+    ack.send([rooms]).ok();
 }
 
 pub async fn set_room_name(

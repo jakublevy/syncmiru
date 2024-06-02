@@ -21,14 +21,10 @@ export default function DesyncTolerance(p: Props): ReactElement {
         if (socket !== undefined) {
             socket.on('default_desync_tolerance', onDesyncTolerance)
             socket.emitWithAck("get_default_desync_tolerance")
-                .then((ack: SocketIoAck<string>) => {
-                    if (ack.status === SocketIoAckType.Err) {
-                        showPersistentErrorAlert(t('desync-tolerance-received-error'))
-                    } else {
-                        const desyncTolerance = new Decimal(ack.payload as string)
-                        setDesyncTolerance(desyncTolerance)
-                        setSliderDesyncTolerance(desyncTolerance.toNumber())
-                    }
+                .then((default_desync_tolerance: string) => {
+                    const desyncTolerance = new Decimal(default_desync_tolerance)
+                    setDesyncTolerance(desyncTolerance)
+                    setSliderDesyncTolerance(desyncTolerance.toNumber())
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('desync-tolerance-received-error'))

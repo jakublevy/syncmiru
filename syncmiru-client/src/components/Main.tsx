@@ -25,7 +25,6 @@ import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
 import {arrayBufferToBase64} from "src/utils/encoding.ts";
 import SrvSettings from "@components/srv/SrvSettings.tsx";
 import {RoomId, RoomMap, RoomValueClient} from "@models/room.ts";
-import {set} from "react-hook-form";
 import RoomSettings from "@components/rooms/RoomSettings.tsx";
 
 export default function Main(): ReactElement {
@@ -58,9 +57,24 @@ export default function Main(): ReactElement {
         s.on('disconnect', ioDisconnect)
         s.on('users', onUsers)
         s.on('new_login', onNewLogin)
-        s.on('me', onMe)
-
         setSocket(s)
+
+        s.emitWithAck("get_users")
+            .then((users: Array<UserSrv>) => {
+                setUsersFromSrv(users)
+            })
+            .catch(() => {
+                navigateToLoginFormMain(navigate)
+            })
+
+        s.emitWithAck("get_me")
+            .then((me: UserId) => {
+                setUid(me)
+            })
+            .catch(() => {
+                navigateToLoginFormMain(navigate)
+            })
+
         return () => {
             s.disconnect()
         };
@@ -99,7 +113,11 @@ export default function Main(): ReactElement {
         }
     }
 
-    function onUsers(users: Array<UserSrv>) {
+    function onUsers(user: UserSrv) {
+        setUsersFromSrv([user])
+    }
+
+    function setUsersFromSrv(users: Array<UserSrv>) {
         let m: UserMap = new Map<UserId, UserValueClient>();
         for (const user of users)
             m.set(user.id, {
@@ -147,10 +165,6 @@ export default function Main(): ReactElement {
         const m = new Map<UserId, UserValueClient>();
         m.set(payload.uid, user)
         setUsers((p) => new Map<UserId, UserValueClient>([...p, ...m]))
-    }
-
-    function onMe(uid: UserId) {
-        setUid(uid)
     }
 
     function shouldRender() {

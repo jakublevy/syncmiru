@@ -86,22 +86,19 @@ export default function RegTknsTable(p: Props): ReactElement {
                 socket.on("active_reg_tkns", onRegTkns)
                 socket.on("del_active_reg_tkns", onDeleteRegTkns)
                 socket.emitWithAck("active_reg_tkns")
-                    .then((ack: SocketIoAck<Array<RegTkn>>) => {
-                        if (ack.status === SocketIoAckType.Err)
-                            showPersistentErrorAlert(t('modal-active-reg-tkn-fetch-error'))
-                        else {
-                            const m: Map<RegTknId, RegTknValue> = new Map<RegTknId, RegTknValue>()
-                            for (const regTkn of ack.payload as Array<RegTkn>) {
-                                m.set(regTkn.id,
-                                    {
-                                        max_reg: regTkn.max_reg,
-                                        name: regTkn.name,
-                                        key: regTkn.key,
-                                        used: regTkn.used
-                                    } as RegTknValue)
-                            }
-                            setRegTkns(m)
+                    .then((active_reg_tkns: Array<RegTkn>) => {
+                        console.log(active_reg_tkns)
+                        const m: Map<RegTknId, RegTknValue> = new Map<RegTknId, RegTknValue>()
+                        for (const regTkn of active_reg_tkns) {
+                            m.set(regTkn.id,
+                                {
+                                    max_reg: regTkn.max_reg,
+                                    name: regTkn.name,
+                                    key: regTkn.key,
+                                    used: regTkn.used
+                                } as RegTknValue)
                         }
+                        setRegTkns(m)
                     })
                     .catch(() => {
                         showPersistentErrorAlert(t('modal-active-reg-tkn-fetch-error'))
@@ -110,26 +107,21 @@ export default function RegTknsTable(p: Props): ReactElement {
                         p.setLoading(false)
                     })
             } else {
+                socket.on("inactive_reg_tkns", onRegTkns)
+                socket.on("del_inactive_reg_tkns", onDeleteRegTkns)
                 socket.emitWithAck("inactive_reg_tkns")
-                    .then((ack: SocketIoAck<Array<RegTkn>>) => {
-                        socket.on("inactive_reg_tkns", onRegTkns)
-                        socket.on("del_inactive_reg_tkns", onDeleteRegTkns)
-                        if (ack.status === SocketIoAckType.Err)
-                            showPersistentErrorAlert(t('modal-inactive-reg-tkn-fetch-error'))
-
-                        else {
-                            const m: Map<RegTknId, RegTknValue> = new Map<RegTknId, RegTknValue>()
-                            for (const regTkn of ack.payload as Array<RegTkn>) {
-                                m.set(regTkn.id,
-                                    {
-                                        max_reg: regTkn.max_reg,
-                                        name: regTkn.name,
-                                        key: regTkn.key,
-                                        used: regTkn.used
-                                    } as RegTknValue)
-                            }
-                            setRegTkns(m)
+                    .then((inactive_reg_tkns: Array<RegTkn>) => {
+                        const m: Map<RegTknId, RegTknValue> = new Map<RegTknId, RegTknValue>()
+                        for (const regTkn of inactive_reg_tkns) {
+                            m.set(regTkn.id,
+                                {
+                                    max_reg: regTkn.max_reg,
+                                    name: regTkn.name,
+                                    key: regTkn.key,
+                                    used: regTkn.used
+                                } as RegTknValue)
                         }
+                        setRegTkns(m)
                     })
                     .catch(() => {
                         showPersistentErrorAlert(t('modal-inactive-reg-tkn-fetch-error'))
@@ -143,12 +135,10 @@ export default function RegTknsTable(p: Props): ReactElement {
 
     useEffect(() => {
         if(socket !== undefined) {
-            if (p.regTknType === RegTknType.Active) {
+            if (p.regTknType === RegTknType.Active)
                 socket.on("del_active_reg_tkns", onDeleteRegTkns)
-            }
-            else {
+            else
                 socket.on("del_inactive_reg_tkns", onDeleteRegTkns)
-            }
         }
     }, [deletingRegTknId]);
 

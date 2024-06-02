@@ -3,7 +3,6 @@ use sqlx::{Executor, PgPool, Postgres, Transaction};
 use crate::models::User;
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, Room, RoomSettings};
 use crate::models::query::UserSession;
-use crate::models::socketio::DesyncTolerance;
 use crate::result::Result;
 
 pub async fn username_unique(db: &PgPool, username: &str) -> Result<bool> {
@@ -640,7 +639,7 @@ pub async fn new_reg_tkn(
 pub async fn get_active_reg_tkns(db: &PgPool) -> Result<Vec<RegTkn>> {
     let query = r#"
         select id, name, key, max_reg, used from reg_tkn
-        where used < max_reg
+        where used < max_reg or max_reg is NULL
     "#;
     let reg_tkns = sqlx::query_as::<_, RegTkn>(query)
         .fetch_all(db)

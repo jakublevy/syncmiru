@@ -20,14 +20,10 @@ export default function PlaybackSpeed(p: Props): ReactElement {
         if (socket !== undefined) {
             socket.on('default_playback_speed', onPlaybackSpeed)
             socket.emitWithAck("get_default_playback_speed")
-                .then((ack: SocketIoAck<string>) => {
-                    if (ack.status === SocketIoAckType.Err) {
-                        showPersistentErrorAlert(t('playback-received-error'))
-                    } else {
-                        const speed = new Decimal(ack.payload as string)
-                        setPlaybackSpeed(speed)
-                        setSliderPlaybackSpeed(speed.toNumber())
-                    }
+                .then((default_playback_speed: string) => {
+                    const speed = new Decimal(default_playback_speed)
+                    setPlaybackSpeed(speed)
+                    setSliderPlaybackSpeed(speed.toNumber())
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('playback-received-error'))

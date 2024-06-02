@@ -10,14 +10,12 @@ import {ErrorBoundary} from "react-error-boundary";
 import StatusAlert from "react-status-alert";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-    <React.StrictMode>
-        <I18nextProvider i18n={i18n}>
-            <ErrorBoundary fallback={<div>Unrecoverable error</div>}>
-                <Suspense fallback={<Loading/>}>
-                    <StatusAlert/>
-                    <App/>
-                </Suspense>
-            </ErrorBoundary>
-        </I18nextProvider>
-    </React.StrictMode>
+    <I18nextProvider i18n={i18n}>
+        <ErrorBoundary fallback={<div>Unrecoverable error</div>}>
+            <Suspense fallback={<Loading/>}>
+                <StatusAlert/>
+                <App/>
+            </Suspense>
+        </ErrorBoundary>
+    </I18nextProvider>
 );
