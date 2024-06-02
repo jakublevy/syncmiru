@@ -4,7 +4,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, Room};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -45,6 +45,8 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("check_room_name_unique", check_room_name_unique);
     s.on("create_room", create_room);
     s.on("get_rooms", get_rooms);
+    s.on("set_room_name", set_room_name);
+    s.on("delete_room", delete_room);
 
     let uid = state.socket2uid(&s).await;
     let users = query::get_users(&state.db)
@@ -871,6 +873,45 @@ pub async fn get_rooms(
         .expect("db error");
     ack.send(SocketIoAck::<Vec<Room>>::ok(Some(rooms))).ok();
 }
+
+pub async fn set_room_name(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<RoomNameChange>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    query::set_room_name(&state.db, payload.rid, &payload.room_name)
+        .await
+        .expect("db error");
+
+    s.broadcast().emit("room_name_change", [[&payload]]).ok();
+    s.emit("room_name_change", [[payload]]).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn delete_room(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<IdStruct>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    query::delete_room(&state.db, payload.id)
+        .await
+        .expect("db error");
+
+    s.broadcast().emit("del_rooms", [[payload.id]]).ok();
+    s.emit("del_rooms", [[payload.id]]).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
     let mut uid_opt: Option<Id>;

@@ -868,3 +868,20 @@ pub async fn get_rooms(db: &PgPool) -> Result<Vec<Room>> {
         .await?;
     Ok(rooms)
 }
+
+pub async fn set_room_name(db: &PgPool, rid: Id, room_name: &str) -> Result<()> {
+    sqlx::query("update room set name = $1 where id = $2")
+        .bind(room_name)
+        .bind(rid)
+        .execute(db)
+        .await?;
+    Ok(())
+}
+
+pub async fn delete_room(db: &PgPool, rid: Id) -> Result<()> {
+    sqlx::query("delete from room where id = $1")
+        .bind(rid)
+        .execute(db)
+        .await?;
+    Ok(())
+}

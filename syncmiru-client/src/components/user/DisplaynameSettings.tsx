@@ -17,7 +17,7 @@ export default function DisplaynameSettings(p: Props): ReactElement {
     const {t} = useTranslation()
     const [open, setOpen] = useState<boolean>(false)
     const {socket, users, uid} = useMainContext()
-    const [displayname, setDisplayname] = useState<string>("")
+    const [displayname, setDisplayname] = useState<string>("N/A")
 
     const formSchema = Joi.object({
         displayname: Joi
@@ -44,7 +44,8 @@ export default function DisplaynameSettings(p: Props): ReactElement {
         const user = users.get(uid)
         if(user !== undefined)
             setDisplayname(user.displayname)
-
+        else
+            showPersistentErrorAlert(t('my-displayname-fetch-error'))
         p.setLoading(false)
     }, [users]);
 

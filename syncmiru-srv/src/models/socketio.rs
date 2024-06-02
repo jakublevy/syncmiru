@@ -149,6 +149,15 @@ pub struct RoomName {
     pub room_name: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct RoomNameChange {
+    #[validate(range(min = 1))]
+    pub rid: Id,
+
+    #[validate(custom(function = "validators::check_room_name"))]
+    pub room_name: String
+}
+
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize)]

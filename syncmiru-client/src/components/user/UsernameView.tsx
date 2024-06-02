@@ -1,16 +1,19 @@
 import {ReactElement, useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {useMainContext} from "@hooks/useMainContext.ts";
+import {showPersistentErrorAlert} from "../../utils/alert.ts";
 
 export default function UsernameView(p: Props): ReactElement {
     const {t} = useTranslation()
     const {users, uid} = useMainContext()
-    const [username, setUsername] = useState<string>("")
+    const [username, setUsername] = useState<string>("N/A")
 
     useEffect(() => {
         const user = users.get(uid)
         if(user !== undefined)
             setUsername(user.username)
+        else
+            showPersistentErrorAlert(t('my-username-fetch-error'))
 
         p.setLoading(false)
     }, [users]);

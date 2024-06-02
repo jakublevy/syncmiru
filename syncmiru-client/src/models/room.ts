@@ -25,3 +25,8 @@ export interface RoomSrv extends RoomValueSrv {
 }
 
 export type RoomMap = Map<RoomId, RoomValueClient>
+
+export interface RoomNameChange {
+    rid: number,
+    room_name: string
+}

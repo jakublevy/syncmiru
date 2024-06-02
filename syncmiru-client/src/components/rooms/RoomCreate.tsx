@@ -34,7 +34,7 @@ export default function RoomCreate(): ReactElement {
             .external(async (v: string, h) => {
                 let ack = await socket!.emitWithAck("check_room_name_unique", {room_name: v})
                 if(ack.status === SocketIoAckType.Err || (ack.status === SocketIoAckType.Ok && !ack.payload))
-                    return h.message({external: t('modal-create-room-not-unique')})
+                    return h.message({external: t('modal-room-name-not-unique')})
                 return v
             }),
     })
@@ -83,11 +83,11 @@ export default function RoomCreate(): ReactElement {
                     <form onSubmit={handleSubmit(createRoom)} noValidate>
                         <div className="flex flex-col">
                             <div className="flex justify-between">
-                                <Label htmlFor="roomName">{t('modal-create-room-name-label')}</Label>
+                                <Label htmlFor="roomName">{t('modal-room-name-label')}</Label>
                                 <Help
                                     tooltipId="roomName-help"
                                     className="w-4"
-                                    content={t('modal-create-room-name-help')}
+                                    content={t('modal-room-name-help')}
                                 />
                             </div>
                             <Input
