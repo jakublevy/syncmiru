@@ -38,10 +38,10 @@ export default function DeleteRoom(p: Props): ReactElement {
                 if (ack.status === SocketIoAckType.Ok)
                     navigateToMain(navigate)
                 else
-                    showPersistentErrorAlert("TODO")
+                    showPersistentErrorAlert(t('modal-room-delete-error'))
             })
             .catch(() => {
-                showPersistentErrorAlert("TODO")
+                showPersistentErrorAlert(t('modal-room-delete-error'))
             })
             .finally(() => p.setLoading(false))
     }
@@ -59,7 +59,7 @@ export default function DeleteRoom(p: Props): ReactElement {
             <ModalDelete
                 onDeleteConfirmed={roomDeleteConfirmed}
                 content={
-                    <p>Chcete opravdu smazat místnost s názvem "{room != null ? room.name : 'N/A'}"?</p>
+                    <p>{t('modal-room-delete-text')} "{room != null ? room.name : 'N/A'}"?</p>
                 }
                 open={showDeleteDialog}
                 setOpen={setShowDeleteDialog}

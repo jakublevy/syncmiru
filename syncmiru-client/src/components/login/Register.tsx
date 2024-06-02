@@ -142,7 +142,7 @@ export default function Register({regPubAllowed}: Props): ReactElement {
                                     <Help
                                         tooltipId="regTkn-help"
                                         className="w-4"
-                                        content="TODO"
+                                        content={t('reg-tkn-help')}
                                     />
                                 </div>
                                 <RegTknSrvValidate

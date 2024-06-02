@@ -34,7 +34,7 @@ export default function Rooms(): ReactElement {
                 .then((rooms: Array<RoomSrv>) => {
                     addRoomsFromSrv(rooms)
                 })
-                .catch((e) => {
+                .catch(() => {
                     showPersistentErrorAlert(t('rooms-fetch-error'))
                 })
                 .finally(() => {

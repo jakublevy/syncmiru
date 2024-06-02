@@ -41,6 +41,7 @@
   "register-title": "Registrace",
   "register-tkn-required-msg": "Volné registrace jsou momentálně uzavřeny. Registrovat se můžete pouze se znalostí tokenu, který vám musí vygenerovat oprávněná osoba.",
   "register-tkn-label": "Registrační token",
+  "reg-tkn-help": "Registrační token je 24 místný kód<br>a počet jeho použití může být limitován.",
   "username-label": "Uživatelské jméno",
   "username-help": "Uživatelské jméno je vaším identifikátorem na serveru,<br>je neměnné a musí obsahovat 4-16 znaků malých písmen a-z.",
   "displayname-label": "Zobrazené jméno",
@@ -307,5 +308,8 @@
   "room-settings-delete-label": "Smazat místnost",
   "modal-change-room-name-title": "Změna názvu místnosti",
   "modal-room-name-no-change-error": "Tato místnost aktuálně tento název používá",
-  "modal-room-name-change-error": "Došlo k chybě při změně názvu místnosti"
+  "modal-room-name-change-error": "Došlo k chybě při změně názvu místnosti",
+
+  "modal-room-delete-error": "Došlo k chybě při mazání místnosti",
+  "modal-room-delete-text": "Chcete opravdu smazat místnost s názvem"
 }
