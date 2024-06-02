@@ -44,8 +44,7 @@ export default function DisplaynameSettings(p: Props): ReactElement {
         const user = users.get(uid)
         if(user !== undefined)
             setDisplayname(user.displayname)
-        else
-            showPersistentErrorAlert(t('my-displayname-fetch-error'))
+
         p.setLoading(false)
     }, [users]);
 

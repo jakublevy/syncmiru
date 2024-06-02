@@ -23,8 +23,7 @@ export default function DeleteRoom(p: Props): ReactElement {
         const room = rooms.get(rid)
         if (room !== undefined)
             setRoom(room)
-        else
-            showPersistentErrorAlert(t('room-name-fetch-error'))
+
         p.setLoading(false)
     }, [rid, rooms]);
 

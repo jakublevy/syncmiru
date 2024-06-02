@@ -297,9 +297,6 @@
   "modal-create-room-error": "Došlo k chybě při vytváření nové místnosti",
 
   "rooms-fetch-error": "Došlo k chybě při získávání místností serveru",
-  "my-username-fetch-error": "Došlo k chybě při získávání vašeho uživatelského jména",
-  "my-displayname-fetch-error": "Došlo k chybě při získávání vašeho zobrazeného jména",
-  "room-name-fetch-error": "Došlo k chybě při získávání jména místnosti",
 
   "room-settings-nav-general": "Obecné",
   "room-settings-nav-sync": "Synchronizace",

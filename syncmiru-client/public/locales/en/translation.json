@@ -297,9 +297,6 @@
   "modal-create-room-error": "An error occurred while creating new room",
 
   "rooms-fetch-error": "An error occurred while fetching the server rooms",
-  "my-username-fetch-error": "An error occurred while fetching the your user name",
-  "my-displayname-fetch-error": "An error occurred while fetching the your display name",
-  "room-name-fetch-error": "An error occurred while fetching the room name",
 
   "room-settings-nav-general": "General",
   "room-settings-nav-sync": "Synchronization",
