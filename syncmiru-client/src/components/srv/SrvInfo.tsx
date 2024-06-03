@@ -1,7 +1,7 @@
-import {ReactElement, useState} from "react";
+import {ReactElement} from "react";
 import VSelect from "@components/svg/VSelect.tsx";
 import {Menu, MenuButton, MenuItem} from "@szhsin/react-menu";
-import "../../react-menu.css";
+import "src/react-menu.css";
 import Wrench from "@components/svg/Wrench.tsx";
 import {useLocation} from "wouter";
 import {useTranslation} from "react-i18next";
@@ -20,7 +20,7 @@ export default function SrvInfo({homeSrv}: Props): ReactElement {
             gap={8}
             align='center'
             menuButton={
-                <MenuButton className="hover:bg-gray-100 dark:hover:bg-gray-700 border h-12">
+                <MenuButton className="hover:bg-gray-100 dark:hover:bg-gray-700 border-l border-b border-t h-12">
                     <div className="flex items-center justify-between h-12 break-words">
                         <p className="text-sm max-w-[13.2rem] p-1">{homeSrv}</p>
                         <VSelect className="w-4 mr-2"/>

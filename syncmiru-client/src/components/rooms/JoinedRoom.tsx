@@ -4,7 +4,7 @@ import {Btn, Clickable} from "@components/widgets/Button.tsx";
 
 export default function JoinedRoom(): ReactElement {
     return (
-        <div className="flex justify-between items-center border p-2">
+        <div className="flex justify-between items-center border-l border-t border-b p-2">
             <div className="flex flex-col">
                 <p className="text-xs">Připojen</p>
                 <p>Seriály ČT</p>

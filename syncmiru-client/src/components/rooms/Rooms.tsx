@@ -11,6 +11,7 @@ import Settings from "@components/svg/Settings.tsx";
 import {useTranslation} from "react-i18next";
 import {useLocation, useRouter} from "wouter";
 import {RoomSettingsHistoryState} from "@models/historyState.ts";
+import Card from "@components/widgets/Card.tsx";
 
 export default function Rooms(): ReactElement {
     const {
@@ -110,7 +111,7 @@ export default function Rooms(): ReactElement {
         )
 
     return (
-        <div className="border flex-1 overflow-auto">
+        <div className="border-l flex-1 overflow-auto">
             <div className="flex flex-col p-1">
                 {[...rooms].map((item) => {
                     return (
@@ -123,7 +124,10 @@ export default function Rooms(): ReactElement {
                             <div className="flex-1"></div>
                             <div
                                 className="rounded hover:bg-gray-300 p-1 dark:hover:bg-gray-500 invisible group-hover:visible w-6"
-                                onClick={(e) => { e.stopPropagation(); settingsClicked(item[0]) } }
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    settingsClicked(item[0])
+                                }}
                             >
                                 <Settings/>
                             </div>
