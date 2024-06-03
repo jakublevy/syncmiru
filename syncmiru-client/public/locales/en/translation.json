@@ -259,8 +259,8 @@
   "email-not-received-error": "An error occurred while obtaining your email",
 
   "default-room-title": "Default room settings",
-  "default-room-player-title": "Player settings",
-  "default-room-sync-title": "Sync settings",
+  "room-settings-player-title": "Player settings",
+  "room-settings-sync-title": "Sync settings",
   "playback-title": "Playback speed",
   "default-room-desync-tolerance-title": "Desync tolerance",
   "default-room-desync-tolerance-help": "The maximum possible deviation of the players, which is not addressed.",
@@ -302,7 +302,7 @@
   "room-settings-nav-general": "General",
   "room-settings-nav-sync": "Synchronization",
   "room-settings-general-title": "General settings",
-  "room-settings-sync-title": "Player and synchronization settings",
+  "room-settings-player-sync-title": "Player and synchronization settings",
 
   "room-settings-name-label": "Name",
   "room-settings-delete-label": "Delete the room",

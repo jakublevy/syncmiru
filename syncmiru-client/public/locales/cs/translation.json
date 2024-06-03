@@ -259,8 +259,8 @@
   "email-not-received-error": "Došlo k chybě při získávání emailu",
 
   "default-room-title": "Výchozí nastavení místnosti",
-  "default-room-player-title": "Nastavení přehrávače",
-  "default-room-sync-title": "Nastavení synchronizace",
+  "room-settings-player-title": "Nastavení přehrávače",
+  "room-settings-sync-title": "Nastavení synchronizace",
   "playback-title": "Rychlost přehrávání",
   "default-room-desync-tolerance-title": "Tolerance desynchronizace",
   "default-room-desync-tolerance-help": "Maximální možná odchylka přehrávačů, která se neřeší.",
@@ -302,7 +302,7 @@
   "room-settings-nav-general": "Obecné",
   "room-settings-nav-sync": "Synchronizace",
   "room-settings-general-title": "Obecné nastavení",
-  "room-settings-sync-title": "Nastavení přehráváče a synchronizace",
+  "room-settings-player-sync-title": "Nastavení přehráváče a synchronizace",
 
   "room-settings-name-label": "Název",
   "room-settings-delete-label": "Smazat místnost",

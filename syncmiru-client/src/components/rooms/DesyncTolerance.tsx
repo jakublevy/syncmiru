@@ -16,11 +16,16 @@ export default function DesyncTolerance(p: Props): ReactElement {
     const [desyncTolerance, setDesyncTolerance] = useState<Decimal>();
     const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
     const [sliderDesyncTolerance, setSliderDesyncTolerance] = useState<number>(2.0)
+    const getEventName = p.rid == null ? "get_default_desync_tolerance" : "get_room_desync_tolerance"
+    const setEventName = p.rid == null ? "set_default_desync_tolerance" : "set_room_desync_tolerance"
+    const args = p.rid == null ? {} : {id: p.rid}
 
     useEffect(() => {
         if (socket !== undefined) {
-            socket.on('default_desync_tolerance', onDesyncTolerance)
-            socket.emitWithAck("get_default_desync_tolerance")
+            if(p.rid == null)
+                socket.on('default_desync_tolerance', onDesyncTolerance)
+
+            socket.emitWithAck(getEventName, args)
                 .then((ack: SocketIoAck<string>) => {
                     if(ack.status === SocketIoAckType.Err)
                         showPersistentErrorAlert(t('desync-tolerance-received-error'))
@@ -57,7 +62,7 @@ export default function DesyncTolerance(p: Props): ReactElement {
     function changeClicked() {
         p.setLoading(true)
         setEditModalOpen(false)
-        socket!.emitWithAck("set_default_desync_tolerance", {desync_tolerance: sliderDesyncTolerance})
+        socket!.emitWithAck(setEventName, {desync_tolerance: sliderDesyncTolerance, ...args})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
                     showPersistentErrorAlert(t('desync-tolerance-change-error'))
@@ -119,4 +124,5 @@ export default function DesyncTolerance(p: Props): ReactElement {
 
 interface Props {
     setLoading: (b: boolean) => void
+    rid?: number
 }

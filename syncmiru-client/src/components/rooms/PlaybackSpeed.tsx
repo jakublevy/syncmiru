@@ -15,14 +15,14 @@ export default function PlaybackSpeed(p: Props): ReactElement {
     const [playbackSpeed, setPlaybackSpeed] = useState<Decimal>()
     const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
     const [sliderPlaybackSpeed, setSliderPlaybackSpeed] = useState<number>(1.0)
-    const onEventName =  p.rid == null ? "default_playback_speed" : "room_playback_speed"
     const getEventName = p.rid == null ? "get_default_playback_speed" : "get_room_playback_speed"
     const setEventName = p.rid == null ? "set_default_playback_speed" : "set_room_playback_speed"
     const args = p.rid == null ? {} : {id: p.rid}
 
     useEffect(() => {
         if (socket !== undefined) {
-            socket.on(onEventName, onPlaybackSpeed)
+            if(p.rid == null)
+                socket.on("default_playback_speed", onPlaybackSpeed)
 
             socket.emitWithAck(getEventName, args)
                 .then((ack: SocketIoAck<string>) => {

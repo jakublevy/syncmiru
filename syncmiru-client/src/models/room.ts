@@ -35,3 +35,8 @@ export interface RoomPlaybackSpeed {
     id: RoomId,
     playback_speed: string
 }
+
+export interface RoomDesyncTolerance {
+    id: RoomId,
+    desync_tolerance: string
+}

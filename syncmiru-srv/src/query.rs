@@ -921,3 +921,40 @@ pub async fn set_room_playback_speed(
         Ok(false)
     }
 }
+
+pub async fn get_room_desync_tolerance(
+    db: &PgPool,
+    rid: Id
+) -> Result<Option<Decimal>> {
+    if let Some(desync_tolerance) = sqlx::query_as::<_, (Decimal,)>("select desync_tolerance from room where id = $1 limit 1")
+        .bind(rid)
+        .fetch_optional(db).await? {
+        Ok(Some(desync_tolerance.0))
+    }
+    else {
+        Ok(None)
+    }
+}
+
+pub async fn set_room_desync_tolerance(
+    db: &PgPool,
+    rid: Id,
+    desync_tolerance: &Decimal
+) -> Result<bool> {
+    let mut transaction = db.begin().await?;
+    if let Some(_) = sqlx::query_as::<_, (Id,)>("select id from room where id = $1 for update")
+        .bind(rid)
+        .fetch_optional(&mut *transaction)
+        .await? {
+        sqlx::query("update room set desync_tolerance = $1 where id = $2")
+            .bind(desync_tolerance)
+            .bind(rid)
+            .execute(&mut *transaction)
+            .await?;
+        transaction.commit().await?;
+        Ok(true)
+    }
+    else {
+        Ok(false)
+    }
+}

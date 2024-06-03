@@ -4,7 +4,7 @@ import {CloseBtn} from "@components/widgets/Button.tsx";
 import {navigateToMain} from "src/utils/navigate.ts";
 import {useTranslation} from "react-i18next";
 import PlaybackSpeed from "@components/rooms/PlaybackSpeed.tsx";
-import DesyncTolerance from "@components/srv/DesyncTolerance.tsx";
+import DesyncTolerance from "@components/rooms/DesyncTolerance.tsx";
 import MajorDesyncMin from "@components/srv/MajorDesyncMin.tsx";
 import Loading from "@components/Loading.tsx";
 import MinorDesyncPlaybackSlow from "@components/srv/MinorDesyncPlaybackSlow.tsx";
@@ -38,7 +38,7 @@ export default function DefaultRoom(): ReactElement {
                     <CloseBtn onClick={() => navigateToMain(navigate)}></CloseBtn>
                 </div>
                 <div className="m-8">
-                    <h2 className="text-xl font-semibold">{t('default-room-player-title')}</h2>
+                    <h2 className="text-xl font-semibold">{t('room-settings-player-title')}</h2>
                     <div className="flex flex-col mt-4 gap-y-6">
                         <PlaybackSpeed
                             setLoading={(b) => setPlaybackSpeedLoading(b)}
@@ -46,7 +46,7 @@ export default function DefaultRoom(): ReactElement {
                     </div>
                 </div>
                 <div className="m-8">
-                    <h2 className="text-xl font-semibold">{t('default-room-sync-title')}</h2>
+                    <h2 className="text-xl font-semibold">{t('room-settings-sync-title')}</h2>
                     <div className="flex flex-col mt-4 gap-y-6">
                         <DesyncTolerance
                             setLoading={(b) => setDesyncToleranceLoading(b)}

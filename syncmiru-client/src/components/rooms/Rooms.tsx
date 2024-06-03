@@ -1,14 +1,22 @@
 import {ReactElement, useEffect} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
-import {RoomId, RoomMap, RoomNameChange, RoomPlaybackSpeed, RoomSrv, RoomValueClient} from "@models/room.ts";
+import {
+    RoomDesyncTolerance,
+    RoomId,
+    RoomMap,
+    RoomNameChange,
+    RoomPlaybackSpeed,
+    RoomSrv,
+    RoomValueClient
+} from "@models/room.ts";
 import Decimal from "decimal.js";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import Play from "@components/svg/Play.tsx";
-import {Btn, Clickable} from "@components/widgets/Button.tsx";
+import {Clickable} from "@components/widgets/Button.tsx";
 import Settings from "@components/svg/Settings.tsx";
 import {useTranslation} from "react-i18next";
-import {useLocation, useRouter} from "wouter";
+import {useLocation} from "wouter";
 import {RoomSettingsHistoryState} from "@models/historyState.ts";
 
 export default function Rooms(): ReactElement {
@@ -29,6 +37,7 @@ export default function Rooms(): ReactElement {
             socket.on('room_name_change', onRoomNameChange)
             socket.on('del_rooms', onDeleteRooms)
             socket.on('room_playback_speed_change', onRoomPlaybackSpeedChange)
+            socket.on('room_desync_tolerance_change', onRoomDesyncToleranceChange)
 
             socket.emitWithAck("get_rooms")
                 .then((rooms: Array<RoomSrv>) => {
@@ -91,6 +100,27 @@ export default function Rooms(): ReactElement {
                         minor_desync_playback_slow: roomValue.minor_desync_playback_slow,
                         major_desync_min: roomValue.major_desync_min,
                         desync_tolerance: roomValue.desync_tolerance
+                    })
+                }
+            }
+            return m
+        })
+    }
+
+    function onRoomDesyncToleranceChange(roomDesyncToleranceChanges: Array<RoomDesyncTolerance>) {
+        setRooms((p) => {
+            const m: RoomMap = new Map<RoomId, RoomValueClient>()
+            for(const [id, value] of p)
+                m.set(id, value)
+            for(const roomDesyncToleranceChange of roomDesyncToleranceChanges) {
+                const roomValue = m.get(roomDesyncToleranceChange.id)
+                if(roomValue != null) {
+                    m.set(roomDesyncToleranceChange.id, {
+                        name: roomValue.name,
+                        playback_speed: roomValue.playback_speed,
+                        minor_desync_playback_slow: roomValue.minor_desync_playback_slow,
+                        major_desync_min: roomValue.major_desync_min,
+                        desync_tolerance: new Decimal(roomDesyncToleranceChange.desync_tolerance)
                     })
                 }
             }
