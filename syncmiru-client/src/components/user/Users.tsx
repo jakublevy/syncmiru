@@ -1,13 +1,12 @@
 import React, {ReactElement, useEffect, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
-import {UserId, UserSrv, UserValueClient} from "@models/user.ts";
+import {UserId, UserValueClient} from "@models/user.ts";
 import Avatar from "@components/widgets/Avatar.tsx";
-import '../../rc-tooltip.css'
+import 'src/rc-tooltip.css'
 import Tooltip from "rc-tooltip";
 import {Clickable} from "@components/widgets/Button.tsx";
 import {SearchInput} from "@components/widgets/Input.tsx";
 import {useTranslation} from "react-i18next";
-import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
 

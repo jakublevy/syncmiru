@@ -9,7 +9,7 @@ import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import {createMarks} from "src/utils/slider.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
-import {RoomDesyncTolerance, RoomPlaybackSpeed} from "@models/room.ts";
+import {RoomDesyncTolerance} from "@models/room.ts";
 
 export default function DesyncTolerance(p: Props): ReactElement {
     const {t} = useTranslation()

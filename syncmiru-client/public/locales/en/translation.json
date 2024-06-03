@@ -311,5 +311,7 @@
   "modal-room-name-change-error": "An error occurred while changing the name of the room",
 
   "modal-room-delete-error": "An error occurred while deleting the room",
-  "modal-room-delete-text": "Do you really want to delete the room with the name"
+  "modal-room-delete-text": "Do you really want to delete the room with the name",
+
+  "no-rooms-info": "No rooms"
 }

@@ -102,6 +102,7 @@ export default function Rooms(): ReactElement {
     return (
         <div className="border-l flex-1 overflow-auto">
             <div className="flex flex-col p-1">
+                {rooms.size === 0 && <p className="self-center mt-4">{t('no-rooms-info')}</p>}
                 {[...rooms].map((item) => {
                     return (
                         <Clickable

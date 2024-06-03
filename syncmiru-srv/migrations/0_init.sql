@@ -31,7 +31,7 @@ CREATE TABLE "room" (
                         "playback_speed" decimal(3,2) NOT NULL,
                         "desync_tolerance" decimal(2,1) NOT NULL,
                         "minor_desync_playback_slow" decimal(3,2) NOT NULL,
-                        "major_desync_min" decimal(2,1) NOT NULL,
+                        "major_desync_min" decimal(3,1) NOT NULL,
                         check (playback_speed >= 1 and playback_speed <= 2),
                         check (minor_desync_playback_slow >= 0.01 and minor_desync_playback_slow <= 0.1),
                         check (major_desync_min >= 4 and major_desync_min <= 10)
@@ -69,7 +69,7 @@ CREATE TABLE "settings" (
                                     "playback_speed" decimal(3,2) NOT NULL,
                                     "desync_tolerance" decimal(2,1) NOT NULL,
                                     "minor_desync_playback_slow" decimal(3,2) NOT NULL,
-                                    "major_desync_min" decimal(2,1) NOT NULL,
+                                    "major_desync_min" decimal(3,1) NOT NULL,
                                     "show_order" integer ARRAY,
                                     check (playback_speed >= 1 and playback_speed <= 2),
                                     check (minor_desync_playback_slow >= 0.01 and minor_desync_playback_slow <= 0.1),

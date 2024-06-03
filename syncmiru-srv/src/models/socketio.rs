@@ -176,6 +176,24 @@ pub struct RoomDesyncTolerance {
     pub desync_tolerance: Decimal
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct RoomMinorDesyncPlaybackSlow {
+    #[validate(range(min = 1))]
+    pub id: Id,
+
+    #[validate(custom(function = "validators::check_minor_desync_playback_slow"))]
+    pub minor_desync_playback_slow: Decimal
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct RoomMajorDesyncMin {
+    #[validate(range(min = 1))]
+    pub id: Id,
+
+    #[validate(custom(function = "validators::check_major_desync_min"))]
+    pub major_desync_min: Decimal
+}
+
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize)]

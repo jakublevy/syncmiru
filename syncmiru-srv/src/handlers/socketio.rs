@@ -4,7 +4,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -54,6 +54,10 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("set_room_playback_speed", set_room_playback_speed);
     s.on("get_room_desync_tolerance", get_room_desync_tolerance);
     s.on("set_room_desync_tolerance", set_room_desync_tolerance);
+    s.on("get_room_minor_desync_playback_slow", get_room_minor_desync_playback_slow);
+    s.on("set_room_minor_desync_playback_slow", set_room_minor_desync_playback_slow);
+    s.on("get_room_major_desync_min", get_room_major_desync_min);
+    s.on("set_room_major_desync_min", set_room_major_desync_min);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1018,6 +1022,92 @@ pub async fn set_room_desync_tolerance(
         return;
     }
     s.broadcast().emit("room_desync_tolerance", payload).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn get_room_minor_desync_playback_slow(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<IdStruct>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<Decimal>::err()).ok();
+        return;
+    }
+    let room_minor_desync_playback_slow_opt = query::get_room_minor_desync_playback_slow(&state.db, payload.id)
+        .await
+        .expect("db error");
+    if room_minor_desync_playback_slow_opt.is_none() {
+        ack.send(SocketIoAck::<Decimal>::err()).ok();
+        return;
+    }
+    let room_minor_desync_playback_slow = room_minor_desync_playback_slow_opt.unwrap();
+    ack.send(SocketIoAck::<Decimal>::ok(Some(room_minor_desync_playback_slow))).ok();
+}
+
+pub async fn set_room_minor_desync_playback_slow(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<RoomMinorDesyncPlaybackSlow>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let updated = query::set_room_minor_desync_playback_slow(&state.db, payload.id, &payload.minor_desync_playback_slow)
+        .await
+        .expect("db error");
+
+    if !updated {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    s.broadcast().emit("room_minor_desync_playback_slow", payload).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn get_room_major_desync_min(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<IdStruct>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<Decimal>::err()).ok();
+        return;
+    }
+    let room_major_desync_min_opt = query::get_room_major_desync_min(&state.db, payload.id)
+        .await
+        .expect("db error");
+    if room_major_desync_min_opt.is_none() {
+        ack.send(SocketIoAck::<Decimal>::err()).ok();
+        return;
+    }
+    let room_major_desync_min = room_major_desync_min_opt.unwrap();
+    ack.send(SocketIoAck::<Decimal>::ok(Some(room_major_desync_min))).ok();
+}
+
+pub async fn set_room_major_desync_min(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<RoomMajorDesyncMin>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let updated = query::set_room_major_desync_min(&state.db, payload.id, &payload.major_desync_min)
+        .await
+        .expect("db error");
+
+    if !updated {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    s.broadcast().emit("room_major_desync_min", payload).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 

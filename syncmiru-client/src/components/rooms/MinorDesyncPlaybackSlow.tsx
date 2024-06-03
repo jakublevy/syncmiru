@@ -19,11 +19,15 @@ export default function MinorDesyncPlaybackSlow(p: Props): ReactElement {
     const [playbackSpeedSlow, setPlaybackSpeedSlow] = useState<Decimal>()
     const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
     const [sliderPlaybackSpeedSlow, setSliderPlaybackSpeedSlow] = useState<number>(0.05)
+    const onEventName = p.rid == null ? 'default_minor_desync_playback_slow' : 'room_minor_desync_playback_slow'
+    const getEventName = p.rid == null ? "get_default_minor_desync_playback_slow" : "get_room_minor_desync_playback_slow"
+    const setEventName = p.rid == null ? "set_default_minor_desync_playback_slow" : "set_room_minor_desync_playback_slow"
+    const args = p.rid == null ? {} : {id: p.rid}
 
     useEffect(() => {
         if (socket !== undefined) {
-            socket.on('default_minor_desync_playback_slow', onMinorDesyncPlaybackSlow)
-            socket.emitWithAck("get_default_minor_desync_playback_slow")
+            socket.on(onEventName, onMinorDesyncPlaybackSlow)
+            socket.emitWithAck(getEventName, args)
                 .then((ack: SocketIoAck<string>) => {
                     if(ack.status === SocketIoAckType.Err)
                         showPersistentErrorAlert(t('minor-desync-playback-slow-received-error'))
@@ -56,7 +60,7 @@ export default function MinorDesyncPlaybackSlow(p: Props): ReactElement {
     function changeClicked() {
         p.setLoading(true)
         setEditModalOpen(false)
-        socket!.emitWithAck("set_default_minor_desync_playback_slow", {minor_desync_playback_slow: sliderPlaybackSpeedSlow})
+        socket!.emitWithAck(setEventName, {minor_desync_playback_slow: sliderPlaybackSpeedSlow, ...args})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
                     showPersistentErrorAlert(t('minor-desync-playback-slow-change-error'))
@@ -124,4 +128,5 @@ export default function MinorDesyncPlaybackSlow(p: Props): ReactElement {
 
 interface Props {
     setLoading: (b: boolean) => void
+    rid?: number
 }

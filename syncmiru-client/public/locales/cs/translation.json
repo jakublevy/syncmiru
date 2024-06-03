@@ -311,5 +311,7 @@
   "modal-room-name-change-error": "Došlo k chybě při změně názvu místnosti",
 
   "modal-room-delete-error": "Došlo k chybě při mazání místnosti",
-  "modal-room-delete-text": "Chcete opravdu smazat místnost s názvem"
+  "modal-room-delete-text": "Chcete opravdu smazat místnost s názvem",
+
+  "no-rooms-info": "Žádné místnosti"
 }

@@ -16,11 +16,15 @@ export default function MajorDesyncMin(p: Props): ReactElement {
     const [majorDesyncMin, setMajorDesyncMin] = useState<Decimal>();
     const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
     const [sliderMajorDesyncMin, setSliderMajorDesyncMin] = useState<number>(5.0)
+    const onEventName = p.rid == null ? 'default_major_desync_min' : 'room_major_desync_min'
+    const getEventName = p.rid == null ? "get_default_major_desync_min" : "get_room_major_desync_min"
+    const setEventName = p.rid == null ? "set_default_major_desync_min" : "set_room_major_desync_min"
+    const args = p.rid == null ? {} : {id: p.rid}
 
     useEffect(() => {
         if (socket !== undefined) {
-            socket.on('default_major_desync_min', onMajorDesyncMin)
-            socket.emitWithAck("get_default_major_desync_min")
+            socket.on(onEventName, onMajorDesyncMin)
+            socket.emitWithAck(getEventName, args)
                 .then((ack: SocketIoAck<string>) => {
                     if(ack.status === SocketIoAckType.Err)
                         showPersistentErrorAlert(t('major-desync-min-received-error'))
@@ -57,7 +61,7 @@ export default function MajorDesyncMin(p: Props): ReactElement {
     function changeClicked() {
         p.setLoading(true)
         setEditModalOpen(false)
-        socket!.emitWithAck("set_default_major_desync_min", {major_desync_min: sliderMajorDesyncMin})
+        socket!.emitWithAck(setEventName, {major_desync_min: sliderMajorDesyncMin, ...args})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
                     showPersistentErrorAlert(t('major-desync-min-change-error'))
@@ -119,4 +123,5 @@ export default function MajorDesyncMin(p: Props): ReactElement {
 
 interface Props {
     setLoading: (b: boolean) => void
+    rid?: number
 }

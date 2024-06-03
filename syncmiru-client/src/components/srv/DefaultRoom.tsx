@@ -5,9 +5,9 @@ import {navigateToMain} from "src/utils/navigate.ts";
 import {useTranslation} from "react-i18next";
 import PlaybackSpeed from "@components/rooms/PlaybackSpeed.tsx";
 import DesyncTolerance from "@components/rooms/DesyncTolerance.tsx";
-import MajorDesyncMin from "@components/srv/MajorDesyncMin.tsx";
+import MajorDesyncMin from "@components/rooms/MajorDesyncMin.tsx";
 import Loading from "@components/Loading.tsx";
-import MinorDesyncPlaybackSlow from "@components/srv/MinorDesyncPlaybackSlow.tsx";
+import MinorDesyncPlaybackSlow from "@components/rooms/MinorDesyncPlaybackSlow.tsx";
 
 export default function DefaultRoom(): ReactElement {
     const [_, navigate] = useLocation()

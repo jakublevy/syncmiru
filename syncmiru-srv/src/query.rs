@@ -951,3 +951,77 @@ pub async fn set_room_desync_tolerance(
         Ok(false)
     }
 }
+
+pub async fn get_room_minor_desync_playback_slow(
+    db: &PgPool,
+    rid: Id
+) -> Result<Option<Decimal>> {
+    if let Some(minor_desync_playback_slow) = sqlx::query_as::<_, (Decimal,)>("select minor_desync_playback_slow from room where id = $1 limit 1")
+        .bind(rid)
+        .fetch_optional(db).await? {
+        Ok(Some(minor_desync_playback_slow.0))
+    }
+    else {
+        Ok(None)
+    }
+}
+
+pub async fn set_room_minor_desync_playback_slow(
+    db: &PgPool,
+    rid: Id,
+    minor_desync_playback_slow: &Decimal
+) -> Result<bool> {
+    let mut transaction = db.begin().await?;
+    if let Some(_) = sqlx::query_as::<_, (Id,)>("select id from room where id = $1 for update")
+        .bind(rid)
+        .fetch_optional(&mut *transaction)
+        .await? {
+        sqlx::query("update room set minor_desync_playback_slow = $1 where id = $2")
+            .bind(minor_desync_playback_slow)
+            .bind(rid)
+            .execute(&mut *transaction)
+            .await?;
+        transaction.commit().await?;
+        Ok(true)
+    }
+    else {
+        Ok(false)
+    }
+}
+
+pub async fn get_room_major_desync_min(
+    db: &PgPool,
+    rid: Id
+) -> Result<Option<Decimal>> {
+    if let Some(major_desync_min) = sqlx::query_as::<_, (Decimal,)>("select major_desync_min from room where id = $1 limit 1")
+        .bind(rid)
+        .fetch_optional(db).await? {
+        Ok(Some(major_desync_min.0))
+    }
+    else {
+        Ok(None)
+    }
+}
+
+pub async fn set_room_major_desync_min(
+    db: &PgPool,
+    rid: Id,
+    major_desync_min: &Decimal
+) -> Result<bool> {
+    let mut transaction = db.begin().await?;
+    if let Some(_) = sqlx::query_as::<_, (Id,)>("select id from room where id = $1 for update")
+        .bind(rid)
+        .fetch_optional(&mut *transaction)
+        .await? {
+        sqlx::query("update room set major_desync_min = $1 where id = $2")
+            .bind(major_desync_min)
+            .bind(rid)
+            .execute(&mut *transaction)
+            .await?;
+        transaction.commit().await?;
+        Ok(true)
+    }
+    else {
+        Ok(false)
+    }
+}

@@ -9,6 +9,8 @@ import PlaybackSpeed from "@components/rooms/PlaybackSpeed.tsx";
 import {useHistoryState} from "wouter/use-browser-location";
 import {RoomSettingsHistoryState} from "@models/historyState.ts";
 import DesyncTolerance from "@components/rooms/DesyncTolerance.tsx";
+import MinorDesyncPlaybackSlow from "@components/rooms/MinorDesyncPlaybackSlow.tsx";
+import MajorDesyncMin from "@components/rooms/MajorDesyncMin.tsx";
 
 export default function RoomSyncSettings(): ReactElement {
     const [_, navigate] = useLocation()
@@ -16,10 +18,12 @@ export default function RoomSyncSettings(): ReactElement {
     const {rooms} = useMainContext()
     const [playbackSpeedLoading, setPlaybackSpeedLoading] = useState<boolean>(true)
     const [desyncToleranceLoading, setDesyncToleranceLoading] = useState<boolean>(true)
+    const [minorDesyncPlaybackSlow, setMinorDesyncPlaybackSlowLoading] = useState<boolean>(true)
+    const [majorDesyncMin, setMajorDesyncMinLoading] = useState<boolean>(true)
     const {t} = useTranslation()
 
     function showContent() {
-        return !playbackSpeedLoading && !desyncToleranceLoading
+        return !playbackSpeedLoading && !desyncToleranceLoading && !minorDesyncPlaybackSlow
     }
 
     return (
@@ -49,6 +53,14 @@ export default function RoomSyncSettings(): ReactElement {
                     <div className="flex flex-col mt-4 gap-y-6">
                         <DesyncTolerance
                             setLoading={(b) => setDesyncToleranceLoading(b)}
+                            rid={rid}
+                        />
+                        <MinorDesyncPlaybackSlow
+                            setLoading={(b) => setMinorDesyncPlaybackSlowLoading(b)}
+                            rid={rid}
+                        />
+                        <MajorDesyncMin
+                            setLoading={(b) => setMajorDesyncMinLoading(b)}
                             rid={rid}
                         />
                     </div>
