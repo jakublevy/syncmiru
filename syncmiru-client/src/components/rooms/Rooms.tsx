@@ -106,14 +106,14 @@ export default function Rooms(): ReactElement {
                 {[...rooms].map((item) => {
                     return (
                         <Clickable
-                            className="flex p-2 items-center gap-x-2 w-full group"
+                            className="flex p-2 items-center gap-x-2 w-full group break-words"
                             onClick={() => roomClicked(item[0])}
                         >
-                            <Play className="w-5"/>
-                            <p>{item[1].name}</p>
+                            <Play className="min-w-5 w-5"/>
+                            <p className="w-[9.2rem] text-left">{item[1].name}</p>
                             <div className="flex-1"></div>
                             <div
-                                className="rounded hover:bg-gray-300 p-1 dark:hover:bg-gray-500 invisible group-hover:visible w-6"
+                                className="rounded hover:bg-gray-300 p-1 dark:hover:bg-gray-500 invisible group-hover:visible min-w-6 w-6"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     settingsClicked(item[0])

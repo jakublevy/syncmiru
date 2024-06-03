@@ -91,6 +91,7 @@ export default function RoomCreate(): ReactElement {
                             <Input
                                 id="roomName"
                                 required
+                                maxLength={16}
                                 {...register('roomName')}
                             />
                             {errors.roomName

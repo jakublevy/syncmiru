@@ -144,5 +144,11 @@ pub fn check_room_name(room_name: &str) -> Result<(), ValidationError> {
     if room_name.len() < 1 || room_name.len() > 16 {
         return Err(ValidationError::new("invalid room_name length"));
     }
+    if room_name.chars().next().unwrap().is_whitespace() {
+        return Err(ValidationError::new("room_name starts with whitespace"))
+    }
+    if room_name.chars().rev().next().unwrap().is_whitespace() {
+        return Err(ValidationError::new("room_name ends with whitespace"))
+    }
     Ok(())
 }
