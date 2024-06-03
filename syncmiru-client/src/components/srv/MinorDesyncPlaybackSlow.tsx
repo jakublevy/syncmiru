@@ -24,10 +24,14 @@ export default function MinorDesyncPlaybackSlow(p: Props): ReactElement {
         if (socket !== undefined) {
             socket.on('default_minor_desync_playback_slow', onMinorDesyncPlaybackSlow)
             socket.emitWithAck("get_default_minor_desync_playback_slow")
-                .then((default_minor_desync_playback_slow: string) => {
-                    const speed = new Decimal(default_minor_desync_playback_slow)
-                    setPlaybackSpeedSlow(speed)
-                    setSliderPlaybackSpeedSlow(speed.toNumber())
+                .then((ack: SocketIoAck<string>) => {
+                    if(ack.status === SocketIoAckType.Err)
+                        showPersistentErrorAlert(t('minor-desync-playback-slow-received-error'))
+                    else {
+                        const speed = new Decimal(ack.payload as string)
+                        setPlaybackSpeedSlow(speed)
+                        setSliderPlaybackSpeedSlow(speed.toNumber())
+                    }
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('minor-desync-playback-slow-received-error'))

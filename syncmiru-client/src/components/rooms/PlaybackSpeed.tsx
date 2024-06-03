@@ -15,15 +15,24 @@ export default function PlaybackSpeed(p: Props): ReactElement {
     const [playbackSpeed, setPlaybackSpeed] = useState<Decimal>()
     const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
     const [sliderPlaybackSpeed, setSliderPlaybackSpeed] = useState<number>(1.0)
+    const onEventName =  p.rid == null ? "default_playback_speed" : "room_playback_speed"
+    const getEventName = p.rid == null ? "get_default_playback_speed" : "get_room_playback_speed"
+    const setEventName = p.rid == null ? "set_default_playback_speed" : "set_room_playback_speed"
+    const args = p.rid == null ? {} : {id: p.rid}
 
     useEffect(() => {
         if (socket !== undefined) {
-            socket.on('default_playback_speed', onPlaybackSpeed)
-            socket.emitWithAck("get_default_playback_speed")
-                .then((default_playback_speed: string) => {
-                    const speed = new Decimal(default_playback_speed)
-                    setPlaybackSpeed(speed)
-                    setSliderPlaybackSpeed(speed.toNumber())
+            socket.on(onEventName, onPlaybackSpeed)
+
+            socket.emitWithAck(getEventName, args)
+                .then((ack: SocketIoAck<string>) => {
+                    if(ack.status === SocketIoAckType.Err)
+                        showPersistentErrorAlert(t('playback-received-error'))
+                    else {
+                        const speed = new Decimal(ack.payload as string)
+                        setPlaybackSpeed(speed)
+                        setSliderPlaybackSpeed(speed.toNumber())
+                    }
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('playback-received-error'))
@@ -48,7 +57,7 @@ export default function PlaybackSpeed(p: Props): ReactElement {
     function changeClicked() {
         p.setLoading(true)
         setEditModalOpen(false)
-        socket!.emitWithAck("set_default_playback_speed", {playback_speed: sliderPlaybackSpeed})
+        socket!.emitWithAck(setEventName, {playback_speed: sliderPlaybackSpeed, ...args})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
                     showPersistentErrorAlert(t('playback-change-error'))
@@ -111,4 +120,5 @@ export default function PlaybackSpeed(p: Props): ReactElement {
 
 interface Props {
     setLoading: (b: boolean) => void
+    rid?: number
 }

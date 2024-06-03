@@ -884,3 +884,40 @@ pub async fn delete_room(db: &PgPool, rid: Id) -> Result<()> {
         .await?;
     Ok(())
 }
+
+pub async fn get_room_playback_speed(
+    db: &PgPool,
+    rid: Id
+) -> Result<Option<Decimal>> {
+    if let Some(playback_speed) = sqlx::query_as::<_, (Decimal,)>("select playback_speed from room where id = $1 limit 1")
+        .bind(rid)
+        .fetch_optional(db).await? {
+        Ok(Some(playback_speed.0))
+    }
+    else {
+        Ok(None)
+    }
+}
+
+pub async fn set_room_playback_speed(
+    db: &PgPool,
+    rid: Id,
+    playback_speed: &Decimal
+) -> Result<bool> {
+    let mut transaction = db.begin().await?;
+    if let Some(_) = sqlx::query_as::<_, (Id,)>("select id from room where id = $1 for update")
+        .bind(rid)
+        .fetch_optional(&mut *transaction)
+        .await? {
+        sqlx::query("update room set playback_speed = $1 where id = $2")
+            .bind(playback_speed)
+            .bind(rid)
+            .execute(&mut *transaction)
+            .await?;
+        transaction.commit().await?;
+        Ok(true)
+    }
+    else {
+        Ok(false)
+    }
+}

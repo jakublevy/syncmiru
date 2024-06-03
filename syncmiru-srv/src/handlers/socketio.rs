@@ -1,9 +1,10 @@
 use std::sync::Arc;
+use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, Room};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -49,6 +50,8 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("get_rooms", get_rooms);
     s.on("set_room_name", set_room_name);
     s.on("delete_room", delete_room);
+    s.on("get_room_playback_speed", get_room_playback_speed);
+    s.on("set_room_playback_speed", set_room_playback_speed);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -716,7 +719,7 @@ pub async fn get_default_playback_speed(
     let default_playback_speed = query::get_default_playback_speed(&state.db)
         .await
         .expect("db error");
-    ack.send(default_playback_speed).ok();
+    ack.send(SocketIoAck::<Decimal>::ok(Some(default_playback_speed))).ok();
 }
 
 pub async fn set_default_playback_speed(
@@ -745,7 +748,7 @@ pub async fn get_default_desync_tolerance(
     let default_desync_tolerance = query::get_default_desync_tolerance(&state.db)
         .await
         .expect("db error");
-    ack.send(default_desync_tolerance).ok();
+    ack.send(SocketIoAck::<Decimal>::ok(Some(default_desync_tolerance))).ok();
 }
 
 pub async fn set_default_desync_tolerance(
@@ -774,7 +777,7 @@ pub async fn get_default_major_desync_min(
     let default_major_desync_min = query::get_default_major_desync_min(&state.db)
         .await
         .expect("db error");
-    ack.send(default_major_desync_min).ok();
+    ack.send(SocketIoAck::<Decimal>::ok(Some(default_major_desync_min))).ok();
 }
 
 pub async fn set_default_major_desync_min(
@@ -803,7 +806,7 @@ pub async fn get_default_minor_desync_playback_slow(
     let minor_desync_playback_slow = query::get_default_minor_desync_playback_slow(&state.db)
         .await
         .expect("db error");
-    ack.send(minor_desync_playback_slow).ok();
+    ack.send(SocketIoAck::<Decimal>::ok(Some(minor_desync_playback_slow))).ok();
 }
 
 pub async fn set_default_minor_desync_playback_slow(
@@ -934,6 +937,50 @@ pub async fn delete_room(
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 
+pub async fn get_room_playback_speed(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<IdStruct>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<Decimal>::err()).ok();
+        return;
+    }
+    let playback_speed_opt = query::get_room_playback_speed(&state.db, payload.id)
+        .await
+        .expect("db error");
+    if playback_speed_opt.is_none() {
+        ack.send(SocketIoAck::<Decimal>::err()).ok();
+        return;
+    }
+    let playback_speed = playback_speed_opt.unwrap();
+    ack.send(SocketIoAck::<Decimal>::ok(Some(playback_speed))).ok();
+}
+
+pub async fn set_room_playback_speed(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<RoomPlaybackSpeed>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let updated = query::set_room_playback_speed(&state.db, payload.id, &payload.playback_speed)
+        .await
+        .expect("db error");
+
+    if !updated {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+
+    s.broadcast().emit("room_playback_speed_change", [[&payload]]).ok();
+    s.emit("room_playback_speed_change", [[payload]]).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
     let mut uid_opt: Option<Id>;

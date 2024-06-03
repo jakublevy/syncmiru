@@ -30,3 +30,8 @@ export interface RoomNameChange {
     rid: number,
     room_name: string
 }
+
+export interface RoomPlaybackSpeed {
+    id: RoomId,
+    playback_speed: string
+}

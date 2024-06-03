@@ -1,9 +1,8 @@
 import {ReactElement, useEffect} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
-import {RoomId, RoomMap, RoomNameChange, RoomSrv, RoomValueClient} from "@models/room.ts";
+import {RoomId, RoomMap, RoomNameChange, RoomPlaybackSpeed, RoomSrv, RoomValueClient} from "@models/room.ts";
 import Decimal from "decimal.js";
-import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import Play from "@components/svg/Play.tsx";
 import {Btn, Clickable} from "@components/widgets/Button.tsx";
@@ -11,7 +10,6 @@ import Settings from "@components/svg/Settings.tsx";
 import {useTranslation} from "react-i18next";
 import {useLocation, useRouter} from "wouter";
 import {RoomSettingsHistoryState} from "@models/historyState.ts";
-import Card from "@components/widgets/Card.tsx";
 
 export default function Rooms(): ReactElement {
     const {
@@ -30,6 +28,7 @@ export default function Rooms(): ReactElement {
             socket.on('rooms', onRooms)
             socket.on('room_name_change', onRoomNameChange)
             socket.on('del_rooms', onDeleteRooms)
+            socket.on('room_playback_speed_change', onRoomPlaybackSpeedChange)
 
             socket.emitWithAck("get_rooms")
                 .then((rooms: Array<RoomSrv>) => {
@@ -78,18 +77,39 @@ export default function Rooms(): ReactElement {
         })
     }
 
+    function onRoomPlaybackSpeedChange(roomPlaybackChanges: Array<RoomPlaybackSpeed>) {
+        setRooms((p) => {
+            const m: RoomMap = new Map<RoomId, RoomValueClient>()
+            for(const [id, value] of p)
+                m.set(id, value)
+            for(const roomPlaybackChange of roomPlaybackChanges) {
+                const roomValue = m.get(roomPlaybackChange.id)
+                if(roomValue != null) {
+                    m.set(roomPlaybackChange.id, {
+                        name: roomValue.name,
+                        playback_speed: new Decimal(roomPlaybackChange.playback_speed),
+                        minor_desync_playback_slow: roomValue.minor_desync_playback_slow,
+                        major_desync_min: roomValue.major_desync_min,
+                        desync_tolerance: roomValue.desync_tolerance
+                    })
+                }
+            }
+            return m
+        })
+    }
+
     function addRoomsFromSrv(rooms: Array<RoomSrv>) {
-        const m: RoomMap = new Map<RoomId, RoomValueClient>()
-        for (const room of rooms) {
-            m.set(room.id, {
-                name: room.name,
-                desync_tolerance: new Decimal(room.desync_tolerance),
-                major_desync_min: new Decimal(room.major_desync_min),
-                minor_desync_playback_slow: new Decimal(room.minor_desync_playback_slow),
-                playback_speed: new Decimal(room.playback_speed)
-            })
-        }
-        setRooms(p => {
+        setRooms((p) => {
+            const m: RoomMap = new Map<RoomId, RoomValueClient>()
+            for (const room of rooms) {
+                m.set(room.id, {
+                    name: room.name,
+                    desync_tolerance: new Decimal(room.desync_tolerance),
+                    major_desync_min: new Decimal(room.major_desync_min),
+                    minor_desync_playback_slow: new Decimal(room.minor_desync_playback_slow),
+                    playback_speed: new Decimal(room.playback_speed)
+                })
+            }
             return new Map<RoomId, RoomValueClient>([...p, ...m])
         })
     }

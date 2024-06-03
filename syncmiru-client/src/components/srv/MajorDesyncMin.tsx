@@ -21,10 +21,14 @@ export default function MajorDesyncMin(p: Props): ReactElement {
         if (socket !== undefined) {
             socket.on('default_major_desync_min', onMajorDesyncMin)
             socket.emitWithAck("get_default_major_desync_min")
-                .then((default_major_desync_min: string) => {
-                    const majorDesyncMin = new Decimal(default_major_desync_min)
-                    setMajorDesyncMin(majorDesyncMin)
-                    setSliderMajorDesyncMin(majorDesyncMin.toNumber())
+                .then((ack: SocketIoAck<string>) => {
+                    if(ack.status === SocketIoAckType.Err)
+                        showPersistentErrorAlert(t('major-desync-min-received-error'))
+                    else {
+                        const majorDesyncMin = new Decimal(ack.payload as string)
+                        setMajorDesyncMin(majorDesyncMin)
+                        setSliderMajorDesyncMin(majorDesyncMin.toNumber())
+                    }
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('major-desync-min-received-error'))

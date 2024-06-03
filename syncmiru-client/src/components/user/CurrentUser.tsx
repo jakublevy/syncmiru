@@ -11,10 +11,6 @@ export default function CurrentUser(): ReactElement {
     const [_, navigate] = useLocation()
     const {uid, users} = useMainContext()
 
-    useEffect(() => {
-        console.log(uid)
-    }, [uid]);
-
     function userSettingsClicked() {
         navigate('/main/user-settings/account')
     }

@@ -158,6 +158,15 @@ pub struct RoomNameChange {
     pub room_name: String
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct RoomPlaybackSpeed {
+    #[validate(range(min = 1))]
+    pub id: Id,
+
+    #[validate(custom(function = "validators::check_playback_speed"))]
+    pub playback_speed: Decimal
+}
+
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize)]

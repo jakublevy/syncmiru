@@ -1,18 +1,23 @@
-import {ReactElement} from "react";
+import {ReactElement, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {CloseBtn} from "@components/widgets/Button.tsx";
 import {navigateToMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
 import {useTranslation} from "react-i18next";
+import PlaybackSpeed from "@components/rooms/PlaybackSpeed.tsx";
+import {useHistoryState} from "wouter/use-browser-location";
+import {RoomSettingsHistoryState} from "@models/historyState.ts";
 
 export default function RoomSyncSettings(): ReactElement {
     const [_, navigate] = useLocation()
+    const {rid} = useHistoryState<RoomSettingsHistoryState>()
     const {rooms} = useMainContext()
+    const [playbackSpeedLoading, setPlaybackSpeedLoading] = useState<boolean>(true)
     const {t} = useTranslation()
 
     function showContent() {
-        return true
+        return !playbackSpeedLoading
     }
 
     return (
@@ -27,6 +32,15 @@ export default function RoomSyncSettings(): ReactElement {
                     <h1 className="text-2xl font-bold">{t('room-settings-sync-title')}</h1>
                     <div className="flex-1"></div>
                     <CloseBtn onClick={() => navigateToMain(navigate)}></CloseBtn>
+                </div>
+            </div>
+            <div className="m-8">
+                <h2 className="text-xl font-semibold">{t('default-room-player-title')}</h2>
+                <div className="flex flex-col mt-4 gap-y-6">
+                    <PlaybackSpeed
+                        setLoading={(b) => setPlaybackSpeedLoading(b)}
+                        rid={rid}
+                    />
                 </div>
             </div>
         </>

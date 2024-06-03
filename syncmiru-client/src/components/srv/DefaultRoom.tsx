@@ -3,7 +3,7 @@ import {useLocation} from "wouter";
 import {CloseBtn} from "@components/widgets/Button.tsx";
 import {navigateToMain} from "src/utils/navigate.ts";
 import {useTranslation} from "react-i18next";
-import PlaybackSpeed from "@components/srv/PlaybackSpeed.tsx";
+import PlaybackSpeed from "@components/rooms/PlaybackSpeed.tsx";
 import DesyncTolerance from "@components/srv/DesyncTolerance.tsx";
 import MajorDesyncMin from "@components/srv/MajorDesyncMin.tsx";
 import Loading from "@components/Loading.tsx";
