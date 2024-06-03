@@ -3,7 +3,7 @@ use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
-use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, Room};
+use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient};
 use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
@@ -877,13 +877,9 @@ pub async fn create_room(
         .await
         .expect("db error");
 
-    let room = Room {
+    let room = RoomClient {
         id: room_id,
-        name: payload.room_name,
-        playback_speed: default_room_settings.playback_speed,
-        desync_tolerance: default_room_settings.desync_tolerance,
-        minor_desync_playback_slow: default_room_settings.minor_desync_playback_slow,
-        major_desync_min: default_room_settings.major_desync_min
+        name: payload.room_name
     };
     s.broadcast().emit("rooms", [[&room]]).ok();
     s.emit("rooms", [[&room]]).ok();
@@ -978,9 +974,7 @@ pub async fn set_room_playback_speed(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-
-    s.broadcast().emit("room_playback_speed_change", [[&payload]]).ok();
-    s.emit("room_playback_speed_change", [[payload]]).ok();
+    s.broadcast().emit("room_playback_speed", payload).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 
@@ -1023,9 +1017,7 @@ pub async fn set_room_desync_tolerance(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-
-    s.broadcast().emit("room_desync_tolerance_change", [[&payload]]).ok();
-    s.emit("room_desync_tolerance_change", [[payload]]).ok();
+    s.broadcast().emit("room_desync_tolerance", payload).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 

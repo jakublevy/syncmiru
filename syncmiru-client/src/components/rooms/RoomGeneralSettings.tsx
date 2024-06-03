@@ -1,5 +1,4 @@
 import {ReactElement, useState} from "react";
-import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {CloseBtn} from "@components/widgets/Button.tsx";
 import {navigateToMain} from "src/utils/navigate.ts";

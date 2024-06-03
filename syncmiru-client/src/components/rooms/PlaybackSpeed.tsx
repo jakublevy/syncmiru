@@ -8,6 +8,7 @@ import Slider from "rc-slider";
 import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import Decimal from "decimal.js";
 import {createMarks} from "src/utils/slider.ts";
+import {RoomPlaybackSpeed} from "@models/room.ts";
 
 export default function PlaybackSpeed(p: Props): ReactElement {
     const {t} = useTranslation()
@@ -15,14 +16,14 @@ export default function PlaybackSpeed(p: Props): ReactElement {
     const [playbackSpeed, setPlaybackSpeed] = useState<Decimal>()
     const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
     const [sliderPlaybackSpeed, setSliderPlaybackSpeed] = useState<number>(1.0)
+    const onEventName = p.rid == null ? 'default_playback_speed' : 'room_playback_speed'
     const getEventName = p.rid == null ? "get_default_playback_speed" : "get_room_playback_speed"
     const setEventName = p.rid == null ? "set_default_playback_speed" : "set_room_playback_speed"
     const args = p.rid == null ? {} : {id: p.rid}
 
     useEffect(() => {
         if (socket !== undefined) {
-            if(p.rid == null)
-                socket.on("default_playback_speed", onPlaybackSpeed)
+            socket.on(onEventName, onPlaybackSpeed)
 
             socket.emitWithAck(getEventName, args)
                 .then((ack: SocketIoAck<string>) => {
@@ -43,8 +44,14 @@ export default function PlaybackSpeed(p: Props): ReactElement {
         }
     }, [socket]);
 
-    function onPlaybackSpeed(speed: string) {
-        setPlaybackSpeed(new Decimal(speed))
+    function onPlaybackSpeed(speed: string | RoomPlaybackSpeed) {
+        if(p.rid == null)
+            setPlaybackSpeed(new Decimal(speed as string))
+        else {
+            const s = speed as RoomPlaybackSpeed
+            if(s.id === p.rid)
+                setPlaybackSpeed(new Decimal(s.playback_speed))
+        }
     }
 
     function editClicked() {

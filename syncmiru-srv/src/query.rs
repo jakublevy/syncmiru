@@ -1,7 +1,7 @@
 use rust_decimal::Decimal;
 use sqlx::{Executor, PgPool, Postgres, Transaction};
 use crate::models::User;
-use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, Room, RoomSettings};
+use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomSettings};
 use crate::models::query::UserSession;
 use crate::result::Result;
 
@@ -851,18 +851,11 @@ pub async fn new_room(
     Ok(id.0)
 }
 
-pub async fn get_rooms(db: &PgPool) -> Result<Vec<Room>> {
+pub async fn get_rooms(db: &PgPool) -> Result<Vec<RoomClient>> {
     let query = r#"
-           select
-                id,
-                name,
-                playback_speed,
-                desync_tolerance,
-                minor_desync_playback_slow,
-                major_desync_min
-           from room
+           select id, name from room
     "#;
-    let rooms: Vec<Room> = sqlx::query_as::<_, Room>(query)
+    let rooms: Vec<RoomClient> = sqlx::query_as::<_, RoomClient>(query)
         .fetch_all(db)
         .await?;
     Ok(rooms)

@@ -9,6 +9,7 @@ import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import {createMarks} from "src/utils/slider.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
+import {RoomDesyncTolerance, RoomPlaybackSpeed} from "@models/room.ts";
 
 export default function DesyncTolerance(p: Props): ReactElement {
     const {t} = useTranslation()
@@ -16,15 +17,14 @@ export default function DesyncTolerance(p: Props): ReactElement {
     const [desyncTolerance, setDesyncTolerance] = useState<Decimal>();
     const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
     const [sliderDesyncTolerance, setSliderDesyncTolerance] = useState<number>(2.0)
+    const onEventName = p.rid == null ? 'default_desync_tolerance' : 'room_desync_tolerance'
     const getEventName = p.rid == null ? "get_default_desync_tolerance" : "get_room_desync_tolerance"
     const setEventName = p.rid == null ? "set_default_desync_tolerance" : "set_room_desync_tolerance"
     const args = p.rid == null ? {} : {id: p.rid}
 
     useEffect(() => {
         if (socket !== undefined) {
-            if(p.rid == null)
-                socket.on('default_desync_tolerance', onDesyncTolerance)
-
+            socket.on(onEventName, onDesyncTolerance)
             socket.emitWithAck(getEventName, args)
                 .then((ack: SocketIoAck<string>) => {
                     if(ack.status === SocketIoAckType.Err)
@@ -44,8 +44,14 @@ export default function DesyncTolerance(p: Props): ReactElement {
         }
     }, [socket]);
 
-    function onDesyncTolerance(desyncTolerance: string) {
-        setDesyncTolerance(new Decimal(desyncTolerance))
+    function onDesyncTolerance(desyncTolerance: string | RoomDesyncTolerance) {
+        if(p.rid == null)
+            setDesyncTolerance(new Decimal(desyncTolerance as string))
+        else {
+            const s = desyncTolerance as RoomDesyncTolerance
+            if(s.id === p.rid)
+                setDesyncTolerance(new Decimal(s.desync_tolerance))
+        }
     }
 
     function editClicked() {

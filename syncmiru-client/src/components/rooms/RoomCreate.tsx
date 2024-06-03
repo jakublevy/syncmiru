@@ -3,7 +3,7 @@ import Play from "@components/svg/Play.tsx";
 import {MenuItem} from "@szhsin/react-menu";
 import {useTranslation} from "react-i18next";
 import Joi from "joi";
-import {roomNameValidate} from "../../form/validators.ts";
+import {roomNameValidate} from "src/form/validators.ts";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import {useForm} from "react-hook-form";
@@ -13,9 +13,7 @@ import {Input} from "@components/widgets/Input.tsx";
 import Help from "@components/widgets/Help.tsx";
 import {BtnPrimary, BtnSecondary} from "@components/widgets/Button.tsx";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
-import {showPersistentErrorAlert} from "../../utils/alert.ts";
-import {RoomId, RoomMap, RoomSrv, RoomValueClient} from "@models/room.ts";
-import Decimal from "decimal.js";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
 
 export default function RoomCreate(): ReactElement {
     const {t} = useTranslation()

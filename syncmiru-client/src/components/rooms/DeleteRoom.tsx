@@ -5,18 +5,18 @@ import {ModalDelete} from "@components/widgets/Modal.tsx";
 import {useHistoryState} from "wouter/use-browser-location";
 import {RoomSettingsHistoryState} from "@models/historyState.ts";
 import {useMainContext} from "@hooks/useMainContext.ts";
-import {RoomValueClient} from "@models/room.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {useLocation} from "wouter";
-import {navigateToMain} from "../../utils/navigate.ts";
+import {navigateToMain} from "src/utils/navigate.ts";
+import {RoomValue} from "@models/room.ts";
 
 export default function DeleteRoom(p: Props): ReactElement {
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
     const {rid} = useHistoryState<RoomSettingsHistoryState>()
     const {rooms, socket} = useMainContext()
-    const [room, setRoom] = useState<RoomValueClient>()
+    const [room, setRoom] = useState<RoomValue>()
     const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false)
 
     useEffect(() => {
