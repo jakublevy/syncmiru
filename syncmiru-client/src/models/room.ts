@@ -24,3 +24,8 @@ export interface RoomDesyncTolerance {
     id: RoomId,
     desync_tolerance: string
 }
+
+export interface RoomsWOrder {
+    rooms: Array<RoomSrv>
+    room_order: Array<RoomId>
+}

@@ -15,9 +15,9 @@ export default function Middle(): ReactElement {
                 >
                     <Playlist/>
                 </Panel>
-                <PanelResizeHandle className="my-3 h-1 bg-slate-300 dark:bg-slate-400">
+                <PanelResizeHandle className="h-1 bg-slate-300 dark:bg-slate-400 group">
                     <div className="flex justify-center">
-                        <ResizableIndicator className="w-[0.8rem] fill-slate-400 dark:fill-slate-300 -mt-2.5"/>
+                        <ResizableIndicator className="w-[0.8rem] fill-slate-400 dark:fill-slate-300 -mt-2.5 invisible group-hover:visible group-active:visible"/>
                     </div>
                 </PanelResizeHandle>
                 <Panel

@@ -4,7 +4,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomsClientWOrder};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -693,12 +693,28 @@ pub async fn delete_reg_tkn(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-    query::delete_reg_tkn(&state.db, payload.id)
+    let mut transaction = state.db.begin().await.expect("db error");
+    let exists = query::reg_tkn_exists_for_update(&mut transaction, payload.id)
         .await
         .expect("db error");
-
-    s.broadcast().emit("del_active_reg_tkns", [[payload.id]]).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    if exists {
+        query::delete_reg_tkn(&mut transaction, payload.id)
+            .await
+            .expect("db error");
+        transaction
+            .commit()
+            .await
+            .expect("db error");
+        s.broadcast().emit("del_active_reg_tkns", [[payload.id]]).ok();
+        ack.send(SocketIoAck::<()>::ok(None)).ok();
+    }
+    else {
+        transaction
+            .commit()
+            .await
+            .expect("db error");
+        ack.send(SocketIoAck::<()>::err()).ok();
+    }
 }
 
 pub async fn get_reg_tkn_info(
@@ -870,14 +886,26 @@ pub async fn create_room(
         .await
         .expect("db error");
 
+    let mut transaction = state.db.begin().await.expect("db error");
     let room_id = query::new_room(
-        &state.db,
+        &mut transaction,
         &payload.room_name,
         &default_room_settings.playback_speed,
         &default_room_settings.desync_tolerance,
         &default_room_settings.minor_desync_playback_slow,
         &default_room_settings.major_desync_min
     )
+        .await
+        .expect("db error");
+    let mut room_order = query::get_room_order_for_update(&mut transaction)
+        .await
+        .expect("db error");
+    room_order.push(room_id);
+    query::set_room_order(&mut transaction, &room_order)
+        .await
+        .expect("db error");
+    transaction
+        .commit()
         .await
         .expect("db error");
 
@@ -895,10 +923,19 @@ pub async fn get_rooms(
     s: SocketRef,
     ack: AckSender
 ) {
-    let rooms = query::get_rooms(&state.db)
+    let mut transaction = state.db.begin().await.expect("db error");
+    let rooms = query::get_rooms_for_update(&mut transaction)
         .await
         .expect("db error");
-    ack.send([rooms]).ok();
+    let room_order = query::get_room_order_for_update(&mut transaction)
+        .await
+        .expect("db error");
+    transaction
+        .commit()
+        .await
+        .expect("db error");
+    let rooms_w_order = RoomsClientWOrder { room_order, rooms };
+    ack.send(rooms_w_order).ok();
 }
 
 pub async fn set_room_name(
@@ -930,13 +967,40 @@ pub async fn delete_room(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-    query::delete_room(&state.db, payload.id)
+    let mut transaction = state.db.begin().await.expect("db error");
+    let exists = query::room_exists_for_update(&mut transaction, payload.id)
         .await
         .expect("db error");
-
-    s.broadcast().emit("del_rooms", [[payload.id]]).ok();
-    s.emit("del_rooms", [[payload.id]]).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    if exists {
+        query::delete_room(&mut transaction, payload.id)
+            .await
+            .expect("db error");
+        let room_order = query::get_room_order_for_update(&mut transaction)
+            .await
+            .expect("db error");
+        let new_room_order = room_order
+            .iter()
+            .filter(|&x| *x != payload.id)
+            .map(|x|x.clone())
+            .collect::<Vec<Id>>();
+        query::set_room_order(&mut transaction, &new_room_order)
+            .await
+            .expect("db error");
+        transaction
+            .commit()
+            .await
+            .expect("db error");
+        s.broadcast().emit("del_rooms", [[payload.id]]).ok();
+        s.emit("del_rooms", [[payload.id]]).ok();
+        ack.send(SocketIoAck::<()>::ok(None)).ok();
+    }
+    else {
+        transaction
+            .commit()
+            .await
+            .expect("db error");
+        ack.send(SocketIoAck::<()>::err()).ok();
+    }
 }
 
 pub async fn get_room_playback_speed(

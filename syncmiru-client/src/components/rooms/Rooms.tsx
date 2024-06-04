@@ -1,11 +1,11 @@
-import {ReactElement, useEffect} from "react";
+import {ReactElement, useEffect, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {
     RoomId,
     RoomMap,
     RoomNameChange,
-    RoomSrv, RoomValue
+    RoomSrv, RoomsWOrder, RoomValue
 } from "@models/room.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import Play from "@components/svg/Play.tsx";
@@ -25,6 +25,7 @@ export default function Rooms(): ReactElement {
     } = useMainContext()
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
+    const [roomsOrder, setRoomsOrder] = useState<Array<RoomId>>([])
 
     useEffect(() => {
         if (socket !== undefined) {
@@ -34,8 +35,9 @@ export default function Rooms(): ReactElement {
             socket.on('del_rooms', onDeleteRooms)
 
             socket.emitWithAck("get_rooms")
-                .then((rooms: Array<RoomSrv>) => {
-                    addRoomsFromSrv(rooms)
+                .then((roomsWOrder: RoomsWOrder) => {
+                    addRoomsFromSrv(roomsWOrder.rooms)
+                    setRoomsOrder(roomsWOrder.room_order)
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('rooms-fetch-error'))
@@ -48,6 +50,9 @@ export default function Rooms(): ReactElement {
 
     function onRooms(rooms: Array<RoomSrv>) {
         addRoomsFromSrv(rooms)
+        setRoomsOrder((p) => {
+            return [...p, ...rooms.map(x => x.id)]
+        })
     }
 
     function onRoomNameChange(roomNameChanges: Array<RoomNameChange>) {
@@ -71,9 +76,13 @@ export default function Rooms(): ReactElement {
             }
             return m
         })
+        setRoomsOrder((p) => {
+            return p.filter(x => !roomIdsToDelete.includes(x))
+        })
     }
 
     function addRoomsFromSrv(rooms: Array<RoomSrv>) {
+        console.log(rooms)
         setRooms((p) => {
             const m: RoomMap = new Map<RoomId, RoomValue>()
             for (const room of rooms)
@@ -103,20 +112,24 @@ export default function Rooms(): ReactElement {
         <div className="border-l flex-1 overflow-auto">
             <div className="flex flex-col p-1">
                 {rooms.size === 0 && <p className="self-center mt-4">{t('no-rooms-info')}</p>}
-                {[...rooms].map((item) => {
+                {roomsOrder.map(id => {
+                    const roomValue = rooms.get(id)
+                    if(roomValue == null)
+                        return <></>
+
                     return (
                         <Clickable
                             className="flex p-2 items-center gap-x-2 w-full group break-words"
-                            onClick={() => roomClicked(item[0])}
+                            onClick={() => roomClicked(id)}
                         >
                             <Play className="min-w-5 w-5"/>
-                            <p className="w-[9.2rem] text-left">{item[1].name}</p>
+                            <p className="w-[9.2rem] text-left">{roomValue.name}</p>
                             <div className="flex-1"></div>
                             <div
                                 className="rounded hover:bg-gray-300 p-1 dark:hover:bg-gray-500 invisible group-hover:visible min-w-6 w-6"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    settingsClicked(item[0])
+                                    settingsClicked(id)
                                 }}
                             >
                                 <Settings/>

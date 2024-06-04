@@ -658,10 +658,26 @@ pub async fn get_inactive_reg_tkns(db: &PgPool) -> Result<Vec<RegTkn>> {
     Ok(reg_tkns)
 }
 
-pub async fn delete_reg_tkn(db: &PgPool, id: Id) -> Result<()> {
+pub async fn reg_tkn_exists_for_update(
+    db: &mut Transaction<'_, Postgres>,
+    id: Id
+) -> Result<bool> {
+    let v: Option<(Id, )> = sqlx::query_as("select id from room where id = $1 for update")
+        .bind(id)
+        .fetch_optional(&mut **db)
+        .await?;
+    if v.is_some() {
+        Ok(true)
+    }
+    else {
+        Ok(false)
+    }
+}
+
+pub async fn delete_reg_tkn(db: &mut Transaction<'_, Postgres>, id: Id) -> Result<()> {
     sqlx::query("delete from reg_tkn where id = $1")
         .bind(id)
-        .execute(db)
+        .execute(&mut **db)
         .await?;
     Ok(())
 }
@@ -827,7 +843,7 @@ pub async fn get_default_room_settings(db: &PgPool) -> Result<RoomSettings> {
 }
 
 pub async fn new_room(
-    db: &PgPool,
+    db: &mut Transaction<'_, Postgres>,
     name: &str,
     playback_speed: &Decimal,
     desync_tolerance: &Decimal,
@@ -846,7 +862,7 @@ pub async fn new_room(
         .bind(desync_tolerance)
         .bind(minor_desync_playback_slow)
         .bind(major_desync_min)
-        .fetch_one(db)
+        .fetch_one(&mut **db)
         .await?;
     Ok(id.0)
 }
@@ -861,6 +877,16 @@ pub async fn get_rooms(db: &PgPool) -> Result<Vec<RoomClient>> {
     Ok(rooms)
 }
 
+pub async fn get_rooms_for_update(db: &mut Transaction<'_, Postgres>) -> Result<Vec<RoomClient>> {
+    let query = r#"
+           select id, name from room for update
+    "#;
+    let rooms: Vec<RoomClient> = sqlx::query_as::<_, RoomClient>(query)
+        .fetch_all(&mut **db)
+        .await?;
+    Ok(rooms)
+}
+
 pub async fn set_room_name(db: &PgPool, rid: Id, room_name: &str) -> Result<()> {
     sqlx::query("update room set name = $1 where id = $2")
         .bind(room_name)
@@ -870,10 +896,10 @@ pub async fn set_room_name(db: &PgPool, rid: Id, room_name: &str) -> Result<()> 
     Ok(())
 }
 
-pub async fn delete_room(db: &PgPool, rid: Id) -> Result<()> {
+pub async fn delete_room(db: &mut Transaction<'_, Postgres>, rid: Id) -> Result<()> {
     sqlx::query("delete from room where id = $1")
         .bind(rid)
-        .execute(db)
+        .execute(&mut **db)
         .await?;
     Ok(())
 }
@@ -898,7 +924,7 @@ pub async fn set_room_playback_speed(
     playback_speed: &Decimal
 ) -> Result<bool> {
     let mut transaction = db.begin().await?;
-    if let Some(_) = sqlx::query_as::<_, (Id,)>("select id from room where id = $1 for update")
+    if let Some(_) = sqlx::query_as::<_, (Id,)>("select id from room where id = $1 for update limit 1")
         .bind(rid)
         .fetch_optional(&mut *transaction)
         .await? {
@@ -935,7 +961,7 @@ pub async fn set_room_desync_tolerance(
     desync_tolerance: &Decimal
 ) -> Result<bool> {
     let mut transaction = db.begin().await?;
-    if let Some(_) = sqlx::query_as::<_, (Id,)>("select id from room where id = $1 for update")
+    if let Some(_) = sqlx::query_as::<_, (Id,)>("select id from room where id = $1 for update limit 1")
         .bind(rid)
         .fetch_optional(&mut *transaction)
         .await? {
@@ -972,7 +998,7 @@ pub async fn set_room_minor_desync_playback_slow(
     minor_desync_playback_slow: &Decimal
 ) -> Result<bool> {
     let mut transaction = db.begin().await?;
-    if let Some(_) = sqlx::query_as::<_, (Id,)>("select id from room where id = $1 for update")
+    if let Some(_) = sqlx::query_as::<_, (Id,)>("select id from room where id = $1 for update limit 1")
         .bind(rid)
         .fetch_optional(&mut *transaction)
         .await? {
@@ -1009,7 +1035,7 @@ pub async fn set_room_major_desync_min(
     major_desync_min: &Decimal
 ) -> Result<bool> {
     let mut transaction = db.begin().await?;
-    if let Some(_) = sqlx::query_as::<_, (Id,)>("select id from room where id = $1 for update")
+    if let Some(_) = sqlx::query_as::<_, (Id,)>("select id from room where id = $1 for update limit 1")
         .bind(rid)
         .fetch_optional(&mut *transaction)
         .await? {
@@ -1019,6 +1045,42 @@ pub async fn set_room_major_desync_min(
             .execute(&mut *transaction)
             .await?;
         transaction.commit().await?;
+        Ok(true)
+    }
+    else {
+        Ok(false)
+    }
+}
+
+pub async fn get_room_order_for_update(
+    db: &mut Transaction<'_, Postgres>,
+) -> Result<Vec<Id>> {
+    let room_order = sqlx::query_as::<_, (Vec<Id>,)>("select room_order from settings for update limit 1")
+        .fetch_one(&mut **db)
+        .await?;
+    Ok(room_order.0)
+}
+
+pub async fn set_room_order(
+    db: &mut Transaction<'_, Postgres>,
+    room_order: &[Id]
+) -> Result<()> {
+    sqlx::query("update settings set room_order = $1")
+        .bind(room_order)
+        .execute(&mut **db)
+        .await?;
+    Ok(())
+}
+
+pub async fn room_exists_for_update(
+    db: &mut Transaction<'_, Postgres>,
+    rid: Id
+) -> Result<bool> {
+    let v: Option<(Id, )> = sqlx::query_as("select id from room where id = $1 for update")
+        .bind(rid)
+        .fetch_optional(&mut **db)
+        .await?;
+    if v.is_some() {
         Ok(true)
     }
     else {

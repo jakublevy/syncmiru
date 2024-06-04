@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use validator::Validate;
 use crate::validators;
-use crate::models::query::Id;
+use crate::models::query::{Id, RoomClient};
 
 #[derive(Debug, Clone, Deserialize, Validate)]
 pub struct LoginTkns {
@@ -192,6 +192,12 @@ pub struct RoomMajorDesyncMin {
 
     #[validate(custom(function = "validators::check_major_desync_min"))]
     pub major_desync_min: Decimal
+}
+
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct RoomsClientWOrder {
+    pub rooms: Vec<RoomClient>,
+    pub room_order: Vec<Id>
 }
 
 #[serde_with::serde_as]
