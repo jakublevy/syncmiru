@@ -2,6 +2,7 @@ use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use sqlx::PgPool;
 use validator::ValidationError;
+use crate::models::query::Id;
 use crate::query;
 
 pub fn check_username_format(username: &str) -> Result<(), ValidationError> {
@@ -149,6 +150,14 @@ pub fn check_room_name(room_name: &str) -> Result<(), ValidationError> {
     }
     if room_name.chars().rev().next().unwrap().is_whitespace() {
         return Err(ValidationError::new("room_name ends with whitespace"))
+    }
+    Ok(())
+}
+
+pub fn check_room_order(room_order: &Vec<Id>) -> Result<(), ValidationError> {
+    let valid = room_order.iter().all(|&x|x >= 1);
+    if !valid {
+        return Err(ValidationError::new("invalid room_order room id"));
     }
     Ok(())
 }

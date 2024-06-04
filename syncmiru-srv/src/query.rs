@@ -1076,7 +1076,7 @@ pub async fn room_exists_for_update(
     db: &mut Transaction<'_, Postgres>,
     rid: Id
 ) -> Result<bool> {
-    let v: Option<(Id, )> = sqlx::query_as("select id from room where id = $1 for update")
+    let v: Option<(Id, )> = sqlx::query_as("select id from room where id = $1 for update limit 1")
         .bind(rid)
         .fetch_optional(&mut **db)
         .await?;
@@ -1086,4 +1086,16 @@ pub async fn room_exists_for_update(
     else {
         Ok(false)
     }
+}
+
+pub async fn room_order_valid(
+    db: &mut Transaction<'_, Postgres>,
+    room_order: &[Id]
+) -> Result<bool> {
+    let ids = sqlx::query_as::<_, (Id,)>("select id from room where id in (select unnest($1::integer[])) for update")
+        .bind(room_order)
+        .fetch_all(&mut **db)
+        .await
+        .expect("db error");
+    Ok(ids.len() == room_order.len())
 }

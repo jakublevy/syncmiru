@@ -3,8 +3,8 @@ use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
-use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomsClientWOrder};
+use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -58,6 +58,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("set_room_minor_desync_playback_slow", set_room_minor_desync_playback_slow);
     s.on("get_room_major_desync_min", get_room_major_desync_min);
     s.on("set_room_major_desync_min", set_room_major_desync_min);
+    s.on("set_room_order", set_room_order);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1172,6 +1173,35 @@ pub async fn set_room_major_desync_min(
         return;
     }
     s.broadcast().emit("room_major_desync_min", payload).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn set_room_order(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<RoomOrder>
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let mut transaction = state.db.begin().await.expect("db error");
+    let valid = query::room_order_valid(&mut transaction, &payload.room_order)
+        .await
+        .expect("db error");
+    if !valid {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    query::set_room_order(&mut transaction, &payload.room_order)
+        .await
+        .expect("db error");
+    transaction
+        .commit()
+        .await
+        .expect("db error");
+    s.broadcast().emit("room_order", payload.room_order).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 

@@ -50,3 +50,9 @@ pub struct RoomClient {
     pub id: Id,
     pub name: String
 }
+
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct RoomsClientWOrder {
+    pub rooms: Vec<RoomClient>,
+    pub room_order: Vec<Id>
+}

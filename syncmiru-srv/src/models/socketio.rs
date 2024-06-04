@@ -194,9 +194,9 @@ pub struct RoomMajorDesyncMin {
     pub major_desync_min: Decimal
 }
 
-#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
-pub struct RoomsClientWOrder {
-    pub rooms: Vec<RoomClient>,
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct RoomOrder {
+    #[validate(custom(function = "validators::check_room_order"))]
     pub room_order: Vec<Id>
 }
 
