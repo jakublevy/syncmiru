@@ -1,4 +1,4 @@
-import React, {ReactElement, useEffect} from "react";
+import React, {ReactElement} from "react";
 import {Clickable} from "@components/widgets/Button.tsx";
 import Settings from "@components/svg/Settings.tsx";
 import Loading from "@components/Loading.tsx";

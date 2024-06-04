@@ -89,7 +89,6 @@ export default function Rooms(): ReactElement {
     }
 
     function addRoomsFromSrv(rooms: Array<RoomSrv>) {
-        console.log(rooms)
         setRooms((p) => {
             const m: RoomMap = new Map<RoomId, RoomValue>()
             for (const room of rooms)
@@ -166,6 +165,7 @@ export default function Rooms(): ReactElement {
                                     <p className="w-[9.2rem] text-left">{roomValue.name}</p>
                                     <div className="flex-1"></div>
                                     <div
+                                        role="button"
                                         className="rounded hover:bg-gray-300 p-1 dark:hover:bg-gray-500 invisible group-hover:visible min-w-6 w-6"
                                         onClick={(e) => {
                                             e.stopPropagation();

@@ -1201,7 +1201,7 @@ pub async fn set_room_order(
         .commit()
         .await
         .expect("db error");
-    s.broadcast().emit("room_order", payload.room_order).ok();
+    s.broadcast().emit("room_order", [payload.room_order]).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 

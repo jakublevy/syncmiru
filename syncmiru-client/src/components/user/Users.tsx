@@ -11,7 +11,7 @@ import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
 
 export default function Users(): ReactElement {
-    const [location, navigate] = useLocation()
+    const [_, navigate] = useLocation()
     const {t} = useTranslation()
     const {socket, users} = useMainContext()
     const [onlineUsers, setOnlineUsers]
