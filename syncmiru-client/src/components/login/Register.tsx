@@ -112,12 +112,10 @@ export default function Register({regPubAllowed}: Props): ReactElement {
     }
 
     function regTknValidationChanged(valid: boolean) {
-        console.log(`valid = ${valid}`)
         setRegTknValid(valid)
     }
 
     function regTknValidationError(error: string) {
-        console.log('error')
         setRegTknError(true)
     }
 

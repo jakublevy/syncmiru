@@ -87,7 +87,6 @@ export default function RegTknsTable(p: Props): ReactElement {
                 socket.on("del_active_reg_tkns", onDeleteRegTkns)
                 socket.emitWithAck("active_reg_tkns")
                     .then((active_reg_tkns: Array<RegTkn>) => {
-                        console.log(active_reg_tkns)
                         const m: Map<RegTknId, RegTknValue> = new Map<RegTknId, RegTknValue>()
                         for (const regTkn of active_reg_tkns) {
                             m.set(regTkn.id,
