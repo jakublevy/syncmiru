@@ -297,8 +297,6 @@
   "modal-room-name-not-unique": "A room with this name already exists",
   "modal-create-room-error": "An error occurred while creating new room",
 
-  "rooms-fetch-error": "An error occurred while fetching the server rooms",
-
   "room-settings-nav-general": "General",
   "room-settings-nav-sync": "Synchronization",
   "room-settings-general-title": "General settings",
@@ -313,5 +311,6 @@
   "modal-room-delete-error": "An error occurred while deleting the room",
   "modal-room-delete-text": "Do you really want to delete the room with the name",
 
-  "no-rooms-info": "No rooms"
+  "no-rooms-info": "No rooms",
+  "room-order-change-error": "An error occurred while changing the order of rooms"
 }

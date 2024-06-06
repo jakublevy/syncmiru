@@ -1,4 +1,4 @@
-import {ReactElement, useEffect, useState} from "react";
+import {ReactElement, useEffect, useState, MouseEvent} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {
@@ -9,13 +9,13 @@ import {
 } from "@models/room.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import Play from "@components/svg/Play.tsx";
-import {Clickable} from "@components/widgets/Button.tsx";
 import Settings from "@components/svg/Settings.tsx";
 import {useTranslation} from "react-i18next";
 import {useLocation} from "wouter";
 import {RoomSettingsHistoryState} from "@models/historyState.ts";
 import {arrayMove, List, OnChangeMeta, RenderListParams} from "react-movable";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
+import {navigateToLoginFormMain} from "../../utils/navigate.ts";
 
 export default function Rooms(): ReactElement {
     const {
@@ -28,6 +28,7 @@ export default function Rooms(): ReactElement {
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
     const [roomsOrder, setRoomsOrder] = useState<Array<RoomId>>([])
+    const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
 
     useEffect(() => {
         if (socket !== undefined) {
@@ -43,7 +44,7 @@ export default function Rooms(): ReactElement {
                     setRoomsOrder(roomsWOrder.room_order)
                 })
                 .catch(() => {
-                    showPersistentErrorAlert(t('rooms-fetch-error'))
+                    navigateToLoginFormMain(navigate)
                 })
                 .finally(() => {
                     setRoomsLoading(false)
@@ -63,7 +64,7 @@ export default function Rooms(): ReactElement {
             const m: RoomMap = new Map<RoomId, RoomValue>([...p])
             for (const roomNameChange of roomNameChanges) {
                 const roomValue = m.get(roomNameChange.rid)
-                if(roomValue != null)
+                if (roomValue != null)
                     m.set(roomNameChange.rid, {name: roomNameChange.room_name})
             }
             return m
@@ -73,8 +74,8 @@ export default function Rooms(): ReactElement {
     function onDeleteRooms(roomIdsToDelete: Array<RoomId>) {
         setRooms((p) => {
             const m: RoomMap = new Map<RoomId, RoomValue>()
-            for(const [id, roomValue] of p) {
-                if(!roomIdsToDelete.includes(id))
+            for (const [id, roomValue] of p) {
+                if (!roomIdsToDelete.includes(id))
                     m.set(id, roomValue)
             }
             return m
@@ -103,6 +104,7 @@ export default function Rooms(): ReactElement {
     }
 
     function roomClicked(rid: RoomId) {
+        console.log('room with id ' + rid + " clicked")
     }
 
     function orderChanged(e: OnChangeMeta) {
@@ -114,20 +116,31 @@ export default function Rooms(): ReactElement {
         })
         socket!.emitWithAck("set_room_order", {room_order: newOrder})
             .then((ack: SocketIoAck<null>) => {
-                if(ack.status === SocketIoAckType.Err) {
+                if (ack.status === SocketIoAckType.Err) {
                     setRoomsOrder(oldOrder)
-                    showPersistentErrorAlert("TODO chyba pri zmene poradi mistnosti")
+                    showPersistentErrorAlert(t('room-order-change-error'))
                 }
             })
             .catch(() => {
                 setRoomsOrder(oldOrder)
-                showPersistentErrorAlert("TODO chyba pri zmene poradi mistnosti")
+                showPersistentErrorAlert(t('room-order-change-error'))
             })
+    }
+
+    function onRoomMouseDown(e: MouseEvent<HTMLDivElement>, rid: RoomId) {
+        setMousePos([e.clientX, e.clientY])
+    }
+
+    function onRoomMouseUp(e: MouseEvent<HTMLDivElement>, rid: RoomId) {
+        const x = e.clientX - mousePos[0]
+        const y = e.clientY - mousePos[1]
+        if (x * x + y * y <= 25)
+            roomClicked(rid)
     }
 
     if (roomsLoading)
         return (
-            <div className="border flex-1 overflow-auto">
+            <div className="border-l flex-1 overflow-auto">
                 <div className="flex justify-center align-middle h-full">
                     <Loading/>
                 </div>
@@ -147,26 +160,27 @@ export default function Rooms(): ReactElement {
                     }}
                     renderItem={({value: id, props}) => {
                         const roomValue = rooms.get(id)
-                        if(roomValue == null)
+                        if (roomValue == null)
                             return <></>
                         return (
                             <li
                                 {...props}
                                 style={{
-                                ...props.style,
+                                    ...props.style,
                                     listStyleType: 'none'
                                 }}
                             >
                                 <div
-                                    className="flex p-2 items-center gap-x-2 w-full group break-words rounded hover:bg-gray-100 dark:hover:bg-gray-700 hover:cursor-pointer"
-                                    onClick={() => roomClicked(id)}
+                                    className='flex p-2 items-center gap-x-2 w-full group break-words rounded hover:bg-gray-100 dark:hover:bg-gray-700 hover:cursor-pointer'
+                                    onMouseDown={(e) => onRoomMouseDown(e, id)}
+                                    onMouseUp={(e) => onRoomMouseUp(e, id)}
                                 >
                                     <Play className="min-w-5 w-5"/>
                                     <p className="w-[9.2rem] text-left">{roomValue.name}</p>
                                     <div className="flex-1"></div>
                                     <div
                                         role="button"
-                                        className="rounded hover:bg-gray-300 p-1 dark:hover:bg-gray-500 invisible group-hover:visible min-w-6 w-6"
+                                        className='rounded hover:bg-gray-300 p-1 dark:hover:bg-gray-500 invisible group-hover:visible min-w-6 w-6'
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             settingsClicked(id)
@@ -183,7 +197,7 @@ export default function Rooms(): ReactElement {
 
                 {roomsOrder.map(id => {
                     const roomValue = rooms.get(id)
-                    if(roomValue == null)
+                    if (roomValue == null)
                         return <></>
                 })}
             </div>

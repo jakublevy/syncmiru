@@ -297,8 +297,6 @@
   "modal-room-name-not-unique": "Místnost s tímto názvem již existuje",
   "modal-create-room-error": "Došlo k chybě při vytváření nové místnosti",
 
-  "rooms-fetch-error": "Došlo k chybě při získávání místností serveru",
-
   "room-settings-nav-general": "Obecné",
   "room-settings-nav-sync": "Synchronizace",
   "room-settings-general-title": "Obecné nastavení",
@@ -313,5 +311,6 @@
   "modal-room-delete-error": "Došlo k chybě při mazání místnosti",
   "modal-room-delete-text": "Chcete opravdu smazat místnost s názvem",
 
-  "no-rooms-info": "Žádné místnosti"
+  "no-rooms-info": "Žádné místnosti",
+  "room-order-change-error": "Došlo k chybě při změně pořadí místností"
 }

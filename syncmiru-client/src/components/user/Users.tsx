@@ -9,11 +9,13 @@ import {SearchInput} from "@components/widgets/Input.tsx";
 import {useTranslation} from "react-i18next";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
+import Loading from "@components/Loading.tsx";
 
 export default function Users(): ReactElement {
     const [_, navigate] = useLocation()
     const {t} = useTranslation()
     const {socket, users} = useMainContext()
+    const [usersLoading, setUsersLoading] = useState<boolean>(true)
     const [onlineUsers, setOnlineUsers]
         = useState<Array<UserValueClient>>(new Array<UserValueClient>())
     const [offlineUsers, setOfflineUsers]
@@ -45,6 +47,9 @@ export default function Users(): ReactElement {
                 .catch(() => {
                     navigateToLoginFormMain(navigate)
                 })
+                .finally(() => {
+                    setUsersLoading(false)
+                })
         }
     }, [socket]);
 
@@ -52,7 +57,7 @@ export default function Users(): ReactElement {
         let on: Array<UserValueClient> = new Array<UserValueClient>();
         let off: Array<UserValueClient> = new Array<UserValueClient>();
         for (const uid of users.keys()) {
-            if(!users.get(uid)?.verified)
+            if (!users.get(uid)?.verified)
                 continue
 
             if (onlineUids.includes(uid)) {
@@ -76,25 +81,33 @@ export default function Users(): ReactElement {
     }
 
     function tooltipOnlineVisibilityChanged(visible: boolean, idx: number) {
-        if(!visible)
+        if (!visible)
             setClickedOnlineIdx(-1)
         else
             setClickedOnlineIdx(idx)
     }
 
     function tooltipOfflineVisibilityChanged(visible: boolean, idx: number) {
-        if(!visible)
+        if (!visible)
             setClickedOfflineIdx(-1)
         else
             setClickedOfflineIdx(idx)
     }
+
+    if (usersLoading)
+        return (
+            <div className="flex justify-center align-middle h-full">
+                <Loading/>
+            </div>
+        )
 
     return (
         <div className="flex flex-col overflow-auto h-dvh -mt-1">
             <SearchInput className="mt-3 ml-3 mr-3" value={searchValue} setValue={setSearchValue}/>
             {onlineUsersFiltered.length === 0 && offlineUsersFiltered.length === 0
                 && <p className="text-center mt-4">{t('users-no-user-exists-filter')}</p>}
-            {onlineUsersFiltered.length > 0 && <p className="text-xs pt-4 pl-4 pb-1">Online ({onlineUsersFiltered.length})</p>}
+            {onlineUsersFiltered.length > 0 &&
+                <p className="text-xs pt-4 pl-4 pb-1">Online ({onlineUsersFiltered.length})</p>}
             {onlineUsersFiltered.map((u, i) => {
                 return (
                     <Tooltip onVisibleChange={(e) => tooltipOnlineVisibilityChanged(e, i)}
@@ -102,15 +115,15 @@ export default function Users(): ReactElement {
                              placement="bottom"
                              trigger={['click']}
                              overlay={
-                        <div key={`${i}`} className="flex items-center w-[12.3rem]">
-                            <Avatar key={`${i}_avatar`} className="min-w-20 w-20 mr-3" picBase64={u.avatar}/>
-                            <div key={`${i}_flex`} className="flex flex-col items-start justify-center">
-                                <p key={`${i}_displayname`}
-                                   className="break-words max-w-[7.1rem] text-xl">{u.displayname}</p>
-                                <p key={`${i}_username`} className="text-sm -mt-1">{u.username}</p>
-                            </div>
-                        </div>
-                    }>
+                                 <div key={`${i}`} className="flex items-center w-[12.3rem]">
+                                     <Avatar key={`${i}_avatar`} className="min-w-20 w-20 mr-3" picBase64={u.avatar}/>
+                                     <div key={`${i}_flex`} className="flex flex-col items-start justify-center">
+                                         <p key={`${i}_displayname`}
+                                            className="break-words max-w-[7.1rem] text-xl">{u.displayname}</p>
+                                         <p key={`${i}_username`} className="text-sm -mt-1">{u.username}</p>
+                                     </div>
+                                 </div>
+                             }>
                         <a href="#">
                             <div key={`${i}_flex`} className="flex items-center">
                                 <Clickable key={`${i}_clickable`}
@@ -126,7 +139,8 @@ export default function Users(): ReactElement {
                 )
             })}
 
-            {offlineUsersFiltered.length > 0 && <p className="text-xs pt-4 pl-4 pb-1">Offline ({offlineUsersFiltered.length})</p>}
+            {offlineUsersFiltered.length > 0 &&
+                <p className="text-xs pt-4 pl-4 pb-1">Offline ({offlineUsersFiltered.length})</p>}
             {offlineUsersFiltered.map((u, i) => {
                 return (
                     <Tooltip onVisibleChange={(e) => tooltipOfflineVisibilityChanged(e, i)}
