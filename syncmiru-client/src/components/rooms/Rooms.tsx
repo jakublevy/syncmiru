@@ -148,59 +148,58 @@ export default function Rooms(): ReactElement {
         )
 
     return (
-        <div className="border-l flex-1 overflow-auto">
-            <div className="flex flex-col p-1">
-                {rooms.size === 0 && <p className="self-center mt-4">{t('no-rooms-info')}</p>}
-
-                <List
-                    onChange={orderChanged}
-                    values={roomsOrder}
-                    renderList={({children, props}: RenderListParams) => {
-                        return <ul {...props}>{children}</ul>
-                    }}
-                    renderItem={({value: id, props}) => {
-                        const roomValue = rooms.get(id)
-                        if (roomValue == null)
-                            return <></>
-                        return (
-                            <li
-                                {...props}
-                                style={{
-                                    ...props.style,
-                                    listStyleType: 'none'
-                                }}
-                            >
-                                <div
-                                    className='flex p-2 items-center gap-x-2 w-full group break-words rounded hover:bg-gray-100 dark:hover:bg-gray-700 hover:cursor-pointer'
-                                    onMouseDown={(e) => onRoomMouseDown(e, id)}
-                                    onMouseUp={(e) => onRoomMouseUp(e, id)}
-                                >
-                                    <Play className="min-w-5 w-5"/>
-                                    <p className="w-[9.2rem] text-left">{roomValue.name}</p>
-                                    <div className="flex-1"></div>
-                                    <div
-                                        role="button"
-                                        className='rounded hover:bg-gray-300 p-1 dark:hover:bg-gray-500 invisible group-hover:visible min-w-6 w-6'
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            settingsClicked(id)
-                                        }}
-                                    >
-                                        <Settings/>
-                                    </div>
-                                </div>
-                            </li>
-                        )
-                    }
-                    }
-                />
-
-                {roomsOrder.map(id => {
+        <>
+            {rooms.size === 0
+                && <div className="border-l flex-1 overflow-auto flex flex-col p-1">
+                    <p className="self-center mt-4">{t('no-rooms-info')}</p>
+                </div>}
+            <List
+                onChange={orderChanged}
+                values={roomsOrder}
+                renderList={({children, props}: RenderListParams) => {
+                    return (
+                        <ul
+                            {...props}
+                            className="border-l flex-1 overflow-auto p-1"
+                        >{children}</ul>
+                    )
+                }}
+                renderItem={({value: id, props}) => {
                     const roomValue = rooms.get(id)
                     if (roomValue == null)
                         return <></>
-                })}
-            </div>
-        </div>
+                    return (
+                        <li
+                            {...props}
+                            style={{
+                                ...props.style,
+                                listStyleType: 'none'
+                            }}
+                        >
+                            <div
+                                className='flex p-2 items-center gap-x-2 w-full group break-words rounded hover:bg-gray-100 dark:hover:bg-gray-700 hover:cursor-pointer'
+                                onMouseDown={(e) => onRoomMouseDown(e, id)}
+                                onMouseUp={(e) => onRoomMouseUp(e, id)}
+                            >
+                                <Play className="min-w-5 w-5"/>
+                                <p className="w-[9.2rem] text-left">{roomValue.name}</p>
+                                <div className="flex-1"></div>
+                                <div
+                                    role="button"
+                                    className='rounded hover:bg-gray-300 p-1 dark:hover:bg-gray-500 invisible group-hover:visible min-w-6 w-6'
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        settingsClicked(id)
+                                    }}
+                                >
+                                    <Settings/>
+                                </div>
+                            </div>
+                        </li>
+                    )
+                }
+                }
+            />
+        </>
     )
 }
