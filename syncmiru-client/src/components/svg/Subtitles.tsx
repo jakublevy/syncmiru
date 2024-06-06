@@ -23,7 +23,7 @@ export default function Subtitles({className}: Props): ReactElement {
                     />
                 </g>
             </g>
-            <path className="fill-white dark:fill-darkbg" d="M16 0H44.66V19.89H16z"/>
+            <path className="fill-white dark:fill-darkbg" d="M16 0H45.66V19.89H16z"/>
             <path
                 fill="transparent"
                 d="M17.24 1.05H41.93V25.740000000000002H17.24z"

@@ -25,8 +25,8 @@ export default function ButtonPanel(): ReactElement {
             <ExpandLeft className="h-7 w-min"/>
             <BubbleCrossed className="h-7 w-min"/>
             <Bubble className="h-7 w-min"/>
-            <SubtitlesCrossed className="h-7 w-min"/>
             <Subtitles className="h-7 w-min"/>
+            <SubtitlesCrossed className="h-7 w-min"/>
             <Server className="h-7 w-min"/>
         </div>
     )
