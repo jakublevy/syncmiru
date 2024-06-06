@@ -1,9 +1,9 @@
-import * as React from "react"
+import {ReactElement} from "react";
 
 // Source: https://www.svgrepo.com/svg/341256/user-avatar-filled
 // License: Apache License
 
-export default function DefaultAvatar({className}: Props) {
+export default function DefaultAvatar({className}: Props): ReactElement {
     return (
         <svg
             id="icon"

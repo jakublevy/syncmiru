@@ -1,5 +1,8 @@
 import {ReactElement} from "react";
 
+// Source: https://www.svgrepo.com/svg/379379/expand-left
+// License: CC Attribution License
+
 export default function ExpandLeft({className}: Props): ReactElement {
     return (
         <svg

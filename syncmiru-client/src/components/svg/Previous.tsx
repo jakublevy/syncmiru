@@ -1,7 +1,7 @@
 import {ReactElement} from "react";
 
 // Source: https://www.svgrepo.com/svg/459465/left-circle-2
-// License: CC Attribution
+// License: CC Attribution License
 
 export default function Previous({className}: Props): ReactElement {
     return (
