@@ -1,6 +1,6 @@
 import {ReactElement} from "react";
 
-// Source: https://www.svgrepo.com/svg/315699/dock-bottom
+// Source: https://www.svgrepo.com/svg/379887/collapse-right
 // License: MIT
 
 export default function CollapseRight({className}: Props): ReactElement {

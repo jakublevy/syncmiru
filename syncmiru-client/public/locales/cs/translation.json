@@ -312,5 +312,7 @@
   "modal-room-delete-text": "Chcete opravdu smazat místnost s názvem",
 
   "no-rooms-info": "Žádné místnosti",
-  "room-order-change-error": "Došlo k chybě při změně pořadí místností"
+  "room-order-change-error": "Došlo k chybě při změně pořadí místností",
+
+  "ready-btn": "Připraven"
 }

@@ -1,8 +1,7 @@
 import {createContext, useContext} from "react";
 import {MainContextModel} from "@models/context.ts";
 import {UserId, UserValueClient} from "src/models/user.ts";
-import {boolean} from "joi";
-import {RoomId, RoomValueClient} from "@models/room.ts";
+import {RoomId, RoomValue} from "@models/room.ts";
 
 export const MainContext = createContext<MainContextModel>(
     {
@@ -11,11 +10,19 @@ export const MainContext = createContext<MainContextModel>(
         users: new Map<UserId, UserValueClient>(),
         reconnecting: false,
         playlistLoading: false,
-        rooms: new Map<RoomId, RoomValueClient>(),
+        rooms: new Map<RoomId, RoomValue>(),
         setRooms: (v) => {},
         roomsLoading: false,
         setRoomsLoading: (v) => {},
-        setPlaylistLoading: (v) => {}
+        setPlaylistLoading: (v) => {},
+        usersShown: true,
+        setUsersShown: (v) => {},
+        audioSync: true,
+        setAudioSync: (v) => {},
+        subSync: true,
+        setSubSync: (v) => {},
+        ready: false,
+        setReady: (v) => {}
     })
 
 export const useMainContext = () => useContext(MainContext)

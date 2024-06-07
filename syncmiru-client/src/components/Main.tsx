@@ -6,7 +6,7 @@ import SrvInfo from "@components/srv/SrvInfo.tsx";
 import Rooms from "@components/rooms/Rooms.tsx";
 import JoinedRoom from "@components/rooms/JoinedRoom.tsx";
 import CurrentUser from "@components/user/CurrentUser.tsx";
-import ButtonPanel from "@components/ButtonPanel.tsx";
+import ButtonPanel from "@components/panel/ButtonPanel.tsx";
 import Middle from "@components/Middle.tsx";
 import {useJwt} from "@hooks/useJwt.tsx";
 import {io, Socket} from "socket.io-client";
@@ -24,8 +24,11 @@ import {showPersistentErrorAlert, showPersistentWarningAlert} from "src/utils/al
 import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
 import {arrayBufferToBase64} from "src/utils/encoding.ts";
 import SrvSettings from "@components/srv/SrvSettings.tsx";
-import {RoomId, RoomMap, RoomValueClient} from "@models/room.ts";
+import {RoomId, RoomMap, RoomValue} from "@models/room.ts";
 import RoomSettings from "@components/rooms/RoomSettings.tsx";
+import {useUsersShown} from "@hooks/useUsersShown.ts";
+import {useAudioSync} from "@hooks/useAudioSync.ts";
+import {useSubSync} from "@hooks/useSubSync.ts";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -34,13 +37,20 @@ export default function Main(): ReactElement {
     const hwidHash = useHwidHash()
     const clearJwt = useClearJwt()
     const homeSrv = useHomeServer();
+    const usersShownInit = useUsersShown();
+    const audioSyncInit = useAudioSync()
+    const subSyncInit = useSubSync()
     const [socket, setSocket] = useState<Socket>();
     const [uid, setUid] = useState<number>(0)
-    const [rooms, setRooms] = useState<RoomMap>(new Map<RoomId, RoomValueClient>())
+    const [rooms, setRooms] = useState<RoomMap>(new Map<RoomId, RoomValue>())
     const [playlistLoading, setPlaylistLoading] = useState<boolean>(false)
     const [roomsLoading, setRoomsLoading] = useState<boolean>(false)
     const [reconnecting, setReconnecting] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(true)
+    const [usersShown, setUsersShown] = useState<boolean>(true)
+    const [audioSync, setAudioSync] = useState<boolean>(true)
+    const [subSync, setSubSync] = useState<boolean>(true)
+    const [ready, setReady] = useState<boolean>(false)
     const reconnectingRef = useRef<boolean>(false);
 
     const [users, setUsers]
@@ -48,8 +58,8 @@ export default function Main(): ReactElement {
 
     useEffect(() => {
         const s = io(homeSrv, {
-            auth: {jwt: jwt, hwid_hash: hwidHash} as LoginTkns,
-            ackTimeout: SOCKETIO_ACK_TIMEOUT_MS
+                auth: {jwt: jwt, hwid_hash: hwidHash} as LoginTkns,
+                ackTimeout: SOCKETIO_ACK_TIMEOUT_MS
             },
         )
         s.on('connect_error', ioConnError)
@@ -81,7 +91,7 @@ export default function Main(): ReactElement {
     }, []);
 
     useEffect(() => {
-        if(socket !== undefined) {
+        if (socket !== undefined) {
             socket.on('displayname_change', onDisplaynameChange)
             socket.on('avatar_change', onAvatarChange)
             socket.on("del_users", onDelUsers);
@@ -92,6 +102,17 @@ export default function Main(): ReactElement {
         reconnectingRef.current = reconnecting;
     }, [reconnecting]);
 
+    useEffect(() => {
+        setUsersShown(usersShownInit)
+    }, [usersShownInit]);
+
+    useEffect(() => {
+        setAudioSync(audioSyncInit)
+    }, [audioSyncInit]);
+
+    useEffect(() => {
+        setSubSync(subSyncInit)
+    }, [subSyncInit]);
 
     function ioConn() {
         setReconnecting(false)
@@ -134,7 +155,7 @@ export default function Main(): ReactElement {
     function onDelUsers(delUids: Array<UserId>) {
         let m: UserMap = new Map<UserId, UserValueClient>();
         for (const [id, user] of users) {
-            if(!delUids.includes(id))
+            if (!delUids.includes(id))
                 m.set(id, user)
         }
         setUsers(m)
@@ -147,7 +168,7 @@ export default function Main(): ReactElement {
 
     function onDisplaynameChange(payload: DisplaynameChange) {
         let user = users.get(payload.uid)
-        if(user === undefined)
+        if (user === undefined)
             return;
 
         user.displayname = payload.displayname;
@@ -158,7 +179,7 @@ export default function Main(): ReactElement {
 
     function onAvatarChange(payload: AvatarChange) {
         let user = users.get(payload.uid)
-        if(user === undefined)
+        if (user === undefined)
             return;
 
         user.avatar = arrayBufferToBase64(payload.avatar)
@@ -202,8 +223,16 @@ export default function Main(): ReactElement {
                     rooms: rooms,
                     setRooms: setRooms,
                     roomsLoading: roomsLoading,
-                    setRoomsLoading: setRoomsLoading
-            }}>
+                    setRoomsLoading: setRoomsLoading,
+                    usersShown: usersShown,
+                    setUsersShown: setUsersShown,
+                    audioSync: audioSync,
+                    setAudioSync: setAudioSync,
+                    subSync: subSync,
+                    setSubSync: setSubSync,
+                    ready: ready,
+                    setReady: setReady
+                }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">
                         <SrvInfo homeSrv={homeSrv}/>
@@ -217,9 +246,10 @@ export default function Main(): ReactElement {
                             <Middle/>
                         </div>
                     </div>
-                    <div className="border-t min-w-60 w-60">
+
+                    {usersShown && <div className="border-t min-w-60 w-60">
                         <Users/>
-                    </div>
+                    </div>}
                 </div>
                 {showUserSettings() && <UserSettings/>}
                 {showSrvSettings() && <SrvSettings/>}

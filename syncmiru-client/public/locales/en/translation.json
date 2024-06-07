@@ -312,5 +312,7 @@
   "modal-room-delete-text": "Do you really want to delete the room with the name",
 
   "no-rooms-info": "No rooms",
-  "room-order-change-error": "An error occurred while changing the order of rooms"
+  "room-order-change-error": "An error occurred while changing the order of rooms",
+
+  "ready-btn": "Ready"
 }

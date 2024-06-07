@@ -119,9 +119,9 @@ export default function RegTknCreate(p: Props): ReactElement {
 
                             <div className="flex items-center gap-x-1.5">
                                 <div>
-                                    <Input id="limitEnable" type="checkbox" checked={limitEnable} onChange={onLimitEnableChanged}/>
+                                    <Input id="limitEnable" type="checkbox" className="hover:cursor-pointer" checked={limitEnable} onChange={onLimitEnableChanged}/>
                                 </div>
-                                <Label className="mt-1" htmlFor="limitEnable">{t('modal-reg-tkn-limit-label')}</Label>
+                                <Label className="mt-1 hover:cursor-pointer" htmlFor="limitEnable">{t('modal-reg-tkn-limit-label')}</Label>
                             </div>
 
                             {limitEnable && <div>

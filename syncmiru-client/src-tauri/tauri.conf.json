@@ -13,7 +13,7 @@
         "title": "syncmiru-client",
         "width": 1200,
         "height": 600,
-        "minWidth": 800,
+        "minWidth": 960,
         "minHeight": 400
       }
     ],

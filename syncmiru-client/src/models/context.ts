@@ -13,5 +13,13 @@ export interface MainContextModel {
     roomsLoading: boolean
     setRoomsLoading: Dispatch<SetStateAction<boolean>>,
     playlistLoading: boolean,
-    setPlaylistLoading: Dispatch<SetStateAction<boolean>>
+    setPlaylistLoading: Dispatch<SetStateAction<boolean>>,
+    usersShown: boolean
+    setUsersShown: Dispatch<SetStateAction<boolean>>
+    audioSync: boolean,
+    setAudioSync: Dispatch<SetStateAction<boolean>>,
+    subSync: boolean,
+    setSubSync: Dispatch<SetStateAction<boolean>>,
+    ready: boolean,
+    setReady: Dispatch<SetStateAction<boolean>>,
 }

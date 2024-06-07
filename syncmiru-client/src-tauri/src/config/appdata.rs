@@ -15,7 +15,9 @@ pub struct AppData {
     pub yt_dlp_version: Option<String>,
     pub lang: Language,
     pub theme: Theme,
-    pub auto_ready: bool,
+    pub users_shown: bool,
+    pub audio_sync: bool,
+    pub sub_sync: bool
 }
 
 impl Default for AppData {
@@ -28,7 +30,9 @@ impl Default for AppData {
             yt_dlp_version: None,
             theme: Theme::System,
             lang: get_preferred_locale(),
-            auto_ready: false,
+            users_shown: true,
+            audio_sync: true,
+            sub_sync: true
         }
     }
 }
@@ -62,9 +66,19 @@ pub fn read() -> Result<AppData> {
                 appdata.theme = theme;
             }
 
-            let auto_ready_opt = settings.get("auto_ready");
-            if let Some(auto_ready) = auto_ready_opt {
-                appdata.auto_ready = ini_str_to_bool(auto_ready, false);
+            let users_shown_opt = settings.get("users_shown");
+            if let Some(users_shown) = users_shown_opt {
+                appdata.users_shown = ini_str_to_bool(users_shown, true);
+            }
+
+            let audio_sync_opt = settings.get("audio_sync");
+            if let Some(audio_sync) = audio_sync_opt {
+                appdata.audio_sync = ini_str_to_bool(audio_sync, true);
+            }
+
+            let sub_sync_opt = settings.get("sub_sync");
+            if let Some(sub_sync) = sub_sync_opt {
+                appdata.sub_sync = ini_str_to_bool(sub_sync, true);
             }
         }
 
@@ -103,7 +117,9 @@ pub fn write(config: &AppData) -> Result<()> {
     }
     settings = settings.set("language", config.lang.as_str());
     settings = settings.set("theme", config.theme.as_str());
-    settings.set("auto_ready", ini_bool_to_string(config.auto_ready));
+    settings = settings.set("users_shown", ini_bool_to_string(config.users_shown));
+    settings = settings.set("audio_sync", ini_bool_to_string(config.audio_sync));
+    settings = settings.set("sub_sync", ini_bool_to_string(config.sub_sync));
 
     if cfg!(target_family = "windows") {
         let mut windows = &mut ini.with_section(Some("Windows"));

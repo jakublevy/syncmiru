@@ -31,6 +31,12 @@ fn main() -> Result<()> {
         .invoke_handler(tauri::generate_handler![
             config::frontend::get_first_run_seen,
             config::frontend::set_first_run_seen,
+            config::frontend::get_users_shown,
+            config::frontend::set_users_shown,
+            config::frontend::get_audio_sync,
+            config::frontend::set_audio_sync,
+            config::frontend::get_sub_sync,
+            config::frontend::set_sub_sync,
             config::frontend::get_language,
             config::frontend::set_language,
             config::frontend::get_target_family,

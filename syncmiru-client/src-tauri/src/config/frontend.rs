@@ -22,6 +22,57 @@ pub async fn set_first_run_seen(state: tauri::State<'_, AppState>) -> Result<()>
 }
 
 #[tauri::command]
+pub async fn get_users_shown(state: tauri::State<'_, AppState>) -> Result<bool> {
+    let appdata = state.appdata.read().await;
+    Ok(appdata.users_shown)
+}
+
+#[tauri::command]
+pub async fn set_users_shown(state: tauri::State<'_, AppState>, users_shown: bool) -> Result<()> {
+    {
+        let mut appdata = state.appdata.write().await;
+        appdata.users_shown = users_shown;
+    }
+    let appdata = state.appdata.read().await;
+    appdata::write(&appdata)?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn get_audio_sync(state: tauri::State<'_, AppState>) -> Result<bool> {
+    let appdata = state.appdata.read().await;
+    Ok(appdata.audio_sync)
+}
+
+#[tauri::command]
+pub async fn set_audio_sync(state: tauri::State<'_, AppState>, audio_sync: bool) -> Result<()> {
+    {
+        let mut appdata = state.appdata.write().await;
+        appdata.audio_sync = audio_sync;
+    }
+    let appdata = state.appdata.read().await;
+    appdata::write(&appdata)?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn get_sub_sync(state: tauri::State<'_, AppState>) -> Result<bool> {
+    let appdata = state.appdata.read().await;
+    Ok(appdata.sub_sync)
+}
+
+#[tauri::command]
+pub async fn set_sub_sync(state: tauri::State<'_, AppState>, sub_sync: bool) -> Result<()> {
+    {
+        let mut appdata = state.appdata.write().await;
+        appdata.sub_sync = sub_sync;
+    }
+    let appdata = state.appdata.read().await;
+    appdata::write(&appdata)?;
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn get_language(state: tauri::State<'_, AppState>) -> Result<Language> {
     let appdata = state.appdata.read().await;
     Ok(appdata.lang)

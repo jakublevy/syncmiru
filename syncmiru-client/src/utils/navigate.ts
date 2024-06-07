@@ -21,6 +21,9 @@ export function navigateToEmailVerify(
 
 export function navigateToMain(navigate: NavigateFunc<void>) {
     refresh({tag: "useJwt"})
+    refresh({tag: "useUsersShown"})
+    refresh({tag: "useAudioSync"})
+    refresh({tag: "useSubSync"})
     navigate('/main/index')
 }
 
