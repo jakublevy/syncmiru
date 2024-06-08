@@ -1,7 +1,7 @@
 import {RoomId} from "@models/room.ts";
 import {UserId} from "@models/user.ts";
 
-export type UserRoomMap = Map<RoomId, Array<UserId>>
+export type UserRoomMap = Map<RoomId, Set<UserId>>
 
 export interface UserRoomChange {
     old_rid: RoomId,

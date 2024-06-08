@@ -116,10 +116,6 @@ export default function Rooms(): ReactElement {
     }
 
     function onUserRoomJoin(userRoomJoin: UserRoomJoin) {
-        addUserToRoom(userRoomJoin)
-    }
-
-    function addUserToRoom(userRoomJoin: UserRoomJoin) {
         setRoomUsers((p) => {
             const m: UserRoomMap = new Map<RoomId, Array<UserId>>()
             for (const [rid, uids] of p) {
@@ -136,10 +132,36 @@ export default function Rooms(): ReactElement {
             m.set(userRoomJoin.rid, roomUids)
             return m
         })
+
+        if(userRoomJoin.uid === uid)
+            setRoomConnecting(false)
     }
 
     function onUserRoomChange(userRoomChange: UserRoomChange) {
+        setRoomUsers((p) => {
+            const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
+            for (const [rid, uids] of p) {
+                if(rid !== userRoomChange.old_rid || rid !== userRoomChange.new_rid)
+                    m.set(rid, uids)
+            }
+            let oldRoomUids = p.get(userRoomChange.old_rid)
+            if(oldRoomUids != null)
+                oldRoomUids = oldRoomUids.filter(x => x !== userRoomChange.uid)
+            else
+                oldRoomUids = []
+            m.set(userRoomChange.old_rid, oldRoomUids)
 
+            let newRoomUids = p.get(userRoomChange.new_rid)
+            if(newRoomUids != null)
+                newRoomUids = [...newRoomUids, userRoomChange.uid]
+            else
+                newRoomUids = [userRoomChange.uid]
+            m.set(userRoomChange.new_rid, newRoomUids)
+            return m
+        })
+
+        if(userRoomChange.uid === uid)
+            setRoomConnecting(false)
     }
 
     function settingsClicked(rid: RoomId) {
@@ -155,10 +177,6 @@ export default function Rooms(): ReactElement {
             .then(() => {
                 const took = performance.now() - start
                 socket!.emitWithAck("join_room", {rid: rid, ping: took})
-                    .then(() => {
-                        addUserToRoom({rid: rid, uid: uid})
-                        console.log('join ok')
-                    })
                     .catch(() => {
                         showPersistentErrorAlert("TODO join room failed")
                         setCurrentRid(null)
@@ -232,8 +250,8 @@ export default function Rooms(): ReactElement {
                     )
                 }}
                 renderItem={({value: rid, props}) => {
-                    const hasUsers = roomUsers.get(rid) != null
                     const roomUids = roomUsers.get(rid)
+                    const hasUsers = roomUids != null && roomUids.length > 0
                     const roomValue = rooms.get(rid)
                     if (roomValue == null)
                         return <></>

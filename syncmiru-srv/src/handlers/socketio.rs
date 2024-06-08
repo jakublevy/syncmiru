@@ -1271,17 +1271,14 @@ pub async fn join_room(
     s.join(payload.rid.to_string()).ok();
 
     if connected_room_opt.is_some() {
-        s.broadcast().emit("user_room_change", UserRoomChange {
-            uid,
-            old_rid: connected_room_opt.unwrap(),
-            new_rid: payload.rid
-        }).ok();
+        let urc = UserRoomChange { uid, old_rid: connected_room_opt.unwrap(), new_rid: payload.rid };
+        s.broadcast().emit("user_room_change", &urc).ok();
+        s.emit("user_room_change", urc).ok();
     }
     else {
-        s.broadcast().emit("user_room_join", UserRoomJoin {
-            uid,
-            rid: payload.rid
-        }).ok();
+        let urj = UserRoomJoin { uid, rid: payload.rid };
+        s.broadcast().emit("user_room_join", &urj).ok();
+        s.emit("user_room_join", urj).ok();
     }
 
     transaction.commit().await.expect("db error");
