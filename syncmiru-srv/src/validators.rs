@@ -2,6 +2,7 @@ use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use sqlx::PgPool;
 use validator::ValidationError;
+use crate::constants::SOCKETIO_ACK_TIMEOUT;
 use crate::models::query::Id;
 use crate::query;
 
@@ -158,6 +159,13 @@ pub fn check_room_order(room_order: &Vec<Id>) -> Result<(), ValidationError> {
     let valid = room_order.iter().all(|&x|x >= 1);
     if !valid {
         return Err(ValidationError::new("invalid room_order room id"));
+    }
+    Ok(())
+}
+
+pub fn check_ping(ping: &f64) -> Result<(), ValidationError> {
+    if *ping <= 0f64 && *ping > SOCKETIO_ACK_TIMEOUT.as_millis() as f64 {
+        return Err(ValidationError::new("invalid ping value"))
     }
     Ok(())
 }

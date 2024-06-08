@@ -1,10 +1,12 @@
 use std::sync::Arc;
+use std::time::Duration;
 use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
+use sqlx::__rt::sleep;
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -59,6 +61,8 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("get_room_major_desync_min", get_room_major_desync_min);
     s.on("set_room_major_desync_min", set_room_major_desync_min);
     s.on("set_room_order", set_room_order);
+    s.on("ping", ping);
+    s.on("join_room", join_room);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -69,10 +73,32 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.broadcast().emit("online", uid).ok();
 }
 
+pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
+    let mut uid_opt: Option<Id>;
+    {
+        let mut socket_uid_lock = state.socket_uid.write().await;
+        uid_opt = socket_uid_lock.get_by_left(&s.id).map(|x| x.clone());
+        socket_uid_lock.remove_by_left(&s.id);
+    }
+    let mut uid: Id;
+    if let None = uid_opt {
+        let mut socket_uid_disconnect_wl = state.socket_uid_disconnect.write().await;
+        uid = socket_uid_disconnect_wl.get(&s.id).unwrap().clone();
+        socket_uid_disconnect_wl.remove(&s.id);
+    } else {
+        uid = uid_opt.unwrap()
+    }
+    let hwid_hash = state.socket2hwid_hash(&s).await;
+    query::update_session_last_access_time_now(&state.db, uid, &hwid_hash)
+        .await
+        .expect("db error");
+    s.broadcast().emit("offline", uid).ok();
+}
+
 pub async fn get_users(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
-    ack: AckSender
+    ack: AckSender,
 ) {
     let users = query::get_users(&state.db)
         .await
@@ -83,7 +109,7 @@ pub async fn get_users(
 pub async fn get_me(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
-    ack: AckSender
+    ack: AckSender,
 ) {
     let uid = state.socket2uid(&s).await;
     ack.send(uid).ok();
@@ -92,7 +118,7 @@ pub async fn get_me(
 pub async fn get_online(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
-    ack: AckSender
+    ack: AckSender,
 ) {
     let online_uids_lock = state.socket_uid.read().await;
     let online_uids = online_uids_lock.right_values().collect::<Vec<&Id>>();
@@ -105,7 +131,7 @@ pub async fn get_user_sessions(State(state): State<Arc<SrvState>>, s: SocketRef)
     let inactive_sessions = query::get_inactive_user_sessions(
         &state.db,
         uid,
-        &hwid_hash
+        &hwid_hash,
     )
         .await
         .expect("getting inactive user sessions failed");
@@ -114,7 +140,7 @@ pub async fn get_user_sessions(State(state): State<Arc<SrvState>>, s: SocketRef)
     let active_session = query::get_active_user_session(
         &state.db,
         uid,
-        &hwid_hash
+        &hwid_hash,
     )
         .await
         .expect("getting active user sessions failed");
@@ -126,7 +152,7 @@ pub async fn delete_session(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<IdStruct>
+    Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -165,7 +191,7 @@ pub async fn sign_out(State(state): State<Arc<SrvState>>, s: SocketRef) {
 pub async fn get_email(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
-    ack: AckSender
+    ack: AckSender,
 ) {
     let uid = state.socket2uid(&s).await;
     let email = query::get_email_by_uid(&state.db, uid)
@@ -178,7 +204,7 @@ pub async fn set_displayname(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<Displayname>
+    Data(payload): Data<Displayname>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -190,11 +216,11 @@ pub async fn set_displayname(
         .expect("db error");
     s
         .broadcast()
-        .emit("displayname_change", DisplaynameChange{uid, displayname: payload.displayname.clone()})
+        .emit("displayname_change", DisplaynameChange { uid, displayname: payload.displayname.clone() })
         .ok();
 
     s
-        .emit("displayname_change", DisplaynameChange{uid, displayname: payload.displayname})
+        .emit("displayname_change", DisplaynameChange { uid, displayname: payload.displayname })
         .ok();
 
     ack.send(SocketIoAck::<()>::ok(None)).ok();
@@ -220,7 +246,7 @@ pub async fn send_email_change_verification_emails(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<EmailWithLang>
+    Data(payload): Data<EmailWithLang>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -247,7 +273,7 @@ pub async fn send_email_change_verification_emails(
         &state.db,
         &tkn1_hash,
         &tkn2_hash,
-        uid
+        uid,
     )
         .await
         .expect("db error");
@@ -258,7 +284,7 @@ pub async fn send_email_change_verification_emails(
         &payload.email,
         &tkn2,
         &state.config.srv.url,
-        &payload.lang
+        &payload.lang,
     )
         .await
         .expect("email error");
@@ -269,7 +295,7 @@ pub async fn check_email_change_tkn(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<EmailChangeTkn>
+    Data(payload): Data<EmailChangeTkn>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -281,7 +307,7 @@ pub async fn check_email_change_tkn(
     let tkn_valid = utils::check_email_change_tkn(
         &state,
         &payload,
-        uid
+        uid,
     )
         .await
         .expect("checking email tkn error");
@@ -293,7 +319,7 @@ pub async fn change_email(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<ChangeEmail>
+    Data(payload): Data<ChangeEmail>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -303,7 +329,7 @@ pub async fn change_email(
     let tkn_from_valid = utils::check_email_change_tkn(
         &state,
         &EmailChangeTkn { tkn: payload.tkn_from, tkn_type: EmailChangeTknType::From },
-        uid
+        uid,
     )
         .await
         .expect("checking email tkn error");
@@ -316,7 +342,7 @@ pub async fn change_email(
     let tkn_to_valid = utils::check_email_change_tkn(
         &state,
         &EmailChangeTkn { tkn: payload.tkn_to, tkn_type: EmailChangeTknType::To },
-        uid
+        uid,
     )
         .await
         .expect("checking email tkn error");
@@ -328,13 +354,13 @@ pub async fn change_email(
 
     let username = query::get_username_by_uid(
         &state.db,
-        uid
+        uid,
     )
         .await
         .expect("db error");
     let email_old = query::get_email_by_uid(
         &state.db,
-        uid
+        uid,
     )
         .await
         .expect("db error");
@@ -353,7 +379,7 @@ pub async fn change_email(
     query::invalidate_last_email_change_tkn(
         &mut transaction,
         uid,
-        state.config.email.token_valid_time
+        state.config.email.token_valid_time,
     )
         .await
         .expect("db error");
@@ -365,7 +391,7 @@ pub async fn change_email(
         &state.config.srv.url,
         &payload.email_new,
         &username,
-        &payload.lang
+        &payload.lang,
     )
         .await
         .expect("email error");
@@ -376,7 +402,7 @@ pub async fn set_avatar(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<AvatarBin>
+    Data(payload): Data<AvatarBin>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -389,11 +415,11 @@ pub async fn set_avatar(
 
     s
         .broadcast()
-        .emit("avatar_change", AvatarChange{uid, avatar: payload.data.clone()})
+        .emit("avatar_change", AvatarChange { uid, avatar: payload.data.clone() })
         .ok();
 
     s
-        .emit("avatar_change", AvatarChange{uid, avatar: payload.data})
+        .emit("avatar_change", AvatarChange { uid, avatar: payload.data })
         .ok();
 
     ack.send(SocketIoAck::<()>::ok(None)).ok();
@@ -402,7 +428,7 @@ pub async fn set_avatar(
 pub async fn delete_avatar(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
-    ack: AckSender
+    ack: AckSender,
 ) {
     let uid = state.socket2uid(&s).await;
     query::update_avatar_by_uid(&state.db, uid, &[])
@@ -411,11 +437,11 @@ pub async fn delete_avatar(
 
     s
         .broadcast()
-        .emit("avatar_change", AvatarChange{uid, avatar: vec![]})
+        .emit("avatar_change", AvatarChange { uid, avatar: vec![] })
         .ok();
 
     s
-        .emit("avatar_change", AvatarChange{uid, avatar: vec![]})
+        .emit("avatar_change", AvatarChange { uid, avatar: vec![] })
         .ok();
     ack.send({}).ok();
 }
@@ -424,7 +450,7 @@ pub async fn check_password(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<Password>
+    Data(payload): Data<Password>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<bool>::ok(Some(false))).ok();
@@ -445,7 +471,7 @@ pub async fn change_password(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<ChangePassword>
+    Data(payload): Data<ChangePassword>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -472,7 +498,7 @@ pub async fn send_delete_account_email(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<Language>
+    Data(payload): Data<Language>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -484,13 +510,13 @@ pub async fn send_delete_account_email(
         .expect("db error");
 
     let out_of_quota = utils::check_email_tkn_out_of_quota(
-        &state, uid, EmailTknType::DeleteAccount
+        &state, uid, EmailTknType::DeleteAccount,
     )
         .await
         .expect("check_email_tkn quota error");
     if !out_of_quota {
         ack.send(SocketIoAck::<()>::err()).ok();
-        return
+        return;
     }
 
     let tkn = crypto::gen_tkn();
@@ -505,7 +531,7 @@ pub async fn send_delete_account_email(
         &email,
         &tkn,
         &state.config.srv.url,
-        &payload.lang
+        &payload.lang,
     )
         .await
         .expect("email error");
@@ -517,7 +543,7 @@ pub async fn check_delete_account_tkn(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<Tkn>
+    Data(payload): Data<Tkn>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -551,7 +577,7 @@ pub async fn delete_account(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<TknWithLang>
+    Data(payload): Data<TknWithLang>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -599,7 +625,7 @@ pub async fn delete_account(
         &email,
         &username,
         &state.config.srv.url,
-        &payload.lang
+        &payload.lang,
     )
         .await
         .expect("email error");
@@ -610,7 +636,7 @@ pub async fn create_reg_tkn(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<RegTknCreate>
+    Data(payload): Data<RegTknCreate>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -621,24 +647,24 @@ pub async fn create_reg_tkn(
         .expect("db error");
     if !unique {
         ack.send(SocketIoAck::<()>::err()).ok();
-        return
+        return;
     }
     let key = crypto::gen_tkn();
     let reg_tkn_id = query::new_reg_tkn(
         &state.db,
         &payload.reg_tkn_name,
         &key,
-        payload.max_regs
+        payload.max_regs,
     )
         .await
         .expect("db error");
 
-    let reg_tkn = RegTkn{
+    let reg_tkn = RegTkn {
         id: reg_tkn_id,
         max_reg: payload.max_regs,
         name: payload.reg_tkn_name,
         used: 0,
-        key
+        key,
     };
 
     s.emit("active_reg_tkns", [[&reg_tkn]]).ok();
@@ -649,7 +675,7 @@ pub async fn create_reg_tkn(
 pub async fn active_reg_tkns(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
-    ack: AckSender
+    ack: AckSender,
 ) {
     let active_reg_tkns = query::get_active_reg_tkns(&state.db)
         .await
@@ -660,7 +686,7 @@ pub async fn active_reg_tkns(
 pub async fn inactive_reg_tkns(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
-    ack: AckSender
+    ack: AckSender,
 ) {
     let inactive_reg_tkns = query::get_inactive_reg_tkns(&state.db)
         .await
@@ -672,7 +698,7 @@ pub async fn check_reg_tkn_name_unique(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<RegTknName>
+    Data(payload): Data<RegTknName>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<bool>::err()).ok();
@@ -688,7 +714,7 @@ pub async fn delete_reg_tkn(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<IdStruct>
+    Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -708,8 +734,7 @@ pub async fn delete_reg_tkn(
             .expect("db error");
         s.broadcast().emit("del_active_reg_tkns", [[payload.id]]).ok();
         ack.send(SocketIoAck::<()>::ok(None)).ok();
-    }
-    else {
+    } else {
         transaction
             .commit()
             .await
@@ -722,7 +747,7 @@ pub async fn get_reg_tkn_info(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<IdStruct>
+    Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<Vec<RegDetail>>::err()).ok();
@@ -737,7 +762,7 @@ pub async fn get_reg_tkn_info(
 pub async fn get_default_playback_speed(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
-    ack: AckSender
+    ack: AckSender,
 ) {
     let default_playback_speed = query::get_default_playback_speed(&state.db)
         .await
@@ -749,7 +774,7 @@ pub async fn set_default_playback_speed(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<PlaybackSpeed>
+    Data(payload): Data<PlaybackSpeed>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -766,7 +791,7 @@ pub async fn set_default_playback_speed(
 pub async fn get_default_desync_tolerance(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
-    ack: AckSender
+    ack: AckSender,
 ) {
     let default_desync_tolerance = query::get_default_desync_tolerance(&state.db)
         .await
@@ -778,7 +803,7 @@ pub async fn set_default_desync_tolerance(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<DesyncTolerance>
+    Data(payload): Data<DesyncTolerance>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -795,7 +820,7 @@ pub async fn set_default_desync_tolerance(
 pub async fn get_default_major_desync_min(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
-    ack: AckSender
+    ack: AckSender,
 ) {
     let default_major_desync_min = query::get_default_major_desync_min(&state.db)
         .await
@@ -807,7 +832,7 @@ pub async fn set_default_major_desync_min(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<MajorDesyncMin>
+    Data(payload): Data<MajorDesyncMin>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -824,7 +849,7 @@ pub async fn set_default_major_desync_min(
 pub async fn get_default_minor_desync_playback_slow(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
-    ack: AckSender
+    ack: AckSender,
 ) {
     let minor_desync_playback_slow = query::get_default_minor_desync_playback_slow(&state.db)
         .await
@@ -836,7 +861,7 @@ pub async fn set_default_minor_desync_playback_slow(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<MinorDesyncPlaybackSlow>
+    Data(payload): Data<MinorDesyncPlaybackSlow>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -854,7 +879,7 @@ pub async fn check_room_name_unique(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<RoomName>
+    Data(payload): Data<RoomName>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<bool>::err()).ok();
@@ -870,7 +895,7 @@ pub async fn create_room(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<RoomName>
+    Data(payload): Data<RoomName>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -881,7 +906,7 @@ pub async fn create_room(
         .expect("db error");
     if !unique {
         ack.send(SocketIoAck::<()>::err()).ok();
-        return
+        return;
     }
     let default_room_settings = query::get_default_room_settings(&state.db)
         .await
@@ -894,7 +919,7 @@ pub async fn create_room(
         &default_room_settings.playback_speed,
         &default_room_settings.desync_tolerance,
         &default_room_settings.minor_desync_playback_slow,
-        &default_room_settings.major_desync_min
+        &default_room_settings.major_desync_min,
     )
         .await
         .expect("db error");
@@ -912,7 +937,7 @@ pub async fn create_room(
 
     let room = RoomClient {
         id: room_id,
-        name: payload.room_name
+        name: payload.room_name,
     };
     s.broadcast().emit("rooms", [[&room]]).ok();
     s.emit("rooms", [[&room]]).ok();
@@ -922,7 +947,7 @@ pub async fn create_room(
 pub async fn get_rooms(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
-    ack: AckSender
+    ack: AckSender,
 ) {
     let mut transaction = state.db.begin().await.expect("db error");
     let rooms = query::get_rooms_for_update(&mut transaction)
@@ -943,7 +968,7 @@ pub async fn set_room_name(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<RoomNameChange>
+    Data(payload): Data<RoomNameChange>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -962,7 +987,7 @@ pub async fn delete_room(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<IdStruct>
+    Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -982,7 +1007,7 @@ pub async fn delete_room(
         let new_room_order = room_order
             .iter()
             .filter(|&x| *x != payload.id)
-            .map(|x|x.clone())
+            .map(|x| x.clone())
             .collect::<Vec<Id>>();
         query::set_room_order(&mut transaction, &new_room_order)
             .await
@@ -994,8 +1019,7 @@ pub async fn delete_room(
         s.broadcast().emit("del_rooms", [[payload.id]]).ok();
         s.emit("del_rooms", [[payload.id]]).ok();
         ack.send(SocketIoAck::<()>::ok(None)).ok();
-    }
-    else {
+    } else {
         transaction
             .commit()
             .await
@@ -1008,7 +1032,7 @@ pub async fn get_room_playback_speed(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<IdStruct>
+    Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<Decimal>::err()).ok();
@@ -1029,7 +1053,7 @@ pub async fn set_room_playback_speed(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<RoomPlaybackSpeed>
+    Data(payload): Data<RoomPlaybackSpeed>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -1051,7 +1075,7 @@ pub async fn get_room_desync_tolerance(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<IdStruct>
+    Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<Decimal>::err()).ok();
@@ -1072,7 +1096,7 @@ pub async fn set_room_desync_tolerance(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<RoomDesyncTolerance>
+    Data(payload): Data<RoomDesyncTolerance>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -1094,7 +1118,7 @@ pub async fn get_room_minor_desync_playback_slow(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<IdStruct>
+    Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<Decimal>::err()).ok();
@@ -1115,7 +1139,7 @@ pub async fn set_room_minor_desync_playback_slow(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<RoomMinorDesyncPlaybackSlow>
+    Data(payload): Data<RoomMinorDesyncPlaybackSlow>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -1137,7 +1161,7 @@ pub async fn get_room_major_desync_min(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<IdStruct>
+    Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<Decimal>::err()).ok();
@@ -1158,7 +1182,7 @@ pub async fn set_room_major_desync_min(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<RoomMajorDesyncMin>
+    Data(payload): Data<RoomMajorDesyncMin>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -1180,7 +1204,7 @@ pub async fn set_room_order(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<RoomOrder>
+    Data(payload): Data<RoomOrder>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -1205,25 +1229,61 @@ pub async fn set_room_order(
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 
-pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
-    let mut uid_opt: Option<Id>;
-    {
-        let mut socket_uid_lock = state.socket_uid.write().await;
-        uid_opt = socket_uid_lock.get_by_left(&s.id).map(|x| x.clone());
-        socket_uid_lock.remove_by_left(&s.id);
+pub async fn ping(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+) {
+    ack.send({}).ok();
+}
+
+pub async fn join_room(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<JoinRoomReq>,
+) {
+    sleep(Duration::from_millis(2000)).await;
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
     }
-    let mut uid: Id;
-    if let None = uid_opt {
-        let mut socket_uid_disconnect_wl = state.socket_uid_disconnect.write().await;
-        uid = socket_uid_disconnect_wl.get(&s.id).unwrap().clone();
-        socket_uid_disconnect_wl.remove(&s.id);
-    }
-    else {
-        uid = uid_opt.unwrap()
-    }
-    let hwid_hash = state.socket2hwid_hash(&s).await;
-    query::update_session_last_access_time_now(&state.db, uid, &hwid_hash)
+    let mut transaction = state.db.begin().await.expect("db error");
+    let room_exists = query::room_exists_for_update(&mut transaction, payload.rid)
         .await
         .expect("db error");
-    s.broadcast().emit("offline", uid).ok();
+    if !room_exists {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let uid = state.socket2uid(&s).await;
+    let connected_room_opt = state.socket_connected_room(&s).await;
+
+    {
+        let mut rid_uids_lock = state.rid_uids.write().await;
+        if let Some(connected_room) = connected_room_opt {
+            let mut room_uids = rid_uids_lock.get_by_left_mut(&connected_room).unwrap();
+            room_uids.remove(&uid);
+        }
+        rid_uids_lock.insert(payload.rid, uid);
+    }
+    s.leave_all().ok();
+    s.join(payload.rid.to_string()).ok();
+
+    if connected_room_opt.is_some() {
+        s.broadcast().emit("user_room_change", UserRoomChange {
+            uid,
+            old_rid: connected_room_opt.unwrap(),
+            new_rid: payload.rid
+        }).ok();
+    }
+    else {
+        s.broadcast().emit("user_room_join", UserRoomJoin {
+            uid,
+            rid: payload.rid
+        }).ok();
+    }
+
+    transaction.commit().await.expect("db error");
+    ack.send({}).ok();
 }

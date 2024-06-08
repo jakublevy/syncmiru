@@ -14,6 +14,7 @@ use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use bimap::BiMap;
 use clap::Parser;
+use multimap::MultiMap;
 use tower_http::trace::TraceLayer;
 use socketioxide::extract::SocketRef;
 use socketioxide::handler::ConnectHandler;
@@ -23,6 +24,7 @@ use tower::{BoxError, ServiceBuilder};
 use tower_http::cors::CorsLayer;
 use crate::args::Args;
 use crate::constants::SOCKETIO_ACK_TIMEOUT;
+use crate::bimultimap::BiMultiMap;
 use crate::result::Result;
 use crate::srvstate::{SrvState};
 
@@ -43,6 +45,7 @@ mod email;
 mod html;
 mod tkn;
 mod constants;
+mod bimultimap;
 
 
 #[macro_use]
@@ -65,6 +68,7 @@ async fn main() -> Result<()> {
          socket_uid_disconnect: HashMap::new().into(),
          io: None.into(),
          sid_hwid_hash: HashMap::new().into(),
+         rid_uids: BiMultiMap::new().into()
       });
 
    let socketio_srvstate = srvstate.clone();

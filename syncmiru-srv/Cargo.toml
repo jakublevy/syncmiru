@@ -39,3 +39,4 @@ chrono = { version = "0.4.38", features = ["serde"] }
 image = "0.25.1"
 rust_decimal = "1.34.2"
 rust_decimal_macros = "1.34.2"
+multimap = "0.10.0"

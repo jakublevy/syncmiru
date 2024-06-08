@@ -22,7 +22,11 @@ export const MainContext = createContext<MainContextModel>(
         subSync: true,
         setSubSync: (v) => {},
         ready: false,
-        setReady: (v) => {}
+        setReady: (v) => {},
+        currentRid: null,
+        setCurrentRid: (v) => {},
+        roomConnecting: false,
+        setRoomConnecting: (v) => {}
     })
 
 export const useMainContext = () => useContext(MainContext)

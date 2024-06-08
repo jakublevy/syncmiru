@@ -18,7 +18,7 @@ export default function CurrentUser(): ReactElement {
     if (users.get(uid) !== undefined) {
         const user = users.get(uid) as UserValueClient
         return (
-            <div className="flex justify-between items-center p-2 h-16">
+            <div className="flex justify-between items-center border-t p-2 h-16">
                 <div className="flex items-center">
                     <Avatar className="min-w-12 w-12 mr-3" picBase64={user.avatar}/>
                     <div className="flex flex-col items-start justify-center">

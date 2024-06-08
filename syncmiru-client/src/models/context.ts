@@ -1,6 +1,6 @@
 import {Socket} from "socket.io-client";
 import {UserMap} from "src/models/user.ts";
-import {RoomMap} from "@models/room.ts";
+import {RoomId, RoomMap} from "@models/room.ts";
 import {Dispatch, SetStateAction} from "react";
 
 export interface MainContextModel {
@@ -22,4 +22,8 @@ export interface MainContextModel {
     setSubSync: Dispatch<SetStateAction<boolean>>,
     ready: boolean,
     setReady: Dispatch<SetStateAction<boolean>>,
+    currentRid: RoomId | null,
+    setCurrentRid: Dispatch<SetStateAction<RoomId | null>>,
+    roomConnecting: boolean
+    setRoomConnecting: Dispatch<SetStateAction<boolean>>,
 }

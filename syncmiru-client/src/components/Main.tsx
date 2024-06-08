@@ -51,6 +51,8 @@ export default function Main(): ReactElement {
     const [audioSync, setAudioSync] = useState<boolean>(true)
     const [subSync, setSubSync] = useState<boolean>(true)
     const [ready, setReady] = useState<boolean>(false)
+    const [currentRid, setCurrentRid] = useState<RoomId | null>(null)
+    const [roomConnecting, setRoomConnecting] = useState<boolean>(false)
     const reconnectingRef = useRef<boolean>(false);
 
     const [users, setUsers]
@@ -231,7 +233,11 @@ export default function Main(): ReactElement {
                     subSync: subSync,
                     setSubSync: setSubSync,
                     ready: ready,
-                    setReady: setReady
+                    setReady: setReady,
+                    currentRid: currentRid,
+                    setCurrentRid: setCurrentRid,
+                    roomConnecting: roomConnecting,
+                    setRoomConnecting: setRoomConnecting
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">

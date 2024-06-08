@@ -200,6 +200,34 @@ pub struct RoomOrder {
     pub room_order: Vec<Id>
 }
 
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct JoinRoomReq {
+    #[validate(range(min = 1))]
+    pub rid: Id,
+
+    #[validate(custom(function = "validators::check_ping"))]
+    pub ping: f64
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct UserRoomChange {
+    pub old_rid: Id,
+    pub new_rid: Id,
+    pub uid: Id
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct UserRoomJoin {
+    pub rid: Id,
+    pub uid: Id
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct UserRoomDisconnect {
+    pub rid: Id,
+    pub uid: Id
+}
+
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize)]

@@ -75,9 +75,9 @@ export function CloseBtn(p: SvgFixedBtn): ReactElement {
 }
 
 export function Clickable(p: BtnProps): ReactElement {
-    const {className, children, ...restParams} = p
+    const {className, children, disabled, ...restParams} = p
     return (
-        <Btn className={`rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${p.className || ''}`}
+        <Btn className={`rounded ${disabled ? 'opacity-30 cursor-default' : 'hover:bg-gray-100 dark:hover:bg-gray-700'} ${p.className || ''}`}
             {...restParams}>
             {p.children}
         </Btn>
