@@ -42,7 +42,7 @@ export default function Rooms(): ReactElement {
     const [_, navigate] = useLocation()
     const [roomsOrder, setRoomsOrder] = useState<Array<RoomId>>([])
     const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
-    const [roomUsers, setRoomUsers] = useState<UserRoomMap>(new Map<RoomId, Array<UserId>>())
+    const [roomUsers, setRoomUsers] = useState<UserRoomMap>(new Map<RoomId, Set<UserId>>())
 
     useEffect(() => {
         if (socket !== undefined) {
@@ -117,7 +117,7 @@ export default function Rooms(): ReactElement {
 
     function onUserRoomJoin(userRoomJoin: UserRoomJoin) {
         setRoomUsers((p) => {
-            const m: UserRoomMap = new Map<RoomId, Array<UserId>>()
+            const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
             for (const [rid, uids] of p) {
                 if(rid !== userRoomJoin.rid) {
                     m.set(rid, uids)
@@ -125,10 +125,11 @@ export default function Rooms(): ReactElement {
             }
             let roomUids = p.get(userRoomJoin.rid)
             if(roomUids != null)
-                roomUids = [...roomUids, userRoomJoin.uid]
-            else
-                roomUids = [userRoomJoin.uid]
-
+                roomUids.add(userRoomJoin.uid)
+            else {
+                roomUids = new Set()
+                roomUids.add(userRoomJoin.uid)
+            }
             m.set(userRoomJoin.rid, roomUids)
             return m
         })
@@ -146,16 +147,18 @@ export default function Rooms(): ReactElement {
             }
             let oldRoomUids = p.get(userRoomChange.old_rid)
             if(oldRoomUids != null)
-                oldRoomUids = oldRoomUids.filter(x => x !== userRoomChange.uid)
+                oldRoomUids.delete(userRoomChange.uid)
             else
-                oldRoomUids = []
+                oldRoomUids = new Set()
             m.set(userRoomChange.old_rid, oldRoomUids)
 
             let newRoomUids = p.get(userRoomChange.new_rid)
             if(newRoomUids != null)
-                newRoomUids = [...newRoomUids, userRoomChange.uid]
-            else
-                newRoomUids = [userRoomChange.uid]
+                newRoomUids.add(userRoomChange.uid)
+            else {
+                newRoomUids = new Set()
+                newRoomUids.add(userRoomChange.uid)
+            }
             m.set(userRoomChange.new_rid, newRoomUids)
             return m
         })
@@ -251,7 +254,7 @@ export default function Rooms(): ReactElement {
                 }}
                 renderItem={({value: rid, props}) => {
                     const roomUids = roomUsers.get(rid)
-                    const hasUsers = roomUids != null && roomUids.length > 0
+                    const hasUsers = roomUids != null && roomUids.size > 0
                     const roomValue = rooms.get(rid)
                     if (roomValue == null)
                         return <></>
@@ -284,7 +287,7 @@ export default function Rooms(): ReactElement {
                                     </div>
                                 </div>
                                 {hasUsers && <div className="flex flex-col gap-y-0.5 mb-4">
-                                    {roomUids?.map((uid) => {
+                                    {Array.from(roomUids)?.map((uid) => {
                                         const user = users.get(uid)
                                         if(user == null)
                                             return <></>
@@ -295,7 +298,7 @@ export default function Rooms(): ReactElement {
                                                     {/*<Cross className="w-3 mr-2"/>*/}
                                                     {/*<SignalGood className="w-3 mr-2"/>*/}
                                                     <Avatar className="w-5" picBase64={user.avatar}/>
-                                                    <p className="text-sm text-left ml-1.5 w-[4.4rem] break-words">{user.username}</p>
+                                                    <p className="text-sm text-left ml-1.5 w-[4.4rem] break-words">{user.displayname}</p>
                                                     <div className="flex-1"></div>
 
                                                     {/*<p className="text-xs">A:4/S:3</p>*/}
