@@ -325,6 +325,7 @@ export default function Rooms(): ReactElement {
                                                 <UserInfoTooltip
                                                     key={uid}
                                                     id={uid}
+                                                    visible={uid === uidClicked}
                                                     content={
                                                         <Clickable className={`py-1.5 ${uid === uidClicked ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
                                                             <div className="flex items-center ml-2 mr-1">

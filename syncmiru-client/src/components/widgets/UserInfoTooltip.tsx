@@ -14,6 +14,7 @@ export default function UserInfoTooltip(p: Props): ReactElement {
         <Tooltip onVisibleChange={onVisibleChanged}
                  placement="bottom"
                  trigger={['click']}
+                 visible={p.visible}
                  overlay={
                      <div className="flex items-center w-[12.3rem]">
                          <Avatar className="min-w-20 w-20 mr-3" picBase64={p.user.avatar}/>
@@ -33,4 +34,5 @@ interface Props {
     content: ReactElement,
     user: UserValueClient
     tooltipOnlineVisibilityChanged?: (e: boolean, id: number) => void,
+    visible?: boolean
 }

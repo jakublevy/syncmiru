@@ -114,6 +114,7 @@ export default function Users(): ReactElement {
                     <UserInfoTooltip
                         key={i}
                         id={i}
+                        visible={i === clickedOnlineIdx}
                         content={
                             <div className="flex items-center">
                                 <Clickable className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${i === clickedOnlineIdx ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
@@ -136,6 +137,7 @@ export default function Users(): ReactElement {
                     <UserInfoTooltip
                         key={i}
                         id={i}
+                        visible={i === clickedOfflineIdx}
                         content={
                             <div className="flex items-center">
                                 <Clickable className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${i === clickedOfflineIdx ? 'bg-gray-100 dark:bg-gray-700' : 'opacity-30 hover:opacity-100'}`}>
