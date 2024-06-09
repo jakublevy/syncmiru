@@ -313,6 +313,8 @@
 
   "no-rooms-info": "Žádné místnosti",
   "room-order-change-error": "Došlo k chybě při změně pořadí místností",
+  "room-join-failed": "Došlo k chybě při připojování do místnosti",
+  "room-join-ping-error": "Došlo k chybě při připojování do místnosti. Nestabilní spojení?",
 
   "ready-btn": "Připraven",
   "room-connected": "Připojen(a)",

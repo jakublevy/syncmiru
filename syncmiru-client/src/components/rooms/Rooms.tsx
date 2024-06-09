@@ -11,7 +11,7 @@ import {RoomSettingsHistoryState} from "@models/historyState.ts";
 import {arrayMove, List, OnChangeMeta, RenderListParams} from "react-movable";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
-import {UserRoomChange, UserRoomJoin, UserRoomMap} from "@models/roomUser.ts";
+import {UserRoomChange, UserRoomDisconnect, UserRoomJoin, UserRoomMap} from "@models/roomUser.ts";
 import {UserId} from "@models/user.ts";
 import {Clickable} from "@components/widgets/Button.tsx";
 import Avatar from "@components/widgets/Avatar.tsx";
@@ -47,6 +47,7 @@ export default function Rooms(): ReactElement {
             socket.on('room_order', onRoomOrder)
             socket.on('user_room_join', onUserRoomJoin)
             socket.on('user_room_change', onUserRoomChange)
+            socket.on('user_room_disconnect', onUserRoomDisconnect)
 
             socket.emitWithAck("get_rooms")
                 .then((roomsWOrder: RoomsWOrder) => {
@@ -161,6 +162,24 @@ export default function Rooms(): ReactElement {
             setRoomConnecting(false)
     }
 
+    function onUserRoomDisconnect(userRoomDisconnect: UserRoomDisconnect) {
+        setRoomUsers((p) => {
+            const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
+            for (const [rid, uids] of p) {
+                if(rid !== userRoomDisconnect.rid)
+                    m.set(rid, uids)
+            }
+            let roomUids = p.get(userRoomDisconnect.rid)
+            if(roomUids != null)
+                roomUids.delete(userRoomDisconnect.uid)
+            else
+                roomUids = new Set()
+
+            m.set(userRoomDisconnect.rid, roomUids)
+            return m
+        })
+    }
+
     function settingsClicked(rid: RoomId) {
         navigate<RoomSettingsHistoryState>('/main/room-settings/general', {state: {rid: rid}})
     }
@@ -174,8 +193,14 @@ export default function Rooms(): ReactElement {
             .then(() => {
                 const took = performance.now() - start
                 socket!.emitWithAck("join_room", {rid: rid, ping: took})
+                    .then((ack: SocketIoAck<null>) => {
+                        if(ack.status === SocketIoAckType.Err) {
+                            showPersistentErrorAlert(t('room-join-failed'))
+                            setCurrentRid(null)
+                        }
+                    })
                     .catch(() => {
-                        showPersistentErrorAlert("TODO join room failed")
+                        showPersistentErrorAlert(t('room-join-failed'))
                         setCurrentRid(null)
                     })
                     .finally(() => {
@@ -183,7 +208,7 @@ export default function Rooms(): ReactElement {
                     })
             })
             .catch(() => {
-                showPersistentErrorAlert("TODO error")
+                showPersistentErrorAlert(t('room-join-ping-error'))
                 setRoomConnecting(false)
                 setCurrentRid(null)
             })

@@ -313,6 +313,8 @@
 
   "no-rooms-info": "No rooms",
   "room-order-change-error": "An error occurred while changing the order of rooms",
+  "room-join-failed": "An error occurred while connecting to the room",
+  "room-join-ping-error": "An error occurred while connecting to the room. Unstable connection?",
 
   "ready-btn": "Ready",
   "room-connected": "Connected",

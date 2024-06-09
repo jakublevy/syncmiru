@@ -3,9 +3,17 @@ import DoorOut from "@components/svg/DoorOut.tsx";
 import {Clickable} from "@components/widgets/Button.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {useTranslation} from "react-i18next";
+import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
+import {showPersistentErrorAlert} from "../../utils/alert.ts";
 
 export default function JoinedRoom(): ReactElement {
-    const {rooms, currentRid, roomConnecting} = useMainContext()
+    const {
+        socket,
+        rooms,
+        currentRid,
+        setCurrentRid,
+        roomConnecting
+    } = useMainContext()
     const {t} = useTranslation()
 
     if(currentRid == null)
@@ -17,7 +25,18 @@ export default function JoinedRoom(): ReactElement {
         : t('room-connected')
 
     function disconnectClicked() {
-
+        socket!.emitWithAck("disconnect_room", {})
+            .then((ack: SocketIoAck<null>) => {
+                if(ack.status === SocketIoAckType.Err) {
+                    showPersistentErrorAlert("TODO error")
+                }
+                else {
+                    setCurrentRid(null)
+                }
+            })
+            .catch(() => {
+                showPersistentErrorAlert("TODO error")
+            })
     }
 
     if(room == null)

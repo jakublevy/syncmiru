@@ -6,7 +6,7 @@ use sqlx::__rt::sleep;
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -63,6 +63,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("set_room_order", set_room_order);
     s.on("ping", ping);
     s.on("join_room", join_room);
+    s.on("disconnect_room", disconnect_room);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1282,5 +1283,27 @@ pub async fn join_room(
     }
 
     transaction.commit().await.expect("db error");
-    ack.send({}).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn disconnect_room(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+) {
+    let uid = state.socket2uid(&s).await;
+    let connected_room_opt = state.socket_connected_room(&s).await;
+    if connected_room_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    s.leave_all().ok();
+    {
+        let mut rid_uids_lock = state.rid_uids.write().await;
+        rid_uids_lock.remove_by_right(&uid);
+    }
+    let urd = UserRoomDisconnect{ rid: connected_room_opt.unwrap(), uid };
+    s.broadcast().emit("user_room_disconnect", &urd).ok();
+    s.emit("user_room_disconnect", urd).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
