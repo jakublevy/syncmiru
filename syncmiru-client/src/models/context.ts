@@ -24,6 +24,12 @@ export interface MainContextModel {
     setReady: Dispatch<SetStateAction<boolean>>,
     currentRid: RoomId | null,
     setCurrentRid: Dispatch<SetStateAction<RoomId | null>>,
-    roomConnecting: boolean
-    setRoomConnecting: Dispatch<SetStateAction<boolean>>,
+    roomConnection: RoomConnectionState
+    setRoomConnection: Dispatch<SetStateAction<RoomConnectionState>>,
+}
+
+export enum RoomConnectionState {
+    Connecting,
+    Disconnecting,
+    Established
 }

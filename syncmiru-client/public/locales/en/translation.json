@@ -315,8 +315,10 @@
   "room-order-change-error": "An error occurred while changing the order of rooms",
   "room-join-failed": "An error occurred while connecting to the room",
   "room-join-ping-error": "An error occurred while connecting to the room. Unstable connection?",
+  "room-leave-failed": "An error occured while disconnecting the room",
 
   "ready-btn": "Ready",
   "room-connected": "Connected",
-  "room-connecting": "Connecting"
+  "room-connecting": "Connecting",
+  "room-disconnecting": "Disconnecting"
 }

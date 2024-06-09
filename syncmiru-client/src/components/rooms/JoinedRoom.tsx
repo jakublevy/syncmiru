@@ -4,7 +4,8 @@ import {Clickable} from "@components/widgets/Button.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {useTranslation} from "react-i18next";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
-import {showPersistentErrorAlert} from "../../utils/alert.ts";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
+import {RoomConnectionState} from "@models/context.ts";
 
 export default function JoinedRoom(): ReactElement {
     const {
@@ -12,7 +13,8 @@ export default function JoinedRoom(): ReactElement {
         rooms,
         currentRid,
         setCurrentRid,
-        roomConnecting
+        roomConnection,
+        setRoomConnection
     } = useMainContext()
     const {t} = useTranslation()
 
@@ -20,22 +22,27 @@ export default function JoinedRoom(): ReactElement {
         return <></>
 
     const room = rooms.get(currentRid)
-    const connectionMsg = roomConnecting
+    const connectionMsg = roomConnection === RoomConnectionState.Connecting
         ? t('room-connecting')
-        : t('room-connected')
+        : roomConnection === RoomConnectionState.Disconnecting
+            ? t('room-disconnecting')
+            : t('room-connected')
 
     function disconnectClicked() {
+        setRoomConnection(RoomConnectionState.Disconnecting)
         socket!.emitWithAck("disconnect_room", {})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
-                    showPersistentErrorAlert("TODO error")
+                    showPersistentErrorAlert(t('room-leave-failed'))
+                    setRoomConnection(RoomConnectionState.Established)
                 }
                 else {
                     setCurrentRid(null)
                 }
             })
             .catch(() => {
-                showPersistentErrorAlert("TODO error")
+                showPersistentErrorAlert(t('room-leave-failed'))
+                setRoomConnection(RoomConnectionState.Established)
             })
     }
 
@@ -51,7 +58,7 @@ export default function JoinedRoom(): ReactElement {
             <Clickable
                 className="p-2"
                 onClick={disconnectClicked}
-                disabled={roomConnecting}
+                disabled={[RoomConnectionState.Connecting, RoomConnectionState.Disconnecting].includes(roomConnection)}
             >
                 <DoorOut className="w-7"/>
             </Clickable>

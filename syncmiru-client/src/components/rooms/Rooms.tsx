@@ -15,10 +15,7 @@ import {UserRoomChange, UserRoomDisconnect, UserRoomJoin, UserRoomMap} from "@mo
 import {UserId} from "@models/user.ts";
 import {Clickable} from "@components/widgets/Button.tsx";
 import Avatar from "@components/widgets/Avatar.tsx";
-import Ping from "@components/widgets/Ping.tsx";
-import ReadyState, {UserReadyState} from "@components/widgets/ReadyState.tsx";
-import BubbleCrossed from "@components/svg/BubbleCrossed.tsx";
-import Subtitles from "@components/svg/Subtitles.tsx";
+import {RoomConnectionState} from "@models/context.ts";
 
 export default function Rooms(): ReactElement {
     const {
@@ -28,7 +25,7 @@ export default function Rooms(): ReactElement {
         rooms,
         setRooms,
         users,
-        setRoomConnecting,
+        setRoomConnection,
         setCurrentRid,
         uid
     } = useMainContext()
@@ -130,7 +127,7 @@ export default function Rooms(): ReactElement {
         })
 
         if(userRoomJoin.uid === uid)
-            setRoomConnecting(false)
+            setRoomConnection(RoomConnectionState.Established)
     }
 
     function onUserRoomChange(userRoomChange: UserRoomChange) {
@@ -159,7 +156,7 @@ export default function Rooms(): ReactElement {
         })
 
         if(userRoomChange.uid === uid)
-            setRoomConnecting(false)
+            setRoomConnection(RoomConnectionState.Established)
     }
 
     function onUserRoomDisconnect(userRoomDisconnect: UserRoomDisconnect) {
@@ -187,7 +184,7 @@ export default function Rooms(): ReactElement {
     function roomClicked(rid: RoomId) {
         console.log('room with id ' + rid + " clicked")
         setCurrentRid(rid)
-        setRoomConnecting(true)
+        setRoomConnection(RoomConnectionState.Connecting)
         const start = performance.now()
         socket!.emitWithAck("ping", {})
             .then(() => {
@@ -204,12 +201,12 @@ export default function Rooms(): ReactElement {
                         setCurrentRid(null)
                     })
                     .finally(() => {
-                        setRoomConnecting(false)
+                        setRoomConnection(RoomConnectionState.Established)
                     })
             })
             .catch(() => {
                 showPersistentErrorAlert(t('room-join-ping-error'))
-                setRoomConnecting(false)
+                setRoomConnection(RoomConnectionState.Established)
                 setCurrentRid(null)
             })
     }

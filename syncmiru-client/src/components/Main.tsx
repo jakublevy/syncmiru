@@ -29,6 +29,7 @@ import RoomSettings from "@components/rooms/RoomSettings.tsx";
 import {useUsersShown} from "@hooks/useUsersShown.ts";
 import {useAudioSync} from "@hooks/useAudioSync.ts";
 import {useSubSync} from "@hooks/useSubSync.ts";
+import {RoomConnectionState} from "@models/context.ts";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -52,7 +53,7 @@ export default function Main(): ReactElement {
     const [subSync, setSubSync] = useState<boolean>(true)
     const [ready, setReady] = useState<boolean>(false)
     const [currentRid, setCurrentRid] = useState<RoomId | null>(null)
-    const [roomConnecting, setRoomConnecting] = useState<boolean>(false)
+    const [roomConnection, setRoomConnection] = useState<RoomConnectionState>(RoomConnectionState.Established)
     const reconnectingRef = useRef<boolean>(false);
 
     const [users, setUsers]
@@ -236,8 +237,8 @@ export default function Main(): ReactElement {
                     setReady: setReady,
                     currentRid: currentRid,
                     setCurrentRid: setCurrentRid,
-                    roomConnecting: roomConnecting,
-                    setRoomConnecting: setRoomConnecting
+                    roomConnection: roomConnection,
+                    setRoomConnection: setRoomConnection
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">

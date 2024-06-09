@@ -1,5 +1,5 @@
 import {createContext, useContext} from "react";
-import {MainContextModel} from "@models/context.ts";
+import {MainContextModel, RoomConnectionState} from "@models/context.ts";
 import {UserId, UserValueClient} from "src/models/user.ts";
 import {RoomId, RoomValue} from "@models/room.ts";
 
@@ -25,8 +25,8 @@ export const MainContext = createContext<MainContextModel>(
         setReady: (v) => {},
         currentRid: null,
         setCurrentRid: (v) => {},
-        roomConnecting: false,
-        setRoomConnecting: (v) => {}
+        roomConnection: RoomConnectionState.Established,
+        setRoomConnection: (v) => {},
     })
 
 export const useMainContext = () => useContext(MainContext)

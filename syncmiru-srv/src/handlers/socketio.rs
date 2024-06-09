@@ -1291,6 +1291,7 @@ pub async fn disconnect_room(
     s: SocketRef,
     ack: AckSender,
 ) {
+    sleep(Duration::from_millis(2000)).await;
     let uid = state.socket2uid(&s).await;
     let connected_room_opt = state.socket_connected_room(&s).await;
     if connected_room_opt.is_none() {
