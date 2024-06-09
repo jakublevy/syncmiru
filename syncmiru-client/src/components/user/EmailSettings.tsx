@@ -311,7 +311,7 @@ export default function EmailSettings(p: Props): ReactElement {
                                     : <> {tknFromShowError
                                         ? <p className="text-danger font-semibold">{t('tkn-invalid')}</p>
                                         : <>{tknFromValid
-                                            ? <p className="text-success font-semibold">{t('tkn-valid')}</p>
+                                            ? <p className="text-success dark:text-successdark font-semibold">{t('tkn-valid')}</p>
                                             : <p className="text-danger invisible font-semibold">L</p>
                                         }</>
                                     } </>
@@ -339,7 +339,7 @@ export default function EmailSettings(p: Props): ReactElement {
                                     : <> {tknToShowError
                                         ? <p className="text-danger font-semibold">{t('tkn-invalid')}</p>
                                         : <>{tknToValid
-                                            ? <p className="text-success font-semibold">{t('tkn-valid')}</p>
+                                            ? <p className="text-success dark:text-successdark font-semibold">{t('tkn-valid')}</p>
                                             : <p className="text-danger invisible font-semibold">L</p>
                                         }</>
                                     } </>

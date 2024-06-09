@@ -2,17 +2,23 @@ import {ReactElement} from "react";
 import DoorOut from "@components/svg/DoorOut.tsx";
 import {Clickable} from "@components/widgets/Button.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
+import {useTranslation} from "react-i18next";
 
 export default function JoinedRoom(): ReactElement {
     const {rooms, currentRid, roomConnecting} = useMainContext()
+    const {t} = useTranslation()
 
     if(currentRid == null)
         return <></>
 
     const room = rooms.get(currentRid)
     const connectionMsg = roomConnecting
-        ? 'Probíhá připojování'
-        : 'Připojen(a)'
+        ? t('room-connecting')
+        : t('room-connected')
+
+    function disconnectClicked() {
+
+    }
 
     if(room == null)
         return <></>
@@ -23,7 +29,11 @@ export default function JoinedRoom(): ReactElement {
                 <p className="text-xs">{connectionMsg}</p>
                 <p>{room.name}</p>
             </div>
-            <Clickable onClick={() => {}} className="p-2">
+            <Clickable
+                className="p-2"
+                onClick={disconnectClicked}
+                disabled={roomConnecting}
+            >
                 <DoorOut className="w-7"/>
             </Clickable>
         </div>

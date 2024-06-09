@@ -210,7 +210,7 @@ export default function DeleteAccount(p: Props): ReactElement {
                                 : <> {tknShowError
                                     ? <p className="text-danger font-semibold">{t('tkn-invalid')}</p>
                                     : <>{tknValid
-                                        ? <p className="text-success font-semibold">{t('tkn-valid')}</p>
+                                        ? <p className="text-success dark:text-successdark font-semibold">{t('tkn-valid')}</p>
                                         : <p className="text-danger invisible font-semibold">L</p>
                                     }</>
                                 } </>

@@ -1,12 +1,7 @@
-import {ReactElement, useEffect, useState, MouseEvent} from "react";
+import {MouseEvent, ReactElement, useEffect, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
-import {
-    RoomId,
-    RoomMap,
-    RoomNameChange,
-    RoomSrv, RoomsWOrder, RoomValue
-} from "@models/room.ts";
+import {RoomId, RoomMap, RoomNameChange, RoomSrv, RoomsWOrder, RoomValue} from "@models/room.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import Play from "@components/svg/Play.tsx";
 import Settings from "@components/svg/Settings.tsx";
@@ -16,15 +11,14 @@ import {RoomSettingsHistoryState} from "@models/historyState.ts";
 import {arrayMove, List, OnChangeMeta, RenderListParams} from "react-movable";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
-import {UserRoomMap, UserRoomChange, UserRoomJoin} from "@models/roomUser.ts";
+import {UserRoomChange, UserRoomJoin, UserRoomMap} from "@models/roomUser.ts";
 import {UserId} from "@models/user.ts";
-import DefaultAvatar from "@components/svg/DefaultAvatar.tsx";
-import Cross from "@components/svg/Cross.tsx";
-import BubbleCrossed from "@components/svg/BubbleCrossed.tsx";
-import Subtitles from "@components/svg/Subtitles.tsx";
-import SignalGood from "@components/svg/SignalGood.tsx";
 import {Clickable} from "@components/widgets/Button.tsx";
 import Avatar from "@components/widgets/Avatar.tsx";
+import Ping from "@components/widgets/Ping.tsx";
+import ReadyState, {UserReadyState} from "@components/widgets/ReadyState.tsx";
+import BubbleCrossed from "@components/svg/BubbleCrossed.tsx";
+import Subtitles from "@components/svg/Subtitles.tsx";
 
 export default function Rooms(): ReactElement {
     const {
@@ -295,9 +289,11 @@ export default function Rooms(): ReactElement {
                                             <Clickable className="py-1.5">
                                                 <div className="flex items-center ml-2 mr-1">
                                                     <div className="w-10"></div>
-                                                    {/*<Cross className="w-3 mr-2"/>*/}
-                                                    {/*<SignalGood className="w-3 mr-2"/>*/}
-                                                    <Avatar className="w-5" picBase64={user.avatar}/>
+                                                    {/*<ReadyState*/}
+                                                    {/*    className="w-3 mr-2"*/}
+                                                    {/*    state={UserReadyState.Loading}/>*/}
+                                                    {/*<Ping id={`${uid}_ping`} ping={5} className="w-3 mr-2"/>*/}
+                                                    <Avatar className="w-6" picBase64={user.avatar}/>
                                                     <p className="text-sm text-left ml-1.5 w-[4.4rem] break-words">{user.displayname}</p>
                                                     <div className="flex-1"></div>
 

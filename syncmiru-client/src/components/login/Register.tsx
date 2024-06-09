@@ -155,7 +155,7 @@ export default function Register({regPubAllowed}: Props): ReactElement {
                                     ? <p className="text-danger font-semibold">{errors.regTkn.message}</p>
                                     : <>
                                         {!regTknValid && (regTkn !== undefined && regTkn !== '') && <p className="text-danger font-semibold">Neplatný nebo již použitý token</p> }
-                                        {regTknValid && <p className="text-success font-semibold">Token je validní</p>}
+                                        {regTknValid && <p className="text-success dark:text-successdark font-semibold">Token je validní</p>}
                                         {(regTkn === undefined || regTkn === '') && <p className="text-danger invisible font-semibold">L</p>}
                                     </>
                                 }

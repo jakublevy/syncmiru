@@ -314,5 +314,7 @@
   "no-rooms-info": "Žádné místnosti",
   "room-order-change-error": "Došlo k chybě při změně pořadí místností",
 
-  "ready-btn": "Připraven"
+  "ready-btn": "Připraven",
+  "room-connected": "Připojen(a)",
+  "room-connecting": "Probíhá připojování"
 }
