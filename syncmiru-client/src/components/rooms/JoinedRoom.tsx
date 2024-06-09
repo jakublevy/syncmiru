@@ -34,7 +34,6 @@ export default function JoinedRoom(): ReactElement {
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
                     showPersistentErrorAlert(t('room-leave-failed'))
-                    setRoomConnection(RoomConnectionState.Established)
                 }
                 else {
                     setCurrentRid(null)
@@ -42,6 +41,9 @@ export default function JoinedRoom(): ReactElement {
             })
             .catch(() => {
                 showPersistentErrorAlert(t('room-leave-failed'))
+                setRoomConnection(RoomConnectionState.Established)
+            })
+            .finally(() => {
                 setRoomConnection(RoomConnectionState.Established)
             })
     }

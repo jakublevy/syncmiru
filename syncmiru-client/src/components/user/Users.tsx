@@ -10,6 +10,7 @@ import {useTranslation} from "react-i18next";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
 import Loading from "@components/Loading.tsx";
+import UserInfoTooltip from "@components/widgets/UserInfoTooltip.tsx";
 
 export default function Users(): ReactElement {
     const [_, navigate] = useLocation()
@@ -110,32 +111,21 @@ export default function Users(): ReactElement {
                 <p className="text-xs pt-4 pl-4 pb-1">Online ({onlineUsersFiltered.length})</p>}
             {onlineUsersFiltered.map((u, i) => {
                 return (
-                    <Tooltip onVisibleChange={(e) => tooltipOnlineVisibilityChanged(e, i)}
-                             key={i}
-                             placement="bottom"
-                             trigger={['click']}
-                             overlay={
-                                 <div key={`${i}`} className="flex items-center w-[12.3rem]">
-                                     <Avatar key={`${i}_avatar`} className="min-w-20 w-20 mr-3" picBase64={u.avatar}/>
-                                     <div key={`${i}_flex`} className="flex flex-col items-start justify-center">
-                                         <p key={`${i}_displayname`}
-                                            className="break-words max-w-[7.1rem] text-xl">{u.displayname}</p>
-                                         <p key={`${i}_username`} className="text-sm -mt-1">{u.username}</p>
-                                     </div>
-                                 </div>
-                             }>
-                        <a href="#">
-                            <div key={`${i}_flex`} className="flex items-center">
-                                <Clickable key={`${i}_clickable`}
-                                           className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${i === clickedOnlineIdx ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
-                                    <Avatar className="min-w-10 w-10 mr-2" key={`${i}_avatar`}
+                    <UserInfoTooltip
+                        key={i}
+                        id={i}
+                        content={
+                            <div className="flex items-center">
+                                <Clickable className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${i === clickedOnlineIdx ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
+                                    <Avatar className="min-w-10 w-10 mr-2"
                                             picBase64={u.avatar}/>
-                                    <p className="break-words max-w-[10.4rem]"
-                                       key={`${i}_displayname`}>{u.displayname}</p>
+                                    <p className="break-words max-w-[10.4rem]">{u.displayname}</p>
                                 </Clickable>
                             </div>
-                        </a>
-                    </Tooltip>
+                        }
+                        user={u}
+                        tooltipOnlineVisibilityChanged={tooltipOnlineVisibilityChanged}
+                    />
                 )
             })}
 
@@ -143,32 +133,21 @@ export default function Users(): ReactElement {
                 <p className="text-xs pt-4 pl-4 pb-1">Offline ({offlineUsersFiltered.length})</p>}
             {offlineUsersFiltered.map((u, i) => {
                 return (
-                    <Tooltip onVisibleChange={(e) => tooltipOfflineVisibilityChanged(e, i)}
-                             key={i}
-                             placement="bottom"
-                             trigger={['click']}
-                             overlay={
-                                 <div key={`${i}`} className="flex items-center w-[12.3rem]">
-                                     <Avatar key={`${i}_avatar`} className="min-w-20 w-20 mr-3" picBase64={u.avatar}/>
-                                     <div key={`${i}_flex`} className="flex flex-col items-start justify-center">
-                                         <p key={`${i}_displayname`}
-                                            className="break-words max-w-[7.1rem] text-xl">{u.displayname}</p>
-                                         <p key={`${i}_username`} className="text-sm -mt-1">{u.username}</p>
-                                     </div>
-                                 </div>
-                             }>
-                        <a href="#">
-                            <div key={`${i}_flex`} className="flex items-center">
-                                <Clickable key={`${i}_clickable`}
-                                           className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${i === clickedOfflineIdx ? 'bg-gray-100 dark:bg-gray-700' : 'opacity-30 hover:opacity-100'}`}>
-                                    <Avatar className="min-w-10 w-10 mr-2" key={`${i}_avatar`}
+                    <UserInfoTooltip
+                        key={i}
+                        id={i}
+                        content={
+                            <div className="flex items-center">
+                                <Clickable className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${i === clickedOfflineIdx ? 'bg-gray-100 dark:bg-gray-700' : 'opacity-30 hover:opacity-100'}`}>
+                                    <Avatar className="min-w-10 w-10 mr-2"
                                             picBase64={u.avatar}/>
-                                    <p className="break-words max-w-[10.4rem]"
-                                       key={`${i}_displayname`}>{u.displayname}</p>
+                                    <p className="break-words max-w-[10.4rem]">{u.displayname}</p>
                                 </Clickable>
                             </div>
-                        </a>
-                    </Tooltip>
+                        }
+                        user={u}
+                        tooltipOnlineVisibilityChanged={tooltipOfflineVisibilityChanged}
+                    />
                 )
             })}
         </div>

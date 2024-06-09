@@ -1,4 +1,4 @@
-import {MouseEvent, ReactElement, useEffect, useState} from "react";
+import React, {MouseEvent, ReactElement, useEffect, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {RoomId, RoomMap, RoomNameChange, RoomSrv, RoomsWOrder, RoomValue} from "@models/room.ts";
@@ -16,6 +16,7 @@ import {UserId} from "@models/user.ts";
 import {Clickable} from "@components/widgets/Button.tsx";
 import Avatar from "@components/widgets/Avatar.tsx";
 import {RoomConnectionState} from "@models/context.ts";
+import UserInfoTooltip from "@components/widgets/UserInfoTooltip.tsx";
 
 export default function Rooms(): ReactElement {
     const {
@@ -26,7 +27,9 @@ export default function Rooms(): ReactElement {
         setRooms,
         users,
         setRoomConnection,
+        currentRid,
         setCurrentRid,
+        roomConnection,
         uid
     } = useMainContext()
     const {t} = useTranslation()
@@ -34,6 +37,7 @@ export default function Rooms(): ReactElement {
     const [roomsOrder, setRoomsOrder] = useState<Array<RoomId>>([])
     const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
     const [roomUsers, setRoomUsers] = useState<UserRoomMap>(new Map<RoomId, Set<UserId>>())
+    const [uidClicked, setUidClicked] = useState<UserId>(-1)
 
     useEffect(() => {
         if (socket !== undefined) {
@@ -111,12 +115,12 @@ export default function Rooms(): ReactElement {
         setRoomUsers((p) => {
             const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
             for (const [rid, uids] of p) {
-                if(rid !== userRoomJoin.rid) {
+                if (rid !== userRoomJoin.rid) {
                     m.set(rid, uids)
                 }
             }
             let roomUids = p.get(userRoomJoin.rid)
-            if(roomUids != null)
+            if (roomUids != null)
                 roomUids.add(userRoomJoin.uid)
             else {
                 roomUids = new Set()
@@ -126,7 +130,7 @@ export default function Rooms(): ReactElement {
             return m
         })
 
-        if(userRoomJoin.uid === uid)
+        if (userRoomJoin.uid === uid)
             setRoomConnection(RoomConnectionState.Established)
     }
 
@@ -134,18 +138,18 @@ export default function Rooms(): ReactElement {
         setRoomUsers((p) => {
             const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
             for (const [rid, uids] of p) {
-                if(rid !== userRoomChange.old_rid || rid !== userRoomChange.new_rid)
+                if (rid !== userRoomChange.old_rid || rid !== userRoomChange.new_rid)
                     m.set(rid, uids)
             }
             let oldRoomUids = p.get(userRoomChange.old_rid)
-            if(oldRoomUids != null)
+            if (oldRoomUids != null)
                 oldRoomUids.delete(userRoomChange.uid)
             else
                 oldRoomUids = new Set()
             m.set(userRoomChange.old_rid, oldRoomUids)
 
             let newRoomUids = p.get(userRoomChange.new_rid)
-            if(newRoomUids != null)
+            if (newRoomUids != null)
                 newRoomUids.add(userRoomChange.uid)
             else {
                 newRoomUids = new Set()
@@ -155,7 +159,7 @@ export default function Rooms(): ReactElement {
             return m
         })
 
-        if(userRoomChange.uid === uid)
+        if (userRoomChange.uid === uid)
             setRoomConnection(RoomConnectionState.Established)
     }
 
@@ -163,11 +167,11 @@ export default function Rooms(): ReactElement {
         setRoomUsers((p) => {
             const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
             for (const [rid, uids] of p) {
-                if(rid !== userRoomDisconnect.rid)
+                if (rid !== userRoomDisconnect.rid)
                     m.set(rid, uids)
             }
             let roomUids = p.get(userRoomDisconnect.rid)
-            if(roomUids != null)
+            if (roomUids != null)
                 roomUids.delete(userRoomDisconnect.uid)
             else
                 roomUids = new Set()
@@ -182,7 +186,9 @@ export default function Rooms(): ReactElement {
     }
 
     function roomClicked(rid: RoomId) {
-        console.log('room with id ' + rid + " clicked")
+        if(currentRid === rid || [RoomConnectionState.Connecting, RoomConnectionState.Disconnecting].includes(roomConnection))
+            return
+
         setCurrentRid(rid)
         setRoomConnection(RoomConnectionState.Connecting)
         const start = performance.now()
@@ -191,7 +197,7 @@ export default function Rooms(): ReactElement {
                 const took = performance.now() - start
                 socket!.emitWithAck("join_room", {rid: rid, ping: took})
                     .then((ack: SocketIoAck<null>) => {
-                        if(ack.status === SocketIoAckType.Err) {
+                        if (ack.status === SocketIoAckType.Err) {
                             showPersistentErrorAlert(t('room-join-failed'))
                             setCurrentRid(null)
                         }
@@ -240,6 +246,13 @@ export default function Rooms(): ReactElement {
         const y = e.clientY - mousePos[1]
         if (x * x + y * y <= 25)
             roomClicked(rid)
+    }
+
+    function userTooltipVisibilityChanged(visible: boolean, id: UserId) {
+        if(visible)
+            setUidClicked(id)
+        else
+            setUidClicked(-1)
     }
 
     if (roomsLoading)
@@ -305,25 +318,35 @@ export default function Rooms(): ReactElement {
                                 {hasUsers && <div className="flex flex-col gap-y-0.5 mb-4">
                                     {Array.from(roomUids)?.map((uid) => {
                                         const user = users.get(uid)
-                                        if(user == null)
+                                        if (user == null)
                                             return <></>
                                         return (
-                                            <Clickable className="py-1.5">
-                                                <div className="flex items-center ml-2 mr-1">
-                                                    <div className="w-10"></div>
-                                                    {/*<ReadyState*/}
-                                                    {/*    className="w-3 mr-2"*/}
-                                                    {/*    state={UserReadyState.Loading}/>*/}
-                                                    {/*<Ping id={`${uid}_ping`} ping={5} className="w-3 mr-2"/>*/}
-                                                    <Avatar className="w-6" picBase64={user.avatar}/>
-                                                    <p className="text-sm text-left ml-1.5 w-[4.4rem] break-words">{user.displayname}</p>
-                                                    <div className="flex-1"></div>
+                                            <>
+                                                <UserInfoTooltip
+                                                    key={uid}
+                                                    id={uid}
+                                                    content={
+                                                        <Clickable className={`py-1.5 ${uid === uidClicked ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
+                                                            <div className="flex items-center ml-2 mr-1">
+                                                                <div className="w-10"></div>
+                                                                {/*<ReadyState*/}
+                                                                {/*    className="w-3 mr-2"*/}
+                                                                {/*    state={UserReadyState.Loading}/>*/}
+                                                                {/*<Ping id={`${uid}_ping`} ping={5} className="w-3 mr-2"/>*/}
+                                                                <Avatar className="w-6" picBase64={user.avatar}/>
+                                                                <p className="text-sm text-left ml-1.5 w-[4.4rem] break-words">{user.displayname}</p>
+                                                                <div className="flex-1"></div>
 
-                                                    {/*<p className="text-xs">A:4/S:3</p>*/}
-                                                    {/*<BubbleCrossed className="w-4 ml-1"/>*/}
-                                                    {/*<Subtitles className="ml-1 w-4"/>*/}
-                                                </div>
-                                            </Clickable>
+                                                                {/*<p className="text-xs">A:4/S:3</p>*/}
+                                                                {/*<BubbleCrossed className="w-4 ml-1"/>*/}
+                                                                {/*<Subtitles className="ml-1 w-4"/>*/}
+                                                            </div>
+                                                        </Clickable>
+                                                    }
+                                                    user={user}
+                                                    tooltipOnlineVisibilityChanged={userTooltipVisibilityChanged}
+                                                />
+                                            </>
                                         )
                                     })}
                                 </div>}
