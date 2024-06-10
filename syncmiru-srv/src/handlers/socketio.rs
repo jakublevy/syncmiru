@@ -1323,5 +1323,5 @@ pub async fn get_room_users(
 ) {
     let rid_uids_lock = state.rid_uids.read().await;
     let rid2uids = rid_uids_lock.get_key_to_values_hashmap().clone();
-    ack.send(SocketIoAck::<HashMap<Id, HashSet<Id>>>::ok(Some(rid2uids))).ok();
+    ack.send(rid2uids).ok();
 }

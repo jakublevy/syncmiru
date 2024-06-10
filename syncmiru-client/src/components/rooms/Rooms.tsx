@@ -11,7 +11,7 @@ import {RoomSettingsHistoryState} from "@models/historyState.ts";
 import {arrayMove, List, OnChangeMeta, RenderListParams} from "react-movable";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
-import {UserRoomChange, UserRoomDisconnect, UserRoomJoin, UserRoomMap} from "@models/roomUser.ts";
+import {UserRoomChange, UserRoomDisconnect, UserRoomJoin, UserRoomMap, UserRoomSrv} from "@models/roomUser.ts";
 import {UserId} from "@models/user.ts";
 import {Clickable} from "@components/widgets/Button.tsx";
 import Avatar from "@components/widgets/Avatar.tsx";
@@ -45,7 +45,7 @@ export default function Rooms(): ReactElement {
     useEffect(() => {
         if (socket !== undefined) {
             setRoomsFetching(true)
-            setRoomUsersFetching(false)
+            setRoomUsersFetching(true)
 
             socket.on('rooms', onRooms)
             socket.on('room_name_change', onRoomNameChange)
@@ -68,11 +68,17 @@ export default function Rooms(): ReactElement {
                 })
 
             socket.emitWithAck("get_room_users")
-                .then((roomUsers: any) => {
-                    console.log(JSON.stringify(roomUsers))
+                .then((roomUsers: UserRoomSrv) => {
+                    const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
+                    for(const ridStr in roomUsers) {
+                        const rid = parseInt(ridStr)
+                        const uids = new Set(roomUsers[ridStr])
+                        m.set(rid, uids)
+                    }
+                    setRoomUsers(m)
                 })
                 .catch(() => {
-                    //navigateToLoginFormMain(navigate)
+                    navigateToLoginFormMain(navigate)
                 })
                 .finally(() => {
                     setRoomUsersFetching(false)
