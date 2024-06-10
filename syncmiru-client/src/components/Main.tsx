@@ -261,9 +261,9 @@ export default function Main(): ReactElement {
                         </div>
                     </div>
 
-                    {usersShown && <div className="border-t min-w-60 w-60">
+                    <div className={`border-t min-w-60 w-60 ${usersShown ? '' : 'hidden'}`}>
                         <Users/>
-                    </div>}
+                    </div>
                 </div>
                 {showUserSettings() && <UserSettings/>}
                 {showSrvSettings() && <SrvSettings/>}
