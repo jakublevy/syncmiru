@@ -54,7 +54,6 @@ export default function Rooms(): ReactElement {
             socket.on('room_order', onRoomOrder)
             socket.on('user_room_join', onUserRoomJoin)
             socket.on('user_room_change', onUserRoomChange)
-            socket.on('user_room_disconnect', onUserRoomDisconnect)
 
             socket.emitWithAck("get_rooms")
                 .then((roomsWOrder: RoomsWOrder) => {
@@ -86,6 +85,12 @@ export default function Rooms(): ReactElement {
                 })
         }
     }, [socket]);
+
+    useEffect(() => {
+        if(socket !== undefined) {
+            socket.on('user_room_disconnect', onUserRoomDisconnect)
+        }
+    }, [socket, roomUidClicked]);
 
     useEffect(() => {
         setRoomsLoading(roomsFetching || roomUsersFetching)
@@ -191,6 +196,9 @@ export default function Rooms(): ReactElement {
     }
 
     function onUserRoomDisconnect(userRoomDisconnect: UserRoomDisconnect) {
+        if(userRoomDisconnect.uid === roomUidClicked)
+            setRoomUidClicked(-1)
+
         setRoomUsers((p) => {
             const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
             for (const [rid, uids] of p) {
@@ -280,6 +288,7 @@ export default function Rooms(): ReactElement {
             setRoomUidClicked(id)
         else
             setRoomUidClicked(-1)
+
     }
 
     if (roomsLoading)

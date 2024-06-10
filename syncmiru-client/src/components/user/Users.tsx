@@ -47,7 +47,6 @@ export default function Users(): ReactElement {
     useEffect(() => {
         if (socket !== undefined) {
             socket.on('online', onOnline)
-            socket.on('offline', onOffline)
 
             socket.emitWithAck("get_online")
                 .then((uids: Array<UserId>) => {
@@ -61,6 +60,12 @@ export default function Users(): ReactElement {
                 })
         }
     }, [socket]);
+
+    useEffect(() => {
+        if(socket !== undefined) {
+            socket.on('offline', onOffline)
+        }
+    }, [socket, roomUidClicked]);
 
     useEffect(() => {
         let on: Array<UserValueClient> = new Array<UserValueClient>();
@@ -88,6 +93,9 @@ export default function Users(): ReactElement {
     function onOffline(uid: UserId) {
         setOnlineUids((p) => p.filter(x => x !== uid))
 
+        if(uid === roomUidClicked)
+            setRoomUidClicked(-1)
+
         setRoomUsers((p) => {
             const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
             for(const [rid, uids] of p) {
@@ -100,9 +108,6 @@ export default function Users(): ReactElement {
             }
             return m
         })
-
-        if(uid === roomUidClicked)
-            setRoomUidClicked(-1)
     }
 
     function tooltipOnlineVisibilityChanged(visible: boolean, idx: number) {
