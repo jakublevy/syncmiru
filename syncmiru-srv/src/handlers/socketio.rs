@@ -1,3 +1,4 @@
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::time::Duration;
 use rust_decimal::Decimal;
@@ -64,6 +65,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("ping", ping);
     s.on("join_room", join_room);
     s.on("disconnect_room", disconnect_room);
+    s.on("get_room_users", get_room_users);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1251,7 +1253,6 @@ pub async fn join_room(
     ack: AckSender,
     Data(payload): Data<JoinRoomReq>,
 ) {
-    sleep(Duration::from_millis(2000)).await;
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
@@ -1298,7 +1299,6 @@ pub async fn disconnect_room(
     s: SocketRef,
     ack: AckSender,
 ) {
-    sleep(Duration::from_millis(2000)).await;
     let uid = state.socket2uid(&s).await;
     let connected_room_opt = state.socket_connected_room(&s).await;
     if connected_room_opt.is_none() {
@@ -1314,4 +1314,14 @@ pub async fn disconnect_room(
     s.broadcast().emit("user_room_disconnect", &urd).ok();
     s.emit("user_room_disconnect", urd).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn get_room_users(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+) {
+    let rid_uids_lock = state.rid_uids.read().await;
+    let rid2uids = rid_uids_lock.get_key_to_values_hashmap().clone();
+    ack.send(SocketIoAck::<HashMap<Id, HashSet<Id>>>::ok(Some(rid2uids))).ok();
 }

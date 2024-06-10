@@ -85,15 +85,15 @@ export default function Users(): ReactElement {
 
     function onOffline(uid: UserId) {
         setOnlineUids((p) => p.filter(x => x !== uid))
+
         setRoomUsers((p) => {
             const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
             for(const [rid, uids] of p) {
                 if(!uids.has(uid))
                     m.set(rid, uids)
                 else {
-                    const newUids = new Set(uids)
-                    newUids.delete(uid)
-                    m.set(rid, newUids)
+                    uids.delete(uid)
+                    m.set(rid, uids)
                 }
             }
             return m

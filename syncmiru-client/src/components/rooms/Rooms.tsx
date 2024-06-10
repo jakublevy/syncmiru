@@ -39,10 +39,14 @@ export default function Rooms(): ReactElement {
     const [roomsOrder, setRoomsOrder] = useState<Array<RoomId>>([])
     const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
     const [uidClicked, setUidClicked] = useState<UserId>(-1)
+    const [roomsFetching, setRoomsFetching] = useState<boolean>(true)
+    const [roomUsersFetching, setRoomUsersFetching] = useState<boolean>(true)
 
     useEffect(() => {
         if (socket !== undefined) {
-            setRoomsLoading(true)
+            setRoomsFetching(true)
+            setRoomUsersFetching(false)
+
             socket.on('rooms', onRooms)
             socket.on('room_name_change', onRoomNameChange)
             socket.on('del_rooms', onDeleteRooms)
@@ -60,10 +64,25 @@ export default function Rooms(): ReactElement {
                     navigateToLoginFormMain(navigate)
                 })
                 .finally(() => {
-                    setRoomsLoading(false)
+                    setRoomsFetching(false)
+                })
+
+            socket.emitWithAck("get_room_users")
+                .then((roomUsers: any) => {
+                    console.log(JSON.stringify(roomUsers))
+                })
+                .catch(() => {
+                    //navigateToLoginFormMain(navigate)
+                })
+                .finally(() => {
+                    setRoomUsersFetching(false)
                 })
         }
     }, [socket]);
+
+    useEffect(() => {
+        setRoomsLoading(roomsFetching || roomUsersFetching)
+    }, [roomsFetching, roomUsersFetching]);
 
     function onRooms(rooms: Array<RoomSrv>) {
         addRoomsFromSrv(rooms)
@@ -328,7 +347,7 @@ export default function Rooms(): ReactElement {
                                                     id={uid}
                                                     visible={uid === uidClicked}
                                                     content={
-                                                        <Clickable className={`py-1.5 ${uid === uidClicked ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
+                                                        <Clickable className={`w-full py-1.5 ${uid === uidClicked ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
                                                             <div className="flex items-center ml-2 mr-1">
                                                                 <div className="w-10"></div>
                                                                 {/*<ReadyState*/}

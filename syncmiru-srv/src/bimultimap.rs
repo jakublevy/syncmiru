@@ -51,6 +51,10 @@ impl<K, V> BiMultiMap<K, V>
         self.value_to_key.get_mut(value)
     }
 
+    pub fn get_key_to_values_hashmap(&self) -> &HashMap<K, HashSet<V>> {
+        &self.key_to_values
+    }
+
     pub fn remove_by_left(&mut self, key: &K) {
         if let Some(values) = self.key_to_values.remove(key) {
             for value in values {
