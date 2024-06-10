@@ -1,9 +1,8 @@
 import React, {ReactElement, useEffect, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
-import {UserId, UserValueClient} from "@models/user.ts";
+import {UserClient, UserId} from "@models/user.ts";
 import Avatar from "@components/widgets/Avatar.tsx";
 import 'src/rc-tooltip.css'
-import Tooltip from "rc-tooltip";
 import {Clickable} from "@components/widgets/Button.tsx";
 import {SearchInput} from "@components/widgets/Input.tsx";
 import {useTranslation} from "react-i18next";
@@ -13,6 +12,7 @@ import Loading from "@components/Loading.tsx";
 import UserInfoTooltip from "@components/widgets/UserInfoTooltip.tsx";
 import {UserRoomMap} from "@models/roomUser.ts";
 import {RoomId} from "@models/room.ts";
+import {Simulate} from "react-dom/test-utils";
 
 export default function Users(): ReactElement {
     const [_, navigate] = useLocation()
@@ -26,12 +26,11 @@ export default function Users(): ReactElement {
     } = useMainContext()
     const [usersLoading, setUsersLoading] = useState<boolean>(true)
     const [onlineUsers, setOnlineUsers]
-        = useState<Array<UserValueClient>>(new Array<UserValueClient>())
+        = useState<Array<UserClient>>(new Array<UserClient>())
     const [offlineUsers, setOfflineUsers]
-        = useState<Array<UserValueClient>>(new Array<UserValueClient>())
+        = useState<Array<UserClient>>(new Array<UserClient>())
     const [onlineUids, setOnlineUids] = useState<Array<UserId>>(new Array<UserId>());
-    const [clickedOnlineIdx, setClickedOnlineIdx] = useState<number>(-1)
-    const [clickedOfflineIdx, setClickedOfflineIdx] = useState<number>(-1)
+    const [clickedUid, setClickedUid] = useState<UserId>(-1)
 
     const [searchValue, setSearchValue] = useState<string>("")
     const searchValueLC = searchValue.toLowerCase()
@@ -68,17 +67,17 @@ export default function Users(): ReactElement {
     }, [socket, roomUidClicked]);
 
     useEffect(() => {
-        let on: Array<UserValueClient> = new Array<UserValueClient>();
-        let off: Array<UserValueClient> = new Array<UserValueClient>();
+        let on: Array<UserClient> = new Array<UserClient>();
+        let off: Array<UserClient> = new Array<UserClient>();
         for (const uid of users.keys()) {
-            if (!users.get(uid)?.verified)
+            const userValue = users.get(uid)
+            if (userValue == null || !userValue.verified)
                 continue
 
-            if (onlineUids.includes(uid)) {
-                on.push(users.get(uid) as UserValueClient);
-            } else {
-                off.push(users.get(uid) as UserValueClient);
-            }
+            if (onlineUids.includes(uid))
+                on.push({id: uid, ...userValue});
+            else
+                off.push({id: uid, ...userValue});
         }
         on = on.sort((a, b) => a.displayname.localeCompare(b.displayname))
         off = off.sort((a, b) => a.displayname.localeCompare(b.displayname))
@@ -110,18 +109,11 @@ export default function Users(): ReactElement {
         })
     }
 
-    function tooltipOnlineVisibilityChanged(visible: boolean, idx: number) {
+    function tooltipVisibilityChanged(visible: boolean, idx: number) {
         if (!visible)
-            setClickedOnlineIdx(-1)
+            setClickedUid(-1)
         else
-            setClickedOnlineIdx(idx)
-    }
-
-    function tooltipOfflineVisibilityChanged(visible: boolean, idx: number) {
-        if (!visible)
-            setClickedOfflineIdx(-1)
-        else
-            setClickedOfflineIdx(idx)
+            setClickedUid(idx)
     }
 
     if (usersLoading)
@@ -138,15 +130,15 @@ export default function Users(): ReactElement {
                 && <p className="text-center mt-4">{t('users-no-user-exists-filter')}</p>}
             {onlineUsersFiltered.length > 0 &&
                 <p className="text-xs pt-4 pl-4 pb-1">Online ({onlineUsersFiltered.length})</p>}
-            {onlineUsersFiltered.map((u, i) => {
+            {onlineUsersFiltered.map((u) => {
                 return (
                     <UserInfoTooltip
-                        key={i}
-                        id={i}
-                        visible={i === clickedOnlineIdx}
+                        key={u.id}
+                        id={u.id}
+                        visible={u.id === clickedUid}
                         content={
                             <div className="flex items-center">
-                                <Clickable className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${i === clickedOnlineIdx ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
+                                <Clickable className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${u.id === clickedUid ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
                                     <Avatar className="min-w-10 w-10 mr-2"
                                             picBase64={u.avatar}/>
                                     <p className="break-words max-w-[10.4rem]">{u.displayname}</p>
@@ -154,22 +146,22 @@ export default function Users(): ReactElement {
                             </div>
                         }
                         user={u}
-                        tooltipOnlineVisibilityChanged={tooltipOnlineVisibilityChanged}
+                        tooltipOnlineVisibilityChanged={tooltipVisibilityChanged}
                     />
                 )
             })}
 
             {offlineUsersFiltered.length > 0 &&
                 <p className="text-xs pt-4 pl-4 pb-1">Offline ({offlineUsersFiltered.length})</p>}
-            {offlineUsersFiltered.map((u, i) => {
+            {offlineUsersFiltered.map((u) => {
                 return (
                     <UserInfoTooltip
-                        key={i}
-                        id={i}
-                        visible={i === clickedOfflineIdx}
+                        key={u.id}
+                        id={u.id}
+                        visible={u.id === clickedUid}
                         content={
                             <div className="flex items-center">
-                                <Clickable className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${i === clickedOfflineIdx ? 'bg-gray-100 dark:bg-gray-700' : 'opacity-30 hover:opacity-100'}`}>
+                                <Clickable className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${u.id === clickedUid ? 'bg-gray-100 dark:bg-gray-700' : 'opacity-30 hover:opacity-100'}`}>
                                     <Avatar className="min-w-10 w-10 mr-2"
                                             picBase64={u.avatar}/>
                                     <p className="break-words max-w-[10.4rem]">{u.displayname}</p>
@@ -177,7 +169,7 @@ export default function Users(): ReactElement {
                             </div>
                         }
                         user={u}
-                        tooltipOnlineVisibilityChanged={tooltipOfflineVisibilityChanged}
+                        tooltipOnlineVisibilityChanged={tooltipVisibilityChanged}
                     />
                 )
             })}

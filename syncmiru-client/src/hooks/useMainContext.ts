@@ -30,7 +30,7 @@ export const MainContext = createContext<MainContextModel>(
         roomUsers: new Map<RoomId, Set<UserId>>(),
         setRoomUsers: (v) => {},
         roomUidClicked: -1,
-        setRoomUidClicked: (v) => {}
+        setRoomUidClicked: (v) => {},
     })
 
 export const useMainContext = () => useContext(MainContext)
