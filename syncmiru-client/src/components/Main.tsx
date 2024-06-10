@@ -56,6 +56,7 @@ export default function Main(): ReactElement {
     const [currentRid, setCurrentRid] = useState<RoomId | null>(null)
     const [roomUsers, setRoomUsers] = useState<UserRoomMap>(new Map<RoomId, Set<UserId>>())
     const [roomConnection, setRoomConnection] = useState<RoomConnectionState>(RoomConnectionState.Established)
+    const [roomUidClicked, setRoomUidClicked] = useState<UserId>(-1)
     const reconnectingRef = useRef<boolean>(false);
 
     const [users, setUsers]
@@ -242,7 +243,9 @@ export default function Main(): ReactElement {
                     roomConnection: roomConnection,
                     setRoomConnection: setRoomConnection,
                     roomUsers: roomUsers,
-                    setRoomUsers: setRoomUsers
+                    setRoomUsers: setRoomUsers,
+                    roomUidClicked: roomUidClicked,
+                    setRoomUidClicked: setRoomUidClicked
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">

@@ -32,13 +32,14 @@ export default function Rooms(): ReactElement {
         roomConnection,
         uid,
         roomUsers,
-        setRoomUsers
+        setRoomUsers,
+        roomUidClicked,
+        setRoomUidClicked
     } = useMainContext()
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
     const [roomsOrder, setRoomsOrder] = useState<Array<RoomId>>([])
     const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
-    const [uidClicked, setUidClicked] = useState<UserId>(-1)
     const [roomsFetching, setRoomsFetching] = useState<boolean>(true)
     const [roomUsersFetching, setRoomUsersFetching] = useState<boolean>(true)
 
@@ -276,9 +277,9 @@ export default function Rooms(): ReactElement {
 
     function userTooltipVisibilityChanged(visible: boolean, id: UserId) {
         if(visible)
-            setUidClicked(id)
+            setRoomUidClicked(id)
         else
-            setUidClicked(-1)
+            setRoomUidClicked(-1)
     }
 
     if (roomsLoading)
@@ -351,9 +352,9 @@ export default function Rooms(): ReactElement {
                                                 <UserInfoTooltip
                                                     key={uid}
                                                     id={uid}
-                                                    visible={uid === uidClicked}
+                                                    visible={uid === roomUidClicked}
                                                     content={
-                                                        <Clickable className={`w-full py-1.5 ${uid === uidClicked ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
+                                                        <Clickable className={`w-full py-1.5 ${uid === roomUidClicked ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
                                                             <div className="flex items-center ml-2 mr-1">
                                                                 <div className="w-10"></div>
                                                                 {/*<ReadyState*/}

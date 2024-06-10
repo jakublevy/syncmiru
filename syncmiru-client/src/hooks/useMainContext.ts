@@ -28,7 +28,9 @@ export const MainContext = createContext<MainContextModel>(
         roomConnection: RoomConnectionState.Established,
         setRoomConnection: (v) => {},
         roomUsers: new Map<RoomId, Set<UserId>>(),
-        setRoomUsers: (v) => {}
+        setRoomUsers: (v) => {},
+        roomUidClicked: -1,
+        setRoomUidClicked: (v) => {}
     })
 
 export const useMainContext = () => useContext(MainContext)

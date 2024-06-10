@@ -20,7 +20,9 @@ export default function Users(): ReactElement {
     const {
         socket,
         users,
-        setRoomUsers
+        setRoomUsers,
+        roomUidClicked,
+        setRoomUidClicked
     } = useMainContext()
     const [usersLoading, setUsersLoading] = useState<boolean>(true)
     const [onlineUsers, setOnlineUsers]
@@ -98,6 +100,9 @@ export default function Users(): ReactElement {
             }
             return m
         })
+
+        if(uid === roomUidClicked)
+            setRoomUidClicked(-1)
     }
 
     function tooltipOnlineVisibilityChanged(visible: boolean, idx: number) {
