@@ -11,11 +11,17 @@ import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
 import Loading from "@components/Loading.tsx";
 import UserInfoTooltip from "@components/widgets/UserInfoTooltip.tsx";
+import {UserRoomMap} from "@models/roomUser.ts";
+import {RoomId} from "@models/room.ts";
 
 export default function Users(): ReactElement {
     const [_, navigate] = useLocation()
     const {t} = useTranslation()
-    const {socket, users} = useMainContext()
+    const {
+        socket,
+        users,
+        setRoomUsers
+    } = useMainContext()
     const [usersLoading, setUsersLoading] = useState<boolean>(true)
     const [onlineUsers, setOnlineUsers]
         = useState<Array<UserValueClient>>(new Array<UserValueClient>())
@@ -79,6 +85,19 @@ export default function Users(): ReactElement {
 
     function onOffline(uid: UserId) {
         setOnlineUids((p) => p.filter(x => x !== uid))
+        setRoomUsers((p) => {
+            const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
+            for(const [rid, uids] of p) {
+                if(!uids.has(uid))
+                    m.set(rid, uids)
+                else {
+                    const newUids = new Set(uids)
+                    newUids.delete(uid)
+                    m.set(rid, newUids)
+                }
+            }
+            return m
+        })
     }
 
     function tooltipOnlineVisibilityChanged(visible: boolean, idx: number) {

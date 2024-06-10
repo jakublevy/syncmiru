@@ -93,6 +93,13 @@ pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
     query::update_session_last_access_time_now(&state.db, uid, &hwid_hash)
         .await
         .expect("db error");
+
+    s.leave_all().ok();
+    {
+        let mut rid_uids_lock = state.rid_uids.write().await;
+        rid_uids_lock.remove_by_right(&uid);
+    }
+
     s.broadcast().emit("offline", uid).ok();
 }
 

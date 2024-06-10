@@ -2,6 +2,7 @@ import {Socket} from "socket.io-client";
 import {UserMap} from "src/models/user.ts";
 import {RoomId, RoomMap} from "@models/room.ts";
 import {Dispatch, SetStateAction} from "react";
+import {UserRoomMap} from "@models/roomUser.ts";
 
 export interface MainContextModel {
     uid: number
@@ -26,6 +27,8 @@ export interface MainContextModel {
     setCurrentRid: Dispatch<SetStateAction<RoomId | null>>,
     roomConnection: RoomConnectionState
     setRoomConnection: Dispatch<SetStateAction<RoomConnectionState>>,
+    roomUsers: UserRoomMap,
+    setRoomUsers: Dispatch<SetStateAction<UserRoomMap>>,
 }
 
 export enum RoomConnectionState {

@@ -30,13 +30,14 @@ export default function Rooms(): ReactElement {
         currentRid,
         setCurrentRid,
         roomConnection,
-        uid
+        uid,
+        roomUsers,
+        setRoomUsers
     } = useMainContext()
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
     const [roomsOrder, setRoomsOrder] = useState<Array<RoomId>>([])
     const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
-    const [roomUsers, setRoomUsers] = useState<UserRoomMap>(new Map<RoomId, Set<UserId>>())
     const [uidClicked, setUidClicked] = useState<UserId>(-1)
 
     useEffect(() => {
@@ -319,9 +320,9 @@ export default function Rooms(): ReactElement {
                                     {Array.from(roomUids)?.map((uid) => {
                                         const user = users.get(uid)
                                         if (user == null)
-                                            return <></>
+                                            return <div key={uid}></div>
                                         return (
-                                            <>
+                                            <div key={uid}>
                                                 <UserInfoTooltip
                                                     key={uid}
                                                     id={uid}
@@ -347,7 +348,7 @@ export default function Rooms(): ReactElement {
                                                     user={user}
                                                     tooltipOnlineVisibilityChanged={userTooltipVisibilityChanged}
                                                 />
-                                            </>
+                                            </div>
                                         )
                                     })}
                                 </div>}
