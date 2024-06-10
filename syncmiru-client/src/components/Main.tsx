@@ -19,7 +19,7 @@ import UserSettings from "@components/user/UserSettings.tsx";
 import useClearJwt from "@hooks/useClearJwt.ts";
 import {LoginTkns} from "@models/login.ts";
 import {useHwidHash} from "@hooks/useHwidHash.ts";
-import {AvatarChange, DisplaynameChange, UserId, UserMap, UserSrv, UserValueClient} from "src/models/user.ts";
+import {UserId, UserMap, UserSrv, UserValueClient} from "src/models/user.ts";
 import {showPersistentErrorAlert, showPersistentWarningAlert} from "src/utils/alert.ts";
 import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
 import {arrayBufferToBase64} from "src/utils/encoding.ts";
@@ -57,10 +57,9 @@ export default function Main(): ReactElement {
     const [roomUsers, setRoomUsers] = useState<UserRoomMap>(new Map<RoomId, Set<UserId>>())
     const [roomConnection, setRoomConnection] = useState<RoomConnectionState>(RoomConnectionState.Established)
     const [roomUidClicked, setRoomUidClicked] = useState<UserId>(-1)
+    const [usersClickedUid, setUsersClickedUid] = useState<UserId>(-1)
     const reconnectingRef = useRef<boolean>(false);
-
-    const [users, setUsers]
-        = useState<UserMap>(new Map<UserId, UserValueClient>());
+    const [users, setUsers] = useState<UserMap>(new Map<UserId, UserValueClient>());
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -97,14 +96,6 @@ export default function Main(): ReactElement {
     }, []);
 
     useEffect(() => {
-        if (socket !== undefined) {
-            socket.on('displayname_change', onDisplaynameChange)
-            socket.on('avatar_change', onAvatarChange)
-            socket.on("del_users", onDelUsers);
-        }
-    }, [socket, users]);
-
-    useEffect(() => {
         reconnectingRef.current = reconnecting;
     }, [reconnecting]);
 
@@ -125,6 +116,8 @@ export default function Main(): ReactElement {
     }
 
     function ioDisconnect(reason: Socket.DisconnectReason) {
+        setRoomUidClicked(-1)
+        setUsersClickedUid(-1)
         setReconnecting(true)
     }
 
@@ -158,40 +151,9 @@ export default function Main(): ReactElement {
         setLoading(false)
     }
 
-    function onDelUsers(delUids: Array<UserId>) {
-        let m: UserMap = new Map<UserId, UserValueClient>();
-        for (const [id, user] of users) {
-            if (!delUids.includes(id))
-                m.set(id, user)
-        }
-        setUsers(m)
-    }
-
     function onNewLogin() {
         showPersistentWarningAlert(t('login-on-another-device'))
         navigateToLoginFormMain(navigate)
-    }
-
-    function onDisplaynameChange(payload: DisplaynameChange) {
-        let user = users.get(payload.uid)
-        if (user === undefined)
-            return;
-
-        user.displayname = payload.displayname;
-        const m = new Map<UserId, UserValueClient>();
-        m.set(payload.uid, user);
-        setUsers((p) => new Map<UserId, UserValueClient>([...p, ...m]))
-    }
-
-    function onAvatarChange(payload: AvatarChange) {
-        let user = users.get(payload.uid)
-        if (user === undefined)
-            return;
-
-        user.avatar = arrayBufferToBase64(payload.avatar)
-        const m = new Map<UserId, UserValueClient>();
-        m.set(payload.uid, user)
-        setUsers((p) => new Map<UserId, UserValueClient>([...p, ...m]))
     }
 
     function shouldRender() {
@@ -222,6 +184,7 @@ export default function Main(): ReactElement {
                 value={{
                     socket: socket,
                     users: users,
+                    setUsers: setUsers,
                     uid: uid,
                     reconnecting: reconnecting,
                     playlistLoading: playlistLoading,
@@ -245,7 +208,9 @@ export default function Main(): ReactElement {
                     roomUsers: roomUsers,
                     setRoomUsers: setRoomUsers,
                     roomUidClicked: roomUidClicked,
-                    setRoomUidClicked: setRoomUidClicked
+                    setRoomUidClicked: setRoomUidClicked,
+                    usersClickedUid: usersClickedUid,
+                    setUsersClickedUid: setUsersClickedUid,
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">

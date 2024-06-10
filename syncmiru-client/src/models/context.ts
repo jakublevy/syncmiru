@@ -8,6 +8,7 @@ export interface MainContextModel {
     uid: number
     socket: Socket | undefined,
     users: UserMap,
+    setUsers: Dispatch<SetStateAction<UserMap>>
     reconnecting: boolean,
     rooms: RoomMap,
     setRooms: Dispatch<SetStateAction<RoomMap>>,
@@ -31,6 +32,8 @@ export interface MainContextModel {
     setRoomUsers: Dispatch<SetStateAction<UserRoomMap>>,
     roomUidClicked: UserId,
     setRoomUidClicked: Dispatch<SetStateAction<UserId>>,
+    usersClickedUid: UserId,
+    setUsersClickedUid: Dispatch<SetStateAction<UserId>>,
 }
 
 export enum RoomConnectionState {

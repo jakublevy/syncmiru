@@ -1,9 +1,6 @@
-use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
-use std::time::Duration;
 use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
-use sqlx::__rt::sleep;
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};

@@ -8,6 +8,7 @@ export const MainContext = createContext<MainContextModel>(
         uid: 1,
         socket: undefined,
         users: new Map<UserId, UserValueClient>(),
+        setUsers: (v) => {},
         reconnecting: false,
         playlistLoading: false,
         rooms: new Map<RoomId, RoomValue>(),
@@ -31,6 +32,8 @@ export const MainContext = createContext<MainContextModel>(
         setRoomUsers: (v) => {},
         roomUidClicked: -1,
         setRoomUidClicked: (v) => {},
+        usersClickedUid: -1,
+        setUsersClickedUid: (v) => {}
     })
 
 export const useMainContext = () => useContext(MainContext)

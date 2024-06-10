@@ -1,6 +1,6 @@
 import React, {ReactElement, useEffect, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
-import {UserClient, UserId} from "@models/user.ts";
+import {AvatarChange, DisplaynameChange, UserClient, UserId, UserMap, UserValueClient} from "@models/user.ts";
 import Avatar from "@components/widgets/Avatar.tsx";
 import 'src/rc-tooltip.css'
 import {Clickable} from "@components/widgets/Button.tsx";
@@ -12,7 +12,7 @@ import Loading from "@components/Loading.tsx";
 import UserInfoTooltip from "@components/widgets/UserInfoTooltip.tsx";
 import {UserRoomMap} from "@models/roomUser.ts";
 import {RoomId} from "@models/room.ts";
-import {Simulate} from "react-dom/test-utils";
+import {arrayBufferToBase64} from "src/utils/encoding.ts";
 
 export default function Users(): ReactElement {
     const [_, navigate] = useLocation()
@@ -20,9 +20,12 @@ export default function Users(): ReactElement {
     const {
         socket,
         users,
+        setUsers,
         setRoomUsers,
         roomUidClicked,
-        setRoomUidClicked
+        setRoomUidClicked,
+        usersClickedUid,
+        setUsersClickedUid
     } = useMainContext()
     const [usersLoading, setUsersLoading] = useState<boolean>(true)
     const [onlineUsers, setOnlineUsers]
@@ -30,7 +33,6 @@ export default function Users(): ReactElement {
     const [offlineUsers, setOfflineUsers]
         = useState<Array<UserClient>>(new Array<UserClient>())
     const [onlineUids, setOnlineUids] = useState<Array<UserId>>(new Array<UserId>());
-    const [clickedUid, setClickedUid] = useState<UserId>(-1)
 
     const [searchValue, setSearchValue] = useState<string>("")
     const searchValueLC = searchValue.toLowerCase()
@@ -61,7 +63,20 @@ export default function Users(): ReactElement {
     }, [socket]);
 
     useEffect(() => {
+        if (socket !== undefined) {
+            socket.on('displayname_change', onDisplaynameChange)
+            socket.on('avatar_change', onAvatarChange)
+        }
+    }, [socket, users]);
+
+    useEffect(() => {
         if(socket !== undefined) {
+            socket.on("del_users", onDelUsers);
+        }
+    }, [socket, usersClickedUid]);
+
+    useEffect(() => {
+        if (socket !== undefined) {
             socket.on('offline', onOffline)
         }
     }, [socket, roomUidClicked]);
@@ -92,13 +107,13 @@ export default function Users(): ReactElement {
     function onOffline(uid: UserId) {
         setOnlineUids((p) => p.filter(x => x !== uid))
 
-        if(uid === roomUidClicked)
+        if (uid === roomUidClicked)
             setRoomUidClicked(-1)
 
         setRoomUsers((p) => {
             const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
-            for(const [rid, uids] of p) {
-                if(!uids.has(uid))
+            for (const [rid, uids] of p) {
+                if (!uids.has(uid))
                     m.set(rid, uids)
                 else {
                     uids.delete(uid)
@@ -109,11 +124,47 @@ export default function Users(): ReactElement {
         })
     }
 
+    function onDisplaynameChange(payload: DisplaynameChange) {
+        let user = users.get(payload.uid)
+        if (user === undefined)
+            return;
+
+        user.displayname = payload.displayname;
+        const m = new Map<UserId, UserValueClient>();
+        m.set(payload.uid, user);
+        setUsers((p) => new Map<UserId, UserValueClient>([...p, ...m]))
+    }
+
+    function onAvatarChange(payload: AvatarChange) {
+        let user = users.get(payload.uid)
+        if (user === undefined)
+            return;
+
+        user.avatar = arrayBufferToBase64(payload.avatar)
+        const m = new Map<UserId, UserValueClient>();
+        m.set(payload.uid, user)
+        setUsers((p) => new Map<UserId, UserValueClient>([...p, ...m]))
+    }
+
+    function onDelUsers(delUids: Array<UserId>) {
+        if(delUids.includes(usersClickedUid))
+            setUsersClickedUid(-1)
+
+        setUsers((p) => {
+            let m: UserMap = new Map<UserId, UserValueClient>();
+            for (const [id, user] of p) {
+                if (!delUids.includes(id))
+                    m.set(id, user)
+            }
+            return m
+        })
+    }
+
     function tooltipVisibilityChanged(visible: boolean, idx: number) {
         if (!visible)
-            setClickedUid(-1)
+            setUsersClickedUid(-1)
         else
-            setClickedUid(idx)
+            setUsersClickedUid(idx)
     }
 
     if (usersLoading)
@@ -135,10 +186,11 @@ export default function Users(): ReactElement {
                     <UserInfoTooltip
                         key={u.id}
                         id={u.id}
-                        visible={u.id === clickedUid}
+                        visible={u.id === usersClickedUid}
                         content={
                             <div className="flex items-center">
-                                <Clickable className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${u.id === clickedUid ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
+                                <Clickable
+                                    className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${u.id === usersClickedUid ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
                                     <Avatar className="min-w-10 w-10 mr-2"
                                             picBase64={u.avatar}/>
                                     <p className="break-words max-w-[10.4rem]">{u.displayname}</p>
@@ -158,10 +210,11 @@ export default function Users(): ReactElement {
                     <UserInfoTooltip
                         key={u.id}
                         id={u.id}
-                        visible={u.id === clickedUid}
+                        visible={u.id === usersClickedUid}
                         content={
                             <div className="flex items-center">
-                                <Clickable className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${u.id === clickedUid ? 'bg-gray-100 dark:bg-gray-700' : 'opacity-30 hover:opacity-100'}`}>
+                                <Clickable
+                                    className={`p-1 pl-3 ml-1 mr-1 mtext-left flex items-center w-full text-left ${u.id === usersClickedUid ? 'bg-gray-100 dark:bg-gray-700' : 'opacity-30 hover:opacity-100'}`}>
                                     <Avatar className="min-w-10 w-10 mr-2"
                                             picBase64={u.avatar}/>
                                     <p className="break-words max-w-[10.4rem]">{u.displayname}</p>
