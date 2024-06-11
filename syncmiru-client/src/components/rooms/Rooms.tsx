@@ -256,11 +256,9 @@ export default function Rooms(): ReactElement {
             socket!.emitWithAck("ping", {})
                 .then(() => {
                     const took = performance.now() - start
-                    console.log('then took ' + took)
                     socket!.emitWithAck("room_ping", {ping: took})
                         .then((ack: SocketIoAck<null>) => {
                             if (ack.status === SocketIoAckType.Err) {
-                                console.log(roomPingTimerRef?.current)
                                 clearInterval(roomPingTimerRef?.current)
                                 setCurrentRid(null)
                             }
@@ -269,7 +267,6 @@ export default function Rooms(): ReactElement {
                             }
                         })
                         .catch(() => {
-                            console.log(roomPingTimerRef?.current)
                             clearInterval(roomPingTimerRef?.current)
                             setCurrentRid(null)
                         })
@@ -431,6 +428,7 @@ export default function Rooms(): ReactElement {
                                 {hasUsers && <div className="flex flex-col gap-y-0.5 mb-4">
                                     {Array.from(roomUids)?.map((uid) => {
                                         const user = users.get(uid)
+                                        const showAdditional = rid === currentRid
                                         const ping = uidPing.get(uid)
                                         if (user == null)
                                             return <div key={uid}></div>
@@ -448,7 +446,10 @@ export default function Rooms(): ReactElement {
                                                                 {/*<ReadyState*/}
                                                                 {/*    className="w-3 mr-2"*/}
                                                                 {/*    state={UserReadyState.Loading}/>*/}
-                                                                {ping != null && <Ping id={`${uid}_ping`} ping={ping} className="w-3 mr-2"/>}
+                                                                {showAdditional && ping != null
+                                                                    ? <Ping id={`${uid}_ping`} ping={ping} className="w-3 mr-2"/>
+                                                                    : <div className="w-5"></div>
+                                                                }
                                                                 <Avatar className="w-6" picBase64={user.avatar}/>
                                                                 <p className="text-sm text-left ml-1.5 w-[4.4rem] break-words">{user.displayname}</p>
                                                                 <div className="flex-1"></div>

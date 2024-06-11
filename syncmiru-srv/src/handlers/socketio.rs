@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::sync::Arc;
-use pem::parse;
 use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
@@ -1268,24 +1267,21 @@ pub async fn join_room(
         return;
     }
     let uid = state.socket2uid(&s).await;
-    let connected_room_opt = state.socket_connected_room(&s).await;
-
+    let old_connected_room_opt = state.socket_connected_room(&s).await;
+    let new_room_name = payload.rid.to_string();
     {
         let mut uid_ping_lock = state.uid_ping.write().await;
         let mut rid_uids_lock = state.rid_uids.write().await;
-        // if let Some(connected_room) = connected_room_opt {
-        //     let mut room_uids = rid_uids_lock.get_by_left_mut(&connected_room).unwrap();
-        //     room_uids.remove(&uid);
-        // }
         rid_uids_lock.insert(payload.rid, uid);
         uid_ping_lock.insert(uid, payload.ping);
 
         s.leave_all().ok();
-        s.join(payload.rid.to_string()).ok();
+        s.join(new_room_name.clone()).ok();
     }
+    s.to(new_room_name).emit("room_user_ping", RoomUserPingChange{ uid, ping: payload.ping }).ok();
 
-    if let Some(connected_room) = connected_room_opt {
-        let urc = UserRoomChange { uid, old_rid: connected_room, new_rid: payload.rid };
+    if let Some(old_connected_room) = old_connected_room_opt {
+        let urc = UserRoomChange { uid, old_rid: old_connected_room, new_rid: payload.rid };
         s.broadcast().emit("user_room_change", &urc).ok();
         s.emit("user_room_change", urc).ok();
     }
@@ -1337,10 +1333,7 @@ pub async fn room_ping(
     ack: AckSender,
     Data(payload): Data<RoomPing>,
 ) {
-    println!("room_ping called");
-    println!("{:?}", payload);
     let connected_room_opt = state.socket_connected_room(&s).await;
-    println!("{:?}", connected_room_opt);
     if connected_room_opt.is_none() {
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
