@@ -16,7 +16,7 @@ export default function JoinedRoom(): ReactElement {
         setCurrentRid,
         roomConnection,
         setRoomConnection,
-        roomPingTimer,
+        roomPingTimerRef,
         setUidPing
     } = useMainContext()
     const {t} = useTranslation()
@@ -39,7 +39,7 @@ export default function JoinedRoom(): ReactElement {
                     showPersistentErrorAlert(t('room-leave-failed'))
                 }
                 else {
-                    clearInterval(roomPingTimer)
+                    clearInterval(roomPingTimerRef?.current)
                     setUidPing(new Map<UserId, number>())
                     setCurrentRid(null)
                 }

@@ -62,6 +62,7 @@ export default function Main(): ReactElement {
     const [users, setUsers] = useState<UserMap>(new Map<UserId, UserValueClient>());
     const [roomPingTimer, setRoomPingTimer] = useState<number>(-1)
     const [uidPing, setUidPing] = useState<UserRoomPingMap>(new Map<UserId, number>())
+    const roomPingTimerRef = useRef<number>(-1)
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -120,6 +121,7 @@ export default function Main(): ReactElement {
     function ioDisconnect(reason: Socket.DisconnectReason) {
         setRoomUidClicked(-1)
         setUsersClickedUid(-1)
+        clearInterval(roomPingTimerRef?.current)
         setRoomUsers(new Map<RoomId, Set<UserId>>())
         setCurrentRid(null)
         setUidPing(new Map<UserId, number>())
@@ -216,8 +218,7 @@ export default function Main(): ReactElement {
                     setRoomUidClicked: setRoomUidClicked,
                     usersClickedUid: usersClickedUid,
                     setUsersClickedUid: setUsersClickedUid,
-                    roomPingTimer: roomPingTimer,
-                    setRoomPingTimer: setRoomPingTimer,
+                    roomPingTimerRef: roomPingTimerRef,
                     uidPing: uidPing,
                     setUidPing: setUidPing
                 }}>

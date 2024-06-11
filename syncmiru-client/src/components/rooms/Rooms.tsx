@@ -1,4 +1,4 @@
-import React, {MouseEvent, ReactElement, useEffect, useState} from "react";
+import React, {MouseEvent, ReactElement, useEffect, useRef, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {RoomId, RoomMap, RoomNameChange, RoomSrv, RoomsWOrder, RoomValue} from "@models/room.ts";
@@ -44,8 +44,7 @@ export default function Rooms(): ReactElement {
         setRoomUsers,
         roomUidClicked,
         setRoomUidClicked,
-        roomPingTimer,
-        setRoomPingTimer,
+        roomPingTimerRef,
         uidPing,
         setUidPing
     } = useMainContext()
@@ -251,39 +250,27 @@ export default function Rooms(): ReactElement {
     }
 
     function startPingTimer() {
-        setRoomPingTimer(
-            setInterval(() => {
-                const start = performance.now()
-                socket!.emitWithAck("ping", {})
-                    .then(() => {
-                        const took = performance.now() - start
-                        socket!.emitWithAck("room_ping", {ping: took})
-                            .then((ack: SocketIoAck<null>) => {
-                                if (ack.status === SocketIoAckType.Err) {
-                                    setRoomPingTimer((p) => {
-                                        console.log('clear interval req')
-                                        console.log(p)
-                                        clearInterval(p)
-                                        setCurrentRid(null)
-                                        return -1
-                                    })
-                                }
-                                else {
-                                    changeRoomUserPing({uid: uid, ping: took})
-                                }
-                            })
-                            .catch(() => {
-                                setRoomPingTimer((p) => {
-                                    console.log('clear interval req')
-                                    console.log(p)
-                                    clearInterval(p)
-                                    setCurrentRid(null)
-                                    return -1
-                                })
-                            })
-                    })
-            }, 3000)
-        )
+        roomPingTimerRef!.current = setInterval(() => {
+            const start = performance.now()
+            socket!.emitWithAck("ping", {})
+                .then(() => {
+                    const took = performance.now() - start
+                    socket!.emitWithAck("room_ping", {ping: took})
+                        .then((ack: SocketIoAck<null>) => {
+                            if (ack.status === SocketIoAckType.Err) {
+                                clearInterval(roomPingTimerRef?.current)
+                                setCurrentRid(null)
+                            }
+                            else {
+                                changeRoomUserPing({uid: uid, ping: took})
+                            }
+                        })
+                        .catch(() => {
+                            clearInterval(roomPingTimerRef?.current)
+                            setCurrentRid(null)
+                        })
+                })
+        }, 3000)
     }
 
     function roomClicked(rid: RoomId) {

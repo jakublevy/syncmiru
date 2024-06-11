@@ -34,8 +34,7 @@ export const MainContext = createContext<MainContextModel>(
         setRoomUidClicked: (v) => {},
         usersClickedUid: -1,
         setUsersClickedUid: (v) => {},
-        roomPingTimer: -1,
-        setRoomPingTimer: (v) => {},
+        roomPingTimerRef: null,
         uidPing: new Map<UserId, number>(),
         setUidPing: (v) => {}
     })
