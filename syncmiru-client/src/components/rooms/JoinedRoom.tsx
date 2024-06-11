@@ -6,6 +6,7 @@ import {useTranslation} from "react-i18next";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {RoomConnectionState} from "@models/context.ts";
+import {UserId} from "@models/user.ts";
 
 export default function JoinedRoom(): ReactElement {
     const {
@@ -15,7 +16,8 @@ export default function JoinedRoom(): ReactElement {
         setCurrentRid,
         roomConnection,
         setRoomConnection,
-        roomPingTimer
+        roomPingTimer,
+        setUidPing
     } = useMainContext()
     const {t} = useTranslation()
 
@@ -38,6 +40,7 @@ export default function JoinedRoom(): ReactElement {
                 }
                 else {
                     clearInterval(roomPingTimer)
+                    setUidPing(new Map<UserId, number>())
                     setCurrentRid(null)
                 }
             })

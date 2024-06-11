@@ -120,6 +120,9 @@ export default function Main(): ReactElement {
     function ioDisconnect(reason: Socket.DisconnectReason) {
         setRoomUidClicked(-1)
         setUsersClickedUid(-1)
+        setRoomUsers(new Map<RoomId, Set<UserId>>())
+        setCurrentRid(null)
+        setUidPing(new Map<UserId, number>())
         setReconnecting(true)
     }
 

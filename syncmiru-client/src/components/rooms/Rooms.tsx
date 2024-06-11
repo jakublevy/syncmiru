@@ -210,6 +210,10 @@ export default function Rooms(): ReactElement {
     }
 
     function onRoomUserPing(roomUserPingChange: RoomUserPingChange) {
+        changeRoomUserPing(roomUserPingChange)
+    }
+
+    function changeRoomUserPing(roomUserPingChange: RoomUserPingChange) {
         setUidPing((p) => {
             const m: UserRoomPingMap = new Map<UserId, number>()
             for (const [uid, ping] of p) {
@@ -256,16 +260,26 @@ export default function Rooms(): ReactElement {
                         socket!.emitWithAck("room_ping", {ping: took})
                             .then((ack: SocketIoAck<null>) => {
                                 if (ack.status === SocketIoAckType.Err) {
-                                    clearInterval(roomPingTimer)
-                                    setCurrentRid(null)
+                                    setRoomPingTimer((p) => {
+                                        console.log('clear interval req')
+                                        console.log(p)
+                                        clearInterval(p)
+                                        setCurrentRid(null)
+                                        return -1
+                                    })
                                 }
                                 else {
-                                    // TODO: change my ping
+                                    changeRoomUserPing({uid: uid, ping: took})
                                 }
                             })
                             .catch(() => {
-                                clearInterval(roomPingTimer)
-                                setCurrentRid(null)
+                                setRoomPingTimer((p) => {
+                                    console.log('clear interval req')
+                                    console.log(p)
+                                    clearInterval(p)
+                                    setCurrentRid(null)
+                                    return -1
+                                })
                             })
                     })
             }, 3000)

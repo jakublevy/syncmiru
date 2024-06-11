@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::sync::Arc;
+use pem::parse;
 use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
@@ -1336,7 +1337,10 @@ pub async fn room_ping(
     ack: AckSender,
     Data(payload): Data<RoomPing>,
 ) {
+    println!("room_ping called");
+    println!("{:?}", payload);
     let connected_room_opt = state.socket_connected_room(&s).await;
+    println!("{:?}", connected_room_opt);
     if connected_room_opt.is_none() {
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
@@ -1346,7 +1350,8 @@ pub async fn room_ping(
         let mut uid_ping_lock = state.uid_ping.write().await;
         uid_ping_lock.insert(uid, payload.ping);
     }
-    s.broadcast().emit("room_user_ping", RoomUserPingChange{ uid, ping: payload.ping }).ok();
+    let room_name = connected_room_opt.unwrap().to_string();
+    s.to(room_name).emit("room_user_ping", RoomUserPingChange{ uid, ping: payload.ping }).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 
