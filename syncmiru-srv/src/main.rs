@@ -68,7 +68,8 @@ async fn main() -> Result<()> {
          socket_uid_disconnect: HashMap::new().into(),
          io: None.into(),
          sid_hwid_hash: HashMap::new().into(),
-         rid_uids: BiMultiMap::new().into()
+         rid_uids: BiMultiMap::new().into(),
+         uid_ping: HashMap::new().into()
       });
 
    let socketio_srvstate = srvstate.clone();

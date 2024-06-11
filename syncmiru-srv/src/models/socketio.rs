@@ -209,6 +209,18 @@ pub struct JoinRoomReq {
     pub ping: f64
 }
 
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct RoomPing {
+    #[validate(custom(function = "validators::check_ping"))]
+    pub ping: f64
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct RoomUserPingChange {
+    pub uid: Id,
+    pub ping: f64
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct UserRoomChange {
     pub old_rid: Id,

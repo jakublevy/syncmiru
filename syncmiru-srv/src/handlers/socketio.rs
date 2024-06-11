@@ -1,10 +1,12 @@
+use std::collections::HashMap;
+use std::hash::Hash;
 use std::sync::Arc;
 use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -63,6 +65,8 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("join_room", join_room);
     s.on("disconnect_room", disconnect_room);
     s.on("get_room_users", get_room_users);
+    s.on("room_ping", room_ping);
+    s.on("get_room_pings", get_room_pings);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1266,18 +1270,21 @@ pub async fn join_room(
     let connected_room_opt = state.socket_connected_room(&s).await;
 
     {
+        let mut uid_ping_lock = state.uid_ping.write().await;
         let mut rid_uids_lock = state.rid_uids.write().await;
-        if let Some(connected_room) = connected_room_opt {
-            let mut room_uids = rid_uids_lock.get_by_left_mut(&connected_room).unwrap();
-            room_uids.remove(&uid);
-        }
+        // if let Some(connected_room) = connected_room_opt {
+        //     let mut room_uids = rid_uids_lock.get_by_left_mut(&connected_room).unwrap();
+        //     room_uids.remove(&uid);
+        // }
         rid_uids_lock.insert(payload.rid, uid);
-    }
-    s.leave_all().ok();
-    s.join(payload.rid.to_string()).ok();
+        uid_ping_lock.insert(uid, payload.ping);
 
-    if connected_room_opt.is_some() {
-        let urc = UserRoomChange { uid, old_rid: connected_room_opt.unwrap(), new_rid: payload.rid };
+        s.leave_all().ok();
+        s.join(payload.rid.to_string()).ok();
+    }
+
+    if let Some(connected_room) = connected_room_opt {
+        let urc = UserRoomChange { uid, old_rid: connected_room, new_rid: payload.rid };
         s.broadcast().emit("user_room_change", &urc).ok();
         s.emit("user_room_change", urc).ok();
     }
@@ -1302,9 +1309,9 @@ pub async fn disconnect_room(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-    s.leave_all().ok();
     {
         let mut rid_uids_lock = state.rid_uids.write().await;
+        s.leave_all().ok();
         rid_uids_lock.remove_by_right(&uid);
     }
     let urd = UserRoomDisconnect{ rid: connected_room_opt.unwrap(), uid };
@@ -1321,4 +1328,49 @@ pub async fn get_room_users(
     let rid_uids_lock = state.rid_uids.read().await;
     let rid2uids = rid_uids_lock.get_key_to_values_hashmap().clone();
     ack.send(rid2uids).ok();
+}
+
+pub async fn room_ping(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<RoomPing>,
+) {
+    let connected_room_opt = state.socket_connected_room(&s).await;
+    if connected_room_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let uid = state.socket2uid(&s).await;
+    {
+        let mut uid_ping_lock = state.uid_ping.write().await;
+        uid_ping_lock.insert(uid, payload.ping);
+    }
+    s.broadcast().emit("room_user_ping", RoomUserPingChange{ uid, ping: payload.ping }).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn get_room_pings(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+) {
+    let connected_room_opt = state.socket_connected_room(&s).await;
+    if connected_room_opt.is_none() {
+        ack.send(SocketIoAck::<HashMap<Id, f64>>::err()).ok();
+        return;
+    }
+    let connected_room = connected_room_opt.unwrap();
+    let mut room_pings = HashMap::<Id, f64>::new();
+    {
+        let rid_uids_lock = state.rid_uids.read().await;
+        let uids_in_room = rid_uids_lock.get_by_left(&connected_room).unwrap();
+        let uid_ping_lock = state.uid_ping.read().await;
+        room_pings = uid_ping_lock
+                .iter()
+                .filter(|&(id, ping)| uids_in_room.contains(id))
+                .map(|(id, ping)| (*id, *ping))
+                .collect::<HashMap<Id, f64>>();
+    }
+    ack.send(SocketIoAck::<HashMap<Id, f64>>::ok(Some(room_pings))).ok();
 }

@@ -30,7 +30,7 @@ import {useUsersShown} from "@hooks/useUsersShown.ts";
 import {useAudioSync} from "@hooks/useAudioSync.ts";
 import {useSubSync} from "@hooks/useSubSync.ts";
 import {RoomConnectionState} from "@models/context.ts";
-import {UserRoomMap} from "@models/roomUser.ts";
+import {UserRoomMap, UserRoomPingMap} from "@models/roomUser.ts";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -60,6 +60,8 @@ export default function Main(): ReactElement {
     const [usersClickedUid, setUsersClickedUid] = useState<UserId>(-1)
     const reconnectingRef = useRef<boolean>(false);
     const [users, setUsers] = useState<UserMap>(new Map<UserId, UserValueClient>());
+    const [roomPingTimer, setRoomPingTimer] = useState<number>(-1)
+    const [uidPing, setUidPing] = useState<UserRoomPingMap>(new Map<UserId, number>())
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -211,6 +213,10 @@ export default function Main(): ReactElement {
                     setRoomUidClicked: setRoomUidClicked,
                     usersClickedUid: usersClickedUid,
                     setUsersClickedUid: setUsersClickedUid,
+                    roomPingTimer: roomPingTimer,
+                    setRoomPingTimer: setRoomPingTimer,
+                    uidPing: uidPing,
+                    setUidPing: setUidPing
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">

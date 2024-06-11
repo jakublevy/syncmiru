@@ -8,7 +8,7 @@ export default function Ping({id, ping, className}: Props): ReactElement {
     const tooltipBgColor = ping <= 50 ? '#1c7f21' : ping <= 100 ? '#f97316' : '#dc3545'
     return (
         <div>
-            <a data-tooltip-id={id} data-tooltip-content={`${ping} ms`}>
+            <a data-tooltip-id={id} data-tooltip-content={`${ping.toFixed(0)} ms`}>
                 {ping <= 50
                     ? <Signal3 className={className} tooltipId={id} tabIndex={-1} />
                     : <> {ping <= 100

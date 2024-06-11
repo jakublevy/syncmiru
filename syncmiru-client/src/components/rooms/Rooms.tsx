@@ -11,12 +11,21 @@ import {RoomSettingsHistoryState} from "@models/historyState.ts";
 import {arrayMove, List, OnChangeMeta, RenderListParams} from "react-movable";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
-import {UserRoomChange, UserRoomDisconnect, UserRoomJoin, UserRoomMap, UserRoomSrv} from "@models/roomUser.ts";
+import {
+    RoomUserPingChange,
+    UserRoomChange,
+    UserRoomDisconnect,
+    UserRoomJoin,
+    UserRoomMap, UserRoomPingMap,
+    UserRoomPingsSrv,
+    UserRoomSrv
+} from "@models/roomUser.ts";
 import {UserId} from "@models/user.ts";
 import {Clickable} from "@components/widgets/Button.tsx";
 import Avatar from "@components/widgets/Avatar.tsx";
 import {RoomConnectionState} from "@models/context.ts";
 import UserInfoTooltip from "@components/widgets/UserInfoTooltip.tsx";
+import Ping from "@components/widgets/Ping.tsx";
 
 export default function Rooms(): ReactElement {
     const {
@@ -34,7 +43,11 @@ export default function Rooms(): ReactElement {
         roomUsers,
         setRoomUsers,
         roomUidClicked,
-        setRoomUidClicked
+        setRoomUidClicked,
+        roomPingTimer,
+        setRoomPingTimer,
+        uidPing,
+        setUidPing
     } = useMainContext()
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
@@ -54,6 +67,7 @@ export default function Rooms(): ReactElement {
             socket.on('room_order', onRoomOrder)
             socket.on('user_room_join', onUserRoomJoin)
             socket.on('user_room_change', onUserRoomChange)
+            socket.on('room_user_ping', onRoomUserPing)
 
             socket.emitWithAck("get_rooms")
                 .then((roomsWOrder: RoomsWOrder) => {
@@ -70,7 +84,7 @@ export default function Rooms(): ReactElement {
             socket.emitWithAck("get_room_users")
                 .then((roomUsers: UserRoomSrv) => {
                     const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
-                    for(const ridStr in roomUsers) {
+                    for (const ridStr in roomUsers) {
                         const rid = parseInt(ridStr)
                         const uids = new Set(roomUsers[ridStr])
                         m.set(rid, uids)
@@ -87,7 +101,7 @@ export default function Rooms(): ReactElement {
     }, [socket]);
 
     useEffect(() => {
-        if(socket !== undefined) {
+        if (socket !== undefined) {
             socket.on('user_room_disconnect', onUserRoomDisconnect)
         }
     }, [socket, roomUidClicked]);
@@ -195,8 +209,20 @@ export default function Rooms(): ReactElement {
             setRoomConnection(RoomConnectionState.Established)
     }
 
+    function onRoomUserPing(roomUserPingChange: RoomUserPingChange) {
+        setUidPing((p) => {
+            const m: UserRoomPingMap = new Map<UserId, number>()
+            for (const [uid, ping] of p) {
+                if(uid !== roomUserPingChange.uid)
+                    m.set(uid, ping)
+            }
+            m.set(roomUserPingChange.uid, roomUserPingChange.ping)
+            return m
+        })
+    }
+
     function onUserRoomDisconnect(userRoomDisconnect: UserRoomDisconnect) {
-        if(userRoomDisconnect.uid === roomUidClicked)
+        if (userRoomDisconnect.uid === roomUidClicked)
             setRoomUidClicked(-1)
 
         setRoomUsers((p) => {
@@ -220,8 +246,34 @@ export default function Rooms(): ReactElement {
         navigate<RoomSettingsHistoryState>('/main/room-settings/general', {state: {rid: rid}})
     }
 
+    function startPingTimer() {
+        setRoomPingTimer(
+            setInterval(() => {
+                const start = performance.now()
+                socket!.emitWithAck("ping", {})
+                    .then(() => {
+                        const took = performance.now() - start
+                        socket!.emitWithAck("room_ping", {ping: took})
+                            .then((ack: SocketIoAck<null>) => {
+                                if (ack.status === SocketIoAckType.Err) {
+                                    clearInterval(roomPingTimer)
+                                    setCurrentRid(null)
+                                }
+                                else {
+                                    // TODO: change my ping
+                                }
+                            })
+                            .catch(() => {
+                                clearInterval(roomPingTimer)
+                                setCurrentRid(null)
+                            })
+                    })
+            }, 3000)
+        )
+    }
+
     function roomClicked(rid: RoomId) {
-        if(currentRid === rid || [RoomConnectionState.Connecting, RoomConnectionState.Disconnecting].includes(roomConnection))
+        if (currentRid === rid || [RoomConnectionState.Connecting, RoomConnectionState.Disconnecting].includes(roomConnection))
             return
 
         setCurrentRid(rid)
@@ -230,25 +282,45 @@ export default function Rooms(): ReactElement {
         socket!.emitWithAck("ping", {})
             .then(() => {
                 const took = performance.now() - start
+
+                const a = new Map<UserId, number>()
+                a.set(uid, took)
+                setUidPing(a)
+
                 socket!.emitWithAck("join_room", {rid: rid, ping: took})
                     .then((ack: SocketIoAck<null>) => {
                         if (ack.status === SocketIoAckType.Err) {
                             showPersistentErrorAlert(t('room-join-failed'))
                             setCurrentRid(null)
+                        } else {
+                            socket!.emitWithAck("get_room_pings")
+                                .then((ack: SocketIoAck<UserRoomPingsSrv>) => {
+                                    if(ack.status === SocketIoAckType.Ok) {
+                                        const payload = ack.payload as UserRoomPingsSrv
+                                        const m: UserRoomPingMap = new Map<UserId, number>()
+                                        for(const uidStr in payload) {
+                                            const uid = parseInt(uidStr)
+                                            m.set(uid, payload[uid])
+                                        }
+                                        setUidPing(m)
+                                    }
+                                })
+                                .finally(() => {
+                                    setRoomConnection(RoomConnectionState.Established)
+                                })
+                            startPingTimer()
                         }
                     })
                     .catch(() => {
                         showPersistentErrorAlert(t('room-join-failed'))
                         setCurrentRid(null)
-                    })
-                    .finally(() => {
                         setRoomConnection(RoomConnectionState.Established)
                     })
             })
             .catch(() => {
                 showPersistentErrorAlert(t('room-join-ping-error'))
-                setRoomConnection(RoomConnectionState.Established)
                 setCurrentRid(null)
+                setRoomConnection(RoomConnectionState.Established)
             })
     }
 
@@ -284,7 +356,7 @@ export default function Rooms(): ReactElement {
     }
 
     function userTooltipVisibilityChanged(visible: boolean, id: UserId) {
-        if(visible)
+        if (visible)
             setRoomUidClicked(id)
         else
             setRoomUidClicked(-1)
@@ -354,6 +426,7 @@ export default function Rooms(): ReactElement {
                                 {hasUsers && <div className="flex flex-col gap-y-0.5 mb-4">
                                     {Array.from(roomUids)?.map((uid) => {
                                         const user = users.get(uid)
+                                        const ping = uidPing.get(uid)
                                         if (user == null)
                                             return <div key={uid}></div>
                                         return (
@@ -363,13 +436,14 @@ export default function Rooms(): ReactElement {
                                                     id={uid}
                                                     visible={uid === roomUidClicked}
                                                     content={
-                                                        <Clickable className={`w-full py-1.5 ${uid === roomUidClicked ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
+                                                        <Clickable
+                                                            className={`w-full py-1.5 ${uid === roomUidClicked ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
                                                             <div className="flex items-center ml-2 mr-1">
-                                                                <div className="w-10"></div>
+                                                                <div className="w-5"></div>
                                                                 {/*<ReadyState*/}
                                                                 {/*    className="w-3 mr-2"*/}
                                                                 {/*    state={UserReadyState.Loading}/>*/}
-                                                                {/*<Ping id={`${uid}_ping`} ping={5} className="w-3 mr-2"/>*/}
+                                                                {ping != null && <Ping id={`${uid}_ping`} ping={ping} className="w-3 mr-2"/>}
                                                                 <Avatar className="w-6" picBase64={user.avatar}/>
                                                                 <p className="text-sm text-left ml-1.5 w-[4.4rem] break-words">{user.displayname}</p>
                                                                 <div className="flex-1"></div>
