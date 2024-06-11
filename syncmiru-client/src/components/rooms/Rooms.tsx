@@ -250,14 +250,17 @@ export default function Rooms(): ReactElement {
     }
 
     function startPingTimer() {
+        clearInterval(roomPingTimerRef?.current)
         roomPingTimerRef!.current = setInterval(() => {
             const start = performance.now()
             socket!.emitWithAck("ping", {})
                 .then(() => {
                     const took = performance.now() - start
+                    console.log('then took ' + took)
                     socket!.emitWithAck("room_ping", {ping: took})
                         .then((ack: SocketIoAck<null>) => {
                             if (ack.status === SocketIoAckType.Err) {
+                                console.log(roomPingTimerRef?.current)
                                 clearInterval(roomPingTimerRef?.current)
                                 setCurrentRid(null)
                             }
@@ -266,6 +269,7 @@ export default function Rooms(): ReactElement {
                             }
                         })
                         .catch(() => {
+                            console.log(roomPingTimerRef?.current)
                             clearInterval(roomPingTimerRef?.current)
                             setCurrentRid(null)
                         })
