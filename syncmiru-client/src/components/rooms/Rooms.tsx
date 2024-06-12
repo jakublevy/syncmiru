@@ -102,7 +102,7 @@ export default function Rooms(): ReactElement {
         if(socket !== undefined) {
             socket.on('del_rooms', onDeleteRooms)
         }
-    }, [currentRid]);
+    }, [socket, currentRid]);
 
     useEffect(() => {
         if (socket !== undefined) {
@@ -115,9 +115,10 @@ export default function Rooms(): ReactElement {
     }, [roomsFetching, roomUsersFetching]);
 
     function onRooms(rooms: Array<RoomSrv>) {
+        console.log(rooms)
         addRoomsFromSrv(rooms)
         setRoomsOrder((p) => {
-            return [...p, ...rooms.map(x => x.id)]
+            return [...new Set([...p, ...rooms.map(x => x.id)])]
         })
     }
 
@@ -135,7 +136,6 @@ export default function Rooms(): ReactElement {
 
     function onDeleteRooms(roomIdsToDelete: Array<RoomId>) {
         if(currentRid != null && roomIdsToDelete.includes(currentRid)) {
-            console.log('the room I was in was deleted')
             setRoomUidClicked(-1)
             clearInterval(roomPingTimerRef?.current)
             setRoomUsers(new Map<RoomId, Set<UserId>>())
