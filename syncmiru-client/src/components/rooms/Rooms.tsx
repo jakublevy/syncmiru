@@ -135,7 +135,6 @@ export default function Rooms(): ReactElement {
 
     function onDeleteRooms(roomIdsToDelete: Array<RoomId>) {
         if(currentRid != null && roomIdsToDelete.includes(currentRid)) {
-            console.log('the room I was in was deleted')
             setRoomUidClicked(-1)
             clearInterval(roomPingTimerRef?.current)
             setRoomUsers(new Map<RoomId, Set<UserId>>())
