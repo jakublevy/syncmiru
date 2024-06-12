@@ -102,14 +102,10 @@ export default function Users(): ReactElement {
     }, [users, onlineUids]);
 
     function onOnline(uid: UserId) {
-        const now = performance.now()
-        console.log(`online called at ${now}`)
         setOnlineUids((p) => [...new Set([...p, uid])])
     }
 
     function onOffline(uid: UserId) {
-        const now = performance.now()
-        console.log(`offline called at ${now}`)
         setOnlineUids((p) => p.filter(x => x !== uid))
 
         if (uid === roomUidClicked)

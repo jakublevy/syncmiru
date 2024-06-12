@@ -71,32 +71,21 @@ export default function Main(): ReactElement {
             },
         )
         s.on('connect_error', ioConnError)
-        s.on('connect', ioConn)
         s.on('disconnect', ioDisconnect)
         s.on('users', onUsers)
         s.on('new_login', onNewLogin)
         setSocket(s)
 
-        s.emitWithAck("get_users")
-            .then((users: Array<UserSrv>) => {
-                setUsersFromSrv(users)
-            })
-            .catch(() => {
-                navigateToLoginFormMain(navigate)
-            })
-
-        s.emitWithAck("get_me")
-            .then((me: UserId) => {
-                setUid(me)
-            })
-            .catch(() => {
-                navigateToLoginFormMain(navigate)
-            })
-
         return () => {
             s.disconnect()
         };
     }, []);
+
+    useEffect(() => {
+        if(socket !== undefined) {
+            socket.on('connect', ioConn)
+        }
+    }, [socket]);
 
     useEffect(() => {
         reconnectingRef.current = reconnecting;
@@ -115,6 +104,7 @@ export default function Main(): ReactElement {
     }, [subSyncInit]);
 
     function ioConn() {
+        loadInitialData()
         setReconnecting(false)
     }
 
@@ -138,6 +128,24 @@ export default function Main(): ReactElement {
             showPersistentErrorAlert(t('login-failed'))
             navigateToLoginFormMain(navigate)
         }
+    }
+
+    function loadInitialData() {
+        socket!.emitWithAck("get_users")
+            .then((users: Array<UserSrv>) => {
+                setUsersFromSrv(users)
+            })
+            .catch(() => {
+                navigateToLoginFormMain(navigate)
+            })
+
+        socket!.emitWithAck("get_me")
+            .then((me: UserId) => {
+                setUid(me)
+            })
+            .catch(() => {
+                navigateToLoginFormMain(navigate)
+            })
     }
 
     function onUsers(user: UserSrv) {
@@ -183,9 +191,11 @@ export default function Main(): ReactElement {
         return location.startsWith("/main/room-settings") && shouldRender()
     }
 
+    if(reconnecting)
+        return <Reconnecting/>
+
     return (
         <>
-            {reconnecting && <Reconnecting/>}
             {loading && <Loading/>}
             <MainContext.Provider
                 value={{
