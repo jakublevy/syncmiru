@@ -19,6 +19,7 @@ export default function Users(): ReactElement {
     const {t} = useTranslation()
     const {
         socket,
+        uid,
         users,
         setUsers,
         setRoomUsers,
@@ -51,7 +52,7 @@ export default function Users(): ReactElement {
 
             socket.emitWithAck("get_online")
                 .then((uids: Array<UserId>) => {
-                    setOnlineUids((p) => [...p, ...uids])
+                    setOnlineUids([...new Set(uids).add(uid)])
                 })
                 .catch(() => {
                     navigateToLoginFormMain(navigate)
@@ -101,10 +102,14 @@ export default function Users(): ReactElement {
     }, [users, onlineUids]);
 
     function onOnline(uid: UserId) {
+        const now = performance.now()
+        console.log(`online called at ${now}`)
         setOnlineUids((p) => [...new Set([...p, uid])])
     }
 
     function onOffline(uid: UserId) {
+        const now = performance.now()
+        console.log(`offline called at ${now}`)
         setOnlineUids((p) => p.filter(x => x !== uid))
 
         if (uid === roomUidClicked)
