@@ -421,6 +421,8 @@ export default function Rooms(): ReactElement {
                                             e.stopPropagation();
                                             settingsClicked(rid)
                                         }}
+                                        onMouseDown={(e) => e.stopPropagation()}
+                                        onMouseUp={(e) => e.stopPropagation()}
                                     >
                                         <Settings/>
                                     </div>
