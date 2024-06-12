@@ -101,7 +101,7 @@ export default function Users(): ReactElement {
     }, [users, onlineUids]);
 
     function onOnline(uid: UserId) {
-        setOnlineUids((p) => [...p, uid])
+        setOnlineUids((p) => [...new Set([...p, uid])])
     }
 
     function onOffline(uid: UserId) {
