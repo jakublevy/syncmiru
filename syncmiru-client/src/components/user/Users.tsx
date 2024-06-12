@@ -32,7 +32,7 @@ export default function Users(): ReactElement {
         = useState<Array<UserClient>>(new Array<UserClient>())
     const [offlineUsers, setOfflineUsers]
         = useState<Array<UserClient>>(new Array<UserClient>())
-    const [onlineUids, setOnlineUids] = useState<Array<UserId>>(new Array<UserId>());
+    const [onlineUids, setOnlineUids] = useState<Set<UserId>>(new Set<UserId>());
 
     const [searchValue, setSearchValue] = useState<string>("")
     const searchValueLC = searchValue.toLowerCase()
@@ -48,10 +48,14 @@ export default function Users(): ReactElement {
     useEffect(() => {
         if (socket !== undefined) {
             socket.on('online', onOnline)
+            socket.on('displayname_change', onDisplaynameChange)
+            socket.on('avatar_change', onAvatarChange)
 
             socket.emitWithAck("get_online")
                 .then((uids: Array<UserId>) => {
-                    setOnlineUids((p) => [...p, ...uids])
+                    const online = new Set(uids)
+                    setOnlineUids(new Set(uids))
+                    updateUserList(online)
                 })
                 .catch(() => {
                     navigateToLoginFormMain(navigate)
@@ -59,13 +63,6 @@ export default function Users(): ReactElement {
                 .finally(() => {
                     setUsersLoading(false)
                 })
-        }
-    }, [socket]);
-
-    useEffect(() => {
-        if (socket !== undefined) {
-            socket.on('displayname_change', onDisplaynameChange)
-            socket.on('avatar_change', onAvatarChange)
         }
     }, [socket, users]);
 
@@ -81,7 +78,7 @@ export default function Users(): ReactElement {
         }
     }, [socket, roomUidClicked]);
 
-    useEffect(() => {
+    function updateUserList(online: Set<UserId>) {
         let on: Array<UserClient> = new Array<UserClient>();
         let off: Array<UserClient> = new Array<UserClient>();
         for (const uid of users.keys()) {
@@ -89,7 +86,7 @@ export default function Users(): ReactElement {
             if (userValue == null || !userValue.verified)
                 continue
 
-            if (onlineUids.includes(uid))
+            if (online.has(uid))
                 on.push({id: uid, ...userValue});
             else
                 off.push({id: uid, ...userValue});
@@ -98,14 +95,24 @@ export default function Users(): ReactElement {
         off = off.sort((a, b) => a.displayname.localeCompare(b.displayname))
         setOnlineUsers(on)
         setOfflineUsers(off)
-    }, [users, onlineUids]);
+    }
 
     function onOnline(uid: UserId) {
-        setOnlineUids((p) => [...p, uid])
+        setOnlineUids((p) => {
+            const s = new Set(p)
+            s.add(uid)
+            updateUserList(s)
+            return s
+        })
     }
 
     function onOffline(uid: UserId) {
-        setOnlineUids((p) => p.filter(x => x !== uid))
+        setOnlineUids((p) => {
+            const s = new Set(p)
+            s.delete(uid)
+            updateUserList(s)
+            return s
+        })
 
         if (uid === roomUidClicked)
             setRoomUidClicked(-1)
