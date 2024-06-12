@@ -30,23 +30,23 @@ import Ping from "@components/widgets/Ping.tsx";
 export default function Rooms(): ReactElement {
     const {
         socket,
-        roomsLoading,
-        setRoomsLoading,
-        rooms,
-        setRooms,
-        users,
-        setRoomConnection,
         currentRid,
         setCurrentRid,
-        roomConnection,
-        uid,
         roomUsers,
         setRoomUsers,
         roomUidClicked,
         setRoomUidClicked,
+        roomsLoading,
+        setRoomsLoading,
+        rooms,
+        setRooms,
         roomPingTimerRef,
         uidPing,
-        setUidPing
+        setUidPing,
+        uid,
+        roomConnection,
+        setRoomConnection,
+        users
     } = useMainContext()
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
@@ -62,7 +62,6 @@ export default function Rooms(): ReactElement {
 
             socket.on('rooms', onRooms)
             socket.on('room_name_change', onRoomNameChange)
-            socket.on('del_rooms', onDeleteRooms)
             socket.on('room_order', onRoomOrder)
             socket.on('user_room_join', onUserRoomJoin)
             socket.on('user_room_change', onUserRoomChange)
@@ -100,6 +99,12 @@ export default function Rooms(): ReactElement {
     }, [socket]);
 
     useEffect(() => {
+        if(socket !== undefined) {
+            socket.on('del_rooms', onDeleteRooms)
+        }
+    }, [currentRid]);
+
+    useEffect(() => {
         if (socket !== undefined) {
             socket.on('user_room_disconnect', onUserRoomDisconnect)
         }
@@ -129,6 +134,15 @@ export default function Rooms(): ReactElement {
     }
 
     function onDeleteRooms(roomIdsToDelete: Array<RoomId>) {
+        if(currentRid != null && roomIdsToDelete.includes(currentRid)) {
+            console.log('the room I was in was deleted')
+            setRoomUidClicked(-1)
+            clearInterval(roomPingTimerRef?.current)
+            setRoomUsers(new Map<RoomId, Set<UserId>>())
+            setCurrentRid(null)
+            setUidPing(new Map<UserId, number>())
+        }
+
         setRooms((p) => {
             const m: RoomMap = new Map<RoomId, RoomValue>()
             for (const [id, roomValue] of p) {

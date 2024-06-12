@@ -5,7 +5,7 @@ use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
-use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
+use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder, RoomSettings};
 use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
@@ -67,6 +67,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("get_room_users", get_room_users);
     s.on("room_ping", room_ping);
     s.on("get_room_pings", get_room_pings);
+    s.on("get_room_settings", get_room_settings);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -394,7 +395,6 @@ pub async fn change_email(
     )
         .await
         .expect("db error");
-    transaction.commit().await.expect("db error");
 
     email::send_email_changed_warning(
         &state.config.email,
@@ -407,6 +407,7 @@ pub async fn change_email(
         .await
         .expect("email error");
     ack.send(SocketIoAck::<()>::ok(None)).ok();
+    transaction.commit().await.expect("db error");
 }
 
 pub async fn set_avatar(
@@ -739,17 +740,15 @@ pub async fn delete_reg_tkn(
         query::delete_reg_tkn(&mut transaction, payload.id)
             .await
             .expect("db error");
-        transaction
-            .commit()
-            .await
-            .expect("db error");
+
         s.broadcast().emit("del_active_reg_tkns", [[payload.id]]).ok();
         ack.send(SocketIoAck::<()>::ok(None)).ok();
-    } else {
         transaction
             .commit()
             .await
             .expect("db error");
+    }
+    else {
         ack.send(SocketIoAck::<()>::err()).ok();
     }
 }
@@ -941,10 +940,6 @@ pub async fn create_room(
     query::set_room_order(&mut transaction, &room_order)
         .await
         .expect("db error");
-    transaction
-        .commit()
-        .await
-        .expect("db error");
 
     let room = RoomClient {
         id: room_id,
@@ -953,6 +948,11 @@ pub async fn create_room(
     s.broadcast().emit("rooms", [[&room]]).ok();
     s.emit("rooms", [[&room]]).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
+
+    transaction
+        .commit()
+        .await
+        .expect("db error");
 }
 
 pub async fn get_rooms(
@@ -967,12 +967,13 @@ pub async fn get_rooms(
     let room_order = query::get_room_order_for_update(&mut transaction)
         .await
         .expect("db error");
+
+    let rooms_w_order = RoomsClientWOrder { room_order, rooms };
+    ack.send(rooms_w_order).ok();
     transaction
         .commit()
         .await
         .expect("db error");
-    let rooms_w_order = RoomsClientWOrder { room_order, rooms };
-    ack.send(rooms_w_order).ok();
 }
 
 pub async fn set_room_name(
@@ -1023,18 +1024,24 @@ pub async fn delete_room(
         query::set_room_order(&mut transaction, &new_room_order)
             .await
             .expect("db error");
-        transaction
-            .commit()
-            .await
-            .expect("db error");
+
+        let room_name = payload.id.to_string();
+        {
+            let mut rid_uids_lock = state.rid_uids.write().await;
+            let io_lock = state.io.read().await;
+            let io = io_lock.as_ref().unwrap().clone();
+            io.leave([room_name]).ok();
+            rid_uids_lock.remove_by_left(&payload.id);
+        }
         s.broadcast().emit("del_rooms", [[payload.id]]).ok();
         s.emit("del_rooms", [[payload.id]]).ok();
         ack.send(SocketIoAck::<()>::ok(None)).ok();
-    } else {
         transaction
             .commit()
             .await
             .expect("db error");
+    }
+    else {
         ack.send(SocketIoAck::<()>::err()).ok();
     }
 }
@@ -1232,12 +1239,13 @@ pub async fn set_room_order(
     query::set_room_order(&mut transaction, &payload.room_order)
         .await
         .expect("db error");
+
+    s.broadcast().emit("room_order", [payload.room_order]).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
     transaction
         .commit()
         .await
         .expect("db error");
-    s.broadcast().emit("room_order", [payload.room_order]).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn ping(
@@ -1291,8 +1299,8 @@ pub async fn join_room(
         s.emit("user_room_join", urj).ok();
     }
 
-    transaction.commit().await.expect("db error");
     ack.send(SocketIoAck::<()>::ok(None)).ok();
+    transaction.commit().await.expect("db error");
 }
 
 pub async fn disconnect_room(
@@ -1371,4 +1379,17 @@ pub async fn get_room_pings(
                 .collect::<HashMap<Id, f64>>();
     }
     ack.send(SocketIoAck::<HashMap<Id, f64>>::ok(Some(room_pings))).ok();
+}
+
+pub async fn get_room_settings(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+) {
+    let connected_room_opt = state.socket_connected_room(&s).await;
+    if connected_room_opt.is_none() {
+        ack.send(SocketIoAck::<RoomSettings>::err()).ok();
+        return;
+    }
+    let connected_room = connected_room_opt.unwrap();
 }
