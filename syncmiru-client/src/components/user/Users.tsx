@@ -53,6 +53,9 @@ export default function Users(): ReactElement {
             socket.emitWithAck("get_online")
                 .then((uids: Array<UserId>) => {
                     setOnlineUids([...new Set(uids).add(uid)])
+                    setTimeout(() => {
+                        socket.emit("force_refetch_online")
+                    }, 500)
                 })
                 .catch(() => {
                     navigateToLoginFormMain(navigate)
@@ -101,8 +104,8 @@ export default function Users(): ReactElement {
         setOfflineUsers(off)
     }, [users, onlineUids]);
 
-    function onOnline(uid: UserId) {
-        setOnlineUids((p) => [...new Set([...p, uid])])
+    function onOnline(uids: Array<UserId>) {
+        setOnlineUids((p) => [...new Set([...p, ...uids])])
     }
 
     function onOffline(uid: UserId) {
