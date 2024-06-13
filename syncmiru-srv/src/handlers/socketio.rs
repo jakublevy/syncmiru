@@ -1084,6 +1084,7 @@ pub async fn set_room_playback_speed(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
+    s.within(payload.id.to_string()).emit("joined_room_playback_change", payload.playback_speed).ok();
     s.broadcast().emit("room_playback_speed", payload).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
@@ -1127,6 +1128,7 @@ pub async fn set_room_desync_tolerance(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
+    s.within(payload.id.to_string()).emit("joined_room_desync_tolerance", payload.desync_tolerance).ok();
     s.broadcast().emit("room_desync_tolerance", payload).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
@@ -1170,6 +1172,7 @@ pub async fn set_room_minor_desync_playback_slow(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
+    s.within(payload.id.to_string()).emit("joined_room_minor_desync_playback_slow", payload.minor_desync_playback_slow).ok();
     s.broadcast().emit("room_minor_desync_playback_slow", payload).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
@@ -1213,6 +1216,7 @@ pub async fn set_room_major_desync_min(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
+    s.within(payload.id.to_string()).emit("joined_room_major_desync_min", payload.major_desync_min).ok();
     s.broadcast().emit("room_major_desync_min", payload).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
