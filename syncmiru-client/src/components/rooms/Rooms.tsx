@@ -373,49 +373,35 @@ export default function Rooms(): ReactElement {
                 setUidPing(a)
 
                 socket!.emitWithAck("join_room", {rid: rid, ping: took})
-                    .then((ack: SocketIoAck<null>) => {
+                    .then((ack: SocketIoAck<JoinedRoomInfoSrv>) => {
                         if (ack.status === SocketIoAckType.Err) {
-                            showPersistentErrorAlert(t('room-join-failed'))
-                            setCurrentRid(null)
+                            forceDisconnectFromRoomOnFetchFailure()
                         } else {
-                            socket!.emitWithAck("get_joined_room_info")
-                                .then((ack: SocketIoAck<JoinedRoomInfoSrv>) => {
-                                    if(ack.status === SocketIoAckType.Err) {
-                                        forceDisconnectFromRoomOnFetchFailure()
-                                    }
-                                    else {
-                                        const payload = ack.payload as JoinedRoomInfoSrv
-                                        const roomPingsSrv = payload.room_pings
-                                        const roomSettingsSrv = payload.room_settings
+                            const payload = ack.payload as JoinedRoomInfoSrv
+                            const roomPingsSrv = payload.room_pings
+                            const roomSettingsSrv = payload.room_settings
 
-                                        const m: UserRoomPingsClient = new Map<UserId, number>()
-                                        for(const uidStr in roomPingsSrv) {
-                                            const uid = parseInt(uidStr)
-                                            m.set(uid, roomPingsSrv[uid])
-                                        }
-                                        setUidPing(m)
+                            const m: UserRoomPingsClient = new Map<UserId, number>()
+                            for(const uidStr in roomPingsSrv) {
+                                const uid = parseInt(uidStr)
+                                m.set(uid, roomPingsSrv[uid])
+                            }
+                            setUidPing(m)
 
-                                        const roomSettings: RoomSettingsClient = {
-                                            playback_speed: new Decimal(roomSettingsSrv.playback_speed),
-                                            desync_tolerance: new Decimal(roomSettingsSrv.desync_tolerance),
-                                            major_desync_min: new Decimal(roomSettingsSrv.major_desync_min),
-                                            minor_desync_playback_slow: new Decimal(roomSettingsSrv.minor_desync_playback_slow)
-                                        }
-                                        setJoinedRoomSettings(roomSettings)
-                                    }
-                                })
-                                .catch(() => {
-                                    forceDisconnectFromRoomOnFetchFailure()
-                                })
-                                .finally(() => {
-                                    setRoomConnection(RoomConnectionState.Established)
-                                })
+                            const roomSettings: RoomSettingsClient = {
+                                playback_speed: new Decimal(roomSettingsSrv.playback_speed),
+                                desync_tolerance: new Decimal(roomSettingsSrv.desync_tolerance),
+                                major_desync_min: new Decimal(roomSettingsSrv.major_desync_min),
+                                minor_desync_playback_slow: new Decimal(roomSettingsSrv.minor_desync_playback_slow)
+                            }
+                            setJoinedRoomSettings(roomSettings)
                             startPingTimer()
                         }
                     })
                     .catch(() => {
-                        showPersistentErrorAlert(t('room-join-failed'))
-                        setCurrentRid(null)
+                        forceDisconnectFromRoomOnFetchFailure()
+                    })
+                    .finally(() => {
                         setRoomConnection(RoomConnectionState.Established)
                     })
             })

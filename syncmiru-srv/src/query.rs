@@ -1100,16 +1100,16 @@ pub async fn room_order_valid(
     Ok(ids.len() == room_order.len())
 }
 
-pub async fn get_room_settings(db: &PgPool, rid: Id) -> Result<RoomSettings> {
+pub async fn get_room_settings(db: &mut Transaction<'_, Postgres>, rid: Id) -> Result<RoomSettings> {
     let query = r#"
         select
             playback_speed, desync_tolerance,
             minor_desync_playback_slow, major_desync_min
-        from room where id = $1
+        from room where id = $1 for update
     "#;
     let room_settings: RoomSettings = sqlx::query_as::<_, RoomSettings>(query)
         .bind(rid)
-        .fetch_one(db)
+        .fetch_one(&mut **db)
         .await?;
     Ok(room_settings)
 }

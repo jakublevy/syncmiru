@@ -66,7 +66,6 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("disconnect_room", disconnect_room);
     s.on("get_room_users", get_room_users);
     s.on("room_ping", room_ping);
-    s.on("get_joined_room_info", get_joined_room_info);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1266,7 +1265,7 @@ pub async fn join_room(
     Data(payload): Data<JoinRoomReq>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(SocketIoAck::<JoinedRoomInfo>::err()).ok();
         return;
     }
     let mut transaction = state.db.begin().await.expect("db error");
@@ -1274,12 +1273,13 @@ pub async fn join_room(
         .await
         .expect("db error");
     if !room_exists {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(SocketIoAck::<JoinedRoomInfo>::err()).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
     let old_connected_room_opt = state.socket_connected_room(&s).await;
     let new_room_name = payload.rid.to_string();
+    let mut room_pings = HashMap::<Id, f64>::new();
     {
         let mut uid_ping_lock = state.uid_ping.write().await;
         let mut rid_uids_lock = state.rid_uids.write().await;
@@ -1288,7 +1288,20 @@ pub async fn join_room(
 
         s.leave_all().ok();
         s.join(new_room_name.clone()).ok();
+
+        let uids_in_room = rid_uids_lock.get_by_left(&payload.rid).unwrap();
+
+        room_pings = uid_ping_lock
+            .iter()
+            .filter(|&(id, ping)| uids_in_room.contains(id))
+            .map(|(id, ping)| (*id, *ping))
+            .collect::<HashMap<Id, f64>>();
     }
+
+    let room_settings = query::get_room_settings(&mut transaction, payload.rid)
+        .await
+        .expect("db error");
+
     s.to(new_room_name).emit("room_user_ping", RoomUserPingChange{ uid, ping: payload.ping }).ok();
 
     if let Some(old_connected_room) = old_connected_room_opt {
@@ -1302,7 +1315,10 @@ pub async fn join_room(
         s.emit("user_room_join", urj).ok();
     }
 
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    ack.send(SocketIoAck::<JoinedRoomInfo>::ok(Some(JoinedRoomInfo {
+        room_settings,
+        room_pings
+    }))).ok();
     transaction.commit().await.expect("db error");
 }
 
@@ -1357,38 +1373,4 @@ pub async fn room_ping(
     let room_name = connected_room_opt.unwrap().to_string();
     s.to(room_name).emit("room_user_ping", RoomUserPingChange{ uid, ping: payload.ping }).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
-}
-
-pub async fn get_joined_room_info(
-    State(state): State<Arc<SrvState>>,
-    s: SocketRef,
-    ack: AckSender,
-) {
-    let connected_room_opt = state.socket_connected_room(&s).await;
-    if connected_room_opt.is_none() {
-        ack.send(SocketIoAck::<JoinedRoomInfo>::err()).ok();
-        return;
-    }
-    let connected_room = connected_room_opt.unwrap();
-    let mut room_pings = HashMap::<Id, f64>::new();
-    {
-        let rid_uids_lock = state.rid_uids.read().await;
-        let uids_in_room = rid_uids_lock.get_by_left(&connected_room).unwrap();
-        let uid_ping_lock = state.uid_ping.read().await;
-        room_pings = uid_ping_lock
-            .iter()
-            .filter(|&(id, ping)| uids_in_room.contains(id))
-            .map(|(id, ping)| (*id, *ping))
-            .collect::<HashMap<Id, f64>>();
-    }
-    let room_settings = query::get_room_settings(&state.db, connected_room)
-        .await
-        .expect("db error");
-
-    ack.send(SocketIoAck::<JoinedRoomInfo>::ok(Some(
-        JoinedRoomInfo {
-            room_pings,
-            room_settings
-        }
-    ))).ok();
 }
