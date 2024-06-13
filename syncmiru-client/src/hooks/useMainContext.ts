@@ -2,6 +2,8 @@ import {createContext, useContext} from "react";
 import {MainContextModel, RoomConnectionState} from "@models/context.ts";
 import {UserId, UserValueClient} from "src/models/user.ts";
 import {RoomId, RoomValue} from "@models/room.ts";
+import Joi from "joi";
+import Decimal from "decimal.js";
 
 export const MainContext = createContext<MainContextModel>(
     {
@@ -36,7 +38,14 @@ export const MainContext = createContext<MainContextModel>(
         setUsersClickedUid: (v) => {},
         roomPingTimerRef: null,
         uidPing: new Map<UserId, number>(),
-        setUidPing: (v) => {}
+        setUidPing: (v) => {},
+        joinedRoomSettings: {
+                playback_speed: new Decimal(1),
+                desync_tolerance: new Decimal(2),
+                minor_desync_playback_slow: new Decimal(0.05),
+                major_desync_min: new Decimal(5)
+        },
+        setJoinedRoomSettings: (v) => {}
     })
 
 export const useMainContext = () => useContext(MainContext)

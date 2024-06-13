@@ -1392,4 +1392,9 @@ pub async fn get_room_settings(
         return;
     }
     let connected_room = connected_room_opt.unwrap();
+    let room_settings = query::get_room_settings(&state.db, connected_room)
+        .await
+        .expect("db error");
+
+    ack.send(SocketIoAck::<RoomSettings>::ok(Some(room_settings))).ok();
 }

@@ -1,7 +1,16 @@
-import React, {MouseEvent, ReactElement, useEffect, useRef, useState} from "react";
+import React, {MouseEvent, ReactElement, useEffect, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
-import {RoomId, RoomMap, RoomNameChange, RoomSrv, RoomsWOrder, RoomValue} from "@models/room.ts";
+import {
+    RoomId,
+    RoomMap,
+    RoomNameChange,
+    RoomSettingsClient,
+    RoomSettingsSrv,
+    RoomSrv,
+    RoomsWOrder,
+    RoomValue
+} from "@models/room.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import Play from "@components/svg/Play.tsx";
 import Settings from "@components/svg/Settings.tsx";
@@ -16,7 +25,8 @@ import {
     UserRoomChange,
     UserRoomDisconnect,
     UserRoomJoin,
-    UserRoomMap, UserRoomPingMap,
+    UserRoomMap,
+    UserRoomPingMap,
     UserRoomPingsSrv,
     UserRoomSrv
 } from "@models/roomUser.ts";
@@ -26,6 +36,7 @@ import Avatar from "@components/widgets/Avatar.tsx";
 import {RoomConnectionState} from "@models/context.ts";
 import UserInfoTooltip from "@components/widgets/UserInfoTooltip.tsx";
 import Ping from "@components/widgets/Ping.tsx";
+import Decimal from "decimal.js";
 
 export default function Rooms(): ReactElement {
     const {
@@ -46,7 +57,8 @@ export default function Rooms(): ReactElement {
         uid,
         roomConnection,
         setRoomConnection,
-        users
+        users,
+        setJoinedRoomSettings
     } = useMainContext()
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
@@ -115,7 +127,6 @@ export default function Rooms(): ReactElement {
     }, [roomsFetching, roomUsersFetching]);
 
     function onRooms(rooms: Array<RoomSrv>) {
-        console.log(rooms)
         addRoomsFromSrv(rooms)
         setRoomsOrder((p) => {
             return [...new Set([...p, ...rooms.map(x => x.id)])]
@@ -134,13 +145,26 @@ export default function Rooms(): ReactElement {
         })
     }
 
+    function forceDisconnectFromRoomOnFetchFailure() {
+        roomDisconnectChangeState()
+        showPersistentErrorAlert(t('room-join-failed'))
+        socket!.emitWithAck("disconnect_room", {})
+            .finally(() => {
+                setRoomConnection(RoomConnectionState.Established)
+            })
+    }
+
+    function roomDisconnectChangeState() {
+        setRoomUidClicked(-1)
+        clearInterval(roomPingTimerRef?.current)
+        setRoomUsers(new Map<RoomId, Set<UserId>>())
+        setCurrentRid(null)
+        setUidPing(new Map<UserId, number>())
+    }
+
     function onDeleteRooms(roomIdsToDelete: Array<RoomId>) {
         if(currentRid != null && roomIdsToDelete.includes(currentRid)) {
-            setRoomUidClicked(-1)
-            clearInterval(roomPingTimerRef?.current)
-            setRoomUsers(new Map<RoomId, Set<UserId>>())
-            setCurrentRid(null)
-            setUidPing(new Map<UserId, number>())
+            roomDisconnectChangeState()
         }
 
         setRooms((p) => {
@@ -319,10 +343,29 @@ export default function Rooms(): ReactElement {
                                             m.set(uid, payload[uid])
                                         }
                                         setUidPing(m)
+                                        socket!.emitWithAck("get_room_settings")
+                                            .then((ack: SocketIoAck<RoomSettingsSrv>) => {
+                                                if(ack.status === SocketIoAckType.Err) {
+                                                    forceDisconnectFromRoomOnFetchFailure()
+                                                }
+                                                else {
+                                                    const roomSettingsSrv = ack.payload as RoomSettingsSrv
+                                                    const roomSettings: RoomSettingsClient = {
+                                                        playback_speed: new Decimal(roomSettingsSrv.playback_speed),
+                                                        desync_tolerance: new Decimal(roomSettingsSrv.desync_tolerance),
+                                                        major_desync_min: new Decimal(roomSettingsSrv.major_desync_min),
+                                                        minor_desync_playback_slow: new Decimal(roomSettingsSrv.minor_desync_playback_slow)
+                                                    }
+                                                    setJoinedRoomSettings(roomSettings)
+                                                }
+                                            })
+                                            .catch(() => {
+                                                forceDisconnectFromRoomOnFetchFailure()
+                                            })
+                                            .finally(() => {
+                                                setRoomConnection(RoomConnectionState.Established)
+                                            })
                                     }
-                                })
-                                .finally(() => {
-                                    setRoomConnection(RoomConnectionState.Established)
                                 })
                             startPingTimer()
                         }

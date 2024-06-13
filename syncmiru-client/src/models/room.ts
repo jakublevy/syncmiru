@@ -1,3 +1,5 @@
+import Decimal from "decimal.js";
+
 export type RoomId = number
 
 export interface RoomValue {
@@ -28,4 +30,18 @@ export interface RoomDesyncTolerance {
 export interface RoomsWOrder {
     rooms: Array<RoomSrv>
     room_order: Array<RoomId>
+}
+
+export interface RoomSettingsSrv {
+    playback_speed: string,
+    desync_tolerance: string,
+    minor_desync_playback_slow: string,
+    major_desync_min: string
+}
+
+export interface RoomSettingsClient {
+    playback_speed: Decimal,
+    desync_tolerance: Decimal,
+    minor_desync_playback_slow: Decimal,
+    major_desync_min: Decimal
 }

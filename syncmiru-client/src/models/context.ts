@@ -1,6 +1,6 @@
 import {Socket} from "socket.io-client";
 import {UserId, UserMap} from "src/models/user.ts";
-import {RoomId, RoomMap} from "@models/room.ts";
+import {RoomId, RoomMap, RoomSettingsClient} from "@models/room.ts";
 import {Dispatch, MutableRefObject, SetStateAction} from "react";
 import {UserRoomMap, UserRoomPingMap} from "@models/roomUser.ts";
 
@@ -37,6 +37,8 @@ export interface MainContextModel {
     roomPingTimerRef: MutableRefObject<number> | null,
     uidPing: UserRoomPingMap,
     setUidPing: Dispatch<SetStateAction<UserRoomPingMap>>,
+    joinedRoomSettings: RoomSettingsClient,
+    setJoinedRoomSettings: Dispatch<SetStateAction<RoomSettingsClient>>,
 }
 
 export enum RoomConnectionState {

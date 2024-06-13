@@ -24,13 +24,14 @@ import {showPersistentErrorAlert, showPersistentWarningAlert} from "src/utils/al
 import {SOCKETIO_ACK_TIMEOUT_MS} from "src/utils/constants.ts";
 import {arrayBufferToBase64} from "src/utils/encoding.ts";
 import SrvSettings from "@components/srv/SrvSettings.tsx";
-import {RoomId, RoomMap, RoomValue} from "@models/room.ts";
+import {RoomId, RoomMap, RoomSettingsClient, RoomValue} from "@models/room.ts";
 import RoomSettings from "@components/rooms/RoomSettings.tsx";
 import {useUsersShown} from "@hooks/useUsersShown.ts";
 import {useAudioSync} from "@hooks/useAudioSync.ts";
 import {useSubSync} from "@hooks/useSubSync.ts";
 import {RoomConnectionState} from "@models/context.ts";
 import {UserRoomMap, UserRoomPingMap} from "@models/roomUser.ts";
+import Decimal from "decimal.js";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -60,9 +61,14 @@ export default function Main(): ReactElement {
     const [usersClickedUid, setUsersClickedUid] = useState<UserId>(-1)
     const reconnectingRef = useRef<boolean>(false);
     const [users, setUsers] = useState<UserMap>(new Map<UserId, UserValueClient>());
-    const [roomPingTimer, setRoomPingTimer] = useState<number>(-1)
     const [uidPing, setUidPing] = useState<UserRoomPingMap>(new Map<UserId, number>())
     const roomPingTimerRef = useRef<number>(-1)
+    const [joinedRoomSettings, setJoinedRoomSettings] = useState<RoomSettingsClient>({
+        playback_speed: new Decimal(1),
+        desync_tolerance: new Decimal(2),
+        minor_desync_playback_slow: new Decimal(0.05),
+        major_desync_min: new Decimal(5)
+    })
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -230,7 +236,9 @@ export default function Main(): ReactElement {
                     setUsersClickedUid: setUsersClickedUid,
                     roomPingTimerRef: roomPingTimerRef,
                     uidPing: uidPing,
-                    setUidPing: setUidPing
+                    setUidPing: setUidPing,
+                    joinedRoomSettings: joinedRoomSettings,
+                    setJoinedRoomSettings: setJoinedRoomSettings
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">
