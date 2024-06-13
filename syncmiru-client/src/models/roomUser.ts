@@ -4,7 +4,7 @@ import {UserId} from "@models/user.ts";
 export type UserRoomMap = Map<RoomId, Set<UserId>>
 export type UserRoomSrv = Record<string, Array<UserId>>
 export type UserRoomPingsSrv = Record<string, number>
-export type UserRoomPingMap = Map<UserId, number>
+export type UserRoomPingsClient = Map<UserId, number>
 
 export interface UserRoomChange {
     old_rid: RoomId,

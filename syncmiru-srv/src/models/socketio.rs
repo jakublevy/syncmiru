@@ -1,10 +1,11 @@
+use std::collections::HashMap;
 use chrono::Utc;
 use rust_decimal::Decimal;
 use serde::{Serialize, Deserialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use validator::Validate;
 use crate::validators;
-use crate::models::query::{Id, RoomClient};
+use crate::models::query::{Id, RoomClient, RoomSettings};
 
 #[derive(Debug, Clone, Deserialize, Validate)]
 pub struct LoginTkns {
@@ -238,6 +239,12 @@ pub struct UserRoomJoin {
 pub struct UserRoomDisconnect {
     pub rid: Id,
     pub uid: Id
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct JoinedRoomInfo {
+    pub room_pings: HashMap<Id, f64>,
+    pub room_settings: RoomSettings
 }
 
 #[serde_with::serde_as]

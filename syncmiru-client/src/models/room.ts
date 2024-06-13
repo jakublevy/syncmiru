@@ -1,4 +1,5 @@
 import Decimal from "decimal.js";
+import {UserRoomPingsClient, UserRoomPingsSrv} from "@models/roomUser.ts";
 
 export type RoomId = number
 
@@ -44,4 +45,14 @@ export interface RoomSettingsClient {
     desync_tolerance: Decimal,
     minor_desync_playback_slow: Decimal,
     major_desync_min: Decimal
+}
+
+export interface JoinedRoomInfoSrv {
+    room_pings: UserRoomPingsSrv,
+    room_settings: RoomSettingsSrv
+}
+
+export interface JoinedRoomInfoClient {
+    room_pings: UserRoomPingsClient
+    room_settings: RoomSettingsClient
 }

@@ -2,6 +2,7 @@ import React, {MouseEvent, ReactElement, useEffect, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {
+    JoinedRoomInfoSrv,
     RoomId,
     RoomMap,
     RoomNameChange,
@@ -26,7 +27,7 @@ import {
     UserRoomDisconnect,
     UserRoomJoin,
     UserRoomMap,
-    UserRoomPingMap,
+    UserRoomPingsClient,
     UserRoomPingsSrv,
     UserRoomSrv
 } from "@models/roomUser.ts";
@@ -252,7 +253,7 @@ export default function Rooms(): ReactElement {
 
     function changeRoomUserPing(roomUserPingChange: RoomUserPingChange) {
         setUidPing((p) => {
-            const m: UserRoomPingMap = new Map<UserId, number>()
+            const m: UserRoomPingsClient = new Map<UserId, number>()
             for (const [uid, ping] of p) {
                 if(uid !== roomUserPingChange.uid)
                     m.set(uid, ping)
@@ -333,39 +334,37 @@ export default function Rooms(): ReactElement {
                             showPersistentErrorAlert(t('room-join-failed'))
                             setCurrentRid(null)
                         } else {
-                            socket!.emitWithAck("get_room_pings")
-                                .then((ack: SocketIoAck<UserRoomPingsSrv>) => {
-                                    if(ack.status === SocketIoAckType.Ok) {
-                                        const payload = ack.payload as UserRoomPingsSrv
-                                        const m: UserRoomPingMap = new Map<UserId, number>()
-                                        for(const uidStr in payload) {
+                            socket!.emitWithAck("get_joined_room_info")
+                                .then((ack: SocketIoAck<JoinedRoomInfoSrv>) => {
+                                    if(ack.status === SocketIoAckType.Err) {
+                                        forceDisconnectFromRoomOnFetchFailure()
+                                    }
+                                    else {
+                                        const payload = ack.payload as JoinedRoomInfoSrv
+                                        const roomPingsSrv = payload.room_pings
+                                        const roomSettingsSrv = payload.room_settings
+
+                                        const m: UserRoomPingsClient = new Map<UserId, number>()
+                                        for(const uidStr in roomPingsSrv) {
                                             const uid = parseInt(uidStr)
-                                            m.set(uid, payload[uid])
+                                            m.set(uid, roomPingsSrv[uid])
                                         }
                                         setUidPing(m)
-                                        socket!.emitWithAck("get_room_settings")
-                                            .then((ack: SocketIoAck<RoomSettingsSrv>) => {
-                                                if(ack.status === SocketIoAckType.Err) {
-                                                    forceDisconnectFromRoomOnFetchFailure()
-                                                }
-                                                else {
-                                                    const roomSettingsSrv = ack.payload as RoomSettingsSrv
-                                                    const roomSettings: RoomSettingsClient = {
-                                                        playback_speed: new Decimal(roomSettingsSrv.playback_speed),
-                                                        desync_tolerance: new Decimal(roomSettingsSrv.desync_tolerance),
-                                                        major_desync_min: new Decimal(roomSettingsSrv.major_desync_min),
-                                                        minor_desync_playback_slow: new Decimal(roomSettingsSrv.minor_desync_playback_slow)
-                                                    }
-                                                    setJoinedRoomSettings(roomSettings)
-                                                }
-                                            })
-                                            .catch(() => {
-                                                forceDisconnectFromRoomOnFetchFailure()
-                                            })
-                                            .finally(() => {
-                                                setRoomConnection(RoomConnectionState.Established)
-                                            })
+
+                                        const roomSettings: RoomSettingsClient = {
+                                            playback_speed: new Decimal(roomSettingsSrv.playback_speed),
+                                            desync_tolerance: new Decimal(roomSettingsSrv.desync_tolerance),
+                                            major_desync_min: new Decimal(roomSettingsSrv.major_desync_min),
+                                            minor_desync_playback_slow: new Decimal(roomSettingsSrv.minor_desync_playback_slow)
+                                        }
+                                        setJoinedRoomSettings(roomSettings)
                                     }
+                                })
+                                .catch(() => {
+                                    forceDisconnectFromRoomOnFetchFailure()
+                                })
+                                .finally(() => {
+                                    setRoomConnection(RoomConnectionState.Established)
                                 })
                             startPingTimer()
                         }

@@ -30,7 +30,7 @@ import {useUsersShown} from "@hooks/useUsersShown.ts";
 import {useAudioSync} from "@hooks/useAudioSync.ts";
 import {useSubSync} from "@hooks/useSubSync.ts";
 import {RoomConnectionState} from "@models/context.ts";
-import {UserRoomMap, UserRoomPingMap} from "@models/roomUser.ts";
+import {UserRoomMap, UserRoomPingsClient} from "@models/roomUser.ts";
 import Decimal from "decimal.js";
 
 export default function Main(): ReactElement {
@@ -61,7 +61,7 @@ export default function Main(): ReactElement {
     const [usersClickedUid, setUsersClickedUid] = useState<UserId>(-1)
     const reconnectingRef = useRef<boolean>(false);
     const [users, setUsers] = useState<UserMap>(new Map<UserId, UserValueClient>());
-    const [uidPing, setUidPing] = useState<UserRoomPingMap>(new Map<UserId, number>())
+    const [uidPing, setUidPing] = useState<UserRoomPingsClient>(new Map<UserId, number>())
     const roomPingTimerRef = useRef<number>(-1)
     const [joinedRoomSettings, setJoinedRoomSettings] = useState<RoomSettingsClient>({
         playback_speed: new Decimal(1),

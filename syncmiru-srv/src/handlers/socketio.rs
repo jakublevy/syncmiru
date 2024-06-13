@@ -6,7 +6,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder, RoomSettings};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo};
 use crate::{crypto, email, query};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
@@ -66,8 +66,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("disconnect_room", disconnect_room);
     s.on("get_room_users", get_room_users);
     s.on("room_ping", room_ping);
-    s.on("get_room_pings", get_room_pings);
-    s.on("get_room_settings", get_room_settings);
+    s.on("get_joined_room_info", get_joined_room_info);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1356,14 +1355,14 @@ pub async fn room_ping(
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 
-pub async fn get_room_pings(
+pub async fn get_joined_room_info(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
 ) {
     let connected_room_opt = state.socket_connected_room(&s).await;
     if connected_room_opt.is_none() {
-        ack.send(SocketIoAck::<HashMap<Id, f64>>::err()).ok();
+        ack.send(SocketIoAck::<JoinedRoomInfo>::err()).ok();
         return;
     }
     let connected_room = connected_room_opt.unwrap();
@@ -1373,28 +1372,19 @@ pub async fn get_room_pings(
         let uids_in_room = rid_uids_lock.get_by_left(&connected_room).unwrap();
         let uid_ping_lock = state.uid_ping.read().await;
         room_pings = uid_ping_lock
-                .iter()
-                .filter(|&(id, ping)| uids_in_room.contains(id))
-                .map(|(id, ping)| (*id, *ping))
-                .collect::<HashMap<Id, f64>>();
+            .iter()
+            .filter(|&(id, ping)| uids_in_room.contains(id))
+            .map(|(id, ping)| (*id, *ping))
+            .collect::<HashMap<Id, f64>>();
     }
-    ack.send(SocketIoAck::<HashMap<Id, f64>>::ok(Some(room_pings))).ok();
-}
-
-pub async fn get_room_settings(
-    State(state): State<Arc<SrvState>>,
-    s: SocketRef,
-    ack: AckSender,
-) {
-    let connected_room_opt = state.socket_connected_room(&s).await;
-    if connected_room_opt.is_none() {
-        ack.send(SocketIoAck::<RoomSettings>::err()).ok();
-        return;
-    }
-    let connected_room = connected_room_opt.unwrap();
     let room_settings = query::get_room_settings(&state.db, connected_room)
         .await
         .expect("db error");
 
-    ack.send(SocketIoAck::<RoomSettings>::ok(Some(room_settings))).ok();
+    ack.send(SocketIoAck::<JoinedRoomInfo>::ok(Some(
+        JoinedRoomInfo {
+            room_pings,
+            room_settings
+        }
+    ))).ok();
 }
