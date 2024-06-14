@@ -18,8 +18,8 @@ export default function AudioSyncBtn(): ReactElement {
     return (
         <Clickable className="p-2" onClick={audioSyncToggle}>
             {audioSync
-                ? <Bubble className="h-7 w-min"/>
-                : <BubbleCrossed className="h-7 w-min"/>
+                ? <Bubble className="h-7"/>
+                : <BubbleCrossed className="h-7"/>
             }
         </Clickable>
     )

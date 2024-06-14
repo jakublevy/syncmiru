@@ -5,7 +5,7 @@ import Eject from "@components/svg/Eject.tsx";
 export default function MpvWindowBtn(): ReactElement {
     return (
         <Clickable className="p-2 ml-1">
-            <Eject className="h-7 w-min"/>
+            <Eject className="h-7"/>
         </Clickable>
     )
 }

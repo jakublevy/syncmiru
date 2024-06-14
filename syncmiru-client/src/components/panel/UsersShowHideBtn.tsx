@@ -19,8 +19,8 @@ export default function UsersShowHideBtn(): ReactElement {
     return (
         <Clickable className="p-2 mr-1" onClick={usersToggle}>
             {usersShown
-                ? <CollapseRight className="h-7 w-min"/>
-                : <ExpandLeft className="h-7 w-min"/>
+                ? <CollapseRight className="h-7"/>
+                : <ExpandLeft className="h-7"/>
             }
         </Clickable>
     )

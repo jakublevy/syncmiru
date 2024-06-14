@@ -18,8 +18,8 @@ export default function SubSyncBtn(): ReactElement {
     return (
         <Clickable className="p-2" onClick={subSyncToggle}>
             {subSync
-                ? <Subtitles className="h-7 w-min"/>
-                : <SubtitlesCrossed className="h-7 w-min"/>
+                ? <Subtitles className="h-7"/>
+                : <SubtitlesCrossed className="h-7"/>
             }
         </Clickable>
     )

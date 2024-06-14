@@ -5,7 +5,7 @@ import Plus from "@components/svg/Plus.tsx";
 export default function AddToPlaylistBtn(): ReactElement {
     return (
         <Clickable className="p-2 ml-1">
-            <Plus className="h-7 w-min"/>
+            <Plus className="h-7"/>
         </Clickable>
     )
 }
