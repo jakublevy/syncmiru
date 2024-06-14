@@ -76,22 +76,21 @@ export default function Main(): ReactElement {
                 ackTimeout: SOCKETIO_ACK_TIMEOUT_MS
             },
         )
+        s.on('connect', () => {
+            loadInitialData(s)
+            setReconnecting(false)
+        })
+
         s.on('connect_error', ioConnError)
         s.on('disconnect', ioDisconnect)
         s.on('users', onUsers)
         s.on('new_login', onNewLogin)
         setSocket(s)
-
         return () => {
             s.disconnect()
         };
     }, []);
 
-    useEffect(() => {
-        if(socket !== undefined) {
-            socket.on('connect', ioConn)
-        }
-    }, [socket]);
 
     useEffect(() => {
         reconnectingRef.current = reconnecting;
@@ -108,11 +107,6 @@ export default function Main(): ReactElement {
     useEffect(() => {
         setSubSync(subSyncInit)
     }, [subSyncInit]);
-
-    function ioConn() {
-        loadInitialData()
-        setReconnecting(false)
-    }
 
     function ioDisconnect(reason: Socket.DisconnectReason) {
         setRoomUidClicked(-1)
@@ -136,8 +130,8 @@ export default function Main(): ReactElement {
         }
     }
 
-    function loadInitialData() {
-        socket!.emitWithAck("get_users")
+    function loadInitialData(s: Socket) {
+        s.emitWithAck("get_users")
             .then((users: Array<UserSrv>) => {
                 setUsersFromSrv(users)
             })
@@ -145,7 +139,7 @@ export default function Main(): ReactElement {
                 navigateToLoginFormMain(navigate)
             })
 
-        socket!.emitWithAck("get_me")
+        s.emitWithAck("get_me")
             .then((me: UserId) => {
                 setUid(me)
             })
