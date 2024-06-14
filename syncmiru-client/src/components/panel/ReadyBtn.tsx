@@ -1,5 +1,5 @@
 import {ChangeEvent, MouseEvent, ReactElement} from "react";
-import {Input} from "@components/widgets/Input.tsx";
+import {Checkbox, Input} from "@components/widgets/Input.tsx";
 import Label from "@components/widgets/Label.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {useTranslation} from "react-i18next";
@@ -28,9 +28,8 @@ export default function ReadyBtn(): ReactElement {
             onClick={containerClicked}
         >
             <div>
-                <Input
+                <Checkbox
                     id="ready"
-                    type="checkbox"
                     className={`${roomJoined ? 'hover:cursor-pointer' : ''}`}
                     checked={ready}
                     onChange={readyChanged}

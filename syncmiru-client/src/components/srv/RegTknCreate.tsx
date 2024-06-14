@@ -2,7 +2,7 @@ import {ChangeEvent, ReactElement, useState} from "react";
 import {BtnPrimary, BtnSecondary} from "@components/widgets/Button.tsx";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
-import {Input} from "@components/widgets/Input.tsx";
+import {Checkbox, Input} from "@components/widgets/Input.tsx";
 import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import Joi from "joi";
 import {useForm} from "react-hook-form";
@@ -119,7 +119,7 @@ export default function RegTknCreate(p: Props): ReactElement {
 
                             <div className="flex items-center gap-x-1.5">
                                 <div>
-                                    <Input id="limitEnable" type="checkbox" className="hover:cursor-pointer" checked={limitEnable} onChange={onLimitEnableChanged}/>
+                                    <Checkbox id="limitEnable" className="hover:cursor-pointer" checked={limitEnable} onChange={onLimitEnableChanged}/>
                                 </div>
                                 <Label className="mt-1 hover:cursor-pointer" htmlFor="limitEnable">{t('modal-reg-tkn-limit-label')}</Label>
                             </div>

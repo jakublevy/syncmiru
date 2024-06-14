@@ -23,6 +23,19 @@ export const Input
     />
 })
 
+export const Checkbox
+    = forwardRef<HTMLInputElement, CheckboxProps>((p, ref) => {
+    return <input {...p}
+                  ref={ref}
+                  type="checkbox"
+                  className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+                     block p-2.5 dark:bg-gray-700 hover:cursor-pointer
+                    dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className || ''}`}
+    />
+})
+
+type CheckboxProps = Omit<InputProps, "type">
+
 export const EmailInput
     = forwardRef<HTMLInputElement, EmailProps>((p, ref) => {
     return <Input
