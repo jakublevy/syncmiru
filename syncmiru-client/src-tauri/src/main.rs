@@ -79,7 +79,9 @@ fn main() -> Result<()> {
 fn handle_window_event(window: &Window, event: &WindowEvent) {
     match event {
         CloseRequested { .. } => {
-            files::delete_tmp().expect("Deleting tmp files failed")
+            if window.label() == "main" {
+                files::delete_tmp().expect("Deleting tmp files failed")
+            }
         }
         _ => {}
     }

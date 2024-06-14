@@ -20,16 +20,19 @@ pub fn syncmiru_config_ini() -> Result<PathBuf> {
 
 pub fn delete_tmp() -> Result<()> {
     let data_dir = syncmiru_data_dir()?;
-    for entry in fs::read_dir(data_dir)? {
-        let entry = entry?;
-        if let Some(filename) = entry.file_name().to_str() {
-            if filename.starts_with("_") {
-                let path = entry.path();
-                if path.is_dir() {
-                    fs::remove_dir_all(path)?;
-                }
-                else {
-                    fs::remove_file(path)?;
+    let dir_read = fs::read_dir(data_dir);
+    if let Ok(entries) = dir_read {
+        for entry in entries {
+            let entry = entry?;
+            if let Some(filename) = entry.file_name().to_str() {
+                if filename.starts_with("_") {
+                    let path = entry.path();
+                    if path.is_dir() {
+                        fs::remove_dir_all(path)?;
+                    }
+                    else {
+                        fs::remove_file(path)?;
+                    }
                 }
             }
         }
