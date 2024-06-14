@@ -201,7 +201,7 @@ export default function LoginFormMain(): ReactElement {
                         <div
                             className="w-full p-2.5 border-b border-gray-300 dark:border-gray-600 bg-white dark:bg-darkbg dark:placeholder-gray-400 dark:text-darkread">
                             <input type="text" id="srv"
-                                   className="w-[85%] text-gray-900 dark:text-darkread bg-white dark:bg-darkbg text-sm focus:ring-primary focus:border-primary block"
+                                   className="w-[85%] text-gray-900 dark:text-darkread bg-white dark:bg-darkbg text-sm block"
                                    readOnly
                                    disabled
                                    value={homeSrv}

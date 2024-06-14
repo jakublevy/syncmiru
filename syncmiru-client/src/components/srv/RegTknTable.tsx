@@ -206,7 +206,7 @@ function regTknDeleteConfirmed() {
 return (
     <>
         <div className="flex flex-col">
-            <SearchInput value={search} setValue={setSearch}/>
+            <SearchInput className="mb-0.5" value={search} setValue={setSearch}/>
             <DataTableThemeAware
                 defaultSortFieldId="name"
                 columns={columns}

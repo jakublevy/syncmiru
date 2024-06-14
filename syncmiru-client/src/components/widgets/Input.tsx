@@ -18,7 +18,7 @@ export const Input
     return <input {...p}
                   ref={ref}
                   className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
-                    focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700
+                     block w-full p-2.5 dark:bg-gray-700
                     dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className || ''}`}
     />
 })
@@ -31,7 +31,7 @@ export const EmailInput
         type="email"
         maxLength={320}
         className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700 
+                    block w-full p-2.5 dark:bg-gray-700 
                     dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className || ''}`}
     />
 })
@@ -46,7 +46,7 @@ export const DisplaynameInput
         type="text"
         maxLength={16}
         className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700 
+                    block w-full p-2.5 dark:bg-gray-700 
                     dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className || ''}`}
     />
 })
@@ -72,7 +72,7 @@ export const UsernameInput
         maxLength={16}
         pattern="[a-z]{4,16}"
         className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700 
+                    block w-full p-2.5 dark:bg-gray-700 
                     dark:border-gray-600 dark:placeholder-gray-400 dark:text-darkread ${p.className || ''}`}
     />
 })
