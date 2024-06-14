@@ -4,6 +4,7 @@ import {LanguagesSelect, LanguageSelectModel, Language} from "@models/config.tsx
 import {useChangeLanguage, useLanguage} from '@hooks/useLanguage.ts'
 import {useTranslation} from "react-i18next";
 import {refresh} from "@mittwald/react-use-promise";
+import 'src/react-select.css'
 
 
 export default function LanguageSelector({className}: Props): ReactElement {

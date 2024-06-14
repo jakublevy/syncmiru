@@ -2,7 +2,7 @@ import {ChangeEvent, ReactElement, useState} from "react";
 import {BtnPrimary, BtnSecondary} from "@components/widgets/Button.tsx";
 import Label from "@components/widgets/Label.tsx";
 import Help from "@components/widgets/Help.tsx";
-import {Input} from "@components/widgets/Input.tsx";
+import {Checkbox, Input} from "@components/widgets/Input.tsx";
 import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import Joi from "joi";
 import {useForm} from "react-hook-form";
