@@ -3,7 +3,7 @@ import {ReactElement} from "react";
 // Source: https://www.svgrepo.com/svg/520676/cross
 // License: CC Attribution License
 
-export default function Cross({className, fill}: Props): ReactElement {
+export default function Cross({className, fill = "#ee1e40"}: Props): ReactElement {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -23,8 +23,4 @@ export default function Cross({className, fill}: Props): ReactElement {
 interface Props {
     className?: string,
     fill?: string
-}
-
-Cross.defaultProps = {
-    fill: "#ee1e40"
 }
