@@ -66,7 +66,6 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("disconnect_room", disconnect_room);
     s.on("get_room_users", get_room_users);
     s.on("room_ping", room_ping);
-    s.on("force_refetch_online", force_refetch_online);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -74,7 +73,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
         .expect("db error");
 
     s.broadcast().emit("users", user).ok();
-    s.broadcast().emit("online", [[uid]]).ok();
+    s.broadcast().emit("online", uid).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -134,6 +133,8 @@ pub async fn get_online(
     let online_uids_lock = state.socket_uid.read().await;
     let online_uids = online_uids_lock.right_values().collect::<Vec<&Id>>();
     ack.send([online_uids]).ok();
+    let uid = state.socket2uid(&s).await;
+    s.broadcast().emit("online", uid).ok();
 }
 
 pub async fn get_user_sessions(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -1374,13 +1375,4 @@ pub async fn room_ping(
     let room_name = connected_room_opt.unwrap().to_string();
     s.to(room_name).emit("room_user_ping", RoomUserPingChange{ uid, ping: payload.ping }).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
-}
-
-pub async fn force_refetch_online(
-    State(state): State<Arc<SrvState>>,
-    s: SocketRef,
-) {
-    let online_uids_lock = state.socket_uid.read().await;
-    let online_uids = online_uids_lock.right_values().collect::<Vec<&Id>>();
-    s.broadcast().emit("online", [online_uids]).ok();
 }

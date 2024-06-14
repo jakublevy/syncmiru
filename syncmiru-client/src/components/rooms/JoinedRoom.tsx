@@ -60,7 +60,7 @@ export default function JoinedRoom(): ReactElement {
         <div className="flex justify-between items-center border-l border-t p-2">
             <div className="flex flex-col">
                 <p className="text-xs">{connectionMsg}</p>
-                <p>{room.name}</p>
+                <p className="truncate w-44">{room.name}</p>
             </div>
             <Clickable
                 className="p-2"

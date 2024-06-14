@@ -493,12 +493,13 @@ export default function Rooms(): ReactElement {
                         >
                             <div className="flex flex-col">
                                 <div
+                                    data-movable-handle={true}
                                     className='flex p-2 mb-0.5 items-center gap-x-2 w-full group break-words rounded hover:bg-gray-100 dark:hover:bg-gray-700 hover:cursor-pointer'
                                     onMouseDown={(e) => onRoomMouseDown(e, rid)}
                                     onMouseUp={(e) => onRoomMouseUp(e, rid)}
                                 >
                                     <Play className="min-w-5 w-5"/>
-                                    <p className="w-[9.2rem] text-left">{roomValue.name}</p>
+                                    <p className="w-[8.0rem] text-left">{roomValue.name}</p>
                                     <div className="flex-1"></div>
                                     <div
                                         role="button"

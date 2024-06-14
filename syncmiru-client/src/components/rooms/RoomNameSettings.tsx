@@ -108,6 +108,7 @@ export default function RoomNameSettings(p: Props): ReactElement {
                         </div>
                         <Input
                             id="roomName"
+                            maxLength={16}
                             {...register('roomName')}
                         />
                         {errors.roomName

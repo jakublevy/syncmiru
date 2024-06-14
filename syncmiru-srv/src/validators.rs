@@ -7,7 +7,7 @@ use crate::models::query::Id;
 use crate::query;
 
 pub fn check_username_format(username: &str) -> Result<(), ValidationError> {
-    if username.len() < 4 || username.len() > 16 {
+    if username.chars().count() < 4 || username.chars().count() > 16 {
         return Err(ValidationError::new("invalid length"))
     }
 
@@ -28,7 +28,7 @@ async fn check_username_unique(username: &str, db: &PgPool) -> Result<(), Valida
 }
 
 pub fn check_displayname_format(displayname: &str) -> Result<(), ValidationError> {
-    if displayname.len() < 4 || displayname.len() > 16 {
+    if displayname.chars().count() < 4 || displayname.chars().count() > 16 {
         return Err(ValidationError::new("invalid length"))
     }
     if displayname.chars().next().unwrap().is_whitespace() {
@@ -41,7 +41,7 @@ pub fn check_displayname_format(displayname: &str) -> Result<(), ValidationError
 }
 
 pub fn check_password_format(password: &str) -> Result<(), ValidationError> {
-    if password.len() < 8 {
+    if password.chars().count() < 8 {
         return Err(ValidationError::new("too short, min 8 chars required"))
     }
     Ok(())
@@ -55,7 +55,7 @@ pub fn check_lang(lang: &str) -> Result<(), ValidationError> {
 }
 
 pub fn check_tkn(tkn: &str) -> Result<(), ValidationError> {
-    if tkn.len() != 24 {
+    if tkn.chars().count() != 24 {
         return Err(ValidationError::new("invalid token length"))
     }
     let alphabet = base64::alphabet::STANDARD.as_str();
@@ -99,7 +99,7 @@ pub fn check_avatar(data: &[u8]) -> Result<(), ValidationError> {
 }
 
 pub fn check_reg_tkn_name(reg_tkn_name: &str) -> Result<(), ValidationError> {
-    if reg_tkn_name.len() < 1 || reg_tkn_name.len() > 16 {
+    if reg_tkn_name.chars().count() < 1 || reg_tkn_name.chars().count() > 16 {
         return Err(ValidationError::new("invalid reg_tkn_name length"));
     }
     Ok(())
@@ -143,7 +143,7 @@ pub fn check_minor_desync_playback_slow(minor_desync_playback_slow: &Decimal) ->
 }
 
 pub fn check_room_name(room_name: &str) -> Result<(), ValidationError> {
-    if room_name.len() < 1 || room_name.len() > 16 {
+    if room_name.chars().count() < 1 || room_name.chars().count() > 16 {
         return Err(ValidationError::new("invalid room_name length"));
     }
     if room_name.chars().next().unwrap().is_whitespace() {
