@@ -7,8 +7,6 @@ import {ReactElement} from "react";
 export default function Plus({className}: Props): ReactElement {
     return (
         <svg
-            width="800px"
-            height="800px"
             viewBox="0 0 32 32"
             xmlns="http://www.w3.org/2000/svg"
             className={className || ''}

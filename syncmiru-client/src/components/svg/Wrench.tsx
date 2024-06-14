@@ -6,8 +6,6 @@ import {ReactElement} from "react";
 export default function Wrench({className}: Props): ReactElement {
     return (
         <svg
-            width="800px"
-            height="800px"
             viewBox="0 0 30 30"
             xmlns="http://www.w3.org/2000/svg"
             className={className || ''}

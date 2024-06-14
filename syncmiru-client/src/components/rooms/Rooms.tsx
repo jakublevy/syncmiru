@@ -478,6 +478,7 @@ export default function Rooms(): ReactElement {
                     )
                 }}
                 renderItem={({value: rid, props}) => {
+                    const {key, ...restProps} = props
                     const roomUids = roomUsers.get(rid)
                     const hasUsers = roomUids != null && roomUids.size > 0
                     const roomValue = rooms.get(rid)
@@ -485,7 +486,8 @@ export default function Rooms(): ReactElement {
                         return <></>
                     return (
                         <li
-                            {...props}
+                            key={key}
+                            {...restProps}
                             style={{
                                 ...props.style,
                                 listStyleType: 'none'
