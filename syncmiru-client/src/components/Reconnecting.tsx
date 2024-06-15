@@ -30,7 +30,7 @@ export default function Reconnecting(): ReactElement {
             </div>
             <div className="flex-grow flex flex-col justify-end items-center mb-4">
                 <p className="mb-1">{t('reconnecting-failing')}</p>
-                <BtnSecondary onClick={signout}>{t('sign-out-btn')}</BtnSecondary>
+                <BtnSecondary onClick={signout}>{t('sign-out')}</BtnSecondary>
             </div>
         </div>
     )

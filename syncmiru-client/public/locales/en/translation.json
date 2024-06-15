@@ -115,7 +115,7 @@
   "user-settings-appearance-title": "Appearance settings",
   "user-settings-appearance-theme": "Theme",
   "user-settings-account-title": "Account settings",
-  "sign-out-btn": "Sign out",
+  "sign-out": "Sign out",
   "user-settings-account-username-label": "User name",
   "user-settings-account-avatar-label": "Avatar",
   "user-settings-account-displayname-label": "Display name",
@@ -326,5 +326,8 @@
 
   "reconnecting-header": "You have been disconnected",
   "reconnecting-text": "Attempting to reconnect you back",
-  "reconnecting-failing": "Unable to connect back?"
+  "reconnecting-failing": "Unable to connect back?",
+
+  "modal-signout-text": "Do you just want to log out, or log out and forget the current device you are using?",
+  "modal-signout-forget-btn": "Sign out and forget"
 }

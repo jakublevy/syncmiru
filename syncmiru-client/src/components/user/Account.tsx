@@ -12,6 +12,7 @@ import EmailSettings from "@components/user/EmailSettings.tsx";
 import DeleteAccount from "@components/user/DeleteAccount.tsx";
 import Loading from "@components/Loading.tsx";
 import PasswordSettings from "@components/user/PasswordSettings.tsx";
+import Signout from "@components/user/Signout.tsx";
 
 export default function Account(): ReactElement {
     const [_, navigate] = useLocation()
@@ -24,16 +25,17 @@ export default function Account(): ReactElement {
     const [displaynameLoading, setDisplaynameLoading] = useState<boolean>(true)
     const [emailLoading, setEmailLoading] = useState<boolean>(true)
     const [deleteAccountLoading, setDeleteAccountLoading] = useState<boolean>(true)
-
-    function signOutClicked() {
-        clearJwt().then(() => {
-            socket!.emit("sign_out")
-            navigateToLoginFormMain(navigate)
-        })
-    }
+    const [signoutLoading, setSignoutLoading] = useState<boolean>(false)
 
     function showContent() {
-        return !usernameLoading && !displaynameLoading && !emailLoading && !avatarLoading && !passwordChangeLoading && !deleteAccountLoading
+        return !usernameLoading
+            &&
+            !displaynameLoading
+            && !emailLoading
+            && !avatarLoading
+            && !passwordChangeLoading
+            && !deleteAccountLoading
+            && !signoutLoading
     }
 
     return (
@@ -52,7 +54,9 @@ export default function Account(): ReactElement {
             </div>
             <div className="ml-8 mr-8 mb-8">
                 <div className="flex gap-x-4">
-                    <BtnSecondary onClick={signOutClicked}>{t('sign-out-btn')}</BtnSecondary>
+                    <Signout
+                        setLoading={(b: boolean) => setSignoutLoading(b)}
+                    />
                     <PasswordSettings
                         setLoading={(b: boolean) => setPasswordChangeLoading(b)}
                     />

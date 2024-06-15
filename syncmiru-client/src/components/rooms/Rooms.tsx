@@ -437,6 +437,9 @@ export default function Rooms(): ReactElement {
     }
 
     function onRoomMouseUp(e: MouseEvent<HTMLDivElement>, rid: RoomId) {
+        if(e.button !== 0)
+            return
+
         const x = e.clientX - mousePos[0]
         const y = e.clientY - mousePos[1]
         if (x * x + y * y <= 25)
@@ -448,7 +451,6 @@ export default function Rooms(): ReactElement {
             setRoomUidClicked(id)
         else
             setRoomUidClicked(-1)
-
     }
 
     if (roomsLoading)

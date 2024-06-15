@@ -115,7 +115,7 @@
   "user-settings-appearance-title": "Nastavení vzhledu",
   "user-settings-appearance-theme": "Motiv",
   "user-settings-account-title": "Nastavení účtu",
-  "sign-out-btn": "Odhlásit se",
+  "sign-out": "Odhlásit se",
   "user-settings-account-username-label": "Uživatelské jméno",
   "user-settings-account-avatar-label": "Avatar",
   "user-settings-account-displayname-label": "Zobrazené jméno",
@@ -326,6 +326,8 @@
 
   "reconnecting-header": "Byl(a) jste odpojen(a)",
   "reconnecting-text": "Probíhá pokus o připojení zpět",
-  "reconnecting-failing": "Nedaří se připojit zpět?"
+  "reconnecting-failing": "Nedaří se připojit zpět?",
 
+  "modal-signout-text": "Chcete se pouze odhlásit, nebo odhlásit a zapomenout aktuální používané zařízení?",
+  "modal-signout-forget-btn": "Odhlásit se a zapomenout"
 }

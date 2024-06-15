@@ -1,6 +1,6 @@
 import React, {ReactElement} from "react";
 import Mpv from "@components/Mpv.tsx";
-import Playlist from "@components/Playlist.tsx";
+import Playlist from "@components/playlist/Playlist.tsx";
 import {Panel, PanelGroup, PanelResizeHandle} from "react-resizable-panels";
 import ResizableIndicator from "@components/svg/ResizableIndicator.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
