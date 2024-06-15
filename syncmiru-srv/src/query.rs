@@ -662,7 +662,7 @@ pub async fn reg_tkn_exists_for_update(
     db: &mut Transaction<'_, Postgres>,
     id: Id
 ) -> Result<bool> {
-    let v: Option<(Id, )> = sqlx::query_as("select id from room where id = $1 for update")
+    let v: Option<(Id, )> = sqlx::query_as("select id from reg_tkn where id = $1 for update")
         .bind(id)
         .fetch_optional(&mut **db)
         .await?;

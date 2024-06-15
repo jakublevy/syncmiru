@@ -115,7 +115,7 @@
   "user-settings-appearance-title": "Appearance settings",
   "user-settings-appearance-theme": "Theme",
   "user-settings-account-title": "Account settings",
-  "user-settings-account-sign-out-btn": "Sign out",
+  "sign-out-btn": "Sign out",
   "user-settings-account-username-label": "User name",
   "user-settings-account-avatar-label": "Avatar",
   "user-settings-account-displayname-label": "Display name",
@@ -322,5 +322,9 @@
   "room-connecting": "Connecting",
   "room-disconnecting": "Disconnecting",
 
-  "unsupported-window-system-tooltip": "Unsupported window system"
+  "unsupported-window-system-tooltip": "Unsupported window system",
+
+  "reconnecting-header": "You have been disconnected",
+  "reconnecting-text": "Attempting to reconnect you back",
+  "reconnecting-failing": "Unable to connect back?"
 }

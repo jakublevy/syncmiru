@@ -52,7 +52,7 @@ export default function Account(): ReactElement {
             </div>
             <div className="ml-8 mr-8 mb-8">
                 <div className="flex gap-x-4">
-                    <BtnSecondary onClick={signOutClicked}>{t('user-settings-account-sign-out-btn')}</BtnSecondary>
+                    <BtnSecondary onClick={signOutClicked}>{t('sign-out-btn')}</BtnSecondary>
                     <PasswordSettings
                         setLoading={(b: boolean) => setPasswordChangeLoading(b)}
                     />
