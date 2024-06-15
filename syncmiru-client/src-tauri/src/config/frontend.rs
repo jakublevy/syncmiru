@@ -115,7 +115,10 @@ pub async fn get_is_supported_window_system() -> Result<bool> {
         Ok(true)
     }
     else if cfg!(target_family = "unix") {
-        if let Some(_) = env::var_os("DISPLAY") {
+        if let Some(_) = env::var_os("WAYLAND_DISPLAY") {
+            Ok(false)
+        }
+        else if let Some(_) = env::var_os("DISPLAY") {
             Ok(true)
         }
         else {

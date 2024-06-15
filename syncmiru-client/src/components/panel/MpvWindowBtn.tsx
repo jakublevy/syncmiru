@@ -1,5 +1,5 @@
 import {ReactElement} from "react";
-import {Clickable} from "@components/widgets/Button.tsx";
+import {BtnPrimary, Clickable} from "@components/widgets/Button.tsx";
 import Eject from "@components/svg/Eject.tsx";
 import {Tooltip} from "react-tooltip";
 import {useTranslation} from "react-i18next";
@@ -43,7 +43,6 @@ export default function MpvWindowBtn(): ReactElement {
     return (
         <Clickable
             className="p-2 ml-1"
-            disabled={!isSupportedWindowSystem}
             onClick={mpvWindowBtnClicked}
         >
             {mpvWinDetached

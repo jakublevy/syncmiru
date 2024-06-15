@@ -1,4 +1,4 @@
-import React, {ReactElement, ReactNode} from "react";
+import React, {ReactElement, ReactNode, MouseEvent} from "react";
 import Previous from "@components/svg/Previous.tsx";
 import Close from "@components/svg/Close.tsx";
 import Delete from "@components/svg/Delete.tsx";
@@ -76,8 +76,10 @@ export function CloseBtn(p: SvgFixedBtn): ReactElement {
 
 export function Clickable(p: BtnProps): ReactElement {
     const {className, children, disabled, ...restParams} = p
+
     return (
-        <Btn className={`rounded ${disabled ? 'opacity-30 cursor-default' : 'hover:bg-gray-100 dark:hover:bg-gray-700'} ${p.className || ''}`}
+        <Btn className={`rounded ${disabled ? 'opacity-30' : 'hover:bg-gray-100 dark:hover:bg-gray-700'} ${p.className || ''}`}
+             disabled={disabled}
             {...restParams}>
             {p.children}
         </Btn>
