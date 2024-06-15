@@ -1,3 +1,4 @@
+use std::env;
 use crate::appstate::AppState;
 use crate::config::{appdata, jwt};
 use crate::config::{Language};
@@ -107,3 +108,38 @@ pub async fn clear_jwt() -> Result<()> {
 
 #[tauri::command]
 pub async fn get_hwid_hash() -> Result<String> { sys::id_hashed() }
+
+#[tauri::command]
+pub async fn get_is_supported_window_system() -> Result<bool> {
+    if cfg!(target_family = "windows") {
+        Ok(true)
+    }
+    else if cfg!(target_family = "unix") {
+        if let Some(_) = env::var_os("DISPLAY") {
+            Ok(true)
+        }
+        else {
+            Ok(false)
+        }
+    }
+    else {
+        Ok(false)
+    }
+}
+
+#[tauri::command]
+pub async fn get_mpv_win_detached(state: tauri::State<'_, AppState>) -> Result<bool> {
+    let appdata = state.appdata.read().await;
+    Ok(appdata.mpv_win_detached)
+}
+
+#[tauri::command]
+pub async fn set_mpv_win_detached(state: tauri::State<'_, AppState>, mpv_win_detached: bool) -> Result<()> {
+    {
+        let mut appdata = state.appdata.write().await;
+        appdata.mpv_win_detached = mpv_win_detached;
+    }
+    let appdata = state.appdata.read().await;
+    appdata::write(&appdata)?;
+    Ok(())
+}

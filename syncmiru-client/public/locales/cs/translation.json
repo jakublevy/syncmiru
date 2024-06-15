@@ -320,5 +320,7 @@
   "ready-btn": "Připraven",
   "room-connected": "Připojen(a)",
   "room-connecting": "Probíhá připojování",
-  "room-disconnecting": "Probíhá odpojování"
+  "room-disconnecting": "Probíhá odpojování",
+
+  "unsupported-window-system-tooltip": "Nepodporovaný systém oken"
 }

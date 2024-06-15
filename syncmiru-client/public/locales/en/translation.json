@@ -320,5 +320,7 @@
   "ready-btn": "Ready",
   "room-connected": "Connected",
   "room-connecting": "Connecting",
-  "room-disconnecting": "Disconnecting"
+  "room-disconnecting": "Disconnecting",
+
+  "unsupported-window-system-tooltip": "Unsupported window system"
 }

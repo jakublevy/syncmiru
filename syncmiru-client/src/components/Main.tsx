@@ -32,6 +32,8 @@ import {useSubSync} from "@hooks/useSubSync.ts";
 import {RoomConnectionState} from "@models/context.ts";
 import {UserRoomMap, UserRoomPingsClient} from "@models/roomUser.ts";
 import Decimal from "decimal.js";
+import {useMpvWinDetached} from "@hooks/useMpvWinDetached.ts";
+import {useIsSupportedWindowSystem} from "@hooks/useIsSupportedWindowSystem.ts";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -43,6 +45,7 @@ export default function Main(): ReactElement {
     const usersShownInit = useUsersShown();
     const audioSyncInit = useAudioSync()
     const subSyncInit = useSubSync()
+    const isSupportedWindowSystem = useIsSupportedWindowSystem()
     const [socket, setSocket] = useState<Socket>();
     const [uid, setUid] = useState<number>(0)
     const [rooms, setRooms] = useState<RoomMap>(new Map<RoomId, RoomValue>())
@@ -69,6 +72,8 @@ export default function Main(): ReactElement {
         minor_desync_playback_slow: new Decimal(0.05),
         major_desync_min: new Decimal(5)
     })
+    const mpvWinDetachedInit = useMpvWinDetached()
+    const [mpvWinDetached, setMpvWinDetached] = useState<boolean>(false)
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -107,6 +112,15 @@ export default function Main(): ReactElement {
     useEffect(() => {
         setSubSync(subSyncInit)
     }, [subSyncInit]);
+
+    useEffect(() => {
+        if(mpvWinDetachedInit)
+            setMpvWinDetached(true)
+        else if(isSupportedWindowSystem)
+            setMpvWinDetached(false)
+        else
+            setMpvWinDetached(true)
+    }, [mpvWinDetachedInit]);
 
     function ioDisconnect(reason: Socket.DisconnectReason) {
         setRoomUidClicked(-1)
@@ -232,7 +246,9 @@ export default function Main(): ReactElement {
                     uidPing: uidPing,
                     setUidPing: setUidPing,
                     joinedRoomSettings: joinedRoomSettings,
-                    setJoinedRoomSettings: setJoinedRoomSettings
+                    setJoinedRoomSettings: setJoinedRoomSettings,
+                    mpvWinDetached: mpvWinDetached,
+                    setMpvWinDetached: setMpvWinDetached
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">

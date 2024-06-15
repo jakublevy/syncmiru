@@ -32,5 +32,9 @@ export default function CurrentUser(): ReactElement {
             </div>
         )
     }
-    return <Loading/>
+    return (
+        <div className="border-t">
+            <Loading/>
+        </div>
+    )
 }

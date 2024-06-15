@@ -24,6 +24,7 @@ export function navigateToMain(navigate: NavigateFunc<void>) {
     refresh({tag: "useUsersShown"})
     refresh({tag: "useAudioSync"})
     refresh({tag: "useSubSync"})
+    refresh({tag: "useMpvWinDetached"})
     navigate('/main/index')
 }
 

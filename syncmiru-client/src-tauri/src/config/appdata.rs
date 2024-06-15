@@ -17,7 +17,8 @@ pub struct AppData {
     pub theme: Theme,
     pub users_shown: bool,
     pub audio_sync: bool,
-    pub sub_sync: bool
+    pub sub_sync: bool,
+    pub mpv_win_detached: bool
 }
 
 impl Default for AppData {
@@ -32,7 +33,8 @@ impl Default for AppData {
             lang: get_preferred_locale(),
             users_shown: true,
             audio_sync: true,
-            sub_sync: true
+            sub_sync: true,
+            mpv_win_detached: false
         }
     }
 }
@@ -80,6 +82,11 @@ pub fn read() -> Result<AppData> {
             if let Some(sub_sync) = sub_sync_opt {
                 appdata.sub_sync = ini_str_to_bool(sub_sync, true);
             }
+
+            let mpv_win_detached_opt = settings.get("mpv_win_detached");
+            if let Some(mpv_win_detached) = mpv_win_detached_opt {
+                appdata.mpv_win_detached = ini_str_to_bool(mpv_win_detached, false);
+            }
         }
 
         if cfg!(target_family = "windows") {
@@ -120,6 +127,7 @@ pub fn write(config: &AppData) -> Result<()> {
     settings = settings.set("users_shown", ini_bool_to_string(config.users_shown));
     settings = settings.set("audio_sync", ini_bool_to_string(config.audio_sync));
     settings = settings.set("sub_sync", ini_bool_to_string(config.sub_sync));
+    settings = settings.set("mpv_win_detached", ini_bool_to_string(config.mpv_win_detached));
 
     if cfg!(target_family = "windows") {
         let mut windows = &mut ini.with_section(Some("Windows"));

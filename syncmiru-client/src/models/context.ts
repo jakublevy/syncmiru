@@ -39,6 +39,8 @@ export interface MainContextModel {
     setUidPing: Dispatch<SetStateAction<UserRoomPingsClient>>,
     joinedRoomSettings: RoomSettingsClient,
     setJoinedRoomSettings: Dispatch<SetStateAction<RoomSettingsClient>>,
+    mpvWinDetached: boolean,
+    setMpvWinDetached: Dispatch<SetStateAction<boolean>>,
 }
 
 export enum RoomConnectionState {

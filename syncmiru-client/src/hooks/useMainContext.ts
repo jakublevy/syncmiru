@@ -2,7 +2,6 @@ import {createContext, useContext} from "react";
 import {MainContextModel, RoomConnectionState} from "@models/context.ts";
 import {UserId, UserValueClient} from "src/models/user.ts";
 import {RoomId, RoomValue} from "@models/room.ts";
-import Joi from "joi";
 import Decimal from "decimal.js";
 
 export const MainContext = createContext<MainContextModel>(
@@ -45,7 +44,9 @@ export const MainContext = createContext<MainContextModel>(
                 minor_desync_playback_slow: new Decimal(0.05),
                 major_desync_min: new Decimal(5)
         },
-        setJoinedRoomSettings: (v) => {}
+        setJoinedRoomSettings: (v) => {},
+        mpvWinDetached: false,
+        setMpvWinDetached: (v) => {}
     })
 
 export const useMainContext = () => useContext(MainContext)
