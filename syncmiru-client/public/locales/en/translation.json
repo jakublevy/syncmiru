@@ -329,5 +329,10 @@
   "reconnecting-failing": "Unable to connect back?",
 
   "modal-signout-text": "Do you just want to log out, or log out and forget the current device you are using?",
-  "modal-signout-forget-btn": "Sign out and forget"
+  "modal-signout-forget-btn": "Sign out and forget",
+
+  "add-to-playlist-disabled-tooltip": "Not connected to a room",
+  "add-to-playlist-file-server": "File server",
+  "add-to-playlist-url": "URL address",
+  "add-to-playlist-source": "Video source"
 }

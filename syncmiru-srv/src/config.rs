@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fmt::Display;
 use std::fs;
 use std::fs::File;
@@ -29,10 +30,11 @@ pub fn read(config_file: impl AsRef<Path> + Copy) -> Result<Config> {
     let log = LogConfig::from(&doc["log"])?;
     let email = EmailConf::from(&doc["email"])?;
     let login_jwt = LoginJwt::from(&doc["login_jwt"])?;
+    let sources = Source::from(&doc["sources"])?;
 
     info!("{} parsed", cf_print);
     Ok(
-        Config { srv, reg_pub, db, log, email, login_jwt }
+        Config { srv, reg_pub, db, log, email, login_jwt, sources }
     )
 }
 
@@ -44,7 +46,7 @@ pub struct Config {
     pub log: LogConfig,
     pub email: EmailConf,
     pub login_jwt: LoginJwt,
-    //sources: Vec<Source>
+    pub sources: Sources
 }
 
 #[derive(Debug, Clone)]
@@ -343,20 +345,6 @@ pub struct Rate {
 }
 
 #[derive(Debug, Clone)]
-struct Source {
-    dir_read_url: String,
-    dir_format: DirFormat,
-    dir_read_jwt: String,
-    client_url: String,
-    client_acc_priv_pem: Vec<u8>
-}
-
-#[derive(Debug, Copy, Clone)]
-enum DirFormat {
-    NginxJson, NginxHtml, Apache2Html
-}
-
-#[derive(Debug, Clone)]
 pub struct LoginJwt {
     pub priv_pem: Vec<u8>,
     pub pub_pem: Vec<u8>,
@@ -403,7 +391,62 @@ impl LoginJwt {
             ES512 => Ok(Box::new(josekit::jws::ES512.verifier_from_pem(&self.pub_pem)?)),
         }
     }
+}
 
+pub type Sources = HashMap<String, Source>;
+
+#[derive(Debug, Clone)]
+pub struct Source {
+    pub list_root_url: String,
+    pub srv_jwt: String,
+    pub client_url: String,
+    pub priv_pem: Vec<u8>,
+    pub alg: KeyAlg
+}
+
+impl Source {
+    pub fn from(yaml: &Yaml) -> Result<Sources> {
+        let mut sources = Sources::new();
+        if let Yaml::Hash(hash) = yaml {
+            for (k, v) in hash {
+                let name = k.as_str()
+                    .context("invalid source name inside sources section")?
+                    .to_string();
+                let list_root_url = v["list_root_url"]
+                    .as_str()
+                    .context("list_rool_url is missing inside source section")?
+                    .to_string();
+                let srv_jwt = v["srv_jwt"]
+                    .as_str()
+                    .context("srv_jwt is missing inside source section")?
+                    .to_string();
+                let client_url = v["client_url"]
+                    .as_str()
+                    .context("client_url is missing inside source section")?
+                    .to_string();
+                let alg_str = v["algorithm"]
+                    .as_str()
+                    .context("algorithm is missing inside source section")?
+                    .to_lowercase();
+                let alg = KeyAlg::from(alg_str.as_ref())
+                    .context("Invalid algorithm inside source section")?;
+                let priv_key_file = PathBuf::from(
+                    v["priv_key_file"]
+                        .as_str()
+                        .context("priv_key_file is missing inside source section")?
+                );
+                let priv_pem = parse_key(priv_key_file, KeyType::Private, alg)?;
+                sources.insert(name, Source {
+                    list_root_url,
+                    srv_jwt,
+                    client_url,
+                    priv_pem,
+                    alg
+                });
+            }
+        }
+        Ok(sources)
+    }
 }
 
 #[derive(PartialEq)]

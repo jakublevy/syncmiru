@@ -27,7 +27,6 @@ export default function MpvWindowBtn(): ReactElement {
                     <Clickable
                         className="p-2 ml-1"
                         disabled
-                        onClick={mpvWindowBtnClicked}
                     >
                         <DockBottom className="h-7"/>
                     </Clickable>

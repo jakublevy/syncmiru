@@ -329,5 +329,10 @@
   "reconnecting-failing": "Nedaří se připojit zpět?",
 
   "modal-signout-text": "Chcete se pouze odhlásit, nebo odhlásit a zapomenout aktuální používané zařízení?",
-  "modal-signout-forget-btn": "Odhlásit se a zapomenout"
+  "modal-signout-forget-btn": "Odhlásit se a zapomenout",
+
+  "add-to-playlist-disabled-tooltip": "Nejste připojen(a) do místnosti",
+  "add-to-playlist-file-server": "Souborový server",
+  "add-to-playlist-url": "URL adresa",
+  "add-to-playlist-source": "Zdroj videa"
 }

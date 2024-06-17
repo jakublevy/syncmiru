@@ -12,7 +12,7 @@ export default function Middle(): ReactElement {
             <PanelGroup direction="vertical">
                 <Panel
                     defaultSize={30}
-                    minSize={20}
+                    minSize={24}
                     style={{overflow: "auto"}}
                 >
                     <Playlist/>
