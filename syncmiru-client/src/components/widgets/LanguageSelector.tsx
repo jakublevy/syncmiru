@@ -1,5 +1,5 @@
 import {ReactElement, useEffect, useState} from 'react'
-import Select from "react-select";
+import Select, {SingleValue} from "react-select";
 import {LanguagesSelect, LanguageSelectModel, Language} from "@models/config.tsx";
 import {useChangeLanguage, useLanguage} from '@hooks/useLanguage.ts'
 import {useTranslation} from "react-i18next";
@@ -20,11 +20,13 @@ export default function LanguageSelector({className}: Props): ReactElement {
         return () => refresh({tag: "useLanguage"})
     }, [initLang]);
 
-    const languageChanged = async (ls: LanguageSelectModel) => {
-        await changeLang(ls.id).then(() => {
-            setLang(ls.id)
-            i18n.changeLanguage(ls.id)
-        })
+    async function languageChanged(ls: SingleValue<LanguageSelectModel>) {
+        if (ls != null) {
+            await changeLang(ls.id).then(() => {
+                setLang(ls.id)
+                i18n.changeLanguage(ls.id)
+            })
+        }
     }
 
     return (
@@ -35,7 +37,6 @@ export default function LanguageSelector({className}: Props): ReactElement {
             value={LanguagesSelect.find(l => l.id === lang)}
             classNamePrefix="my-react-select"
             className={`w-52 my-react-select-container ${className != null ? className : ''}`}
-            //@ts-ignore
             onChange={languageChanged}
             options={LanguagesSelect}
         />

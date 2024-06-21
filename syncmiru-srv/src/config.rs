@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 use std::fs;
 use std::fs::File;
@@ -18,23 +18,23 @@ use crate::result::Result;
 
 pub fn read(config_file: impl AsRef<Path> + Copy) -> Result<Config> {
     let cf_print = &config_file.as_ref().to_string_lossy();
-    debug!("Parsing {}", cf_print);
     let mut yaml_str: String = Default::default();
     File::open(config_file)?.read_to_string(&mut yaml_str)?;
     let docs = YamlLoader::load_from_str(&yaml_str)?;
     let doc = &docs[0];
+    let log = LogConfig::from(&doc["log"])?;
+    debug!("Parsing {}", cf_print);
 
     let srv = SrvConfig::from(&doc["srv"])?;
     let reg_pub = RegConfig::from(&doc["registration_public"])?;
     let db = DbConfig::from(&doc["db"])?;
-    let log = LogConfig::from(&doc["log"])?;
     let email = EmailConf::from(&doc["email"])?;
     let login_jwt = LoginJwt::from(&doc["login_jwt"])?;
     let sources = Source::from(&doc["sources"])?;
-
+    let extensions = Extensions::from(&doc["extensions"])?;
     info!("{} parsed", cf_print);
     Ok(
-        Config { srv, reg_pub, db, log, email, login_jwt, sources }
+        Config { srv, reg_pub, db, log, email, login_jwt, sources, extensions }
     )
 }
 
@@ -46,7 +46,8 @@ pub struct Config {
     pub log: LogConfig,
     pub email: EmailConf,
     pub login_jwt: LoginJwt,
-    pub sources: Sources
+    pub sources: Sources,
+    pub extensions: Extensions
 }
 
 #[derive(Debug, Clone)]
@@ -177,9 +178,10 @@ impl LogConfig {
             .to_lowercase();
         let level = LogLevel::from(level_str.as_ref())
             .context("Invalid level inside log section")?;
-        Ok(
-            Self { output: output_type, level }
-        )
+
+        let log_conf = Self { output: output_type, level };
+        crate::log::setup(&log_conf)?;
+        Ok(log_conf)
     }
 }
 
@@ -446,6 +448,48 @@ impl Source {
             }
         }
         Ok(sources)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Extensions {
+    pub videos: Option<HashSet<String>>,
+    pub subtitles: Option<HashSet<String>>
+}
+
+impl Extensions {
+    pub fn from(yaml: &Yaml) -> Result<Extensions> {
+        let videos = Self::parse_yaml_opt_string_arr(&yaml["videos"])?;
+        if videos.is_none() {
+            warn!("File extensions for video files not limited")
+        }
+
+        let subtitles = Self::parse_yaml_opt_string_arr(&yaml["subtitles"])?;
+        if subtitles.is_none() {
+            warn!("File extensions for subtitle files not limited")
+        }
+        Ok(Self { videos, subtitles })
+    }
+
+    fn parse_yaml_opt_string_arr(yaml: &Yaml) -> Result<Option<HashSet<String>>> {
+        if yaml.is_badvalue() {
+            Ok(None)
+        }
+        else {
+            let array_opt = yaml.as_vec();
+            let mut output = HashSet::<String>::new();
+            if let Some(array) = array_opt {
+                for item in array {
+                    let suffix = item.as_str()
+                        .context("invalid item inside extensions array")?;
+                    output.insert(suffix.to_string());
+                }
+                Ok(Some(output))
+            }
+            else {
+                Err(SyncmiruError::YAMLArrayParseError("YAML extensions invalid type, expected array".to_string()))
+            }
+        }
     }
 }
 

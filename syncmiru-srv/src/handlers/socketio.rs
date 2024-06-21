@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::sync::Arc;
 use rust_decimal::Decimal;
@@ -6,8 +6,9 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder, RoomSettings};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo};
-use crate::{crypto, email, query};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind};
+use crate::{crypto, email, file, query};
+use crate::file::{FileInfo, FileType};
 use crate::handlers::utils;
 use crate::srvstate::SrvState;
 
@@ -67,6 +68,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("get_room_users", get_room_users);
     s.on("room_ping", room_ping);
     s.on("get_sources", get_sources);
+    s.on("get_files", get_files);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1384,4 +1386,47 @@ pub async fn get_sources(
     ack: AckSender,
 ) {
     ack.send([state.config.sources.keys().collect::<Vec<&String>>()]).ok();
+}
+
+pub async fn get_files(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<GetFilesInfo>,
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<Vec<FileInfo>>::err()).ok();
+        return;
+    }
+    if !state.config.sources.contains_key(&payload.file_srv) {
+        ack.send(SocketIoAck::<Vec<FileInfo>>::err()).ok();
+        return;
+    }
+    let source = state.config.sources.get(&payload.file_srv).unwrap();
+    let mut files = file::list(
+        &source.list_root_url,
+        &source.srv_jwt,
+        &payload.path
+    )
+        .await
+        .expect("http error");
+
+    let mut allowed_extensions_opt: Option<&HashSet<String>> = None;
+    if payload.file_kind == FileKind::Video && state.config.extensions.videos.is_some() {
+        allowed_extensions_opt = Some(&state.config.extensions.videos.as_ref().unwrap())
+    }
+    else if payload.file_kind == FileKind::Subtitles && state.config.extensions.subtitles.is_some() {
+        allowed_extensions_opt = Some(&state.config.extensions.subtitles.as_ref().unwrap())
+    }
+
+    if let Some(allowed_extensions) = allowed_extensions_opt {
+        files = files
+            .iter()
+            .filter(
+                |&x| x.file_type == FileType::Directory || allowed_extensions.contains(&x.name.split(".").collect::<String>())
+            )
+            .map(|x|x.clone())
+            .collect::<Vec<FileInfo>>();
+    }
+    ack.send(SocketIoAck::<Vec<FileInfo>>::ok(Some(files))).ok();
 }

@@ -87,6 +87,12 @@ pub enum SyncmiruError {
     #[error("JWT key parse error")]
     JwtKeyParseError(String),
 
+    #[error("YAML array parse error")]
+    YAMLArrayParseError(String),
+
+    #[error("Reqwest error")]
+    ReqwestError(#[from] reqwest::Error),
+
     #[error("Poison error")]
     PoisonError
 }

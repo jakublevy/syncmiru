@@ -6,6 +6,7 @@ import Edit from "@components/svg/Edit.tsx";
 import ZoomReset from "@components/svg/ZoomReset.tsx";
 import Copy from "@components/svg/Copy.tsx";
 import View from "@components/svg/View.tsx";
+import ParentFolder from "@components/svg/ParentFolder.tsx";
 
 export function Btn(p: BtnProps): ReactElement {
     const {children, ...restParams} = p
@@ -122,6 +123,14 @@ export function ZoomResetBtn(p: SvgBtn): ReactElement {
     return (
         <BtnSecondarySvg {...p}>
             <ZoomReset className="w-full"/>
+        </BtnSecondarySvg>
+    )
+}
+
+export function ParentFolderBtn(p: SvgBtn): ReactElement {
+    return (
+        <BtnSecondarySvg {...p}>
+            <ParentFolder className="w-full"/>
         </BtnSecondarySvg>
     )
 }

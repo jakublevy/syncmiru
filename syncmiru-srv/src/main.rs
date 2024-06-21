@@ -4,7 +4,7 @@ use std::env::set_var;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
-use ::log::{debug, info};
+use ::log::{debug, info, warn};
 use axum::extract::State;
 use axum::handler::Handler;
 use axum::{Json, Router};
@@ -14,7 +14,6 @@ use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use bimap::BiMap;
 use clap::Parser;
-use multimap::MultiMap;
 use tower_http::trace::TraceLayer;
 use socketioxide::extract::SocketRef;
 use socketioxide::handler::ConnectHandler;
@@ -46,6 +45,7 @@ mod html;
 mod tkn;
 mod constants;
 mod bimultimap;
+mod file;
 
 
 #[macro_use]
@@ -56,7 +56,6 @@ rust_i18n::i18n!("locales");
 async fn main() -> Result<()> {
    let args = Args::parse()?;
    let config = config::read(&args.config_file)?;
-   log::setup(&config.log)?;
    let pool = db::create_connection_pool(&config.db).await?;
    db::run_migrations(&pool).await?;
 

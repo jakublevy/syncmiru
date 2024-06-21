@@ -334,5 +334,9 @@
   "add-to-playlist-disabled-tooltip": "Nejste připojen(a) do místnosti",
   "add-to-playlist-file-server": "Souborový server",
   "add-to-playlist-url": "URL adresa",
-  "add-to-playlist-source": "Zdroj videa"
+  "add-to-playlist-source": "Zdroj videa",
+
+  "modal-add-to-playlist-from-file-srv-title": "Video ze souborového serveru",
+
+  "file-picker-select-text": "Vyberte souborový server z dostupných"
 }

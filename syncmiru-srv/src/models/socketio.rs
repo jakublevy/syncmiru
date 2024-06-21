@@ -247,6 +247,23 @@ pub struct JoinedRoomInfo {
     pub room_settings: RoomSettings
 }
 
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct GetFilesInfo {
+    pub file_srv: String,
+
+    #[validate(custom(function = "validators::check_path"))]
+    pub path: String,
+
+    pub file_kind: FileKind
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize_repr)]
+#[repr(u8)]
+pub enum FileKind {
+    Video = 0,
+    Subtitles = 1
+}
+
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize)]

@@ -334,5 +334,9 @@
   "add-to-playlist-disabled-tooltip": "Not connected to a room",
   "add-to-playlist-file-server": "File server",
   "add-to-playlist-url": "URL address",
-  "add-to-playlist-source": "Video source"
+  "add-to-playlist-source": "Video source",
+
+  "modal-add-to-playlist-from-file-srv-title": "Video from the file server",
+
+  "file-picker-select-text": "Select a file server from the available ones"
 }

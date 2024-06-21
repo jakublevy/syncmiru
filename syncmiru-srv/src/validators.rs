@@ -169,3 +169,13 @@ pub fn check_ping(ping: &f64) -> Result<(), ValidationError> {
     }
     Ok(())
 }
+
+pub fn check_path(path: &str) ->  Result<(), ValidationError> {
+    if path.is_empty() {
+        return Err(ValidationError::new("empty path"))
+    }
+    else if !path.starts_with("/") {
+        return Err(ValidationError::new("invalid path"))
+    }
+    Ok(())
+}
