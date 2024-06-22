@@ -13,7 +13,7 @@ export default function AddFromFileSrv(): ReactElement {
     const [filesPicked, setFilesPicked] = useState<Array<string>>(new Array<string>())
 
     function addClicked() {
-        console.log('clicked')
+        setFilesPicked([])
         setShowModal(true);
     }
 
@@ -39,7 +39,10 @@ export default function AddFromFileSrv(): ReactElement {
                             setFilesPicked={setFilesPicked}
                             fileKind={FileKind.Video}
                         />
-                        <BtnPrimary className="mt-4">Přidat do playlistu</BtnPrimary>
+                        <BtnPrimary
+                            className="mt-4"
+                            disabled={filesPicked.length === 0}
+                        >{t('add-to-playlist-btn')}</BtnPrimary>
                     </div>
                 }
             />

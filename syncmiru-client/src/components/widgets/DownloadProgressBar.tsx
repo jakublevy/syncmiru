@@ -1,5 +1,6 @@
 import {ReactElement} from "react";
 import {useTranslation} from "react-i18next";
+import {bytesPretty} from "src/utils/pretty.ts";
 
 export default function DownloadProgressBar(
     {title, downloadedBytes, totalSizeBytes, speedBytesPerSecond, error, errorMsg, finishedMsg}: Props): ReactElement {
@@ -9,19 +10,6 @@ export default function DownloadProgressBar(
     const percent = Math.round(downloadedBytes / totalSizeBytes * 100)
 
     const finished = (): boolean => downloadedBytes == totalSizeBytes
-
-    function bytesPretty(b: number): string {
-        const kb = 1024
-        const mb = kb * 1024
-        if(b < kb)
-            return `${b} B`
-        if(b < mb) {
-            const r = Math.round(b / 1024)
-            return `${r} kB`
-        }
-        let r = Math.round(b / 1024 / 1024 * 10) / 10
-        return `${r} MB`
-    }
 
     function remTime(): string {
         const upcoming = totalSizeBytes - downloadedBytes

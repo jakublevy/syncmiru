@@ -11,7 +11,6 @@ export function Modal(p: ModalProps): ReactElement {
         <Dialog
             open={p.open && !reconnecting}
             onClose={() => p.setOpen(false)}
-            className="relative z-50"
         >
             <div className="fixed inset-0 bg-black/50" aria-hidden="true"/>
 

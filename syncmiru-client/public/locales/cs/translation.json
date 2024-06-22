@@ -335,8 +335,17 @@
   "add-to-playlist-file-server": "Souborový server",
   "add-to-playlist-url": "URL adresa",
   "add-to-playlist-source": "Zdroj videa",
+  "add-to-playlist-btn": "Přidat do playlistu",
 
   "modal-add-to-playlist-from-file-srv-title": "Video ze souborového serveru",
 
-  "file-picker-select-text": "Vyberte souborový server z dostupných"
+  "file-picker-select-text": "Vyberte souborový server z dostupných",
+  "file-picker-file-name": "Název",
+  "file-picker-mtime": "Datum modifikace",
+  "file-picker-size": "Velikost",
+  "file-picker-error": "Při načítání obsahu došlo k chybě",
+  "file-picker-reload-btn": "Načíst znovu",
+  "file-picker-nothing-added": "Žádné položky",
+  "file-picker-summary": "Shrnutí položek k přidání",
+  "datatable-no-files": "Žádné soubory nejsou k dispozici"
 }

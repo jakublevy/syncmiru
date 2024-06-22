@@ -40,3 +40,4 @@ image = "0.25.1"
 rust_decimal = "1.34.2"
 rust_decimal_macros = "1.34.2"
 reqwest = { version = "0.12.2", features = ["json"] }
+urlencoding = "2.1.3"

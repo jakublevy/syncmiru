@@ -74,7 +74,7 @@ export default function Main(): ReactElement {
     })
     const mpvWinDetachedInit = useMpvWinDetached()
     const [mpvWinDetached, setMpvWinDetached] = useState<boolean>(false)
-    const [sources, setSources] = useState<Array<string>>(new Array<string>())
+    const [source2url, setSource2url] = useState<Map<string, string>>(new Map<string, string>())
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -163,8 +163,13 @@ export default function Main(): ReactElement {
             })
 
         s.emitWithAck("get_sources")
-            .then((sources: Array<string>) => {
-                setSources(sources)
+            .then((source2url: Record<string, string>) => {
+                const m: Map<string, string> = new Map<string, string>()
+                for (const key in source2url) {
+                    const url = source2url[key]
+                    m.set(key, url)
+                }
+                setSource2url(m)
             })
             .catch(() => {
                 navigateToLoginFormMain(navigate)
@@ -258,8 +263,8 @@ export default function Main(): ReactElement {
                     setJoinedRoomSettings: setJoinedRoomSettings,
                     mpvWinDetached: mpvWinDetached,
                     setMpvWinDetached: setMpvWinDetached,
-                    sources: sources,
-                    setSources: setSources
+                    source2url: source2url,
+                    setSource2url: setSource2url
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">

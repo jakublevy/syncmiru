@@ -47,8 +47,8 @@ export const MainContext = createContext<MainContextModel>(
         setJoinedRoomSettings: (v) => {},
         mpvWinDetached: false,
         setMpvWinDetached: (v) => {},
-        sources: new Array<string>(),
-        setSources: (v) => {}
+        source2url: new Map<string,string>(),
+        setSource2url: (v) => {}
     })
 
 export const useMainContext = () => useContext(MainContext)

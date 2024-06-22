@@ -41,8 +41,8 @@ export interface MainContextModel {
     setJoinedRoomSettings: Dispatch<SetStateAction<RoomSettingsClient>>,
     mpvWinDetached: boolean,
     setMpvWinDetached: Dispatch<SetStateAction<boolean>>,
-    sources: Array<string>,
-    setSources: Dispatch<SetStateAction<Array<string>>>,
+    source2url: Map<string, string>,
+    setSource2url: Dispatch<SetStateAction<Map<string, string>>>,
 }
 
 export enum RoomConnectionState {

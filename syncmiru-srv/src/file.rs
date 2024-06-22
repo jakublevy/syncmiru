@@ -6,6 +6,7 @@ use serde::{Deserialize, Deserializer, Serialize};
 use serde_repr::Serialize_repr;
 use crate::{constants, Result};
 use crate::error::SyncmiruError;
+use urlencoding::encode;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileInfo {
@@ -43,8 +44,9 @@ pub async fn list(
     jwt: &str,
     path: &str
 ) -> Result<Vec<FileInfo>> {
+    let encoded_path = encode(path).into_owned();
     let client = Client::new()
-        .get(format!("{}{}", root_url, path))
+        .get(&format!("{}{}", root_url, encoded_path))
         .timeout(Duration::from_secs(constants::HTTP_TIMEOUT))
         .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", jwt));
 

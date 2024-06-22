@@ -14,9 +14,10 @@ export function Btn(p: BtnProps): ReactElement {
 }
 
 export function BtnPrimary(p: BtnProps): ReactElement {
-    const {className, children, ...restParams} = p
+    const {className, children, disabled, ...restParams} = p
     return <Btn
-        className={`bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 border border-indigo-700 rounded ${className != null ? className : ''}`}
+        className={`bg-indigo-500 text-white font-bold py-2 px-4 border border-indigo-700 rounded ${disabled ? 'opacity-30' : 'hover:bg-indigo-700'} ${className != null ? className : ''}`}
+        disabled={disabled}
         {...restParams}>
         {children}
     </Btn>

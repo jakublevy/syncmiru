@@ -1385,7 +1385,12 @@ pub async fn get_sources(
     s: SocketRef,
     ack: AckSender,
 ) {
-    ack.send([state.config.sources.keys().collect::<Vec<&String>>()]).ok();
+    let mut m: HashMap<&String, &String> = HashMap::new();
+    for (key, source) in &state.config.sources {
+        m.insert(key, &source.client_url);
+    }
+    ack.send(m).ok();
+    //ack.send([state.config.sources.keys().collect::<Vec<&String>>()]).ok();
 }
 
 pub async fn get_files(
@@ -1423,7 +1428,7 @@ pub async fn get_files(
         files = files
             .iter()
             .filter(
-                |&x| x.file_type == FileType::Directory || allowed_extensions.contains(&x.name.split(".").collect::<String>())
+                |&x| x.file_type == FileType::Directory || allowed_extensions.contains(x.name.split(".").last().unwrap())
             )
             .map(|x|x.clone())
             .collect::<Vec<FileInfo>>();

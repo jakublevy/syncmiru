@@ -335,8 +335,17 @@
   "add-to-playlist-file-server": "File server",
   "add-to-playlist-url": "URL address",
   "add-to-playlist-source": "Video source",
+  "add-to-playlist-btn": "Add to the playlist",
 
   "modal-add-to-playlist-from-file-srv-title": "Video from the file server",
 
-  "file-picker-select-text": "Select a file server from the available ones"
+  "file-picker-select-text": "Select a file server from the available ones",
+  "file-picker-file-name": "Name",
+  "file-picker-mtime": "Date of modification",
+  "file-picker-size": "Size",
+  "file-picker-error": "An error occurred while loading the content",
+  "file-picker-reload-btn": "Load again",
+  "file-picker-nothing-added": "No items",
+  "file-picker-summary": "Summary of items to add",
+  "datatable-no-files": "No files available"
 }
