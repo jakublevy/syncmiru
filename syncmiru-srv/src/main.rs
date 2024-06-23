@@ -14,6 +14,7 @@ use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use bimap::BiMap;
 use clap::Parser;
+use multimap::MultiMap;
 use tower_http::trace::TraceLayer;
 use socketioxide::extract::SocketRef;
 use socketioxide::handler::ConnectHandler;
@@ -68,7 +69,10 @@ async fn main() -> Result<()> {
          io: None.into(),
          sid_hwid_hash: HashMap::new().into(),
          rid_uids: BiMultiMap::new().into(),
-         uid_ping: HashMap::new().into()
+         uid_ping: HashMap::new().into(),
+         playlist_entry_next_id: 1u64.into(),
+         playlist: HashMap::new().into(),
+         rid2playlist_id: MultiMap::new().into(),
       });
 
    let socketio_srvstate = srvstate.clone();

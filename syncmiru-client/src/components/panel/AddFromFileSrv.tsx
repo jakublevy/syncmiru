@@ -6,15 +6,34 @@ import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import FilePicker from "@components/panel/FilePicker.tsx";
 import {BtnPrimary} from "@components/widgets/Button.tsx";
 import {FileKind} from "@models/file.ts";
+import {useMainContext} from "@hooks/useMainContext.ts";
 
 export default function AddFromFileSrv(): ReactElement {
     const {t} = useTranslation()
+    const {
+        socket,
+        setPlaylistLoading
+    } = useMainContext()
     const [showModal, setShowModal] = useState<boolean>(false);
     const [filesPicked, setFilesPicked] = useState<Array<string>>(new Array<string>())
 
     function addClicked() {
         setFilesPicked([])
         setShowModal(true);
+    }
+
+    function addToPlaylistClicked() {
+        setPlaylistLoading(true)
+        socket!.emitWithAck("add_video_files", {full_paths: filesPicked})
+            .then(() => {
+                
+            })
+            .catch(() => {
+
+            })
+            .finally(() => {
+                setPlaylistLoading(false)
+            })
     }
 
     return (
@@ -42,6 +61,7 @@ export default function AddFromFileSrv(): ReactElement {
                         <BtnPrimary
                             className="mt-4"
                             disabled={filesPicked.length === 0}
+                            onClick={addToPlaylistClicked}
                         >{t('add-to-playlist-btn')}</BtnPrimary>
                     </div>
                 }

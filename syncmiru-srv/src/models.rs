@@ -6,6 +6,8 @@ use crate::validators;
 pub mod http;
 pub mod query;
 pub mod socketio;
+pub mod file;
+pub mod playlist;
 
 #[derive(Debug, Clone, Serialize, sqlx::FromRow)]
 pub struct User {

@@ -1,11 +1,10 @@
 use std::collections::HashMap;
-use chrono::Utc;
 use rust_decimal::Decimal;
 use serde::{Serialize, Deserialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use validator::Validate;
 use crate::validators;
-use crate::models::query::{Id, RoomClient, RoomSettings};
+use crate::models::query::{Id, RoomSettings};
 
 #[derive(Debug, Clone, Deserialize, Validate)]
 pub struct LoginTkns {
@@ -262,6 +261,12 @@ pub struct GetFilesInfo {
 pub enum FileKind {
     Video = 0,
     Subtitles = 1
+}
+
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct AddVideos {
+    #[validate(custom(function = "validators::check_video_full_paths"))]
+    pub full_paths: Vec<String>
 }
 
 #[serde_with::serde_as]

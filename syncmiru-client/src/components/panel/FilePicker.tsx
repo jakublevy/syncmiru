@@ -14,11 +14,11 @@ import Folder from "@components/svg/Folder.tsx";
 import DateTimeLocalPretty from "@components/widgets/DateTimeLocalPretty.tsx";
 import {bytesPretty} from "src/utils/pretty.ts";
 import Loading from "@components/Loading.tsx";
-import Play from "@components/svg/Play.tsx";
 import Plus from "@components/svg/Plus.tsx";
 import Danger from "@components/svg/Danger.tsx";
-import SrtFormat from "@components/svg/SrtFormat.tsx";
 import {arrayMove, List, OnChangeMeta, RenderListParams} from "react-movable";
+import VideoFile from "@components/svg/VideoFile.tsx";
+import SubFile from "@components/svg/SubFile.tsx";
 
 export default function FilePicker(p: Props): ReactElement {
     const {t} = useTranslation()
@@ -38,7 +38,7 @@ export default function FilePicker(p: Props): ReactElement {
     const columns: TableColumn<FileInfoClient>[] = [
         {
             id: 'name',
-            minWidth: '16rem',
+            width: '16rem',
             name: t('file-picker-file-name'),
             sortable: true,
             sortFunction: (a, b) => a.name.localeCompare(b.name),
@@ -53,11 +53,11 @@ export default function FilePicker(p: Props): ReactElement {
                                 data-tag="allowRowEvents"
                             />
                             : p.fileKind === FileKind.Video
-                                ? <Play
+                                ? <VideoFile
                                     className="min-w-6 w-6"
                                     data-tag="allowRowEvents"
                                 />
-                                : <SrtFormat
+                                : <SubFile
                                     className="min-w-6 w-6"
                                     data-tag="allowRowEvents"
                                 />
@@ -319,8 +319,8 @@ export default function FilePicker(p: Props): ReactElement {
                                 >
                                     <div className="flex items-center gap-x-2 mb-0.5 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 hover:cursor-pointer">
                                         {p.fileKind === FileKind.Video
-                                            ? <Play className="min-w-6 w-6"/>
-                                            : <SrtFormat className="min-w-6 w-6"/>
+                                            ? <VideoFile className="min-w-6 w-6"/>
+                                            : <SubFile className="min-w-6 w-6"/>
                                         }
                                         <p className="text-xs">{filePath}</p>
                                         <div className="flex-1"></div>

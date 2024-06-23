@@ -5,7 +5,10 @@ use sqlx::{PgPool};
 use tokio::sync::RwLock;
 use crate::bimultimap::BiMultiMap;
 use crate::config::Config;
+use crate::models::playlist::PlaylistFile;
 use crate::models::query::Id;
+
+pub type PlaylistId = u64;
 
 pub struct SrvState {
     pub config: Config,
@@ -15,7 +18,11 @@ pub struct SrvState {
     pub sid_hwid_hash: RwLock<HashMap<socketioxide::socket::Sid, String>>,
     pub io: RwLock<Option<SocketIo>>,
     pub rid_uids: RwLock<BiMultiMap<Id, Id>>,
-    pub uid_ping: RwLock<HashMap<Id, f64>>
+    pub uid_ping: RwLock<HashMap<Id, f64>>,
+
+    pub playlist_entry_next_id: RwLock<PlaylistId>,
+    pub rid2playlist_id: RwLock<multimap::MultiMap<Id, PlaylistId>>,
+    pub playlist: RwLock<HashMap<PlaylistId, PlaylistFile>>
 }
 
 impl SrvState {
@@ -38,5 +45,12 @@ impl SrvState {
             let joined_room = rooms.get(0).unwrap();
             joined_room.parse::<Id>().ok()
         }
+    }
+
+    pub async fn next_playlist_entry_id(&self) -> PlaylistId {
+        let mut wl = self.playlist_entry_next_id.write().await;
+        let ret_id = wl.clone();
+        *wl = ret_id + 1;
+        ret_id
     }
 }

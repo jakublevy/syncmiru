@@ -5,12 +5,14 @@ use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
-use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder, RoomSettings};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind};
+use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideos};
 use crate::{crypto, email, file, query};
-use crate::file::{FileInfo, FileType};
+use crate::models::file::FileInfo;
 use crate::handlers::utils;
-use crate::srvstate::SrvState;
+use crate::models::file::FileType;
+use crate::models::playlist::{PlaylistEntry, PlaylistFile};
+use crate::srvstate::{PlaylistId, SrvState};
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on_disconnect(disconnect);
@@ -69,6 +71,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("room_ping", room_ping);
     s.on("get_sources", get_sources);
     s.on("get_files", get_files);
+    s.on("add_video_files", add_video_files);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1390,7 +1393,6 @@ pub async fn get_sources(
         m.insert(key, &source.client_url);
     }
     ack.send(m).ok();
-    //ack.send([state.config.sources.keys().collect::<Vec<&String>>()]).ok();
 }
 
 pub async fn get_files(
@@ -1434,4 +1436,54 @@ pub async fn get_files(
             .collect::<Vec<FileInfo>>();
     }
     ack.send(SocketIoAck::<Vec<FileInfo>>::ok(Some(files))).ok();
+}
+
+pub async fn add_video_files(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<AddVideos>,
+) {
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let mut v = Vec::<(&str, &str)>::new();
+    for full_path in &payload.full_paths {
+        let (source, path) = full_path.split_once(":").unwrap();
+        if !state.config.sources.contains_key(source) {
+            ack.send(SocketIoAck::<()>::err()).ok();
+            return;
+        }
+        let source_info = state.config.sources.get(source).unwrap();
+        let exists = file::f_exists(&source_info.list_root_url, &source_info.srv_jwt, path)
+            .await
+            .expect("http error");
+        if !exists {
+            ack.send(SocketIoAck::<()>::err()).ok();
+            return;
+        }
+        v.push((source, path));
+    }
+    let mut rid2playlist_wl = state.rid2playlist_id.write().await;
+    let mut playlist_wl = state.playlist.write().await;
+    for (source, path) in v {
+        let entry_id = state.next_playlist_entry_id().await;
+        playlist_wl.insert(
+            entry_id,
+            PlaylistFile {
+                entry: PlaylistEntry::Video { source: source.to_string(), path: path.to_string() }
+            }
+        );
+        rid2playlist_wl.insert(rid, entry_id);
+    }
+    // TODO: send the changes to others
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
