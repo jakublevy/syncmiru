@@ -3,6 +3,7 @@ import {UserId, UserMap} from "src/models/user.ts";
 import {RoomId, RoomMap, RoomSettingsClient} from "@models/room.ts";
 import {Dispatch, MutableRefObject, SetStateAction} from "react";
 import {UserRoomMap, UserRoomPingsClient} from "@models/roomUser.ts";
+import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
 
 export interface MainContextModel {
     uid: number

@@ -1,17 +1,9 @@
-#[derive(Debug, Clone)]
-pub struct PlaylistFile {
-    pub entry: PlaylistEntry,
-    //pub subtitles: Vec<SubtitlesEntry>
-}
+use serde::Serialize;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
+#[serde(tag = "type", rename_all = "lowercase")]
 pub enum PlaylistEntry {
     Video { source: String, path: String },
-    Url { url: String }
+    Url { url: String },
+    Subtitles { source: String, path: String },
 }
-
-// #[derive(Debug, Clone)]
-// pub struct SubtitlesEntry {
-//     pub source: String,
-//     pub path: String,
-// }

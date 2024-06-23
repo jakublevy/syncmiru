@@ -347,5 +347,7 @@
   "file-picker-reload-btn": "Načíst znovu",
   "file-picker-nothing-added": "Žádné položky",
   "file-picker-summary": "Shrnutí položek k přidání",
-  "datatable-no-files": "Žádné soubory nejsou k dispozici"
+  "datatable-no-files": "Žádné soubory nejsou k dispozici",
+
+  "playlist-modify-error": "Při úpravě playlistu došlo k chybě"
 }

@@ -183,7 +183,7 @@ pub fn check_path(path: &str) -> Result<(), ValidationError> {
 pub fn check_video_full_paths(paths: &Vec<String>) -> Result<(), ValidationError> {
     for path in paths {
         let split_opt = path.split_once(":");
-        if split_opt.is_some() {
+        if split_opt.is_none() {
             return Err(ValidationError::new("invalid video path"))
         }
         let (_, path) = split_opt.unwrap();

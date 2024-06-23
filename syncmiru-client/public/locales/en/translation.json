@@ -347,5 +347,7 @@
   "file-picker-reload-btn": "Load again",
   "file-picker-nothing-added": "No items",
   "file-picker-summary": "Summary of items to add",
-  "datatable-no-files": "No files available"
+  "datatable-no-files": "No files available",
+
+  "playlist-modify-error": "An error occurred while modifying the playlist"
 }

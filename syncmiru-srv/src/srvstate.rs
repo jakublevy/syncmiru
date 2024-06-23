@@ -5,10 +5,10 @@ use sqlx::{PgPool};
 use tokio::sync::RwLock;
 use crate::bimultimap::BiMultiMap;
 use crate::config::Config;
-use crate::models::playlist::PlaylistFile;
+use crate::models::playlist::{PlaylistEntry};
 use crate::models::query::Id;
 
-pub type PlaylistId = u64;
+pub type PlaylistEntryId = u64;
 
 pub struct SrvState {
     pub config: Config,
@@ -20,9 +20,12 @@ pub struct SrvState {
     pub rid_uids: RwLock<BiMultiMap<Id, Id>>,
     pub uid_ping: RwLock<HashMap<Id, f64>>,
 
-    pub playlist_entry_next_id: RwLock<PlaylistId>,
-    pub rid2playlist_id: RwLock<multimap::MultiMap<Id, PlaylistId>>,
-    pub playlist: RwLock<HashMap<PlaylistId, PlaylistFile>>
+    pub playlist_entry_next_id: RwLock<PlaylistEntryId>,
+
+    pub rid2video_id: RwLock<multimap::MultiMap<Id, PlaylistEntryId>>,
+    pub video_id2subtitle_ids: RwLock<multimap::MultiMap<Id, PlaylistEntryId>>,
+
+    pub playlist: RwLock<HashMap<PlaylistEntryId, PlaylistEntry>>
 }
 
 impl SrvState {
@@ -47,7 +50,7 @@ impl SrvState {
         }
     }
 
-    pub async fn next_playlist_entry_id(&self) -> PlaylistId {
+    pub async fn next_playlist_entry_id(&self) -> PlaylistEntryId {
         let mut wl = self.playlist_entry_next_id.write().await;
         let ret_id = wl.clone();
         *wl = ret_id + 1;

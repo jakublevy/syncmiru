@@ -72,7 +72,8 @@ async fn main() -> Result<()> {
          uid_ping: HashMap::new().into(),
          playlist_entry_next_id: 1u64.into(),
          playlist: HashMap::new().into(),
-         rid2playlist_id: MultiMap::new().into(),
+         rid2video_id: MultiMap::new().into(),
+         video_id2subtitle_ids: MultiMap::new().into()
       });
 
    let socketio_srvstate = srvstate.clone();

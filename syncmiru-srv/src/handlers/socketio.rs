@@ -11,8 +11,8 @@ use crate::{crypto, email, file, query};
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
 use crate::models::file::FileType;
-use crate::models::playlist::{PlaylistEntry, PlaylistFile};
-use crate::srvstate::{PlaylistId, SrvState};
+use crate::models::playlist::{PlaylistEntry};
+use crate::srvstate::{PlaylistEntryId, SrvState};
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on_disconnect(disconnect);
@@ -1450,7 +1450,6 @@ pub async fn add_video_files(
         return;
     }
     let rid = rid_opt.unwrap();
-
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
@@ -1472,18 +1471,16 @@ pub async fn add_video_files(
         }
         v.push((source, path));
     }
-    let mut rid2playlist_wl = state.rid2playlist_id.write().await;
+    let mut rid2playlist_wl = state.rid2video_id.write().await;
     let mut playlist_wl = state.playlist.write().await;
+    let mut sendmap: HashMap<PlaylistEntryId, PlaylistEntry> = HashMap::new();
     for (source, path) in v {
         let entry_id = state.next_playlist_entry_id().await;
-        playlist_wl.insert(
-            entry_id,
-            PlaylistFile {
-                entry: PlaylistEntry::Video { source: source.to_string(), path: path.to_string() }
-            }
-        );
+        let entry = PlaylistEntry::Video { source: source.to_string(), path: path.to_string() };
+        sendmap.insert(entry_id, entry.clone());
+        playlist_wl.insert(entry_id, entry);
         rid2playlist_wl.insert(rid, entry_id);
     }
-    // TODO: send the changes to others
+    s.within(rid.to_string()).emit("add_video_files", sendmap).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }

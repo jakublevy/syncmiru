@@ -7,6 +7,8 @@ import FilePicker from "@components/panel/FilePicker.tsx";
 import {BtnPrimary} from "@components/widgets/Button.tsx";
 import {FileKind} from "@models/file.ts";
 import {useMainContext} from "@hooks/useMainContext.ts";
+import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
+import {showPersistentErrorAlert} from "../../utils/alert.ts";
 
 export default function AddFromFileSrv(): ReactElement {
     const {t} = useTranslation()
@@ -23,13 +25,16 @@ export default function AddFromFileSrv(): ReactElement {
     }
 
     function addToPlaylistClicked() {
+        setShowModal(false)
         setPlaylistLoading(true)
         socket!.emitWithAck("add_video_files", {full_paths: filesPicked})
-            .then(() => {
-                
+            .then((ack: SocketIoAck<null>) => {
+                if(ack.status === SocketIoAckType.Err) {
+                    showPersistentErrorAlert(t('playlist-modify-error'))
+                }
             })
             .catch(() => {
-
+                showPersistentErrorAlert(t('playlist-modify-error'))
             })
             .finally(() => {
                 setPlaylistLoading(false)
