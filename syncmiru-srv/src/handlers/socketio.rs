@@ -6,7 +6,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideos};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideos, MyPlayingId};
 use crate::{crypto, email, file, query};
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
@@ -72,6 +72,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("get_sources", get_sources);
     s.on("get_files", get_files);
     s.on("add_video_files", add_video_files);
+    s.on("set_my_playing_id", set_my_playing_id);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1471,7 +1472,7 @@ pub async fn add_video_files(
         }
         v.push((source, path));
     }
-    let mut rid2playlist_wl = state.rid2video_id.write().await;
+    let mut rid2playlist_wl = state.rid_video_id.write().await;
     let mut playlist_wl = state.playlist.write().await;
     let mut sendmap: HashMap<PlaylistEntryId, PlaylistEntry> = HashMap::new();
     for (source, path) in v {
@@ -1481,6 +1482,42 @@ pub async fn add_video_files(
         playlist_wl.insert(entry_id, entry);
         rid2playlist_wl.insert(rid, entry_id);
     }
+
     s.within(rid.to_string()).emit("add_video_files", sendmap).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn set_my_playing_id(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<MyPlayingId>,
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    let playlist_rl = state.playlist.read().await;
+    let rid2video_id_rl = state.rid_video_id.read().await;
+    if !playlist_rl.contains_key(&payload.playlist_entry_id) {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid_of_entry_opt = rid2video_id_rl.get_by_right(&payload.playlist_entry_id);
+    if rid_of_entry_opt.is_none() || *rid_of_entry_opt.unwrap() != rid {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+
+    // TODO: change per room playing id
+    // TODO change user playing id
+    // TODO: respond to calling user with jwt / empty (url)
+    // TODO: set hourglass to all
+    // TODO: notify other users about the change, so that they call this function
 }

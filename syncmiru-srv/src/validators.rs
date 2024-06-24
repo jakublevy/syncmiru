@@ -5,6 +5,7 @@ use validator::ValidationError;
 use crate::constants::SOCKETIO_ACK_TIMEOUT;
 use crate::models::query::Id;
 use crate::query;
+use crate::srvstate::PlaylistEntryId;
 
 pub fn check_username_format(username: &str) -> Result<(), ValidationError> {
     if username.chars().count() < 4 || username.chars().count() > 16 {
@@ -200,6 +201,13 @@ pub fn check_video_full_paths(paths: &Vec<String>) -> Result<(), ValidationError
         if last_char == '/' {
             return Err(ValidationError::new("invalid video path"))
         }
+    }
+    Ok(())
+}
+
+pub fn check_playlist_entry_id(id: &PlaylistEntryId) -> Result<(), ValidationError> {
+    if *id < 1u64 {
+        return Err(ValidationError::new("invalid playlist entry id"))
     }
     Ok(())
 }

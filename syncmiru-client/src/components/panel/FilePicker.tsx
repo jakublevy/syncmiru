@@ -317,7 +317,7 @@ export default function FilePicker(p: Props): ReactElement {
                                         listStyleType: 'none'
                                     }}
                                 >
-                                    <div className="flex items-center gap-x-2 mb-0.5 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 hover:cursor-pointer">
+                                    <div className="flex items-center gap-x-2 mb-0.5 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 hover:cursor-pointer rounded">
                                         {p.fileKind === FileKind.Video
                                             ? <VideoFile className="min-w-6 w-6"/>
                                             : <SubFile className="min-w-6 w-6"/>

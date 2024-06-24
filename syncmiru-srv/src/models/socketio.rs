@@ -5,6 +5,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use validator::Validate;
 use crate::validators;
 use crate::models::query::{Id, RoomSettings};
+use crate::srvstate::PlaylistEntryId;
 
 #[derive(Debug, Clone, Deserialize, Validate)]
 pub struct LoginTkns {
@@ -267,6 +268,12 @@ pub enum FileKind {
 pub struct AddVideos {
     #[validate(custom(function = "validators::check_video_full_paths"))]
     pub full_paths: Vec<String>
+}
+
+#[derive(Debug, Clone, Validate, Deserialize)]
+pub struct MyPlayingId {
+    #[validate(custom(function = "validators::check_playlist_entry_id"))]
+    pub playlist_entry_id: PlaylistEntryId
 }
 
 #[serde_with::serde_as]
