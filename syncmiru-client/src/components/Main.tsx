@@ -68,9 +68,7 @@ export default function Main(): ReactElement {
     const roomPingTimerRef = useRef<number>(-1)
     const [joinedRoomSettings, setJoinedRoomSettings] = useState<RoomSettingsClient>({
         playback_speed: new Decimal(1),
-        desync_tolerance: new Decimal(2),
         minor_desync_playback_slow: new Decimal(0.05),
-        major_desync_min: new Decimal(5)
     })
     const mpvWinDetachedInit = useMpvWinDetached()
     const [mpvWinDetached, setMpvWinDetached] = useState<boolean>(false)

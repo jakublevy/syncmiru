@@ -6,7 +6,7 @@ use sqlx::{PgPool};
 use tokio::sync::RwLock;
 use crate::bimultimap::BiMultiMap;
 use crate::config::Config;
-use crate::models::playlist::{PlaylistEntry, RoomPlayInfo, UserPlayInfo};
+use crate::models::playlist::{PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo};
 use crate::models::query::Id;
 
 pub type PlaylistEntryId = u64;
@@ -23,13 +23,14 @@ pub struct SrvState {
 
     pub playlist_entry_next_id: RwLock<PlaylistEntryId>,
 
-    pub rid_video_id: RwLock<BiMultiMap<Id, PlaylistEntryId>>,
-    pub video_id2subtitle_ids: RwLock<MultiMap<Id, PlaylistEntryId>>,
-
     pub playlist: RwLock<HashMap<PlaylistEntryId, PlaylistEntry>>,
+    pub video_id2subtitles_ids: RwLock<MultiMap<PlaylistEntryId, PlaylistEntryId>>,
 
+    pub rid_video_id: RwLock<BiMultiMap<Id, PlaylistEntryId>>,
+    pub rid2runtime_state: RwLock<HashMap<Id, RoomRuntimeState>>,
     pub rid2play_info: RwLock<HashMap<Id, RoomPlayInfo>>,
-    pub rid2user_play_info: RwLock<MultiMap<Id, UserPlayInfo>>
+
+    pub uid2_play_info: RwLock<HashMap<Id, UserPlayInfo>>
 }
 
 impl SrvState {

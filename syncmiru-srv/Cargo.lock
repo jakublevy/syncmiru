@@ -3549,6 +3549,7 @@ dependencies = [
  "clap",
  "hcaptcha",
  "image",
+ "indexmap 2.2.6",
  "josekit",
  "lettre",
  "log",

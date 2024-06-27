@@ -7,15 +7,20 @@ import {
     PlaylistEntryValueSrv,
     PlaylistEntryVideo
 } from "@models/playlist.ts";
-import {List, RenderListParams} from "react-movable";
+import {arrayMove, List, OnChangeMeta, RenderListParams} from "react-movable";
 import VideoFile from "@components/svg/VideoFile.tsx";
 import Multimap from 'multimap';
+import {RoomId} from "@models/room.ts";
+import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
+import {showPersistentErrorAlert} from "../../utils/alert.ts";
+import {useTranslation} from "react-i18next";
 
 export default function Playlist(): ReactElement {
     const {
         socket,
         playlistLoading
     } = useMainContext()
+    const {t} = useTranslation()
 
     const [playlist, setPlaylist] = useState<Map<PlaylistEntryId, PlaylistEntry>>(new Map<PlaylistEntryId, PlaylistEntry>())
     const [playlistOrder, setPlaylistOrder] = useState<Array<PlaylistEntryId>>([])
@@ -25,6 +30,7 @@ export default function Playlist(): ReactElement {
     useEffect(() => {
         if(socket !== undefined) {
             socket.on('add_video_files', onAddVideoFiles)
+            socket.on('playlist_order', onPlaylistOrder)
         }
     }, [socket]);
 
@@ -49,8 +55,28 @@ export default function Playlist(): ReactElement {
         setPlaylistOrder((p) => [...p, ...entryIds])
     }
 
-    function orderChanged() {
+    function onPlaylistOrder(playlistOrder: Array<PlaylistEntryId>) {
+        setPlaylistOrder(playlistOrder)
+    }
 
+    function orderChanged(e: OnChangeMeta) {
+        let oldOrder: Array<PlaylistEntryId>
+        const newOrder = arrayMove(playlistOrder, e.oldIndex, e.newIndex)
+        setPlaylistOrder((p) => {
+            oldOrder = p
+            return newOrder
+        })
+        socket!.emitWithAck("set_playlist_order", {playlist_order: newOrder})
+            .then((ack: SocketIoAck<null>) => {
+                if (ack.status === SocketIoAckType.Err) {
+                    setPlaylistOrder(oldOrder)
+                    showPersistentErrorAlert(t('playlist-order-change-error'))
+                }
+            })
+            .catch(() => {
+                setPlaylistOrder(oldOrder)
+                showPersistentErrorAlert(t('playlist-order-change-error'))
+            })
     }
 
     if(playlistLoading) {

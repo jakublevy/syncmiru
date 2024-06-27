@@ -1,8 +1,9 @@
 use std::collections::{HashMap, HashSet};
+use indexmap::IndexSet;
 
 #[derive(Debug)]
 pub struct BiMultiMap<K, V> {
-    key_to_values: HashMap<K, HashSet<V>>,
+    key_to_values: HashMap<K, IndexSet<V>>,
     value_to_key: HashMap<V, K>,
 }
 
@@ -30,16 +31,16 @@ impl<K, V> BiMultiMap<K, V>
 
         self.key_to_values
             .entry(key.clone())
-            .or_insert_with(HashSet::new)
+            .or_insert_with(IndexSet::new)
             .insert(value.clone());
         self.value_to_key.insert(value, key);
     }
 
-    pub fn get_by_left(&self, key: &K) -> Option<&HashSet<V>> {
+    pub fn get_by_left(&self, key: &K) -> Option<&IndexSet<V>> {
         self.key_to_values.get(key)
     }
 
-    pub fn get_by_left_mut(&mut self, key: &K) -> Option<&mut HashSet<V>> {
+    pub fn get_by_left_mut(&mut self, key: &K) -> Option<&mut IndexSet<V>> {
         self.key_to_values.get_mut(key)
     }
 
@@ -51,7 +52,7 @@ impl<K, V> BiMultiMap<K, V>
         self.value_to_key.get_mut(value)
     }
 
-    pub fn get_key_to_values_hashmap(&self) -> &HashMap<K, HashSet<V>> {
+    pub fn get_key_to_values_hashmap(&self) -> &HashMap<K, IndexSet<V>> {
         &self.key_to_values
     }
 
@@ -157,5 +158,26 @@ mod tests {
         // Check that "value1" is now associated with "key2"
         assert_eq!(multimap.get_by_right(&"value1"), Some(&"key2"));
         assert!(!multimap.get_by_left(&"key1").unwrap().contains(&"value1"));
+    }
+
+    #[test]
+    fn test_insert_remove() {
+        let mut multimap = BiMultiMap::new();
+
+        multimap.insert("key1", "value1");
+        multimap.insert("key1", "value2");
+        multimap.remove_by_left(&"key1");
+        assert_eq!(multimap.get_by_left(&"key1"), None)
+    }
+
+    #[test]
+    fn test_insert_remove2() {
+        let mut multimap = BiMultiMap::new();
+
+        multimap.insert("key1", "value1");
+        multimap.insert("key1", "value2");
+        multimap.remove_by_right(&"value1");
+        multimap.remove_by_right(&"value2");
+        assert_eq!(multimap.get_by_left(&"key1"), None)
     }
 }

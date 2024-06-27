@@ -271,9 +271,15 @@ pub struct AddVideos {
 }
 
 #[derive(Debug, Clone, Validate, Deserialize)]
-pub struct MyPlayingId {
+pub struct PlayingId {
     #[validate(custom(function = "validators::check_playlist_entry_id"))]
     pub playlist_entry_id: PlaylistEntryId
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct PlaylistOrder {
+    #[validate(custom(function = "validators::check_playlist_order"))]
+    pub playlist_order: Vec<PlaylistEntryId>
 }
 
 #[serde_with::serde_as]

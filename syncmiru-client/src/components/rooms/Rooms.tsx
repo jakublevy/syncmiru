@@ -80,9 +80,7 @@ export default function Rooms(): ReactElement {
             socket.on('user_room_change', onUserRoomChange)
             socket.on('room_user_ping', onRoomUserPing)
             socket.on('joined_room_playback_change', onJoinedRoomPlaybackChange)
-            socket.on('joined_room_desync_tolerance', onJoinedRoomDesyncTolerance)
             socket.on('joined_room_minor_desync_playback_slow', onJoinedRoomMinorDesyncPlaybackSlow)
-            socket.on('joined_room_major_desync_min', onJoinedRoomMajorDesyncMin)
 
             socket.emitWithAck("get_rooms")
                 .then((roomsWOrder: RoomsWOrder) => {
@@ -265,31 +263,11 @@ export default function Rooms(): ReactElement {
         })
     }
 
-    function onJoinedRoomDesyncTolerance(desyncTolerance: string) {
-        setJoinedRoomSettings((p) => {
-            const {desync_tolerance, ...rest} = p
-            return {
-                desync_tolerance: new Decimal(desyncTolerance),
-                ...rest
-            }
-        })
-    }
-
     function onJoinedRoomMinorDesyncPlaybackSlow(minorDesyncPlaybackSlow: string) {
         setJoinedRoomSettings((p) => {
             const {minor_desync_playback_slow, ...rest} = p
             return {
                 minor_desync_playback_slow: new Decimal(minorDesyncPlaybackSlow),
-                ...rest
-            }
-        })
-    }
-
-    function onJoinedRoomMajorDesyncMin(majorDesyncMin: string) {
-        setJoinedRoomSettings((p) => {
-            const {major_desync_min, ...rest} = p
-            return {
-                major_desync_min: new Decimal(majorDesyncMin),
                 ...rest
             }
         })
@@ -380,7 +358,6 @@ export default function Rooms(): ReactElement {
                             const payload = ack.payload as JoinedRoomInfoSrv
                             const roomPingsSrv = payload.room_pings
                             const roomSettingsSrv = payload.room_settings
-
                             const m: UserRoomPingsClient = new Map<UserId, number>()
                             for(const uidStr in roomPingsSrv) {
                                 const uid = parseInt(uidStr)
@@ -390,8 +367,6 @@ export default function Rooms(): ReactElement {
 
                             const roomSettings: RoomSettingsClient = {
                                 playback_speed: new Decimal(roomSettingsSrv.playback_speed),
-                                desync_tolerance: new Decimal(roomSettingsSrv.desync_tolerance),
-                                major_desync_min: new Decimal(roomSettingsSrv.major_desync_min),
                                 minor_desync_playback_slow: new Decimal(roomSettingsSrv.minor_desync_playback_slow)
                             }
                             setJoinedRoomSettings(roomSettings)

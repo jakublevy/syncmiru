@@ -1,4 +1,6 @@
+use rust_decimal::Decimal;
 use serde::Serialize;
+use crate::models::query::RoomSettings;
 use crate::srvstate::PlaylistEntryId;
 
 #[derive(Debug, Clone, Serialize)]
@@ -9,23 +11,33 @@ pub enum PlaylistEntry {
     Subtitles { source: String, path: String },
 }
 
+
+#[derive(Debug)]
 pub struct RoomPlayInfo {
-    playing_entry_id: PlaylistEntryId,
-    playing_state: PlayingState
+    pub playing_entry_id: PlaylistEntryId,
+    pub playing_state: PlayingState,
 }
 
+#[derive(Debug)]
+pub struct RoomRuntimeState {
+    pub playback_speed: Decimal,
+    pub runtime_config: RoomSettings,
+}
+
+#[derive(Debug)]
 pub enum PlayingState {
     Play, Pause
 }
 
+#[derive(Debug)]
 pub struct UserPlayInfo {
-    pub playing_entry_id: PlaylistEntryId,
     pub status: UserStatus,
     pub timestamp: u64,
     pub aid: u64,
     pub sid: u64
 }
 
+#[derive(Debug)]
 pub enum UserStatus {
-    Ready, NotReady, Loading
+    Ready, NotReady
 }

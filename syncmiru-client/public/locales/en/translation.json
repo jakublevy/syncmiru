@@ -349,5 +349,6 @@
   "file-picker-summary": "Summary of items to add",
   "datatable-no-files": "No files available",
 
-  "playlist-modify-error": "An error occurred while modifying the playlist"
+  "playlist-modify-error": "An error occurred while modifying the playlist",
+  "playlist-order-change-error": "An error occurred while changing the order of playlist entries"
 }

@@ -349,5 +349,6 @@
   "file-picker-summary": "Shrnutí položek k přidání",
   "datatable-no-files": "Žádné soubory nejsou k dispozici",
 
-  "playlist-modify-error": "Při úpravě playlistu došlo k chybě"
+  "playlist-modify-error": "Při úpravě playlistu došlo k chybě",
+  "playlist-order-change-error": "Došlo k chybě při změně pořadí položek v playlistu"
 }

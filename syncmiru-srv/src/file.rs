@@ -36,8 +36,25 @@ pub async fn f_exists(
     jwt: &str,
     path: &str
 ) -> Result<bool> {
-    // TODO:
-    Ok(true)
+    let (p, f) = split_on_last_occurrence(path, '/').unwrap();
+    let files_r = list(root_url, jwt, p).await;
+    if files_r.is_err() {
+        return Ok(false)
+    }
+    let files = files_r.unwrap();
+    for file in &files {
+        if file.name == f {
+            return Ok(true)
+        }
+    }
+    Ok(false)
+}
+
+fn split_on_last_occurrence(s: &str, delimiter: char) -> Option<(&str, &str)> {
+    let mut parts = s.rsplitn(2, delimiter);
+    let second_part = parts.next()?;
+    let first_part = parts.next().unwrap_or("");
+    Some((first_part, second_part))
 }
 
 #[cfg(test)]
@@ -58,5 +75,15 @@ mod tests {
         else {
             assert_eq!(1,2)
         }
+    }
+
+    #[tokio::test]
+    async fn f_exists_test() {
+        let res = f_exists(
+            "https://kodi.levy.cx/syncmiru-server/?dir=",
+            "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3N1ZWQiOjE3MTg2MzE0Njh9.8kkgmQ_5HTUFqiyrFR_1ZYqSpzK0sg-7JqmI-fi4byBMLzyE5OFY5rqlN5y6aqmR0yJ4u-y0FjL2alo2j8OuVA",
+            "/anime/MF Ghost"
+        ).await;
+        assert!(res.unwrap())
     }
 }

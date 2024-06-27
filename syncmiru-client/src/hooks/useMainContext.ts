@@ -40,9 +40,7 @@ export const MainContext = createContext<MainContextModel>(
         setUidPing: (v) => {},
         joinedRoomSettings: {
                 playback_speed: new Decimal(1),
-                desync_tolerance: new Decimal(2),
                 minor_desync_playback_slow: new Decimal(0.05),
-                major_desync_min: new Decimal(5)
         },
         setJoinedRoomSettings: (v) => {},
         mpvWinDetached: false,

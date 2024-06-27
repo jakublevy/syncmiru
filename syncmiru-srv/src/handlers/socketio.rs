@@ -6,12 +6,13 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideos, MyPlayingId};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideos, PlayingId, PlaylistOrder};
 use crate::{crypto, email, file, query};
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
+use crate::handlers::utils::{disconnect_from_room, entry_id_in_playlist, entry_id_in_room};
 use crate::models::file::FileType;
-use crate::models::playlist::{PlaylistEntry};
+use crate::models::playlist::{PlaylistEntry, RoomRuntimeState};
 use crate::srvstate::{PlaylistEntryId, SrvState};
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -72,7 +73,9 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("get_sources", get_sources);
     s.on("get_files", get_files);
     s.on("add_video_files", add_video_files);
-    s.on("set_my_playing_id", set_my_playing_id);
+    s.on("req_playing_jwt", req_playing_jwt);
+    s.on("change_playing_entry", change_playing_entry);
+    s.on("set_playlist_order", set_playlist_order);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -91,7 +94,7 @@ pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
         socket_uid_lock.remove_by_left(&s.id);
     }
     let mut uid: Id;
-    if let None = uid_opt {
+    if uid_opt.is_none() {
         let mut socket_uid_disconnect_wl = state.socket_uid_disconnect.write().await;
         uid = socket_uid_disconnect_wl.get(&s.id).unwrap().clone();
         socket_uid_disconnect_wl.remove(&s.id);
@@ -103,13 +106,19 @@ pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
         .await
         .expect("db error");
 
-    s.leave_all().ok();
+    let mut rid_opt: Option<Id> = None;
     {
-        let mut rid_uids_lock = state.rid_uids.write().await;
-        rid_uids_lock.remove_by_right(&uid);
+        let rid_uids_rl = state.rid_uids.read().await;
+        rid_opt = rid_uids_rl.get_by_right(&uid).map(|x|x.clone());
+    }
+    if let Some(rid) = rid_opt {
+        disconnect_from_room(state, &s, uid, rid).await;
     }
 
     s.broadcast().emit("offline", uid).ok();
+
+    println!("after disconnect");
+    utils::debug_print(state);
 }
 
 pub async fn get_users(
@@ -754,8 +763,7 @@ pub async fn delete_reg_tkn(
             .commit()
             .await
             .expect("db error");
-    }
-    else {
+    } else {
         ack.send(SocketIoAck::<()>::err()).ok();
     }
 }
@@ -1047,8 +1055,7 @@ pub async fn delete_room(
             .commit()
             .await
             .expect("db error");
-    }
-    else {
+    } else {
         ack.send(SocketIoAck::<()>::err()).ok();
     }
 }
@@ -1136,7 +1143,6 @@ pub async fn set_room_desync_tolerance(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-    s.within(payload.id.to_string()).emit("joined_room_desync_tolerance", payload.desync_tolerance).ok();
     s.broadcast().emit("room_desync_tolerance", payload).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
@@ -1224,7 +1230,6 @@ pub async fn set_room_major_desync_min(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-    s.within(payload.id.to_string()).emit("joined_room_major_desync_min", payload.major_desync_min).ok();
     s.broadcast().emit("room_major_desync_min", payload).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
@@ -1273,6 +1278,9 @@ pub async fn join_room(
     ack: AckSender,
     Data(payload): Data<JoinRoomReq>,
 ) {
+    println!("before room join");
+    utils::debug_print(state);
+
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<JoinedRoomInfo>::err()).ok();
         return;
@@ -1285,40 +1293,48 @@ pub async fn join_room(
         ack.send(SocketIoAck::<JoinedRoomInfo>::err()).ok();
         return;
     }
+    let mut uid_ping_lock = state.uid_ping.write().await;
+    let mut rid_uids_lock = state.rid_uids.write().await;
+
     let uid = state.socket2uid(&s).await;
     let old_connected_room_opt = state.socket_connected_room(&s).await;
     let new_room_name = payload.rid.to_string();
     let mut room_pings = HashMap::<Id, f64>::new();
-    {
-        let mut uid_ping_lock = state.uid_ping.write().await;
-        let mut rid_uids_lock = state.rid_uids.write().await;
-        rid_uids_lock.insert(payload.rid, uid);
-        uid_ping_lock.insert(uid, payload.ping);
-
-        s.leave_all().ok();
-        s.join(new_room_name.clone()).ok();
-
-        let uids_in_room = rid_uids_lock.get_by_left(&payload.rid).unwrap();
-
-        room_pings = uid_ping_lock
-            .iter()
-            .filter(|&(id, ping)| uids_in_room.contains(id))
-            .map(|(id, ping)| (*id, *ping))
-            .collect::<HashMap<Id, f64>>();
-    }
 
     let room_settings = query::get_room_settings(&mut transaction, payload.rid)
         .await
         .expect("db error");
 
-    s.to(new_room_name).emit("room_user_ping", RoomUserPingChange{ uid, ping: payload.ping }).ok();
+    let uids_already_in_room = rid_uids_lock.get_by_left(&payload.rid);
+    if uids_already_in_room.is_none() {
+        let mut rid2runtime_state_lock = state.rid2runtime_state.write().await;
+        rid2runtime_state_lock.insert(payload.rid, RoomRuntimeState {
+            playback_speed: room_settings.playback_speed,
+            runtime_config: room_settings.clone()
+        });
+    }
+
+    rid_uids_lock.insert(payload.rid, uid);
+    uid_ping_lock.insert(uid, payload.ping);
+
+    s.leave_all().ok();
+    s.join(new_room_name.clone()).ok();
+
+    let uids_in_room = rid_uids_lock.get_by_left(&payload.rid).unwrap();
+
+    room_pings = uid_ping_lock
+        .iter()
+        .filter(|&(id, ping)| uids_in_room.contains(id))
+        .map(|(id, ping)| (*id, *ping))
+        .collect::<HashMap<Id, f64>>();
+
+    s.to(new_room_name).emit("room_user_ping", RoomUserPingChange { uid, ping: payload.ping }).ok();
 
     if let Some(old_connected_room) = old_connected_room_opt {
         let urc = UserRoomChange { uid, old_rid: old_connected_room, new_rid: payload.rid };
         s.broadcast().emit("user_room_change", &urc).ok();
         s.emit("user_room_change", urc).ok();
-    }
-    else {
+    } else {
         let urj = UserRoomJoin { uid, rid: payload.rid };
         s.broadcast().emit("user_room_join", &urj).ok();
         s.emit("user_room_join", urj).ok();
@@ -1326,9 +1342,12 @@ pub async fn join_room(
 
     ack.send(SocketIoAck::<JoinedRoomInfo>::ok(Some(JoinedRoomInfo {
         room_settings,
-        room_pings
+        room_pings,
     }))).ok();
     transaction.commit().await.expect("db error");
+
+    println!("after room join");
+    utils::debug_print(state);
 }
 
 pub async fn disconnect_room(
@@ -1336,21 +1355,26 @@ pub async fn disconnect_room(
     s: SocketRef,
     ack: AckSender,
 ) {
+    println!("before room disconnect");
+    utils::debug_print(state);
+
     let uid = state.socket2uid(&s).await;
     let connected_room_opt = state.socket_connected_room(&s).await;
     if connected_room_opt.is_none() {
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
+    let rid = connected_room_opt.unwrap();
     {
-        let mut rid_uids_lock = state.rid_uids.write().await;
-        s.leave_all().ok();
-        rid_uids_lock.remove_by_right(&uid);
+        disconnect_from_room(state, &s, uid, rid).await;
     }
-    let urd = UserRoomDisconnect{ rid: connected_room_opt.unwrap(), uid };
+    let urd = UserRoomDisconnect { rid, uid };
     s.broadcast().emit("user_room_disconnect", &urd).ok();
     s.emit("user_room_disconnect", urd).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
+
+    println!("after room disconnect");
+    utils::debug_print(state);
 }
 
 pub async fn get_room_users(
@@ -1380,7 +1404,7 @@ pub async fn room_ping(
         uid_ping_lock.insert(uid, payload.ping);
     }
     let room_name = connected_room_opt.unwrap().to_string();
-    s.to(room_name).emit("room_user_ping", RoomUserPingChange{ uid, ping: payload.ping }).ok();
+    s.to(room_name).emit("room_user_ping", RoomUserPingChange { uid, ping: payload.ping }).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
 
@@ -1414,7 +1438,7 @@ pub async fn get_files(
     let mut files = file::list(
         &source.list_root_url,
         &source.srv_jwt,
-        &payload.path
+        &payload.path,
     )
         .await
         .expect("http error");
@@ -1422,8 +1446,7 @@ pub async fn get_files(
     let mut allowed_extensions_opt: Option<&HashSet<String>> = None;
     if payload.file_kind == FileKind::Video && state.config.extensions.videos.is_some() {
         allowed_extensions_opt = Some(&state.config.extensions.videos.as_ref().unwrap())
-    }
-    else if payload.file_kind == FileKind::Subtitles && state.config.extensions.subtitles.is_some() {
+    } else if payload.file_kind == FileKind::Subtitles && state.config.extensions.subtitles.is_some() {
         allowed_extensions_opt = Some(&state.config.extensions.subtitles.as_ref().unwrap())
     }
 
@@ -1433,7 +1456,7 @@ pub async fn get_files(
             .filter(
                 |&x| x.file_type == FileType::Directory || allowed_extensions.contains(x.name.split(".").last().unwrap())
             )
-            .map(|x|x.clone())
+            .map(|x| x.clone())
             .collect::<Vec<FileInfo>>();
     }
     ack.send(SocketIoAck::<Vec<FileInfo>>::ok(Some(files))).ok();
@@ -1485,13 +1508,74 @@ pub async fn add_video_files(
 
     s.within(rid.to_string()).emit("add_video_files", sendmap).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
+
+    drop(rid2playlist_wl);
+    drop(playlist_wl);
+    println!("after playlist update");
+    utils::debug_print(state);
 }
 
-pub async fn set_my_playing_id(
+pub async fn req_playing_jwt(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<MyPlayingId>,
+    Data(payload): Data<PlayingId>,
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+
+    let rid = rid_opt.unwrap();
+    if !entry_id_in_room(state, rid, payload.playlist_entry_id).await {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+
+    // TODO: check if JWT is required (not URL)
+        // TODO: check if playing video or playing subtitles
+
+    // TODO: change per room playing id
+    // TODO change user playing id
+    // TODO: respond to calling user with jwt / empty (url)
+    // TODO: set hourglass to all
+    // TODO: notify other users about the change, so that they call this function
+}
+
+pub async fn change_playing_entry(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<PlayingId>,
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+
+    let rid = rid_opt.unwrap();
+    if !entry_id_in_room(state, rid, payload.playlist_entry_id).await {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+
+}
+
+pub async fn set_playlist_order(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<PlaylistOrder>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -1503,21 +1587,28 @@ pub async fn set_my_playing_id(
         return;
     }
     let rid = rid_opt.unwrap();
-    let playlist_rl = state.playlist.read().await;
-    let rid2video_id_rl = state.rid_video_id.read().await;
-    if !playlist_rl.contains_key(&payload.playlist_entry_id) {
-        ack.send(SocketIoAck::<()>::err()).ok();
-        return;
+    let rid_video_id_rl = state.rid_video_id.read().await;
+    for entry_id in &payload.playlist_order {
+        let rid_of_entry_opt = rid_video_id_rl.get_by_right(entry_id);
+        if rid_of_entry_opt.is_none() || *rid_of_entry_opt.unwrap() != rid {
+            ack.send(SocketIoAck::<()>::err()).ok();
+            return;
+        }
     }
-    let rid_of_entry_opt = rid2video_id_rl.get_by_right(&payload.playlist_entry_id);
-    if rid_of_entry_opt.is_none() || *rid_of_entry_opt.unwrap() != rid {
-        ack.send(SocketIoAck::<()>::err()).ok();
-        return;
+    drop(rid_video_id_rl);
+
+    let mut rid_video_id_wl = state.rid_video_id.write().await;
+    let order = rid_video_id_wl.get_by_left_mut(&rid).unwrap();
+
+    order.clear();
+    for id in &payload.playlist_order {
+        order.insert(*id);
     }
 
-    // TODO: change per room playing id
-    // TODO change user playing id
-    // TODO: respond to calling user with jwt / empty (url)
-    // TODO: set hourglass to all
-    // TODO: notify other users about the change, so that they call this function
+    s.to(rid.to_string()).emit("playlist_order", [payload.playlist_order]).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+
+    drop(rid_video_id_wl);
+    println!("after playlist update");
+    utils::debug_print(state);
 }

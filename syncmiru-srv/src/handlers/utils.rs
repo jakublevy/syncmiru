@@ -1,13 +1,15 @@
+use std::sync::Arc;
 use std::time::Duration;
 use axum::Json;
 use rand::Rng;
+use socketioxide::extract::SocketRef;
 use crate::config::Rate;
 use crate::models::query::{EmailTknType, Id};
-use crate::models::socketio::{EmailChangeTkn, EmailChangeTknType};
+use crate::models::socketio::{EmailChangeTkn, EmailChangeTknType, SocketIoAck};
 use crate::{crypto, query};
 use crate::models::http::BooleanResp;
 use crate::models::Tkn;
-use crate::srvstate::SrvState;
+use crate::srvstate::{PlaylistEntryId, SrvState};
 use crate::result::Result;
 
 pub(super) async fn check_email_tkn_out_of_quota(
@@ -131,4 +133,80 @@ pub(super) async fn check_email_change_tkn(
     else {
         Ok(false)
     }
+}
+
+pub(super) async fn disconnect_from_room(
+    state: &Arc<SrvState>,
+    s: &SocketRef,
+    uid: Id,
+    rid: Id,
+) {
+    let mut rid_uids_lock = state.rid_uids.write().await;
+    let mut uid2_play_info_lock = state.uid2_play_info.write().await;
+    s.leave_all().ok();
+    rid_uids_lock.remove_by_right(&uid);
+    uid2_play_info_lock.remove(&uid);
+
+    if rid_uids_lock.get_by_left(&rid).is_none() {
+        // last user disconnect
+        let mut playlist_wl = state.playlist.write().await;
+        let mut rid_video_id_wl = state.rid_video_id.write().await;
+        let mut video_id2subtitles_ids_wl  = state.video_id2subtitles_ids.write().await;
+        let mut rid2play_info_wl = state.rid2play_info.write().await;
+        let mut rid2runtime_state_wl = state.rid2runtime_state.write().await;
+
+        let video_ids_opt = rid_video_id_wl.get_by_left(&rid);
+        if let Some(video_ids) = video_ids_opt {
+            for video_id in video_ids {
+
+                // remove subtitles from playlist
+                let subtitles_ids_opt = video_id2subtitles_ids_wl.get_vec(video_id);
+                if let Some(subtitles_ids) = subtitles_ids_opt {
+                    for subtitles_id in subtitles_ids {
+                        playlist_wl.remove(subtitles_id);
+                    }
+                }
+                // remove subtitles from video association
+                video_id2subtitles_ids_wl.remove(video_id);
+
+                // remove video from playlist
+                playlist_wl.remove(video_id);
+            }
+        }
+        rid_video_id_wl.remove_by_left(&rid);
+        rid2play_info_wl.remove(&rid);
+        rid2runtime_state_wl.remove(&rid);
+    }
+}
+
+pub(super) async fn entry_id_in_playlist(
+    state: &Arc<SrvState>,
+    playlist_entry_id: PlaylistEntryId
+) -> bool {
+    let playlist_rl = state.playlist.read().await;
+    playlist_rl.contains_key(&playlist_entry_id)
+}
+
+pub(super) async fn entry_id_in_room(
+    state: &Arc<SrvState>,
+    rid: Id,
+    playlist_entry_id: PlaylistEntryId
+) -> bool {
+    let rid2video_id_rl = state.rid_video_id.read().await;
+    let rid_of_entry_opt = rid2video_id_rl.get_by_right(&playlist_entry_id);
+    rid_of_entry_opt.is_some() && *rid_of_entry_opt.unwrap() == rid
+}
+
+pub(super) fn debug_print(state: &Arc<SrvState>) {
+    println!("playlist: {:?}", state.playlist);
+    println!("---------------------------------------");
+    println!("rid_video_id: {:?}", state.rid_video_id);
+    println!("---------------------------------------");
+    println!("video_id2subtitles_ids: {:?}", state.video_id2subtitles_ids);
+    println!("---------------------------------------");
+    println!("rid2runtime_state: {:?}", state.rid2runtime_state);
+    println!("---------------------------------------");
+    println!("rid2play_info: {:?}", state.rid2play_info);
+    println!("---------------------------------------");
+    println!("uid2_play_info: {:?}", state.uid2_play_info);
 }

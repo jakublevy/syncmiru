@@ -211,3 +211,12 @@ pub fn check_playlist_entry_id(id: &PlaylistEntryId) -> Result<(), ValidationErr
     }
     Ok(())
 }
+
+pub fn check_playlist_order(order: &Vec<PlaylistEntryId>) -> Result<(), ValidationError> {
+    for entry in order {
+        if check_playlist_entry_id(entry).is_err() {
+            return Err(ValidationError::new("invalid playlist entry id in playlist order"))
+        }
+    }
+    Ok(())
+}
