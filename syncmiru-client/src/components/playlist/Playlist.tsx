@@ -48,6 +48,11 @@ export default function Playlist(): ReactElement {
         }
     }, [socket]);
 
+    useEffect(() => {
+        setPlaylist(new Map<PlaylistEntryId, PlaylistEntry>())
+        setPlaylistOrder([])
+    }, [currentRid, roomConnection]);
+
     function setAsPlaying(entryId: PlaylistEntryId) {
         // TODO: notify server
         // TODO: set playingId

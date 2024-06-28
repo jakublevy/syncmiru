@@ -7,7 +7,6 @@ import {
     RoomMap,
     RoomNameChange,
     RoomSettingsClient,
-    RoomSettingsSrv,
     RoomSrv,
     RoomsWOrder,
     RoomValue
@@ -28,7 +27,6 @@ import {
     UserRoomJoin,
     UserRoomMap,
     UserRoomPingsClient,
-    UserRoomPingsSrv,
     UserRoomSrv
 } from "@models/roomUser.ts";
 import {UserId} from "@models/user.ts";
@@ -38,7 +36,13 @@ import {RoomConnectionState} from "@models/context.ts";
 import UserInfoTooltip from "@components/widgets/UserInfoTooltip.tsx";
 import Ping from "@components/widgets/Ping.tsx";
 import Decimal from "decimal.js";
-import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
+import {
+    PlaylistEntry,
+    PlaylistEntryId, PlaylistEntrySubtitles,
+    PlaylistEntryType,
+    PlaylistEntryUrl,
+    PlaylistEntryVideo
+} from "@models/playlist.ts";
 
 export default function Rooms(): ReactElement {
     const {
@@ -381,7 +385,16 @@ export default function Rooms(): ReactElement {
                             const p: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
                             for(const idStr in playlistSrv) {
                                 const id = parseInt(idStr)
-                                p.set(id, playlistSrv[id])
+                                const valueSrv = playlistSrv[idStr]
+                                if(valueSrv.type === PlaylistEntryType.Video)
+                                    p.set(id, new PlaylistEntryVideo(valueSrv.source, valueSrv.path))
+
+                                else if(valueSrv.type === PlaylistEntryType.Subtitles)
+                                    p.set(id, new PlaylistEntrySubtitles(valueSrv.source, valueSrv.path))
+
+                                else if(valueSrv.type === PlaylistEntryType.Url)
+                                    p.set(id, new PlaylistEntryUrl(valueSrv.source))
+
                             }
                             setPlaylist(p)
                             setPlaylistOrder(playlistOrder)
