@@ -1,8 +1,10 @@
 use std::collections::HashMap;
+use indexmap::IndexSet;
 use rust_decimal::Decimal;
 use serde::{Serialize, Deserialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use validator::Validate;
+use crate::models::playlist::PlaylistEntry;
 use crate::validators;
 use crate::models::query::{Id, RoomSettings};
 use crate::srvstate::PlaylistEntryId;
@@ -242,9 +244,11 @@ pub struct UserRoomDisconnect {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct JoinedRoomInfo {
+pub struct JoinedRoomInfo<'a> {
     pub room_pings: HashMap<Id, f64>,
-    pub room_settings: RoomSettings
+    pub room_settings: RoomSettings,
+    pub playlist: HashMap<PlaylistEntryId, &'a PlaylistEntry>,
+    pub playlist_order: IndexSet<PlaylistEntryId>
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]

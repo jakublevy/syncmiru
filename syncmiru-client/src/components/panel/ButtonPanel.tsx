@@ -6,7 +6,6 @@ import ExpandLeft from "@components/svg/ExpandLeft.tsx";
 import BubbleCrossed from "@components/svg/BubbleCrossed.tsx";
 import Bubble from "@components/svg/Bubble.tsx";
 import SubtitlesCrossed from "@components/svg/SubtitlesCrossed.tsx";
-import Subtitles from "@components/svg/Subtitles.tsx";
 import Eject from "@components/svg/Eject.tsx";
 import DockBottom from "@components/svg/DockBottom.tsx";
 import {Clickable} from "@components/widgets/Button.tsx";

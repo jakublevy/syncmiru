@@ -14,7 +14,6 @@ use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use bimap::BiMap;
 use clap::Parser;
-use multimap::MultiMap;
 use tower_http::trace::TraceLayer;
 use socketioxide::extract::SocketRef;
 use socketioxide::handler::ConnectHandler;
@@ -73,7 +72,7 @@ async fn main() -> Result<()> {
          playlist_entry_next_id: 1u64.into(),
          playlist: HashMap::new().into(),
          rid_video_id: BiMultiMap::new().into(),
-         video_id2subtitles_ids: MultiMap::new().into(),
+         video_id2subtitles_ids: BiMultiMap::new().into(),
          rid2play_info: HashMap::new().into(),
          uid2_play_info: HashMap::new().into(),
          rid2runtime_state: HashMap::new().into(),

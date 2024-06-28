@@ -38,6 +38,7 @@ import {RoomConnectionState} from "@models/context.ts";
 import UserInfoTooltip from "@components/widgets/UserInfoTooltip.tsx";
 import Ping from "@components/widgets/Ping.tsx";
 import Decimal from "decimal.js";
+import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
 
 export default function Rooms(): ReactElement {
     const {
@@ -59,7 +60,9 @@ export default function Rooms(): ReactElement {
         roomConnection,
         setRoomConnection,
         users,
-        setJoinedRoomSettings
+        setJoinedRoomSettings,
+        setPlaylist,
+        setPlaylistOrder
     } = useMainContext()
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
@@ -358,12 +361,15 @@ export default function Rooms(): ReactElement {
                             const payload = ack.payload as JoinedRoomInfoSrv
                             const roomPingsSrv = payload.room_pings
                             const roomSettingsSrv = payload.room_settings
-                            const m: UserRoomPingsClient = new Map<UserId, number>()
+                            const playlistSrv = payload.playlist
+                            const playlistOrder = payload.playlist_order
+
+                            const pings: UserRoomPingsClient = new Map<UserId, number>()
                             for(const uidStr in roomPingsSrv) {
                                 const uid = parseInt(uidStr)
-                                m.set(uid, roomPingsSrv[uid])
+                                pings.set(uid, roomPingsSrv[uid])
                             }
-                            setUidPing(m)
+                            setUidPing(pings)
 
                             const roomSettings: RoomSettingsClient = {
                                 playback_speed: new Decimal(roomSettingsSrv.playback_speed),
@@ -371,6 +377,14 @@ export default function Rooms(): ReactElement {
                             }
                             setJoinedRoomSettings(roomSettings)
                             startPingTimer()
+
+                            const p: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
+                            for(const idStr in playlistSrv) {
+                                const id = parseInt(idStr)
+                                p.set(id, playlistSrv[id])
+                            }
+                            setPlaylist(p)
+                            setPlaylistOrder(playlistOrder)
                         }
                     })
                     .catch(() => {

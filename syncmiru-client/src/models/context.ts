@@ -44,6 +44,10 @@ export interface MainContextModel {
     setMpvWinDetached: Dispatch<SetStateAction<boolean>>,
     source2url: Map<string, string>,
     setSource2url: Dispatch<SetStateAction<Map<string, string>>>,
+    playlist: Map<PlaylistEntryId, PlaylistEntry>,
+    setPlaylist: Dispatch<SetStateAction<Map<PlaylistEntryId, PlaylistEntry>>>
+    playlistOrder: Array<PlaylistEntryId>
+    setPlaylistOrder: Dispatch<SetStateAction<Array<PlaylistEntryId>>>
 }
 
 export enum RoomConnectionState {

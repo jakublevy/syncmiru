@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::sync::Arc;
+use indexmap::IndexSet;
 use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
@@ -10,7 +11,7 @@ use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIo
 use crate::{crypto, email, file, query};
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
-use crate::handlers::utils::{disconnect_from_room, entry_id_in_playlist, entry_id_in_room};
+use crate::handlers::utils::{disconnect_from_room, subtitles_id_in_room, video_id_in_room};
 use crate::models::file::FileType;
 use crate::models::playlist::{PlaylistEntry, RoomRuntimeState};
 use crate::srvstate::{PlaylistEntryId, SrvState};
@@ -76,6 +77,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("req_playing_jwt", req_playing_jwt);
     s.on("change_playing_entry", change_playing_entry);
     s.on("set_playlist_order", set_playlist_order);
+    s.on("delete_playlist_entry", delete_playlist_entry);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1340,9 +1342,24 @@ pub async fn join_room(
         s.emit("user_room_join", urj).ok();
     }
 
+    let playlist_rl = state.playlist.read().await;
+    let rid_video_id_rl = state.rid_video_id.read().await;
+
+    let playlist_order = rid_video_id_rl
+        .get_by_left(&payload.rid)
+        .map(|x| x.clone())
+        .unwrap_or(IndexSet::new());
+
+    let playlist = playlist_order
+        .iter()
+        .map(|&id| (id, playlist_rl.get(&id).unwrap()))
+        .collect::<HashMap<PlaylistEntryId, &PlaylistEntry>>();
+
     ack.send(SocketIoAck::<JoinedRoomInfo>::ok(Some(JoinedRoomInfo {
         room_settings,
         room_pings,
+        playlist,
+        playlist_order
     }))).ok();
     transaction.commit().await.expect("db error");
 
@@ -1532,11 +1549,13 @@ pub async fn req_playing_jwt(
     }
 
     let rid = rid_opt.unwrap();
-    if !entry_id_in_room(state, rid, payload.playlist_entry_id).await {
+    if !video_id_in_room(state, rid, payload.playlist_entry_id).await {
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
+    // TODO: check whether payload is currently playing video or subtitles of currently playing video
 
+    // bla bla
     // TODO: check if JWT is required (not URL)
         // TODO: check if playing video or playing subtitles
 
@@ -1564,7 +1583,7 @@ pub async fn change_playing_entry(
     }
 
     let rid = rid_opt.unwrap();
-    if !entry_id_in_room(state, rid, payload.playlist_entry_id).await {
+    if !video_id_in_room(state, rid, payload.playlist_entry_id).await {
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
@@ -1612,3 +1631,86 @@ pub async fn set_playlist_order(
     println!("after playlist update");
     utils::debug_print(state);
 }
+
+pub async fn delete_playlist_entry(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<PlayingId>,
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+
+    let playlist_rl = state.playlist.read().await;
+    let entry_opt = playlist_rl.get(&payload.playlist_entry_id);
+    if entry_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    if let PlaylistEntry::Subtitles { .. } = entry_opt.unwrap() {
+        drop(playlist_rl);
+
+        if !subtitles_id_in_room(state, rid, payload.playlist_entry_id).await {
+            ack.send(SocketIoAck::<()>::err()).ok();
+            return;
+        }
+
+        state.remove_subtitles_entry(payload.playlist_entry_id).await;
+    }
+    else {
+        drop(playlist_rl);
+
+        if !video_id_in_room(state, rid, payload.playlist_entry_id).await {
+            ack.send(SocketIoAck::<()>::err()).ok();
+            return;
+        }
+        let mut rid2play_info_wl = state.rid2play_info.write().await;
+
+        let room_play_info_opt = rid2play_info_wl.get(&rid);
+        if let Some(room_play_info) = room_play_info_opt {
+            if room_play_info.playing_entry_id == payload.playlist_entry_id {
+                rid2play_info_wl.remove(&rid);
+                state.clear_uid2_play_info_by_rid(rid).await;
+            }
+        }
+        state.remove_video_entry(payload.playlist_entry_id).await;
+    }
+
+    s.broadcast().emit("del_playlist_entries", [[payload.playlist_entry_id]]).ok();
+    s.emit("del_playlist_entries", [[payload.playlist_entry_id]]).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+
+    println!("after delete_playlist_entry");
+    utils::debug_print(state);
+}
+
+// pub async fn delete_subtitles_entry(
+//     State(state): State<Arc<SrvState>>,
+//     s: SocketRef,
+//     ack: AckSender,
+//     Data(payload): Data<SubtitlesDelete>,
+// ) {
+//     if payload.validate().is_err() || payload.subtitles_id == payload.video_id {
+//         ack.send(SocketIoAck::<()>::err()).ok();
+//         return;
+//     }
+//     if let Err(_) = payload.validate() {
+//         ack.send(SocketIoAck::<()>::err()).ok();
+//         return;
+//     }
+//     let rid_opt = state.socket_connected_room(&s).await;
+//     if rid_opt.is_none() {
+//         ack.send(SocketIoAck::<()>::err()).ok();
+//         return;
+//     }
+//
+//
+// }

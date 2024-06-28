@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use multimap::MultiMap;
 use socketioxide::extract::SocketRef;
 use socketioxide::SocketIo;
 use sqlx::{PgPool};
@@ -24,7 +23,7 @@ pub struct SrvState {
     pub playlist_entry_next_id: RwLock<PlaylistEntryId>,
 
     pub playlist: RwLock<HashMap<PlaylistEntryId, PlaylistEntry>>,
-    pub video_id2subtitles_ids: RwLock<MultiMap<PlaylistEntryId, PlaylistEntryId>>,
+    pub video_id2subtitles_ids: RwLock<BiMultiMap<PlaylistEntryId, PlaylistEntryId>>,
 
     pub rid_video_id: RwLock<BiMultiMap<Id, PlaylistEntryId>>,
     pub rid2runtime_state: RwLock<HashMap<Id, RoomRuntimeState>>,
@@ -60,5 +59,37 @@ impl SrvState {
         let ret_id = wl.clone();
         *wl = ret_id + 1;
         ret_id
+    }
+
+    pub async fn clear_uid2_play_info_by_rid(&self, rid: Id) {
+        let mut uid2_play_info_wl = self.uid2_play_info.write().await;
+        let rid_uids_rl = self.rid_uids.read().await;
+        let uids = rid_uids_rl.get_by_left(&rid).unwrap();
+        for uid in uids {
+            uid2_play_info_wl.remove(uid);
+        }
+    }
+
+    pub async fn remove_video_entry(&self, entry_id: PlaylistEntryId) {
+        let mut video_id2subtitles_ids_wl = self.video_id2subtitles_ids.write().await;
+        let mut playlist_wl = self.playlist.write().await;
+        let mut rid_video_id_wl = self.rid_video_id.write().await;
+
+        let subtitles_ids_opt = video_id2subtitles_ids_wl.get_by_left(&entry_id);
+        if let Some(subtitles_ids) = subtitles_ids_opt {
+            for subtitles_id in subtitles_ids {
+                playlist_wl.remove(subtitles_id);
+            }
+        }
+        video_id2subtitles_ids_wl.remove_by_left(&entry_id);
+        rid_video_id_wl.remove_by_right(&entry_id);
+        playlist_wl.remove(&entry_id);
+    }
+
+    pub async fn remove_subtitles_entry(&self, entry_id: PlaylistEntryId) {
+        let mut video_id2subtitles_ids_wl = self.video_id2subtitles_ids.write().await;
+        let mut playlist_wl = self.playlist.write().await;
+        video_id2subtitles_ids_wl.remove_by_right(&entry_id);
+        playlist_wl.remove(&entry_id);
     }
 }

@@ -160,14 +160,14 @@ pub(super) async fn disconnect_from_room(
             for video_id in video_ids {
 
                 // remove subtitles from playlist
-                let subtitles_ids_opt = video_id2subtitles_ids_wl.get_vec(video_id);
+                let subtitles_ids_opt = video_id2subtitles_ids_wl.get_by_left(video_id);
                 if let Some(subtitles_ids) = subtitles_ids_opt {
                     for subtitles_id in subtitles_ids {
                         playlist_wl.remove(subtitles_id);
                     }
                 }
                 // remove subtitles from video association
-                video_id2subtitles_ids_wl.remove(video_id);
+                video_id2subtitles_ids_wl.remove_by_left(video_id);
 
                 // remove video from playlist
                 playlist_wl.remove(video_id);
@@ -187,7 +187,7 @@ pub(super) async fn entry_id_in_playlist(
     playlist_rl.contains_key(&playlist_entry_id)
 }
 
-pub(super) async fn entry_id_in_room(
+pub(super) async fn video_id_in_room(
     state: &Arc<SrvState>,
     rid: Id,
     playlist_entry_id: PlaylistEntryId
@@ -195,6 +195,21 @@ pub(super) async fn entry_id_in_room(
     let rid2video_id_rl = state.rid_video_id.read().await;
     let rid_of_entry_opt = rid2video_id_rl.get_by_right(&playlist_entry_id);
     rid_of_entry_opt.is_some() && *rid_of_entry_opt.unwrap() == rid
+}
+
+pub(super) async fn subtitles_id_in_room(
+    state: &Arc<SrvState>,
+    rid: Id,
+    playlist_entry_id: PlaylistEntryId
+) -> bool {
+    let video_id2subtitles_ids_rl = state.video_id2subtitles_ids.read().await;
+    let video_id_of_entry_opt = video_id2subtitles_ids_rl.get_by_right(&playlist_entry_id);
+    if video_id_of_entry_opt.is_none() {
+        return false
+    }
+
+    let video_id = video_id_of_entry_opt.unwrap();
+    video_id_in_room(state, rid, *video_id).await
 }
 
 pub(super) fn debug_print(state: &Arc<SrvState>) {

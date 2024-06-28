@@ -350,5 +350,8 @@
   "datatable-no-files": "Žádné soubory nejsou k dispozici",
 
   "playlist-modify-error": "Při úpravě playlistu došlo k chybě",
-  "playlist-order-change-error": "Došlo k chybě při změně pořadí položek v playlistu"
+  "playlist-order-change-error": "Došlo k chybě při změně pořadí položek v playlistu",
+  "playlist-delete-error": "Došlo k chybě při odstraňování položky z playlistu",
+  "playlist-not-connected-to-room-msg": "Pro zobrazení playlistu se připojte do místnosti",
+  "playlist-empty-msg": "Playlist je prázdný"
 }

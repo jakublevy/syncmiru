@@ -5,6 +5,7 @@ use std::fs::File;
 use std::io::{Read};
 use std::path::{Path, PathBuf};
 use anyhow::{anyhow, Context};
+use indexmap::IndexMap;
 use josekit::jws::{JwsSigner, JwsVerifier};
 use lettre::SmtpTransport;
 use lettre::transport::smtp::authentication::Credentials;
@@ -395,7 +396,7 @@ impl LoginJwt {
     }
 }
 
-pub type Sources = HashMap<String, Source>;
+pub type Sources = IndexMap<String, Source>;
 
 #[derive(Debug, Clone)]
 pub struct Source {

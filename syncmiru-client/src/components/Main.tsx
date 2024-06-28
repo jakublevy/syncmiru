@@ -34,6 +34,7 @@ import {UserRoomMap, UserRoomPingsClient} from "@models/roomUser.ts";
 import Decimal from "decimal.js";
 import {useMpvWinDetached} from "@hooks/useMpvWinDetached.ts";
 import {useIsSupportedWindowSystem} from "@hooks/useIsSupportedWindowSystem.ts";
+import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -73,6 +74,8 @@ export default function Main(): ReactElement {
     const mpvWinDetachedInit = useMpvWinDetached()
     const [mpvWinDetached, setMpvWinDetached] = useState<boolean>(false)
     const [source2url, setSource2url] = useState<Map<string, string>>(new Map<string, string>())
+    const [playlist, setPlaylist] = useState<Map<PlaylistEntryId, PlaylistEntry>>(new Map<PlaylistEntryId, PlaylistEntry>())
+    const [playlistOrder, setPlaylistOrder] = useState<Array<PlaylistEntryId>>([])
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -262,7 +265,11 @@ export default function Main(): ReactElement {
                     mpvWinDetached: mpvWinDetached,
                     setMpvWinDetached: setMpvWinDetached,
                     source2url: source2url,
-                    setSource2url: setSource2url
+                    setSource2url: setSource2url,
+                    playlist: playlist,
+                    setPlaylist: setPlaylist,
+                    playlistOrder: playlistOrder,
+                    setPlaylistOrder: setPlaylistOrder
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">
