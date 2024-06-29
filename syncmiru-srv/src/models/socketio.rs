@@ -248,7 +248,8 @@ pub struct JoinedRoomInfo<'a> {
     pub room_pings: HashMap<Id, f64>,
     pub room_settings: RoomSettings,
     pub playlist: HashMap<PlaylistEntryId, &'a PlaylistEntry>,
-    pub playlist_order: IndexSet<PlaylistEntryId>
+    pub playlist_order: IndexSet<PlaylistEntryId>,
+    pub subs_order: HashMap<PlaylistEntryId, IndexSet<PlaylistEntryId>>
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]

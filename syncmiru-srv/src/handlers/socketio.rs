@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::sync::Arc;
 use indexmap::{IndexMap, IndexSet};
+use multimap::MultiMap;
 use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
@@ -9,6 +10,7 @@ use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
 use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlayingId, PlaylistOrder, AddSubtitlesFiles};
 use crate::{crypto, email, file, query};
+use crate::bimultimap::BiMultiMap;
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
 use crate::handlers::utils::{disconnect_from_room, subtitles_id_in_room, video_id_in_room};
@@ -1349,22 +1351,44 @@ pub async fn join_room(
 
     let playlist_rl = state.playlist.read().await;
     let rid_video_id_rl = state.rid_video_id.read().await;
+    let video_id2subtitles_ids_rl = state.video_id2subtitles_ids.read().await;
 
     let playlist_order = rid_video_id_rl
         .get_by_left(&payload.rid)
         .map(|x| x.clone())
         .unwrap_or(IndexSet::new());
 
-    let playlist = playlist_order
+    let mut playlist = playlist_order
         .iter()
         .map(|&id| (id, playlist_rl.get(&id).unwrap()))
         .collect::<HashMap<PlaylistEntryId, &PlaylistEntry>>();
+
+    let mut subs_order = HashMap::<PlaylistEntryId, IndexSet<PlaylistEntryId>>::new();
+
+    let mut playlist_subs = HashMap::<PlaylistEntryId, &PlaylistEntry>::new();
+    for (video_entry_id, _) in &playlist {
+        let subs_ids_opt = video_id2subtitles_ids_rl.get_by_left(video_entry_id);
+        if subs_ids_opt.is_none() {
+            subs_order.insert(*video_entry_id, IndexSet::new());
+        }
+        else {
+            let subs_ids = subs_ids_opt.unwrap();
+            for sub_id in subs_ids {
+                let sub_entry = playlist_rl.get(sub_id).unwrap();
+                playlist_subs.insert(*sub_id, sub_entry);
+            }
+            subs_order.insert(*video_entry_id, subs_ids_opt.unwrap().clone());
+        }
+    }
+
+    playlist.extend(playlist_subs);
 
     ack.send(SocketIoAck::<JoinedRoomInfo>::ok(Some(JoinedRoomInfo {
         room_settings,
         room_pings,
         playlist,
-        playlist_order
+        playlist_order,
+        subs_order
     }))).ok();
     transaction.commit().await.expect("db error");
 

@@ -31,11 +31,13 @@ export default function Playlist(): ReactElement {
         playlist,
         setPlaylist,
         playlistOrder,
-        setPlaylistOrder
+        setPlaylistOrder,
+        subtitles,
+        setSubtitles
     } = useMainContext()
     const {t} = useTranslation()
 
-    const [subtitles, setSubtitles] = useState<MultiMap<PlaylistEntryId, PlaylistEntryId>>(new MultiMap<PlaylistEntryId, PlaylistEntryId>())
+
     const [playingId, setPlayingId] = useState<PlaylistEntryId | null>(null)
     const [deletingPlaylistId, setDeletingPlaylistId] = useState<PlaylistEntryId>(0)
     const [showVideoDeleteModal, setShowVideoDeleteModal] = useState<boolean>(false)
@@ -57,12 +59,9 @@ export default function Playlist(): ReactElement {
         if(currentRid == null) {
             setPlaylist(new Map<PlaylistEntryId, PlaylistEntry>())
             setPlaylistOrder([])
+            setSubtitles(new MultiMap<PlaylistEntryId, PlaylistEntryId>())
         }
     }, [currentRid, roomConnection]);
-
-    useEffect(() => {
-        console.log(playlistOrder)
-    }, [playlistOrder]);
 
     function setAsPlaying(entryId: PlaylistEntryId) {
         // TODO: notify server
@@ -285,7 +284,7 @@ export default function Playlist(): ReactElement {
                                             if(sub == null)
                                                 return <></>
 
-                                            return <p>{entryPrettyText(sub)}</p>
+                                            return <p key={subId}>{entryPrettyText(sub)}</p>
                                         })}
                                     </div>}
 

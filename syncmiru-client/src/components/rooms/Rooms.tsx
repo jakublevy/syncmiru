@@ -38,11 +38,12 @@ import Ping from "@components/widgets/Ping.tsx";
 import Decimal from "decimal.js";
 import {
     PlaylistEntry,
-    PlaylistEntryId, PlaylistEntrySubtitles,
+    PlaylistEntryId, PlaylistEntrySubtitles, PlaylistEntrySubtitlesSrv,
     PlaylistEntryType,
     PlaylistEntryUrl,
-    PlaylistEntryVideo
+    PlaylistEntryVideo, PlaylistEntryVideoSrv
 } from "@models/playlist.ts";
+import {MultiMap} from "mnemonist";
 
 export default function Rooms(): ReactElement {
     const {
@@ -67,7 +68,8 @@ export default function Rooms(): ReactElement {
         setJoinedRoomSettings,
         setPlaylist,
         setPlaylistOrder,
-        setPlaylistLoading
+        setPlaylistLoading,
+        setSubtitles
     } = useMainContext()
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
@@ -369,6 +371,7 @@ export default function Rooms(): ReactElement {
                             const roomSettingsSrv = payload.room_settings
                             const playlistSrv = payload.playlist
                             const playlistOrder = payload.playlist_order
+                            const subsOrderSrv = payload.subs_order
 
                             const pings: UserRoomPingsClient = new Map<UserId, number>()
                             for(const uidStr in roomPingsSrv) {
@@ -387,19 +390,31 @@ export default function Rooms(): ReactElement {
                             const p: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
                             for(const idStr in playlistSrv) {
                                 const id = parseInt(idStr)
-                                const valueSrv = playlistSrv[idStr]
-                                if(valueSrv.type === PlaylistEntryType.Video) {
-                                    p.set(id, new PlaylistEntryVideo(valueSrv.source, valueSrv.path))
-                                    }
+                                const type = playlistSrv[idStr].type
+                                if(type === PlaylistEntryType.Video) {
+                                     const valueSrv = playlistSrv[idStr] as PlaylistEntryVideoSrv
+                                     p.set(id, new PlaylistEntryVideo(valueSrv.source, valueSrv.path))
+                                }
 
-                                else if(valueSrv.type === PlaylistEntryType.Subtitles)
-                                    p.set(id, new PlaylistEntrySubtitles(valueSrv.source, valueSrv.path))
+                                else if(type === PlaylistEntryType.Subtitles) {
+                                    const value = playlistSrv[idStr] as PlaylistEntrySubtitlesSrv
+                                    p.set(id, new PlaylistEntrySubtitles(value.source, value.path, value.video_id))
+                                }
 
-                                else if(valueSrv.type === PlaylistEntryType.Url)
-                                    p.set(id, new PlaylistEntryUrl(valueSrv.source))
-
+                                else if(type === PlaylistEntryType.Url) {
+                                    const value = playlistSrv[idStr] as PlaylistEntryVideoSrv
+                                    p.set(id, new PlaylistEntryUrl(value.source))
+                                }
                             }
                             setPlaylist(p)
+
+                            const s: MultiMap<PlaylistEntryId, PlaylistEntryId> = new MultiMap<PlaylistEntryId, PlaylistEntryId>()
+                            for(const vidStr in subsOrderSrv) {
+                                const sids = subsOrderSrv[vidStr]
+                                for(const sid of sids)
+                                    s.set(parseInt(vidStr), sid)
+                            }
+                            setSubtitles(s)
                             setPlaylistOrder(playlistOrder)
                         }
                     })

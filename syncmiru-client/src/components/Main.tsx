@@ -35,6 +35,7 @@ import Decimal from "decimal.js";
 import {useMpvWinDetached} from "@hooks/useMpvWinDetached.ts";
 import {useIsSupportedWindowSystem} from "@hooks/useIsSupportedWindowSystem.ts";
 import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
+import {MultiMap} from "mnemonist";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -76,6 +77,7 @@ export default function Main(): ReactElement {
     const [source2url, setSource2url] = useState<Map<string, string>>(new Map<string, string>())
     const [playlist, setPlaylist] = useState<Map<PlaylistEntryId, PlaylistEntry>>(new Map<PlaylistEntryId, PlaylistEntry>())
     const [playlistOrder, setPlaylistOrder] = useState<Array<PlaylistEntryId>>([])
+    const [subtitles, setSubtitles] = useState<MultiMap<PlaylistEntryId, PlaylistEntryId>>(new MultiMap<PlaylistEntryId, PlaylistEntryId>())
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -270,7 +272,9 @@ export default function Main(): ReactElement {
                     playlist: playlist,
                     setPlaylist: setPlaylist,
                     playlistOrder: playlistOrder,
-                    setPlaylistOrder: setPlaylistOrder
+                    setPlaylistOrder: setPlaylistOrder,
+                    subtitles: subtitles,
+                    setSubtitles: setSubtitles
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">
