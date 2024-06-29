@@ -252,12 +252,12 @@ export default function Playlist(): ReactElement {
                 [deletingPlaylistId].map((eid => {
                     const entry = playlist.get(eid)
                     if(entry == null)
-                        return <></>
+                        return <div key={eid}></div>
 
                     const pic = entryPic(entry)
                     const renderTxt = entryPrettyText(entry)
                     return (
-                        <div className="flex gap-x-2 items-center">
+                        <div key={eid} className="flex gap-x-2 items-center">
                             {pic}
                             <p className={`text-sm ${playingId === eid ? 'font-bold' : ''}`}>{renderTxt}</p>
                         </div>

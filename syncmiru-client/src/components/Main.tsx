@@ -165,6 +165,7 @@ export default function Main(): ReactElement {
 
         s.emitWithAck("get_sources")
             .then((source2url: Record<string, string>) => {
+                console.log(JSON.stringify(source2url))
                 const m: Map<string, string> = new Map<string, string>()
                 for (const key in source2url) {
                     const url = source2url[key]

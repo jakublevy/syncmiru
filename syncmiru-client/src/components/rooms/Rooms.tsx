@@ -66,7 +66,8 @@ export default function Rooms(): ReactElement {
         users,
         setJoinedRoomSettings,
         setPlaylist,
-        setPlaylistOrder
+        setPlaylistOrder,
+        setPlaylistLoading
     } = useMainContext()
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
@@ -349,6 +350,7 @@ export default function Rooms(): ReactElement {
         setCurrentRid(rid)
         setRoomConnection(RoomConnectionState.Connecting)
         const start = performance.now()
+        setPlaylistLoading(true)
         socket!.emitWithAck("ping", {})
             .then(() => {
                 const took = performance.now() - start
@@ -405,12 +407,14 @@ export default function Rooms(): ReactElement {
                     })
                     .finally(() => {
                         setRoomConnection(RoomConnectionState.Established)
+                        setPlaylistLoading(false)
                     })
             })
             .catch(() => {
                 showPersistentErrorAlert(t('room-join-ping-error'))
                 setCurrentRid(null)
                 setRoomConnection(RoomConnectionState.Established)
+                setPlaylistLoading(false)
             })
     }
 

@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::sync::Arc;
-use indexmap::IndexSet;
+use indexmap::{IndexMap, IndexSet};
 use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
@@ -1295,11 +1295,15 @@ pub async fn join_room(
         ack.send(SocketIoAck::<JoinedRoomInfo>::err()).ok();
         return;
     }
-    let mut uid_ping_lock = state.uid_ping.write().await;
-    let mut rid_uids_lock = state.rid_uids.write().await;
-
     let uid = state.socket2uid(&s).await;
     let old_connected_room_opt = state.socket_connected_room(&s).await;
+    if old_connected_room_opt.is_some() {
+        disconnect_from_room(state, &s, uid, old_connected_room_opt.unwrap()).await;
+    }
+
+    let mut uid_ping_wl = state.uid_ping.write().await;
+    let mut rid_uids_wl = state.rid_uids.write().await;
+
     let new_room_name = payload.rid.to_string();
     let mut room_pings = HashMap::<Id, f64>::new();
 
@@ -1307,7 +1311,7 @@ pub async fn join_room(
         .await
         .expect("db error");
 
-    let uids_already_in_room = rid_uids_lock.get_by_left(&payload.rid);
+    let uids_already_in_room = rid_uids_wl.get_by_left(&payload.rid);
     if uids_already_in_room.is_none() {
         let mut rid2runtime_state_lock = state.rid2runtime_state.write().await;
         rid2runtime_state_lock.insert(payload.rid, RoomRuntimeState {
@@ -1316,15 +1320,15 @@ pub async fn join_room(
         });
     }
 
-    rid_uids_lock.insert(payload.rid, uid);
-    uid_ping_lock.insert(uid, payload.ping);
+    rid_uids_wl.insert(payload.rid, uid);
+    uid_ping_wl.insert(uid, payload.ping);
 
     s.leave_all().ok();
     s.join(new_room_name.clone()).ok();
 
-    let uids_in_room = rid_uids_lock.get_by_left(&payload.rid).unwrap();
+    let uids_in_room = rid_uids_wl.get_by_left(&payload.rid).unwrap();
 
-    room_pings = uid_ping_lock
+    room_pings = uid_ping_wl
         .iter()
         .filter(|&(id, ping)| uids_in_room.contains(id))
         .map(|(id, ping)| (*id, *ping))
@@ -1430,7 +1434,7 @@ pub async fn get_sources(
     s: SocketRef,
     ack: AckSender,
 ) {
-    let mut m: HashMap<&String, &String> = HashMap::new();
+    let mut m: IndexMap<&String, &String> = IndexMap::new();
     for (key, source) in &state.config.sources {
         m.insert(key, &source.client_url);
     }
