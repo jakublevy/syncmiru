@@ -6,20 +6,21 @@ import {
     PlaylistEntryId,
     PlaylistEntrySubtitles,
     PlaylistEntryUrl,
-    PlaylistEntryValueSrv,
-    PlaylistEntryVideo
+    PlaylistEntryVideoSrv,
+    PlaylistEntryVideo, PlaylistEntrySubtitlesSrv
 } from "@models/playlist.ts";
 import {arrayMove, List, OnChangeMeta, RenderListParams} from "react-movable";
 import VideoFile from "@components/svg/VideoFile.tsx";
-import Multimap from 'multimap';
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
-import {showPersistentErrorAlert} from "../../utils/alert.ts";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {useTranslation} from "react-i18next";
 import Delete from "@components/svg/Delete.tsx";
 import Subtitles from "@components/svg/Subtitles.tsx";
 import {ModalDelete} from "@components/widgets/Modal.tsx";
 import SubFile from "@components/svg/SubFile.tsx";
 import {RoomConnectionState} from "@models/context.ts";
+import AddSubtitlesFromFileSrv from "@components/playlist/AddSubtitlesFromFileSrv.tsx";
+import {MultiMap} from 'mnemonist'
 
 export default function Playlist(): ReactElement {
     const {
@@ -34,15 +35,19 @@ export default function Playlist(): ReactElement {
     } = useMainContext()
     const {t} = useTranslation()
 
-    const [subtitles, setSubtitles] = useState<Multimap<PlaylistEntryId, PlaylistEntryId>>(new Multimap<PlaylistEntryId, PlaylistEntryId>())
+    const [subtitles, setSubtitles] = useState<MultiMap<PlaylistEntryId, PlaylistEntryId>>(new MultiMap<PlaylistEntryId, PlaylistEntryId>())
     const [playingId, setPlayingId] = useState<PlaylistEntryId | null>(null)
     const [deletingPlaylistId, setDeletingPlaylistId] = useState<PlaylistEntryId>(0)
     const [showVideoDeleteModal, setShowVideoDeleteModal] = useState<boolean>(false)
     const connectedToRoom = currentRid != null && roomConnection === RoomConnectionState.Established
 
+    const [showSubtitlesModal, setShowSubtitlesModal] = useState<boolean>(false)
+    const [videoIdSelectedSubtitles, setVideoIdSelectedSubtitles] = useState<PlaylistEntryId>(0)
+
     useEffect(() => {
         if (socket !== undefined) {
             socket.on('add_video_files', onAddVideoFiles)
+            socket.on('add_subtitles_files', onSubtitlesFiles)
             socket.on('playlist_order', onPlaylistOrder)
             socket.on('del_playlist_entries', onDelPlaylistEntries)
         }
@@ -55,13 +60,16 @@ export default function Playlist(): ReactElement {
         }
     }, [currentRid, roomConnection]);
 
+    useEffect(() => {
+        console.log(playlistOrder)
+    }, [playlistOrder]);
+
     function setAsPlaying(entryId: PlaylistEntryId) {
         // TODO: notify server
         // TODO: set playingId
     }
 
-    function onAddVideoFiles(r: Record<string, PlaylistEntryValueSrv>) {
-        console.log('add called')
+    function onAddVideoFiles(r: Record<string, PlaylistEntryVideoSrv>) {
         const m: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
         for (const idStr in r) {
             const value = r[idStr]
@@ -74,7 +82,28 @@ export default function Playlist(): ReactElement {
             return new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m])
         })
         let entryIds = [...m.keys()]
-        setPlaylistOrder((p) => [...p, ...entryIds])
+        setPlaylistOrder((p) => [...new Set([...p, ...entryIds])])
+    }
+
+    function onSubtitlesFiles(r: Record<string, PlaylistEntrySubtitlesSrv>) {
+        const m: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
+        for (const idStr in r) {
+            const value = r[idStr]
+            m.set(parseInt(idStr), new PlaylistEntrySubtitles(value.source, value.path, value.video_id))
+        }
+        setPlaylist((p) => new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m]))
+
+        setSubtitles((p) => {
+            const subs: MultiMap<PlaylistEntryId, PlaylistEntryId> = new MultiMap<PlaylistEntryId, PlaylistEntryId>
+            for (const [videoId, subId] of p) {
+                subs.set(videoId, subId)
+            }
+            for(const idStr in r) {
+                const value = r[idStr]
+                subs.set(value.video_id, parseInt(idStr))
+            }
+            return subs
+        })
     }
 
     function onPlaylistOrder(playlistOrder: Array<PlaylistEntryId>) {
@@ -132,6 +161,11 @@ export default function Playlist(): ReactElement {
             })
     }
 
+    function addSubtitlesToPlaylist(videoId: PlaylistEntryId) {
+        setVideoIdSelectedSubtitles(videoId)
+        setShowSubtitlesModal(true)
+    }
+
     function entryPic(entry: PlaylistEntry) {
         if(entry instanceof PlaylistEntrySubtitles)
             return <SubFile className="min-w-6 w-6"/>
@@ -187,12 +221,16 @@ export default function Playlist(): ReactElement {
 
                         const renderTxt = entryPrettyText(entry)
 
-                        let subs = []
-                        if (subtitles.has(playlistEntryId)) {
-                            subs = subtitles
-                                .get(playlistEntryId)
-                                .map(id => playlist.get(id) as PlaylistEntry)
-                        }
+                        let subs: Array<PlaylistEntryId> = []
+                        let s = subtitles.get(playlistEntryId)
+                        if(s != null)
+                            subs = s
+                        // let subs: Array<PlaylistEntrySubtitles> = []
+                        // if (subtitles.has(playlistEntryId)) {
+                        //     subs = subtitles
+                        //         .get(playlistEntryId)
+                        //         .map(id => playlist.get(id) as PlaylistEntrySubtitles)
+                        // }
                         return (
                             <li
                                 key={key}
@@ -214,6 +252,7 @@ export default function Playlist(): ReactElement {
                                             className='flex items-center rounded hover:bg-gray-300 p-1.5 dark:hover:bg-gray-500 invisible group-hover:visible min-h-8 h-8 min-w-8 w-8'
                                             onClick={(e) => {
                                                 e.stopPropagation();
+                                                addSubtitlesToPlaylist(playlistEntryId)
                                             }}
                                             onMouseDown={(e) => e.stopPropagation()}
                                             onMouseUp={(e) => e.stopPropagation()}
@@ -240,6 +279,21 @@ export default function Playlist(): ReactElement {
                                             <Delete/>
                                         </div>
                                     </div>
+                                    {subs.length > 0 && <div className="flex flex-col gap-y-0.5 mb-4">
+                                        {subs.map(subId => {
+                                            const sub = playlist.get(subId)
+                                            if(sub == null)
+                                                return <></>
+
+                                            return <p>{entryPrettyText(sub)}</p>
+                                        })}
+                                    </div>}
+
+                                    {/*{subs.length > 0*/}
+                                    {/*    && <div className="flex flex-col gap-y-0.5 mb-4">*/}
+                                    {/*        TODO*/}
+                                    {/*    </div>*/}
+                                    {/*}*/}
                                 </div>
                             </li>
                         )
@@ -266,6 +320,11 @@ export default function Playlist(): ReactElement {
                     )
                 }))
                 }
+            />
+            <AddSubtitlesFromFileSrv
+                videoId={videoIdSelectedSubtitles}
+                showModal={showSubtitlesModal}
+                setShowModal={setShowSubtitlesModal}
             />
         </>
     )

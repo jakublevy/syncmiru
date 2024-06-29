@@ -388,8 +388,9 @@ export default function Rooms(): ReactElement {
                             for(const idStr in playlistSrv) {
                                 const id = parseInt(idStr)
                                 const valueSrv = playlistSrv[idStr]
-                                if(valueSrv.type === PlaylistEntryType.Video)
+                                if(valueSrv.type === PlaylistEntryType.Video) {
                                     p.set(id, new PlaylistEntryVideo(valueSrv.source, valueSrv.path))
+                                    }
 
                                 else if(valueSrv.type === PlaylistEntryType.Subtitles)
                                     p.set(id, new PlaylistEntrySubtitles(valueSrv.source, valueSrv.path))

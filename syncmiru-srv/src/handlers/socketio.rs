@@ -7,7 +7,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideos, PlayingId, PlaylistOrder};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlayingId, PlaylistOrder, AddSubtitlesFiles};
 use crate::{crypto, email, file, query};
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
@@ -74,6 +74,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("get_sources", get_sources);
     s.on("get_files", get_files);
     s.on("add_video_files", add_video_files);
+    s.on("add_subtitles_files", add_subtitles_files);
     s.on("req_playing_jwt", req_playing_jwt);
     s.on("change_playing_entry", change_playing_entry);
     s.on("set_playlist_order", set_playlist_order);
@@ -1487,7 +1488,7 @@ pub async fn add_video_files(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<AddVideos>,
+    Data(payload): Data<AddVideoFiles>,
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
@@ -1507,7 +1508,12 @@ pub async fn add_video_files(
             return;
         }
         let source_info = state.config.sources.get(source).unwrap();
-        let exists = file::f_exists(&source_info.list_root_url, &source_info.srv_jwt, path)
+        let exists = file::f_exists(
+            &source_info.list_root_url,
+            &source_info.srv_jwt,
+            path,
+            &state.config.extensions.videos
+        )
             .await
             .expect("http error");
         if !exists {
@@ -1516,23 +1522,89 @@ pub async fn add_video_files(
         }
         v.push((source, path));
     }
-    let mut rid2playlist_wl = state.rid_video_id.write().await;
+    let mut rid_video_id_wl = state.rid_video_id.write().await;
     let mut playlist_wl = state.playlist.write().await;
-    let mut sendmap: HashMap<PlaylistEntryId, PlaylistEntry> = HashMap::new();
+    let mut send_entries: IndexMap<PlaylistEntryId, PlaylistEntry> = IndexMap::new();
     for (source, path) in v {
         let entry_id = state.next_playlist_entry_id().await;
         let entry = PlaylistEntry::Video { source: source.to_string(), path: path.to_string() };
-        sendmap.insert(entry_id, entry.clone());
+        send_entries.insert(entry_id, entry.clone());
         playlist_wl.insert(entry_id, entry);
-        rid2playlist_wl.insert(rid, entry_id);
+        rid_video_id_wl.insert(rid, entry_id);
     }
 
-    s.within(rid.to_string()).emit("add_video_files", sendmap).ok();
+    s.within(rid.to_string()).emit("add_video_files", send_entries).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 
-    drop(rid2playlist_wl);
+    drop(rid_video_id_wl);
     drop(playlist_wl);
-    println!("after playlist update");
+    println!("\n\n\nafter playlist update");
+    utils::debug_print(state);
+}
+
+pub async fn add_subtitles_files(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<AddSubtitlesFiles>,
+) {
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    if !video_id_in_room(state, rid, payload.video_id).await {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+
+    let mut v = Vec::<(&str, &str)>::new();
+    for full_path in &payload.subs_full_paths {
+        let (source, path) = full_path.split_once(":").unwrap();
+        if !state.config.sources.contains_key(source) {
+            ack.send(SocketIoAck::<()>::err()).ok();
+            return;
+        }
+        let source_info = state.config.sources.get(source).unwrap();
+        let exists = file::f_exists(
+            &source_info.list_root_url,
+            &source_info.srv_jwt,
+            path,
+            &state.config.extensions.subtitles
+        )
+            .await
+            .expect("http error");
+        if !exists {
+            ack.send(SocketIoAck::<()>::err()).ok();
+            return;
+        }
+        v.push((source, path));
+    }
+
+    let mut playlist_wl = state.playlist.write().await;
+    let mut video_id2subtitles_ids_wl = state.video_id2subtitles_ids.write().await;
+    let mut send_entries: IndexMap<PlaylistEntryId, PlaylistEntry> = IndexMap::new();
+
+    for (source, path) in v {
+        let entry_id = state.next_playlist_entry_id().await;
+        let entry = PlaylistEntry::Subtitles { source: source.to_string(), path: path.to_string(), video_id: payload.video_id };
+        send_entries.insert(entry_id, entry.clone());
+        playlist_wl.insert(entry_id, entry);
+        video_id2subtitles_ids_wl.insert(payload.video_id, entry_id);
+    }
+
+    s.within(rid.to_string()).emit("add_subtitles_files", send_entries).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+
+
+    drop(playlist_wl);
+    drop(video_id2subtitles_ids_wl);
+    println!("\n\n\nafter add_subtitles_file update");
     utils::debug_print(state);
 }
 
@@ -1695,26 +1767,3 @@ pub async fn delete_playlist_entry(
     println!("after delete_playlist_entry");
     utils::debug_print(state);
 }
-
-// pub async fn delete_subtitles_entry(
-//     State(state): State<Arc<SrvState>>,
-//     s: SocketRef,
-//     ack: AckSender,
-//     Data(payload): Data<SubtitlesDelete>,
-// ) {
-//     if payload.validate().is_err() || payload.subtitles_id == payload.video_id {
-//         ack.send(SocketIoAck::<()>::err()).ok();
-//         return;
-//     }
-//     if let Err(_) = payload.validate() {
-//         ack.send(SocketIoAck::<()>::err()).ok();
-//         return;
-//     }
-//     let rid_opt = state.socket_connected_room(&s).await;
-//     if rid_opt.is_none() {
-//         ack.send(SocketIoAck::<()>::err()).ok();
-//         return;
-//     }
-//
-//
-// }

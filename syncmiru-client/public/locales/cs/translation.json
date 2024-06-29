@@ -337,7 +337,8 @@
   "add-to-playlist-source": "Zdroj videa",
   "add-to-playlist-btn": "Přidat do playlistu",
 
-  "modal-add-to-playlist-from-file-srv-title": "Video ze souborového serveru",
+  "modal-add-video-to-playlist-from-file-srv-title": "Video ze souborového serveru",
+  "modal-add-subtitles-to-playlist-from-file-srv-title": "Titulky ze souborového serveru",
 
   "file-picker-select-text": "Vyberte souborový server z dostupných",
   "file-picker-file-name": "Název",

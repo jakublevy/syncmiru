@@ -6,7 +6,7 @@ import {RoomConnectionState} from "@models/context.ts";
 import {Tooltip} from "react-tooltip";
 import {useTranslation} from "react-i18next";
 import {Menu, MenuButton} from "@szhsin/react-menu";
-import AddFromFileSrv from "@components/panel/AddFromFileSrv.tsx";
+import AddVideoFromFileSrv from "@components/panel/AddVideoFromFileSrv.tsx";
 import AddUrlAddress from "@components/panel/AddUrlAddress.tsx";
 
 export default function AddToPlaylistBtn(): ReactElement {
@@ -45,7 +45,7 @@ export default function AddToPlaylistBtn(): ReactElement {
             <div className="flex flex-col">
                 <p className="mx-6 text-sm font-semibold">{t('add-to-playlist-source')}</p>
                 <hr className="my-2"/>
-                <AddFromFileSrv/>
+                <AddVideoFromFileSrv/>
                 <AddUrlAddress/>
             </div>
         </Menu>

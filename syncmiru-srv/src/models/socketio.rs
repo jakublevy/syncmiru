@@ -269,9 +269,16 @@ pub enum FileKind {
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]
-pub struct AddVideos {
-    #[validate(custom(function = "validators::check_video_full_paths"))]
+pub struct AddVideoFiles {
+    #[validate(custom(function = "validators::check_source_files_paths"))]
     pub full_paths: Vec<String>
+}
+
+
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct AddSubtitlesFiles {
+    pub video_id: PlaylistEntryId,
+    pub subs_full_paths: Vec<String>
 }
 
 #[derive(Debug, Clone, Validate, Deserialize)]

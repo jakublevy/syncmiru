@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::time::Duration;
 use anyhow::anyhow;
 use reqwest::Client;
@@ -5,7 +6,7 @@ use serde::{Deserialize, Deserializer, Serialize};
 use crate::{constants, Result};
 use crate::error::SyncmiruError;
 use urlencoding::encode;
-use crate::models::file::FileInfo;
+use crate::models::file::{FileInfo, FileType};
 
 pub async fn list(
     root_url: &str,
@@ -34,7 +35,8 @@ pub async fn list(
 pub async fn f_exists(
     root_url: &str,
     jwt: &str,
-    path: &str
+    path: &str,
+    allowed_extensions: &Option<HashSet<String>>
 ) -> Result<bool> {
     let (p, f) = split_on_last_occurrence(path, '/').unwrap();
     let files_r = list(root_url, jwt, p).await;
@@ -43,11 +45,17 @@ pub async fn f_exists(
     }
     let files = files_r.unwrap();
     for file in &files {
-        if file.name == f {
+        if file.name == f
+        && file.file_type == FileType::File
+        && allowed_extensions.is_some() && allowed_extensions.as_ref().unwrap().contains(extract_extension(&file.name)) {
             return Ok(true)
         }
     }
     Ok(false)
+}
+
+pub fn extract_extension(path: &str) -> &str {
+    path.split(".").last().unwrap_or("")
 }
 
 fn split_on_last_occurrence(s: &str, delimiter: char) -> Option<(&str, &str)> {
@@ -79,10 +87,12 @@ mod tests {
 
     #[tokio::test]
     async fn f_exists_test() {
+        let extensions = vec!["avi".to_string(), "m4a".to_string(), "mkv".to_string(), "mov".to_string(), "mp4".to_string(), "vob".to_string(), "webm".to_string(), "wmv".to_string()];
         let res = f_exists(
             "https://kodi.levy.cx/syncmiru-server/?dir=",
             "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3N1ZWQiOjE3MTg2MzE0Njh9.8kkgmQ_5HTUFqiyrFR_1ZYqSpzK0sg-7JqmI-fi4byBMLzyE5OFY5rqlN5y6aqmR0yJ4u-y0FjL2alo2j8OuVA",
-            "/anime/MF Ghost"
+            "/anime/MF Ghost",
+            extensions.as_ref()
         ).await;
         assert!(res.unwrap())
     }

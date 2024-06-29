@@ -1,10 +1,16 @@
 export type PlaylistEntryId = number
 
-export interface PlaylistEntryValueSrv {
+export interface PlaylistEntryVideoSrv {
     source: string,
-    path: string
+    path: string,
     type: PlaylistEntryType
+}
 
+export interface PlaylistEntrySubtitlesSrv {
+    source: string,
+    path: string,
+    type: PlaylistEntryType,
+    video_id: PlaylistEntryId
 }
 
 export enum PlaylistEntryType {
@@ -29,5 +35,5 @@ export class PlaylistEntryUrl implements PlaylistEntry {
 
 export class PlaylistEntrySubtitles implements PlaylistEntry {
     public type: PlaylistEntryType = PlaylistEntryType.Subtitles;
-    constructor(public source: string, public path: string) {}
+    constructor(public source: string, public path: string, public videoId: PlaylistEntryId) {}
 }

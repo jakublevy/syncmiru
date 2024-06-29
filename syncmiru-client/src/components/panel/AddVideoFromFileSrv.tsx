@@ -8,9 +8,9 @@ import {BtnPrimary} from "@components/widgets/Button.tsx";
 import {FileKind} from "@models/file.ts";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
-import {showPersistentErrorAlert} from "../../utils/alert.ts";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
 
-export default function AddFromFileSrv(): ReactElement {
+export default function AddVideoFromFileSrv(): ReactElement {
     const {t} = useTranslation()
     const {
         socket,
@@ -53,7 +53,7 @@ export default function AddFromFileSrv(): ReactElement {
                 </div>
             </MenuItem>
             <ModalWHeader
-                title={t('modal-add-to-playlist-from-file-srv-title')}
+                title={t('modal-add-video-to-playlist-from-file-srv-title')}
                 open={showModal}
                 setOpen={setShowModal}
                 content={

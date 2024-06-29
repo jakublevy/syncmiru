@@ -8,7 +8,7 @@ use crate::srvstate::PlaylistEntryId;
 pub enum PlaylistEntry {
     Video { source: String, path: String },
     Url { url: String },
-    Subtitles { source: String, path: String },
+    Subtitles { source: String, path: String, video_id: PlaylistEntryId },
 }
 
 

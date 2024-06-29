@@ -181,25 +181,25 @@ pub fn check_path(path: &str) -> Result<(), ValidationError> {
     Ok(())
 }
 
-pub fn check_video_full_paths(paths: &Vec<String>) -> Result<(), ValidationError> {
+pub fn check_source_files_paths(paths: &Vec<String>) -> Result<(), ValidationError> {
     for path in paths {
         let split_opt = path.split_once(":");
         if split_opt.is_none() {
-            return Err(ValidationError::new("invalid video path"))
+            return Err(ValidationError::new("invalid source file path"))
         }
         let (_, path) = split_opt.unwrap();
         let first_char_opt = path.chars().next();
         if first_char_opt.is_none() {
-            return Err(ValidationError::new("invalid video path"))
+            return Err(ValidationError::new("invalid source file path"))
         }
         if let Some(first_char) = first_char_opt {
             if first_char != '/' {
-                return Err(ValidationError::new("invalid video path"))
+                return Err(ValidationError::new("invalid source file path"))
             }
         }
         let last_char = path.chars().last().unwrap();
         if last_char == '/' {
-            return Err(ValidationError::new("invalid video path"))
+            return Err(ValidationError::new("invalid source file path"))
         }
     }
     Ok(())
