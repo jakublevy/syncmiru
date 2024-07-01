@@ -77,7 +77,7 @@ export default function Main(): ReactElement {
     const [source2url, setSource2url] = useState<Map<string, string>>(new Map<string, string>())
     const [playlist, setPlaylist] = useState<Map<PlaylistEntryId, PlaylistEntry>>(new Map<PlaylistEntryId, PlaylistEntry>())
     const [playlistOrder, setPlaylistOrder] = useState<Array<PlaylistEntryId>>([])
-    const [subtitles, setSubtitles] = useState<MultiMap<PlaylistEntryId, PlaylistEntryId>>(new MultiMap<PlaylistEntryId, PlaylistEntryId>())
+    const [subtitles, setSubtitles] = useState<MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>>>(new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set))
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -167,7 +167,6 @@ export default function Main(): ReactElement {
 
         s.emitWithAck("get_sources")
             .then((source2url: Record<string, string>) => {
-                console.log(JSON.stringify(source2url))
                 const m: Map<string, string> = new Map<string, string>()
                 for (const key in source2url) {
                     const url = source2url[key]

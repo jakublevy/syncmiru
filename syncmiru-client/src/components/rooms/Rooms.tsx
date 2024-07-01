@@ -408,7 +408,7 @@ export default function Rooms(): ReactElement {
                             }
                             setPlaylist(p)
 
-                            const s: MultiMap<PlaylistEntryId, PlaylistEntryId> = new MultiMap<PlaylistEntryId, PlaylistEntryId>()
+                            const s: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
                             for(const vidStr in subsOrderSrv) {
                                 const sids = subsOrderSrv[vidStr]
                                 for(const sid of sids)

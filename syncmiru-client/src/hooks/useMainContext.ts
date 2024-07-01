@@ -3,6 +3,8 @@ import {MainContextModel, RoomConnectionState} from "@models/context.ts";
 import {UserId, UserValueClient} from "src/models/user.ts";
 import {RoomId, RoomValue} from "@models/room.ts";
 import Decimal from "decimal.js";
+import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
+import {MultiMap} from "mnemonist";
 
 export const MainContext = createContext<MainContextModel>(
     {
@@ -46,7 +48,13 @@ export const MainContext = createContext<MainContextModel>(
         mpvWinDetached: false,
         setMpvWinDetached: (v) => {},
         source2url: new Map<string,string>(),
-        setSource2url: (v) => {}
+        setSource2url: (v) => {},
+        playlist: new Map<PlaylistEntryId, PlaylistEntry>(),
+        setPlaylist: (v) => {},
+        playlistOrder: new Array<PlaylistEntryId>(),
+        setPlaylistOrder: (v) => {},
+        subtitles: new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set),
+        setSubtitles: (v) => {}
     })
 
 export const useMainContext = () => useContext(MainContext)

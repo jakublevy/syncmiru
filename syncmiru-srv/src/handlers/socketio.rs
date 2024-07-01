@@ -2,7 +2,6 @@ use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::sync::Arc;
 use indexmap::{IndexMap, IndexSet};
-use multimap::MultiMap;
 use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
@@ -10,7 +9,6 @@ use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
 use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlayingId, PlaylistOrder, AddSubtitlesFiles};
 use crate::{crypto, email, file, query};
-use crate::bimultimap::BiMultiMap;
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
 use crate::handlers::utils::{disconnect_from_room, subtitles_id_in_room, video_id_in_room};
@@ -1784,8 +1782,8 @@ pub async fn delete_playlist_entry(
         state.remove_video_entry(payload.playlist_entry_id).await;
     }
 
-    s.broadcast().emit("del_playlist_entries", [[payload.playlist_entry_id]]).ok();
-    s.emit("del_playlist_entries", [[payload.playlist_entry_id]]).ok();
+    s.broadcast().emit("del_playlist_entry", payload.playlist_entry_id).ok();
+    s.emit("del_playlist_entry", payload.playlist_entry_id).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 
     println!("after delete_playlist_entry");

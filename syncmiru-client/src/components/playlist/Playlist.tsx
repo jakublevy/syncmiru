@@ -40,7 +40,7 @@ export default function Playlist(): ReactElement {
 
     const [playingId, setPlayingId] = useState<PlaylistEntryId | null>(null)
     const [deletingPlaylistId, setDeletingPlaylistId] = useState<PlaylistEntryId>(0)
-    const [showVideoDeleteModal, setShowVideoDeleteModal] = useState<boolean>(false)
+    const [showPlaylistEntryDeleteModal, setShowPlaylistEntryDeleteModal] = useState<boolean>(false)
     const connectedToRoom = currentRid != null && roomConnection === RoomConnectionState.Established
 
     const [showSubtitlesModal, setShowSubtitlesModal] = useState<boolean>(false)
@@ -51,7 +51,7 @@ export default function Playlist(): ReactElement {
             socket.on('add_video_files', onAddVideoFiles)
             socket.on('add_subtitles_files', onSubtitlesFiles)
             socket.on('playlist_order', onPlaylistOrder)
-            socket.on('del_playlist_entries', onDelPlaylistEntries)
+            socket.on('del_playlist_entry', onDelPlaylistEntry)
         }
     }, [socket]);
 
@@ -59,7 +59,7 @@ export default function Playlist(): ReactElement {
         if(currentRid == null) {
             setPlaylist(new Map<PlaylistEntryId, PlaylistEntry>())
             setPlaylistOrder([])
-            setSubtitles(new MultiMap<PlaylistEntryId, PlaylistEntryId>())
+            setSubtitles(new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set))
         }
     }, [currentRid, roomConnection]);
 
@@ -93,7 +93,7 @@ export default function Playlist(): ReactElement {
         setPlaylist((p) => new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m]))
 
         setSubtitles((p) => {
-            const subs: MultiMap<PlaylistEntryId, PlaylistEntryId> = new MultiMap<PlaylistEntryId, PlaylistEntryId>
+            const subs: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
             for (const [videoId, subId] of p) {
                 subs.set(videoId, subId)
             }
@@ -109,16 +109,53 @@ export default function Playlist(): ReactElement {
         setPlaylistOrder(playlistOrder)
     }
 
-    function onDelPlaylistEntries(entryIds: Array<PlaylistEntryId>) {
-        setPlaylistOrder((p) => p.filter(x => !entryIds.includes(x)))
-        setPlaylist((p) => {
-            const m: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
-            for (const [k, v] of p) {
-                if(!entryIds.includes(k))
-                    m.set(k, v)
+    function onDelPlaylistEntry(entryId: PlaylistEntryId) {
+        setPlaylist((playlist => {
+            const newPlaylist: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
+
+            const entry = playlist.get(entryId)
+            if(entry == null)
+                return playlist
+
+            if(entry instanceof PlaylistEntrySubtitles) {
+                setSubtitles((p) => {
+                    const subs: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
+                    for(const [vid, subId] of p) {
+                        if(subId !== entryId)
+                            subs.set(vid, subId)
+                    }
+                    return subs
+                })
+                for (const [k, v] of playlist) {
+                    if(k !== entryId)
+                        newPlaylist.set(k, v)
+                }
+                return newPlaylist
             }
-            return m
-        })
+            else {
+                let playlistIdsToRemove = new Set()
+                const subIds = subtitles.get(entryId)
+                if(subIds != null)
+                    playlistIdsToRemove = new Set([...playlistIdsToRemove, ...subIds])
+
+                setPlaylistOrder((p) => p.filter(x => x !== entryId))
+
+                setSubtitles((p) => {
+                    const subs: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
+                    for(const [vid, subId] of p) {
+                        if(vid != entryId)
+                            subs.set(vid, subId)
+                    }
+                    return subs
+                })
+
+                for (const [k, v] of playlist) {
+                    if(!playlistIdsToRemove.has(k))
+                        newPlaylist.set(k, v)
+                }
+                return newPlaylist
+            }
+        }))
     }
 
     function orderChanged(e: OnChangeMeta) {
@@ -143,7 +180,7 @@ export default function Playlist(): ReactElement {
 
     function deleteFromPlaylist(eid: PlaylistEntryId) {
         setDeletingPlaylistId(eid)
-        setShowVideoDeleteModal(true)
+        setShowPlaylistEntryDeleteModal(true)
     }
 
     function deleteFromPlaylistConfirmed() {
@@ -220,7 +257,7 @@ export default function Playlist(): ReactElement {
 
                         const renderTxt = entryPrettyText(entry)
 
-                        let subs: Array<PlaylistEntryId> = []
+                        let subs: Set<PlaylistEntryId> = new Set()
                         let s = subtitles.get(playlistEntryId)
                         if(s != null)
                             subs = s
@@ -278,21 +315,36 @@ export default function Playlist(): ReactElement {
                                             <Delete/>
                                         </div>
                                     </div>
-                                    {subs.length > 0 && <div className="flex flex-col gap-y-0.5 mb-4">
-                                        {subs.map(subId => {
+                                    {subs.size > 0 && <div className="flex flex-col gap-y-0.5 mb-4">
+                                        {Array.from(subs).map(subId => {
                                             const sub = playlist.get(subId)
                                             if(sub == null)
                                                 return <></>
 
-                                            return <p key={subId}>{entryPrettyText(sub)}</p>
+                                            return (
+                                                <div
+                                                    key={subId}
+                                                    className="flex items-center gap-x-2 px-2 py-1.5 ml-8 hover:bg-gray-100 dark:hover:bg-gray-700 hover:cursor-pointer rounded group">
+                                                    <SubFile
+                                                        key={`${subId}_svg`}
+                                                        className="min-w-4 w-4"/>
+                                                    <p key={`${subId}_p`} className="text-xs">{entryPrettyText(sub)}</p>
+                                                    <div key={`${subId}_spacer`} className="flex-1"></div>
+                                                    <div
+                                                        key={`${subId}_del`}
+                                                        role="button"
+                                                        className='flex items-center rounded p-1 mr-1 hover:bg-gray-300 dark:hover:bg-gray-500 invisible group-hover:visible min-h-6 h-6 min-w-6 w-6'
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            deleteFromPlaylist(subId)
+                                                        }}
+                                                    >
+                                                        <Delete/>
+                                                    </div>
+                                                </div>
+                                            )
                                         })}
                                     </div>}
-
-                                    {/*{subs.length > 0*/}
-                                    {/*    && <div className="flex flex-col gap-y-0.5 mb-4">*/}
-                                    {/*        TODO*/}
-                                    {/*    </div>*/}
-                                    {/*}*/}
                                 </div>
                             </li>
                         )
@@ -301,11 +353,11 @@ export default function Playlist(): ReactElement {
             </div>
             <ModalDelete
                 onDeleteConfirmed={deleteFromPlaylistConfirmed}
-                open={showVideoDeleteModal}
-                setOpen={setShowVideoDeleteModal}
+                open={showPlaylistEntryDeleteModal}
+                setOpen={setShowPlaylistEntryDeleteModal}
                 content={
-                [deletingPlaylistId].map((eid => {
-                    const entry = playlist.get(eid)
+                    [deletingPlaylistId].map((eid => {
+                        const entry = playlist.get(eid)
                     if(entry == null)
                         return <div key={eid}></div>
 

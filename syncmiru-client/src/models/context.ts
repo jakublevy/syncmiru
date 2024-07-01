@@ -49,8 +49,8 @@ export interface MainContextModel {
     setPlaylist: Dispatch<SetStateAction<Map<PlaylistEntryId, PlaylistEntry>>>
     playlistOrder: Array<PlaylistEntryId>
     setPlaylistOrder: Dispatch<SetStateAction<Array<PlaylistEntryId>>>
-    subtitles: MultiMap<PlaylistEntryId, PlaylistEntryId>
-    setSubtitles: Dispatch<SetStateAction<MultiMap<PlaylistEntryId, PlaylistEntryId>>>
+    subtitles: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>>
+    setSubtitles: Dispatch<SetStateAction<MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>>>>
 }
 
 export enum RoomConnectionState {
