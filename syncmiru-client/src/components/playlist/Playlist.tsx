@@ -293,7 +293,7 @@ export default function Playlist(): ReactElement {
                                             onMouseDown={(e) => e.stopPropagation()}
                                             onMouseUp={(e) => e.stopPropagation()}
                                         >
-                                            <Subtitles/>
+                                            <Subtitles className="w-full h-full"/>
                                         </div>
 
                                         {/*<BtnSecondarySvg className="min-h-9 h-9 min-w-9 w-9 group-hover:visible invisible">*/}
@@ -312,7 +312,7 @@ export default function Playlist(): ReactElement {
                                             onMouseDown={(e) => e.stopPropagation()}
                                             onMouseUp={(e) => e.stopPropagation()}
                                         >
-                                            <Delete/>
+                                            <Delete className="w-full h-full"/>
                                         </div>
                                     </div>
                                     {subs.size > 0 && <div className="flex flex-col gap-y-0.5 mb-4">
@@ -339,7 +339,7 @@ export default function Playlist(): ReactElement {
                                                             deleteFromPlaylist(subId)
                                                         }}
                                                     >
-                                                        <Delete/>
+                                                        <Delete className="w-full h-full"/>
                                                     </div>
                                                 </div>
                                             )
