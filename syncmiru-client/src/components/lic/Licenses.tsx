@@ -74,7 +74,7 @@ export default function Licenses(): ReactElement {
                 <h1 className="text-2xl font-bold">{t('license-licenses-title')}</h1>
             </div>
             <div className="ml-8 mr-8 mb-4">
-                <pre className="border text-sm w-full h-[calc(100dvh-9rem)] text-wrap overflow-y-auto">
+                <pre className="border text-sm w-full h-[calc(100dvh-9rem)] text-wrap overflow-y-auto p-1.5">
                     {licenses.sort((l1, l2) => l1.name.localeCompare(l2.name)).map((l, i) => {
                         return (
                             <p key={i}>

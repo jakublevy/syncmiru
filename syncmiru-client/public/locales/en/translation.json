@@ -354,5 +354,8 @@
   "playlist-order-change-error": "An error occurred while changing the order of playlist entries",
   "playlist-delete-error": "An error occurred while deleting an item from the playlist",
   "playlist-not-connected-to-room-msg": "Join a room to show the playlist",
-  "playlist-empty-msg": "The playlist is empty"
+  "playlist-empty-msg": "The playlist is empty",
+
+  "modal-add-url-to-playlist": "Video from URL address",
+  "modal-add-url-to-playlist-text": "Enter one URL address per line"
 }

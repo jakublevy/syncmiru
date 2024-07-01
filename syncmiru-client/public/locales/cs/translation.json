@@ -354,5 +354,8 @@
   "playlist-order-change-error": "Došlo k chybě při změně pořadí položek v playlistu",
   "playlist-delete-error": "Došlo k chybě při odstraňování položky z playlistu",
   "playlist-not-connected-to-room-msg": "Pro zobrazení playlistu se připojte do místnosti",
-  "playlist-empty-msg": "Playlist je prázdný"
+  "playlist-empty-msg": "Playlist je prázdný",
+
+  "modal-add-url-to-playlist": "Video z URL adresy",
+  "modal-add-url-to-playlist-text": "Adresy vkládejte vždy jednu na řádek"
 }

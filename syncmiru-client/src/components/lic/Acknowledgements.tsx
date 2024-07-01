@@ -26,7 +26,7 @@ export default function Acknowledgements(): ReactElement {
             </div>
             <div className="flex flex-col ml-8 mr-8 mb-4 gap-y-6">
                 <p>{t('license-acknowledgements-text')}</p>
-                <pre className="border text-sm w-full h-[calc(100dvh-14.9rem)] overflow-y-auto">
+                <pre className="border text-sm w-full h-[calc(100dvh-14.9rem)] overflow-y-auto p-1.5">
                     {deps.sort((d1, d2) => d1.name.localeCompare(d2.name)).map((d, i) => {
                         return (
                             <p key={i}>
