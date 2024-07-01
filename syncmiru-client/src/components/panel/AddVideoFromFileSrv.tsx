@@ -44,7 +44,7 @@ export default function AddVideoFromFileSrv(): ReactElement {
     return (
         <>
             <MenuItem
-                className="w-[13rem]"
+                className="w-[13.6rem]"
                 onClick={addClicked}
             >
                 <div className="flex gap-x-3">

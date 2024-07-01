@@ -31,7 +31,7 @@ export default function AddUrlAddress(): ReactElement {
 
     function checkUrl(url: string): boolean {
         try {
-            const parsedURL = new URL(url);
+            new URL(url)
             return url.startsWith("https://") || url.startsWith("http://")
         } catch (e) {
             return false;
@@ -41,7 +41,7 @@ export default function AddUrlAddress(): ReactElement {
     return (
         <>
             <MenuItem
-                className="w-[13rem]"
+                className="w-[13.6rem]"
                 onClick={addClicked}
             >
                 <div className="flex gap-x-3">
