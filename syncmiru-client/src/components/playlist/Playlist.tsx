@@ -254,7 +254,7 @@ export default function Playlist(): ReactElement {
                         return (
                             <ul
                                 {...props}
-                                className="border-l flex-1 overflow-auto p-1"
+                                className="flex-1 overflow-auto p-1"
                             >{children}</ul>
                         )
                     }}
