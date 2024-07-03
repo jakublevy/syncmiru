@@ -275,6 +275,12 @@ pub struct AddVideoFiles {
     pub full_paths: Vec<String>
 }
 
+#[derive(Debug, Clone, Deserialize, Validate)]
+pub struct AddUrls {
+    #[validate(custom(function = "validators::check_urls"))]
+    pub urls: Vec<String>
+}
+
 
 #[derive(Debug, Clone, Deserialize, Validate)]
 pub struct AddSubtitlesFiles {

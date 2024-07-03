@@ -1,21 +1,25 @@
-import React, {ChangeEvent, ReactElement, useEffect, useState} from "react";
+import React, {ChangeEvent, ReactElement, useState} from "react";
 import Link from "@components/svg/Link.tsx";
 import {MenuItem} from "@szhsin/react-menu";
 import {useTranslation} from "react-i18next";
 import {ModalWHeader} from "@components/widgets/Modal.tsx";
 import {BtnPrimary} from "@components/widgets/Button.tsx";
+import {TextAreaModalFix} from "@components/widgets/TextAreaModalFix.tsx";
+import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
+import {useMainContext} from "@hooks/useMainContext.ts";
 
 export default function AddUrlAddress(): ReactElement {
+    const {
+        socket,
+        setPlaylistLoading
+    } = useMainContext()
     const {t} = useTranslation()
     const [showModal, setShowModal] = useState<boolean>(false);
     const [urlContent, setUrlContent] = useState<string>("");
     const [filledUrlCount, setFilledUrlCount] = useState<number>(0);
     const [urls, setUrls] = useState<Array<string>>([]);
     const urlInputValid = filledUrlCount === urls.length && urls.length > 0
-
-    useEffect(() => {
-        console.log(urls)
-    }, [urls]);
 
     function addClicked() {
         setShowModal(true)
@@ -38,6 +42,23 @@ export default function AddUrlAddress(): ReactElement {
         }
     }
 
+    function addToPlaylistClicked() {
+        setShowModal(false)
+        setPlaylistLoading(true)
+        socket!.emitWithAck("add_urls", {urls: urls})
+            .then((ack: SocketIoAck<null>) => {
+                if(ack.status === SocketIoAckType.Err) {
+                    showPersistentErrorAlert(t('playlist-modify-error'))
+                }
+            })
+            .catch(() => {
+                showPersistentErrorAlert(t('playlist-modify-error'))
+            })
+            .finally(() => {
+                setPlaylistLoading(false)
+            })
+    }
+
     return (
         <>
             <MenuItem
@@ -57,7 +78,7 @@ export default function AddUrlAddress(): ReactElement {
                     <div className="flex flex-col gap-y-4">
                         <div>
                             <p className="mb-2">{t('modal-add-url-to-playlist-text')}</p>
-                            <textarea
+                            <TextAreaModalFix
                                 className="p-1.5 w-full h-[50dvh] border font-mono"
                                 value={urlContent}
                                 onChange={urlAreaChanged}
@@ -66,6 +87,7 @@ export default function AddUrlAddress(): ReactElement {
                         <BtnPrimary
                             className="mt-4"
                             disabled={!urlInputValid}
+                            onClick={addToPlaylistClicked}
                         >{t('add-to-playlist-btn')}</BtnPrimary>
                     </div>
                 }

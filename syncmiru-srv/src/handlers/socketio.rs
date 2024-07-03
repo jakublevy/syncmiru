@@ -7,7 +7,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlayingId, PlaylistOrder, AddSubtitlesFiles};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlayingId, PlaylistOrder, AddSubtitlesFiles, AddUrls};
 use crate::{crypto, email, file, query};
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
@@ -74,6 +74,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("get_sources", get_sources);
     s.on("get_files", get_files);
     s.on("add_video_files", add_video_files);
+    s.on("add_urls", add_urls);
     s.on("add_subtitles_files", add_subtitles_files);
     s.on("req_playing_jwt", req_playing_jwt);
     s.on("change_playing_entry", change_playing_entry);
@@ -1560,7 +1561,42 @@ pub async fn add_video_files(
 
     drop(rid_video_id_wl);
     drop(playlist_wl);
-    println!("\n\n\nafter playlist update");
+    println!("\n\n\nafter adding_video_files");
+    utils::debug_print(state);
+}
+
+pub async fn add_urls(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<AddUrls>
+) {
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let mut rid_video_id_wl = state.rid_video_id.write().await;
+    let mut playlist_wl = state.playlist.write().await;
+    let mut send_entries: IndexMap<PlaylistEntryId, PlaylistEntry> = IndexMap::new();
+    for url in payload.urls {
+        let entry_id = state.next_playlist_entry_id().await;
+        let entry = PlaylistEntry::Url { url };
+        send_entries.insert(entry_id, entry.clone());
+        playlist_wl.insert(entry_id, entry);
+        rid_video_id_wl.insert(rid, entry_id);
+    }
+    s.within(rid.to_string()).emit("add_urls", send_entries).ok();
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+
+    drop(rid_video_id_wl);
+    drop(playlist_wl);
+    println!("\n\n\nafter adding_urls");
     utils::debug_print(state);
 }
 
@@ -1626,7 +1662,7 @@ pub async fn add_subtitles_files(
 
     drop(playlist_wl);
     drop(video_id2subtitles_ids_wl);
-    println!("\n\n\nafter add_subtitles_file update");
+    println!("\n\n\nafter add_subtitles_files update");
     utils::debug_print(state);
 }
 

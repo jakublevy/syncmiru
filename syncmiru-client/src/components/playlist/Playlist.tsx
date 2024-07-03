@@ -50,6 +50,7 @@ export default function Playlist(): ReactElement {
         if (socket !== undefined) {
             socket.on('add_video_files', onAddVideoFiles)
             socket.on('add_subtitles_files', onSubtitlesFiles)
+            socket.on('add_urls', onAddUrls)
             socket.on('playlist_order', onPlaylistOrder)
             socket.on('del_playlist_entry', onDelPlaylistEntry)
         }
@@ -75,9 +76,6 @@ export default function Playlist(): ReactElement {
             m.set(parseInt(idStr), new PlaylistEntryVideo(value.source, value.path))
         }
         setPlaylist((p) => {
-            if (p.size === 0)
-                setAsPlaying(m.keys().next().value)
-
             return new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m])
         })
         let entryIds = [...m.keys()]
@@ -103,6 +101,20 @@ export default function Playlist(): ReactElement {
             }
             return subs
         })
+    }
+
+    function onAddUrls(r: Record<string, PlaylistEntryUrl>) {
+        const m: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
+        for (const idStr in r) {
+            const value = r[idStr]
+            m.set(parseInt(idStr), new PlaylistEntryUrl(value.url))
+        }
+
+        setPlaylist((p) => {
+            return new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m])
+        })
+        let entryIds = [...m.keys()]
+        setPlaylistOrder((p) => [...new Set([...p, ...entryIds])])
     }
 
     function onPlaylistOrder(playlistOrder: Array<PlaylistEntryId>) {

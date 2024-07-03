@@ -1,6 +1,7 @@
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use sqlx::PgPool;
+use url::Url;
 use validator::ValidationError;
 use crate::constants::SOCKETIO_ACK_TIMEOUT;
 use crate::models::query::Id;
@@ -200,6 +201,20 @@ pub fn check_source_files_paths(paths: &Vec<String>) -> Result<(), ValidationErr
         let last_char = path.chars().last().unwrap();
         if last_char == '/' {
             return Err(ValidationError::new("invalid source file path"))
+        }
+    }
+    Ok(())
+}
+
+pub fn check_urls(urls: &Vec<String>) -> Result<(), ValidationError> {
+    for url in urls {
+        let parsed_url_r = Url::parse(url);
+        if parsed_url_r.is_err() {
+            return Err(ValidationError::new("invalid url"))
+        }
+        let parsed_url = parsed_url_r.unwrap();
+        if parsed_url.scheme() != "https" && parsed_url.scheme() != "http" {
+            return Err(ValidationError::new("invalid url"))
         }
     }
     Ok(())
