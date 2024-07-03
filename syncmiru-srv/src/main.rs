@@ -46,6 +46,7 @@ mod tkn;
 mod constants;
 mod bimultimap;
 mod file;
+mod trait_ext;
 
 
 #[macro_use]

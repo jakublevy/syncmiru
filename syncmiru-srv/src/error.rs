@@ -66,6 +66,12 @@ pub enum SyncmiruError {
     #[error("int parse failed")]
     ParseIntError(#[from] ParseIntError),
 
+    #[error("Reqwest error")]
+    ReqwestError(#[from] reqwest::Error),
+
+    #[error("Serde JSON error")]
+    SerdeJsonError(#[from] serde_json::error::Error),
+
     #[error("Parsing CLI args failed {0}")]
     CliParseFailed(String),
 
@@ -89,9 +95,6 @@ pub enum SyncmiruError {
 
     #[error("YAML array parse error")]
     YAMLArrayParseError(String),
-
-    #[error("Reqwest error")]
-    ReqwestError(#[from] reqwest::Error),
 
     #[error("Poison error")]
     PoisonError

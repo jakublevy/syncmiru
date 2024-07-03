@@ -34,7 +34,9 @@ pub struct UserPlayInfo {
     pub status: UserStatus,
     pub timestamp: u64,
     pub aid: u64,
-    pub sid: u64
+    pub sid: u64,
+    pub audio_sync: bool,
+    pub sub_sync: bool
 }
 
 #[derive(Debug)]

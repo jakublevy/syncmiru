@@ -7,13 +7,13 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlayingId, PlaylistOrder, AddSubtitlesFiles, AddUrls};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlaylistEntryIdStruct, PlaylistOrder, AddSubtitlesFiles, AddUrls};
 use crate::{crypto, email, file, query};
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
 use crate::handlers::utils::{disconnect_from_room, subtitles_id_in_room, video_id_in_room};
 use crate::models::file::FileType;
-use crate::models::playlist::{PlaylistEntry, RoomRuntimeState};
+use crate::models::playlist::{PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState};
 use crate::srvstate::{PlaylistEntryId, SrvState};
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -77,7 +77,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("add_urls", add_urls);
     s.on("add_subtitles_files", add_subtitles_files);
     s.on("req_playing_jwt", req_playing_jwt);
-    s.on("change_playing_entry", change_playing_entry);
+    s.on("change_active_video", change_active_video);
     s.on("set_playlist_order", set_playlist_order);
     s.on("delete_playlist_entry", delete_playlist_entry);
 
@@ -1670,23 +1670,56 @@ pub async fn req_playing_jwt(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<PlayingId>,
+    Data(payload): Data<PlaylistEntryIdStruct>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(SocketIoAck::<String>::err()).ok();
         return;
     }
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(SocketIoAck::<String>::err()).ok();
         return;
     }
 
     let rid = rid_opt.unwrap();
     if !video_id_in_room(state, rid, payload.playlist_entry_id).await {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(SocketIoAck::<String>::err()).ok();
         return;
     }
+
+    let playlist_rl = state.playlist.read().await;
+    let entry = playlist_rl.get(&payload.playlist_entry_id).unwrap();
+    if let PlaylistEntry::Url { .. } = entry {
+        ack.send(SocketIoAck::<String>::err()).ok();
+        return;
+    }
+    let mut s: &str;
+    let mut p: &str;
+    match entry {
+        PlaylistEntry::Video { source, path } => {
+            s = source;
+            p = path;
+        }
+        PlaylistEntry::Subtitles { source, path, .. } => {
+            s = source;
+            p = path;
+        }
+        _ => {
+            ack.send(SocketIoAck::<String>::err()).ok();
+            return;
+        }
+    }
+    let source = state.config.sources.get(s).unwrap();
+    let jwt = file::gen_access_jwt(source, p)
+        .await
+        .expect("jwt signer error");
+
+    ack.send(SocketIoAck::<String>::ok(Some(jwt))).ok();
+
+
+
+
     // TODO: check whether payload is currently playing video or subtitles of currently playing video
 
     // bla bla
@@ -1700,11 +1733,11 @@ pub async fn req_playing_jwt(
     // TODO: notify other users about the change, so that they call this function
 }
 
-pub async fn change_playing_entry(
+pub async fn change_active_video(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<PlayingId>,
+    Data(payload): Data<PlaylistEntryIdStruct>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -1721,7 +1754,26 @@ pub async fn change_playing_entry(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
+    let mut rid2play_info_wl = state.rid2play_info.write().await;
+    let play_info_opt = rid2play_info_wl.get(&rid);
+    if play_info_opt.is_some() && play_info_opt.unwrap().playing_entry_id == payload.playlist_entry_id {
+        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        return;
+    }
+    state.clear_uid2_play_info_by_rid(rid).await;
+    rid2play_info_wl.insert(
+        rid,
+        RoomPlayInfo {
+            playing_entry_id: payload.playlist_entry_id,
+            playing_state: PlayingState::Pause
+        }
+    );
 
+    s.within(rid.to_string()).emit("change_active_video", payload.playlist_entry_id).ok();
+
+    drop(rid2play_info_wl);
+    println!("after change_active_video");
+    utils::debug_print(state);
 }
 
 pub async fn set_playlist_order(
@@ -1770,7 +1822,7 @@ pub async fn delete_playlist_entry(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
     ack: AckSender,
-    Data(payload): Data<PlayingId>,
+    Data(payload): Data<PlaylistEntryIdStruct>,
 ) {
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<()>::err()).ok();

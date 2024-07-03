@@ -357,5 +357,7 @@
   "playlist-empty-msg": "The playlist is empty",
 
   "modal-add-url-to-playlist": "Video from URL address",
-  "modal-add-url-to-playlist-text": "Enter one URL address per line"
+  "modal-add-url-to-playlist-text": "Enter one URL address per line",
+
+  "video-url-copied": "The video URL address has been copied"
 }

@@ -289,7 +289,7 @@ pub struct AddSubtitlesFiles {
 }
 
 #[derive(Debug, Clone, Validate, Deserialize)]
-pub struct PlayingId {
+pub struct PlaylistEntryIdStruct {
     #[validate(custom(function = "validators::check_playlist_entry_id"))]
     pub playlist_entry_id: PlaylistEntryId
 }

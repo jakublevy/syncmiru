@@ -1,12 +1,16 @@
 use std::collections::HashSet;
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 use anyhow::anyhow;
+use josekit::jws::JwsHeader;
+use josekit::jwt::JwtPayload;
 use reqwest::Client;
 use serde::{Deserialize, Deserializer, Serialize};
 use crate::{constants, Result};
 use crate::error::SyncmiruError;
 use urlencoding::encode;
+use crate::config::{JwtSigner, Source};
 use crate::models::file::{FileInfo, FileType};
+use crate::trait_ext::DurationExt;
 
 pub async fn list(
     root_url: &str,
@@ -52,6 +56,22 @@ pub async fn f_exists(
         }
     }
     Ok(false)
+}
+
+pub async fn gen_access_jwt(
+    source: &Source,
+    path: &str
+) -> Result<String> {
+    let mut header = JwsHeader::new();
+    header.set_token_type("JWT");
+
+    let mut payload = JwtPayload::new();
+    payload.set_expires_at(&(SystemTime::now() + Duration::from_hours(12)));
+    payload.set_claim("file", Some(serde_json::from_str(encode(path).as_ref())?))?;
+    let signer = source.jwt_signer()?;
+    header.set_algorithm(signer.algorithm().name());
+    let signed = josekit::jwt::encode_with_signer(&payload, &header, &*signer)?;
+    Ok(signed)
 }
 
 pub fn extract_extension(path: &str) -> &str {

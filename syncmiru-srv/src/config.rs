@@ -9,8 +9,9 @@ use indexmap::IndexMap;
 use josekit::jws::{JwsSigner, JwsVerifier};
 use lettre::SmtpTransport;
 use lettre::transport::smtp::authentication::Credentials;
-use log::{debug, info, warn};
+use log::{debug, info, Log, warn};
 use openssl::hash::MessageDigest;
+use openssl::sign::Signer;
 use yaml_rust2::{Yaml, YamlLoader};
 use crate::config::KeyAlg::{ES256, ES512, RS256, RS512};
 use crate::config::LogOutput::{StdErr, Stdout};
@@ -376,23 +377,17 @@ impl LoginJwt {
         let pub_pem = parse_key(pub_key_file, KeyType::Public, alg)?;
         Ok(Self { pub_pem, priv_pem, alg })
     }
+}
 
-    pub fn signer(&self) -> Result<Box<dyn JwsSigner>> {
-        match self.alg {
-            RS256 => Ok(Box::new(josekit::jws::RS256.signer_from_pem(&self.priv_pem)?)),
-            RS512 => Ok(Box::new(josekit::jws::RS512.signer_from_pem(&self.priv_pem)?)),
-            ES256 => Ok(Box::new(josekit::jws::ES256.signer_from_pem(&self.priv_pem)?)),
-            ES512 => Ok(Box::new(josekit::jws::ES512.signer_from_pem(&self.priv_pem)?)),
-        }
+impl JwtVerifier for LoginJwt {
+    fn jwt_verifier(&self) -> Result<Box<dyn JwsVerifier>> {
+        create_jwt_verifier(&self.alg, &self.pub_pem)
     }
+}
 
-    pub fn verifier(&self) -> Result<Box<dyn JwsVerifier>> {
-        match self.alg {
-            RS256 => Ok(Box::new(josekit::jws::RS256.verifier_from_pem(&self.pub_pem)?)),
-            RS512 => Ok(Box::new(josekit::jws::RS512.verifier_from_pem(&self.pub_pem)?)),
-            ES256 => Ok(Box::new(josekit::jws::ES256.verifier_from_pem(&self.pub_pem)?)),
-            ES512 => Ok(Box::new(josekit::jws::ES512.verifier_from_pem(&self.pub_pem)?)),
-        }
+impl JwtSigner for LoginJwt {
+    fn jwt_signer(&self) -> Result<Box<dyn JwsSigner>> {
+        create_jwt_signer(&self.alg, &self.priv_pem)
     }
 }
 
@@ -449,6 +444,12 @@ impl Source {
             }
         }
         Ok(sources)
+    }
+}
+
+impl JwtSigner for Source {
+    fn jwt_signer(&self) -> Result<Box<dyn JwsSigner>> {
+        create_jwt_signer(&self.alg, &self.priv_pem)
     }
 }
 
@@ -538,4 +539,30 @@ fn parse_key(p: impl AsRef<Path> + Clone, kt: KeyType, ka: KeyAlg) -> Result<Vec
         return Err(SyncmiruError::JwtKeyParseError(format!("{} does not appear to be a valid {}", p.as_ref().display(), expected_tag)))
     }
     Ok(pem_bytes.to_vec())
+}
+
+pub trait JwtSigner {
+    fn jwt_signer(&self) -> Result<Box<dyn JwsSigner>>;
+}
+
+pub trait JwtVerifier {
+    fn jwt_verifier(&self) -> Result<Box<dyn JwsVerifier>>;
+}
+
+pub fn create_jwt_signer(alg: &KeyAlg, priv_pem: &[u8]) -> Result<Box<dyn JwsSigner>> {
+    match alg {
+        RS256 => Ok(Box::new(josekit::jws::RS256.signer_from_pem(priv_pem)?)),
+        RS512 => Ok(Box::new(josekit::jws::RS512.signer_from_pem(priv_pem)?)),
+        ES256 => Ok(Box::new(josekit::jws::ES256.signer_from_pem(priv_pem)?)),
+        ES512 => Ok(Box::new(josekit::jws::ES512.signer_from_pem(priv_pem)?)),
+    }
+}
+
+pub fn create_jwt_verifier(alg: &KeyAlg, pub_pem: &[u8]) -> Result<Box<dyn JwsVerifier>> {
+    match alg {
+        RS256 => Ok(Box::new(josekit::jws::RS256.verifier_from_pem(pub_pem)?)),
+        RS512 => Ok(Box::new(josekit::jws::RS512.verifier_from_pem(pub_pem)?)),
+        ES256 => Ok(Box::new(josekit::jws::ES256.verifier_from_pem(pub_pem)?)),
+        ES512 => Ok(Box::new(josekit::jws::ES512.verifier_from_pem(pub_pem)?)),
+    }
 }

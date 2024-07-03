@@ -357,5 +357,7 @@
   "playlist-empty-msg": "Playlist je prázdný",
 
   "modal-add-url-to-playlist": "Video z URL adresy",
-  "modal-add-url-to-playlist-text": "Adresy vkládejte vždy jednu na řádek"
+  "modal-add-url-to-playlist-text": "Adresy vkládejte vždy jednu na řádek",
+
+  "video-url-copied": "URL adresa videa byla zkopírována"
 }

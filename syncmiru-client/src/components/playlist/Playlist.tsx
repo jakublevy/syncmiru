@@ -12,7 +12,7 @@ import {
 import {arrayMove, List, OnChangeMeta, RenderListParams} from "react-movable";
 import VideoFile from "@components/svg/VideoFile.tsx";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
-import {showPersistentErrorAlert} from "src/utils/alert.ts";
+import {showPersistentErrorAlert, showTemporalSuccessAlertForModal} from "src/utils/alert.ts";
 import {useTranslation} from "react-i18next";
 import Delete from "@components/svg/Delete.tsx";
 import Subtitles from "@components/svg/Subtitles.tsx";
@@ -21,6 +21,7 @@ import SubFile from "@components/svg/SubFile.tsx";
 import {RoomConnectionState} from "@models/context.ts";
 import AddSubtitlesFromFileSrv from "@components/playlist/AddSubtitlesFromFileSrv.tsx";
 import {MultiMap} from 'mnemonist'
+import Copy from "@components/svg/Copy.tsx";
 
 export default function Playlist(): ReactElement {
     const {
@@ -64,9 +65,8 @@ export default function Playlist(): ReactElement {
         }
     }, [currentRid, roomConnection]);
 
-    function setAsPlaying(entryId: PlaylistEntryId) {
-        // TODO: notify server
-        // TODO: set playingId
+    function setAsActiveVideo(entryId: PlaylistEntryId) {
+        // TODO
     }
 
     function onAddVideoFiles(r: Record<string, PlaylistEntryVideoSrv>) {
@@ -75,7 +75,11 @@ export default function Playlist(): ReactElement {
             const value = r[idStr]
             m.set(parseInt(idStr), new PlaylistEntryVideo(value.source, value.path))
         }
+
         setPlaylist((p) => {
+            if(p.size === 0)
+                setAsActiveVideo(m.keys().next().value)
+
             return new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m])
         })
         let entryIds = [...m.keys()]
@@ -214,6 +218,11 @@ export default function Playlist(): ReactElement {
         setShowSubtitlesModal(true)
     }
 
+    async function copyVideoUrl(entry: PlaylistEntryUrl) {
+        await navigator.clipboard.writeText(entry.url);
+        showTemporalSuccessAlertForModal(t('video-url-copied'))
+    }
+
     function entryPic(entry: PlaylistEntry) {
         if(entry instanceof PlaylistEntrySubtitles)
             return <SubFile className="min-w-6 w-6"/>
@@ -289,6 +298,20 @@ export default function Playlist(): ReactElement {
                                         <VideoFile className="min-w-6 w-6"/>
                                         <p className={`text-sm ${playingId === playlistEntryId ? 'font-bold' : ''}`}>{renderTxt}</p>
                                         <div className="flex-1"></div>
+                                        {entry instanceof PlaylistEntryUrl &&
+                                            <div
+                                                role="button"
+                                                className='flex items-center rounded hover:bg-gray-300 p-1.5 dark:hover:bg-gray-500 invisible group-hover:visible min-h-8 h-8 min-w-8 w-8'
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    await copyVideoUrl(entry)
+                                                }}
+                                                onMouseDown={(e) => e.stopPropagation()}
+                                                onMouseUp={(e) => e.stopPropagation()}
+                                            >
+                                                <Copy className="w-full h-full" fill="currentColor"/>
+                                            </div>
+                                        }
                                         <div
                                             role="button"
                                             className='flex items-center rounded hover:bg-gray-300 p-1.5 dark:hover:bg-gray-500 invisible group-hover:visible min-h-8 h-8 min-w-8 w-8'
