@@ -40,7 +40,7 @@ import {
     PlaylistEntry,
     PlaylistEntryId, PlaylistEntrySubtitles, PlaylistEntrySubtitlesSrv,
     PlaylistEntryType,
-    PlaylistEntryUrl,
+    PlaylistEntryUrl, PlaylistEntryUrlSrv,
     PlaylistEntryVideo, PlaylistEntryVideoSrv
 } from "@models/playlist.ts";
 import {MultiMap} from "mnemonist";
@@ -402,8 +402,8 @@ export default function Rooms(): ReactElement {
                                 }
 
                                 else if(type === PlaylistEntryType.Url) {
-                                    const value = playlistSrv[idStr] as PlaylistEntryVideoSrv
-                                    p.set(id, new PlaylistEntryUrl(value.source))
+                                    const value = playlistSrv[idStr] as PlaylistEntryUrlSrv
+                                    p.set(id, new PlaylistEntryUrl(value.url))
                                 }
                             }
                             setPlaylist(p)

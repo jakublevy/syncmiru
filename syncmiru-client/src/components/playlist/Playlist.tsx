@@ -268,17 +268,11 @@ export default function Playlist(): ReactElement {
                         }
 
                         const renderTxt = entryPrettyText(entry)
-
                         let subs: Set<PlaylistEntryId> = new Set()
                         let s = subtitles.get(playlistEntryId)
                         if(s != null)
                             subs = s
-                        // let subs: Array<PlaylistEntrySubtitles> = []
-                        // if (subtitles.has(playlistEntryId)) {
-                        //     subs = subtitles
-                        //         .get(playlistEntryId)
-                        //         .map(id => playlist.get(id) as PlaylistEntrySubtitles)
-                        // }
+
                         return (
                             <li
                                 key={key}
@@ -307,12 +301,6 @@ export default function Playlist(): ReactElement {
                                         >
                                             <Subtitles className="w-full h-full"/>
                                         </div>
-
-                                        {/*<BtnSecondarySvg className="min-h-9 h-9 min-w-9 w-9 group-hover:visible invisible">*/}
-                                        {/*    <Subtitles/>*/}
-                                        {/*</BtnSecondarySvg>*/}
-
-                                        {/*<DeleteBtn className="min-w-9 w-9 group-hover:visible invisible"/>*/}
 
                                         <div
                                             role="button"

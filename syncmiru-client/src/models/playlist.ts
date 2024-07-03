@@ -13,6 +13,11 @@ export interface PlaylistEntrySubtitlesSrv {
     video_id: PlaylistEntryId
 }
 
+export interface PlaylistEntryUrlSrv {
+    url: string,
+    type: PlaylistEntryType,
+}
+
 export enum PlaylistEntryType {
     Video = "video",
     Url = "url",
