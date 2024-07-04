@@ -359,5 +359,7 @@
   "modal-add-url-to-playlist": "Video z URL adresy",
   "modal-add-url-to-playlist-text": "Adresy vkládejte vždy jednu na řádek",
 
-  "video-url-copied": "URL adresa videa byla zkopírována"
+  "video-url-copied": "URL adresa videa byla zkopírována",
+  "video-set-active-error": "Došlo k chybě při změně přehrávaného videa",
+  "playlist-entry-req-jwt-error": "Došlo k chybě při získávání JWT tokenu položky playlistu"
 }

@@ -5,14 +5,18 @@ import {
     PlaylistEntry,
     PlaylistEntryId,
     PlaylistEntrySubtitles,
+    PlaylistEntrySubtitlesSrv,
     PlaylistEntryUrl,
-    PlaylistEntryVideoSrv,
-    PlaylistEntryVideo, PlaylistEntrySubtitlesSrv
+    PlaylistEntryVideo,
+    PlaylistEntryVideoSrv
 } from "@models/playlist.ts";
 import {arrayMove, List, OnChangeMeta, RenderListParams} from "react-movable";
 import VideoFile from "@components/svg/VideoFile.tsx";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
-import {showPersistentErrorAlert, showTemporalSuccessAlertForModal} from "src/utils/alert.ts";
+import {
+    showPersistentErrorAlert,
+    showTemporalSuccessAlertForModal
+} from "src/utils/alert.ts";
 import {useTranslation} from "react-i18next";
 import Delete from "@components/svg/Delete.tsx";
 import Subtitles from "@components/svg/Subtitles.tsx";
@@ -38,14 +42,15 @@ export default function Playlist(): ReactElement {
     } = useMainContext()
     const {t} = useTranslation()
 
-
-    const [playingId, setPlayingId] = useState<PlaylistEntryId | null>(null)
     const [deletingPlaylistId, setDeletingPlaylistId] = useState<PlaylistEntryId>(0)
     const [showPlaylistEntryDeleteModal, setShowPlaylistEntryDeleteModal] = useState<boolean>(false)
     const connectedToRoom = currentRid != null && roomConnection === RoomConnectionState.Established
 
     const [showSubtitlesModal, setShowSubtitlesModal] = useState<boolean>(false)
     const [videoIdSelectedSubtitles, setVideoIdSelectedSubtitles] = useState<PlaylistEntryId>(0)
+
+    const [jwts, setJwts] = useState<Map<PlaylistEntryId, string>>(new Map<PlaylistEntryId, string>())
+    const [activeVideoId, setActiveVideoId] = useState<PlaylistEntryId | null>(null)
 
     useEffect(() => {
         if (socket !== undefined) {
@@ -58,6 +63,12 @@ export default function Playlist(): ReactElement {
     }, [socket]);
 
     useEffect(() => {
+        if(socket !== undefined) {
+            socket.on('change_active_video', onChangeActiveVideo)
+        }
+    }, [socket, playlist, subtitles]);
+
+    useEffect(() => {
         if(currentRid == null) {
             setPlaylist(new Map<PlaylistEntryId, PlaylistEntry>())
             setPlaylistOrder([])
@@ -66,7 +77,15 @@ export default function Playlist(): ReactElement {
     }, [currentRid, roomConnection]);
 
     function setAsActiveVideo(entryId: PlaylistEntryId) {
-        // TODO
+        socket!.emitWithAck("change_active_video", {playlist_entry_id: entryId})
+            .then((ack: SocketIoAck<null>) => {
+                if(ack.status === SocketIoAckType.Err) {
+                    showPersistentErrorAlert(t('video-set-active-error'))
+                }
+            })
+            .catch(() => {
+                showPersistentErrorAlert(t('video-set-active-error'))
+            })
     }
 
     function onAddVideoFiles(r: Record<string, PlaylistEntryVideoSrv>) {
@@ -149,7 +168,7 @@ export default function Playlist(): ReactElement {
                 return newPlaylist
             }
             else {
-                let playlistIdsToRemove = new Set()
+                let playlistIdsToRemove = new Set<PlaylistEntryId>([entryId])
                 const subIds = subtitles.get(entryId)
                 if(subIds != null)
                     playlistIdsToRemove = new Set([...playlistIdsToRemove, ...subIds])
@@ -172,6 +191,39 @@ export default function Playlist(): ReactElement {
                 return newPlaylist
             }
         }))
+    }
+
+    function onChangeActiveVideo(entryId: PlaylistEntryId) {
+        const entry = playlist.get(entryId)
+        if(entry == null)
+            return
+
+        const subs = subtitles.get(entryId)
+        let reqIds: Set<PlaylistEntryId>
+        if(subs == null) {
+            reqIds = new Set<PlaylistEntryId>([entryId])
+        }
+        else {
+            reqIds = new Set<PlaylistEntryId>([entryId, ...subs])
+        }
+        const jwtsTmp: Map<PlaylistEntryId, string> = new Map<PlaylistEntryId, string>()
+        for(const id of reqIds) {
+            socket!.emitWithAck("req_playing_jwt", {playlist_entry_id: id})
+                .then((ack: SocketIoAck<string>) => {
+                    if(ack.status === SocketIoAckType.Err) {
+                        showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
+                    }
+                    const jwt = ack.payload as string
+                    jwtsTmp.set(entryId, jwt)
+                })
+                .catch(() => {
+                    showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
+                    return
+                })
+        }
+        console.log(jwtsTmp)
+        setJwts(jwtsTmp)
+        setActiveVideoId(entryId)
     }
 
     function orderChanged(e: OnChangeMeta) {
@@ -207,9 +259,6 @@ export default function Playlist(): ReactElement {
             })
             .catch(() => {
                 showPersistentErrorAlert(t('playlist-delete-error'))
-            })
-            .finally(() => {
-
             })
     }
 
@@ -296,7 +345,7 @@ export default function Playlist(): ReactElement {
                                         data-movable-handle={true}
                                         className="flex items-center mb-0.5 gap-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 hover:cursor-pointer rounded group">
                                         <VideoFile className="min-w-6 w-6"/>
-                                        <p className={`text-sm ${playingId === playlistEntryId ? 'font-bold' : ''}`}>{renderTxt}</p>
+                                        <p className={`text-sm ${activeVideoId === playlistEntryId ? 'font-bold' : ''}`}>{renderTxt}</p>
                                         <div className="flex-1"></div>
                                         {entry instanceof PlaylistEntryUrl &&
                                             <div
@@ -389,7 +438,7 @@ export default function Playlist(): ReactElement {
                     return (
                         <div key={eid} className="flex gap-x-2 items-center">
                             {pic}
-                            <p className={`text-sm ${playingId === eid ? 'font-bold' : ''}`}>{renderTxt}</p>
+                            <p className={`text-sm ${activeVideoId === eid ? 'font-bold' : ''}`}>{renderTxt}</p>
                         </div>
                     )
                 }))

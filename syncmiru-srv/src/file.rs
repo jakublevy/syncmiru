@@ -67,7 +67,10 @@ pub async fn gen_access_jwt(
 
     let mut payload = JwtPayload::new();
     payload.set_expires_at(&(SystemTime::now() + Duration::from_hours(12)));
-    payload.set_claim("file", Some(serde_json::from_str(encode(path).as_ref())?))?;
+
+    let file_value = serde_json::from_str(&format!("\"{}\"", path))?;
+    payload.set_claim("file", Some(file_value))?;
+
     let signer = source.jwt_signer()?;
     header.set_algorithm(signer.algorithm().name());
     let signed = josekit::jwt::encode_with_signer(&payload, &header, &*signer)?;

@@ -1769,6 +1769,7 @@ pub async fn change_active_video(
         }
     );
 
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
     s.within(rid.to_string()).emit("change_active_video", payload.playlist_entry_id).ok();
 
     drop(rid2play_info_wl);
