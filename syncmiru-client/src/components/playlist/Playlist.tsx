@@ -26,58 +26,52 @@ import {RoomConnectionState} from "@models/context.ts";
 import AddSubtitlesFromFileSrv from "@components/playlist/AddSubtitlesFromFileSrv.tsx";
 import {MultiMap} from 'mnemonist'
 import Copy from "@components/svg/Copy.tsx";
+import {forceDisconnectFromRoom} from "src/utils/room.ts";
 
 export default function Playlist(): ReactElement {
-    const {
-        socket,
-        playlistLoading,
-        roomConnection,
-        currentRid,
-        playlist,
-        setPlaylist,
-        playlistOrder,
-        setPlaylistOrder,
-        subtitles,
-        setSubtitles
-    } = useMainContext()
+    const ctx = useMainContext()
     const {t} = useTranslation()
 
     const [deletingPlaylistId, setDeletingPlaylistId] = useState<PlaylistEntryId>(0)
     const [showPlaylistEntryDeleteModal, setShowPlaylistEntryDeleteModal] = useState<boolean>(false)
-    const connectedToRoom = currentRid != null && roomConnection === RoomConnectionState.Established
+    const connectedToRoom = ctx.currentRid != null && ctx.roomConnection === RoomConnectionState.Established
 
     const [showSubtitlesModal, setShowSubtitlesModal] = useState<boolean>(false)
     const [videoIdSelectedSubtitles, setVideoIdSelectedSubtitles] = useState<PlaylistEntryId>(0)
 
-    const [jwts, setJwts] = useState<Map<PlaylistEntryId, string>>(new Map<PlaylistEntryId, string>())
     const [activeVideoId, setActiveVideoId] = useState<PlaylistEntryId | null>(null)
 
     useEffect(() => {
-        if (socket !== undefined) {
-            socket.on('add_video_files', onAddVideoFiles)
-            socket.on('add_subtitles_files', onSubtitlesFiles)
-            socket.on('add_urls', onAddUrls)
-            socket.on('playlist_order', onPlaylistOrder)
-            socket.on('del_playlist_entry', onDelPlaylistEntry)
+        if (ctx.socket !== undefined) {
+            ctx.socket.on('add_video_files', onAddAddVideoFiles)
+            ctx.socket.on('add_urls', onAddUrls)
+            ctx.socket.on('playlist_order', onPlaylistOrder)
+            ctx.socket.on('del_playlist_entry', onDelPlaylistEntry)
         }
-    }, [socket]);
+    }, [ctx.socket]);
 
     useEffect(() => {
-        if(socket !== undefined) {
-            socket.on('change_active_video', onChangeActiveVideo)
+        if(ctx.socket !== undefined) {
+            ctx.socket.on('change_active_video', onChangeActiveVideo)
         }
-    }, [socket, playlist, subtitles]);
+    }, [ctx.socket, ctx.playlist, ctx.subtitles]);
 
     useEffect(() => {
-        if(currentRid == null) {
-            setPlaylist(new Map<PlaylistEntryId, PlaylistEntry>())
-            setPlaylistOrder([])
-            setSubtitles(new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set))
+        if(ctx.socket !== undefined) {
+            ctx.socket.on('add_subtitles_files', onAddSubtitlesFiles)
         }
-    }, [currentRid, roomConnection]);
+    }, [ctx.socket, activeVideoId]);
+
+    useEffect(() => {
+        if(ctx.currentRid == null) {
+            ctx.setPlaylist(new Map<PlaylistEntryId, PlaylistEntry>())
+            ctx.setPlaylistOrder([])
+            ctx.setSubtitles(new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set))
+        }
+    }, [ctx.currentRid, ctx.roomConnection]);
 
     function setAsActiveVideo(entryId: PlaylistEntryId) {
-        socket!.emitWithAck("change_active_video", {playlist_entry_id: entryId})
+        ctx.socket!.emitWithAck("change_active_video", {playlist_entry_id: entryId})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
                     showPersistentErrorAlert(t('video-set-active-error'))
@@ -88,42 +82,71 @@ export default function Playlist(): ReactElement {
             })
     }
 
-    function onAddVideoFiles(r: Record<string, PlaylistEntryVideoSrv>) {
+    function onAddAddVideoFiles(r: Record<string, PlaylistEntryVideoSrv>) {
         const m: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
         for (const idStr in r) {
             const value = r[idStr]
             m.set(parseInt(idStr), new PlaylistEntryVideo(value.source, value.path))
         }
 
-        setPlaylist((p) => {
+        ctx.setPlaylist((p) => {
             if(p.size === 0)
                 setAsActiveVideo(m.keys().next().value)
 
             return new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m])
         })
         let entryIds = [...m.keys()]
-        setPlaylistOrder((p) => [...new Set([...p, ...entryIds])])
+        ctx.setPlaylistOrder((p) => [...new Set([...p, ...entryIds])])
     }
 
-    function onSubtitlesFiles(r: Record<string, PlaylistEntrySubtitlesSrv>) {
+    function onAddSubtitlesFiles(r: Record<string, PlaylistEntrySubtitlesSrv>) {
         const m: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
         for (const idStr in r) {
             const value = r[idStr]
             m.set(parseInt(idStr), new PlaylistEntrySubtitles(value.source, value.path, value.video_id))
         }
-        setPlaylist((p) => new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m]))
+        ctx.setPlaylist((p) => new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m]))
 
-        setSubtitles((p) => {
-            const subs: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
-            for (const [videoId, subId] of p) {
-                subs.set(videoId, subId)
+        const subs: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
+        let promises = []
+        const subJwtsTmp: Map<PlaylistEntryId, string> = new Map<PlaylistEntryId, string>()
+        for(const idStr in r) {
+            const value = r[idStr]
+            const subId = parseInt(idStr)
+
+            if(value.video_id === activeVideoId) {
+                promises.push(ctx.socket!.emitWithAck("req_playing_jwt", {playlist_entry_id: subId})
+                    .then((ack: SocketIoAck<string>) => {
+                        if(ack.status === SocketIoAckType.Err) {
+                            showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
+                            forceDisconnectFromRoom(ctx)
+                            return
+                        }
+                        const jwt = ack.payload as string
+                        subJwtsTmp.set(subId, jwt)
+                    })
+                    .catch(() => {
+                        showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
+                        forceDisconnectFromRoom(ctx)
+                        return
+                    }))
             }
-            for(const idStr in r) {
-                const value = r[idStr]
-                subs.set(value.video_id, parseInt(idStr))
-            }
-            return subs
-        })
+            subs.set(value.video_id, subId)
+        }
+        Promise.all(promises)
+            .then(() => {
+                ctx.setJwts((p) => new Map<PlaylistEntryId, string>([...p, ...subJwtsTmp]))
+                ctx.setSubtitles((p) => {
+                    const newSubs: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
+                    for (const [videoId, subId] of p) {
+                        newSubs.set(videoId, subId)
+                    }
+                    for (const [videoId, subId] of subs) {
+                        newSubs.set(videoId, subId)
+                    }
+                    return newSubs
+                })
+            })
     }
 
     function onAddUrls(r: Record<string, PlaylistEntryUrl>) {
@@ -133,19 +156,19 @@ export default function Playlist(): ReactElement {
             m.set(parseInt(idStr), new PlaylistEntryUrl(value.url))
         }
 
-        setPlaylist((p) => {
+        ctx.setPlaylist((p) => {
             return new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m])
         })
         let entryIds = [...m.keys()]
-        setPlaylistOrder((p) => [...new Set([...p, ...entryIds])])
+        ctx.setPlaylistOrder((p) => [...new Set([...p, ...entryIds])])
     }
 
     function onPlaylistOrder(playlistOrder: Array<PlaylistEntryId>) {
-        setPlaylistOrder(playlistOrder)
+        ctx.setPlaylistOrder(playlistOrder)
     }
 
     function onDelPlaylistEntry(entryId: PlaylistEntryId) {
-        setPlaylist((playlist => {
+        ctx.setPlaylist((playlist => {
             const newPlaylist: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
 
             const entry = playlist.get(entryId)
@@ -153,7 +176,7 @@ export default function Playlist(): ReactElement {
                 return playlist
 
             if(entry instanceof PlaylistEntrySubtitles) {
-                setSubtitles((p) => {
+                ctx.setSubtitles((p) => {
                     const subs: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
                     for(const [vid, subId] of p) {
                         if(subId !== entryId)
@@ -169,13 +192,13 @@ export default function Playlist(): ReactElement {
             }
             else {
                 let playlistIdsToRemove = new Set<PlaylistEntryId>([entryId])
-                const subIds = subtitles.get(entryId)
+                const subIds = ctx.subtitles.get(entryId)
                 if(subIds != null)
                     playlistIdsToRemove = new Set([...playlistIdsToRemove, ...subIds])
 
-                setPlaylistOrder((p) => p.filter(x => x !== entryId))
+                ctx.setPlaylistOrder((p) => p.filter(x => x !== entryId))
 
-                setSubtitles((p) => {
+                ctx.setSubtitles((p) => {
                     const subs: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
                     for(const [vid, subId] of p) {
                         if(vid != entryId)
@@ -194,11 +217,11 @@ export default function Playlist(): ReactElement {
     }
 
     function onChangeActiveVideo(entryId: PlaylistEntryId) {
-        const entry = playlist.get(entryId)
+        const entry = ctx.playlist.get(entryId)
         if(entry == null)
             return
 
-        const subs = subtitles.get(entryId)
+        const subs = ctx.subtitles.get(entryId)
         let reqIds: Set<PlaylistEntryId>
         if(subs == null) {
             reqIds = new Set<PlaylistEntryId>([entryId])
@@ -208,40 +231,42 @@ export default function Playlist(): ReactElement {
         }
         const jwtsTmp: Map<PlaylistEntryId, string> = new Map<PlaylistEntryId, string>()
         for(const id of reqIds) {
-            socket!.emitWithAck("req_playing_jwt", {playlist_entry_id: id})
+            ctx.socket!.emitWithAck("req_playing_jwt", {playlist_entry_id: id})
                 .then((ack: SocketIoAck<string>) => {
                     if(ack.status === SocketIoAckType.Err) {
                         showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
+                        forceDisconnectFromRoom(ctx)
+                        return
                     }
                     const jwt = ack.payload as string
                     jwtsTmp.set(entryId, jwt)
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
+                    forceDisconnectFromRoom(ctx)
                     return
                 })
         }
-        console.log(jwtsTmp)
-        setJwts(jwtsTmp)
+        ctx.setJwts(jwtsTmp)
         setActiveVideoId(entryId)
     }
 
     function orderChanged(e: OnChangeMeta) {
         let oldOrder: Array<PlaylistEntryId>
-        const newOrder = arrayMove(playlistOrder, e.oldIndex, e.newIndex)
-        setPlaylistOrder((p) => {
+        const newOrder = arrayMove(ctx.playlistOrder, e.oldIndex, e.newIndex)
+        ctx.setPlaylistOrder((p) => {
             oldOrder = p
             return newOrder
         })
-        socket!.emitWithAck("set_playlist_order", {playlist_order: newOrder})
+        ctx.socket!.emitWithAck("set_playlist_order", {playlist_order: newOrder})
             .then((ack: SocketIoAck<null>) => {
                 if (ack.status === SocketIoAckType.Err) {
-                    setPlaylistOrder(oldOrder)
+                    ctx.setPlaylistOrder(oldOrder)
                     showPersistentErrorAlert(t('playlist-order-change-error'))
                 }
             })
             .catch(() => {
-                setPlaylistOrder(oldOrder)
+                ctx.setPlaylistOrder(oldOrder)
                 showPersistentErrorAlert(t('playlist-order-change-error'))
             })
     }
@@ -252,7 +277,7 @@ export default function Playlist(): ReactElement {
     }
 
     function deleteFromPlaylistConfirmed() {
-        socket!.emitWithAck("delete_playlist_entry", {playlist_entry_id: deletingPlaylistId})
+        ctx.socket!.emitWithAck("delete_playlist_entry", {playlist_entry_id: deletingPlaylistId})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err)
                     showPersistentErrorAlert(t('playlist-delete-error'))
@@ -294,7 +319,7 @@ export default function Playlist(): ReactElement {
         return ''
     }
 
-    if (playlistLoading) {
+    if (ctx.playlistLoading) {
         return <div className="flex justify-center items-center h-full">
             <Loading/>
         </div>
@@ -304,10 +329,10 @@ export default function Playlist(): ReactElement {
             <div className="h-full">
                 {!connectedToRoom
                     ? <p className="flex justify-center pt-6">{t('playlist-not-connected-to-room-msg')}</p>
-                    : playlist.size === 0 && <p className="flex justify-center pt-6">{t('playlist-empty-msg')}</p>}
+                    : ctx.playlist.size === 0 && <p className="flex justify-center pt-6">{t('playlist-empty-msg')}</p>}
                 <List
                     onChange={orderChanged}
-                    values={playlistOrder}
+                    values={ctx.playlistOrder}
                     renderList={({children, props}: RenderListParams) => {
                         return (
                             <ul
@@ -318,7 +343,7 @@ export default function Playlist(): ReactElement {
                     }}
                     renderItem={({value: playlistEntryId, props}) => {
                         const {key, ...restProps} = props
-                        const entry = playlist.get(playlistEntryId)
+                        const entry = ctx.playlist.get(playlistEntryId)
                         if (entry == null) {
                             return (
                                 <></>
@@ -327,7 +352,7 @@ export default function Playlist(): ReactElement {
 
                         const renderTxt = entryPrettyText(entry)
                         let subs: Set<PlaylistEntryId> = new Set()
-                        let s = subtitles.get(playlistEntryId)
+                        let s = ctx.subtitles.get(playlistEntryId)
                         if(s != null)
                             subs = s
 
@@ -389,7 +414,7 @@ export default function Playlist(): ReactElement {
                                     </div>
                                     {subs.size > 0 && <div className="flex flex-col gap-y-0.5 mb-4">
                                         {Array.from(subs).map(subId => {
-                                            const sub = playlist.get(subId)
+                                            const sub = ctx.playlist.get(subId)
                                             if(sub == null)
                                                 return <></>
 
@@ -429,7 +454,7 @@ export default function Playlist(): ReactElement {
                 setOpen={setShowPlaylistEntryDeleteModal}
                 content={
                     [deletingPlaylistId].map((eid => {
-                        const entry = playlist.get(eid)
+                        const entry = ctx.playlist.get(eid)
                     if(entry == null)
                         return <div key={eid}></div>
 

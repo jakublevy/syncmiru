@@ -1683,11 +1683,12 @@ pub async fn req_playing_jwt(
     }
 
     let rid = rid_opt.unwrap();
-    if !video_id_in_room(state, rid, payload.playlist_entry_id).await {
+    if !video_id_in_room(state, rid, payload.playlist_entry_id).await
+        && !subtitles_id_in_room(state, rid, payload.playlist_entry_id).await {
         ack.send(SocketIoAck::<String>::err()).ok();
         return;
     }
-
+    println!("ahoj");
     let playlist_rl = state.playlist.read().await;
     let entry = playlist_rl.get(&payload.playlist_entry_id).unwrap();
     if let PlaylistEntry::Url { .. } = entry {

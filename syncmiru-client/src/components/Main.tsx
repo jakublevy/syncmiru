@@ -78,6 +78,7 @@ export default function Main(): ReactElement {
     const [playlist, setPlaylist] = useState<Map<PlaylistEntryId, PlaylistEntry>>(new Map<PlaylistEntryId, PlaylistEntry>())
     const [playlistOrder, setPlaylistOrder] = useState<Array<PlaylistEntryId>>([])
     const [subtitles, setSubtitles] = useState<MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>>>(new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set))
+    const [jwts, setJwts] = useState<Map<PlaylistEntryId, string>>(new Map<PlaylistEntryId, string>())
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -273,7 +274,9 @@ export default function Main(): ReactElement {
                     playlistOrder: playlistOrder,
                     setPlaylistOrder: setPlaylistOrder,
                     subtitles: subtitles,
-                    setSubtitles: setSubtitles
+                    setSubtitles: setSubtitles,
+                    jwts: jwts,
+                    setJwts: setJwts
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">
