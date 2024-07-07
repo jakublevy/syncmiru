@@ -44,6 +44,7 @@ import {
     PlaylistEntryVideo, PlaylistEntryVideoSrv
 } from "@models/playlist.ts";
 import {MultiMap} from "mnemonist";
+import {invoke} from "@tauri-apps/api/core";
 
 export default function Rooms(): ReactElement {
     const {
@@ -161,6 +162,7 @@ export default function Rooms(): ReactElement {
     function forceDisconnectFromRoomOnFetchFailure() {
         roomDisconnectChangeState()
         showPersistentErrorAlert(t('room-join-failed'))
+        invoke('mpv_quit', {})
         socket!.emitWithAck("disconnect_room", {})
             .finally(() => {
                 setRoomConnection(RoomConnectionState.Established)
@@ -366,56 +368,62 @@ export default function Rooms(): ReactElement {
                         if (ack.status === SocketIoAckType.Err) {
                             forceDisconnectFromRoomOnFetchFailure()
                         } else {
-                            const payload = ack.payload as JoinedRoomInfoSrv
-                            const roomPingsSrv = payload.room_pings
-                            const roomSettingsSrv = payload.room_settings
-                            const playlistSrv = payload.playlist
-                            const playlistOrder = payload.playlist_order
-                            const subsOrderSrv = payload.subs_order
+                            invoke('mpv_start', {})
+                                .then(() => {
+                                    const payload = ack.payload as JoinedRoomInfoSrv
+                                    const roomPingsSrv = payload.room_pings
+                                    const roomSettingsSrv = payload.room_settings
+                                    const playlistSrv = payload.playlist
+                                    const playlistOrder = payload.playlist_order
+                                    const subsOrderSrv = payload.subs_order
 
-                            const pings: UserRoomPingsClient = new Map<UserId, number>()
-                            for(const uidStr in roomPingsSrv) {
-                                const uid = parseInt(uidStr)
-                                pings.set(uid, roomPingsSrv[uid])
-                            }
-                            setUidPing(pings)
+                                    const pings: UserRoomPingsClient = new Map<UserId, number>()
+                                    for(const uidStr in roomPingsSrv) {
+                                        const uid = parseInt(uidStr)
+                                        pings.set(uid, roomPingsSrv[uid])
+                                    }
+                                    setUidPing(pings)
 
-                            const roomSettings: RoomSettingsClient = {
-                                playback_speed: new Decimal(roomSettingsSrv.playback_speed),
-                                minor_desync_playback_slow: new Decimal(roomSettingsSrv.minor_desync_playback_slow)
-                            }
-                            setJoinedRoomSettings(roomSettings)
-                            startPingTimer()
+                                    const roomSettings: RoomSettingsClient = {
+                                        playback_speed: new Decimal(roomSettingsSrv.playback_speed),
+                                        minor_desync_playback_slow: new Decimal(roomSettingsSrv.minor_desync_playback_slow)
+                                    }
+                                    setJoinedRoomSettings(roomSettings)
+                                    startPingTimer()
 
-                            const p: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
-                            for(const idStr in playlistSrv) {
-                                const id = parseInt(idStr)
-                                const type = playlistSrv[idStr].type
-                                if(type === PlaylistEntryType.Video) {
-                                     const valueSrv = playlistSrv[idStr] as PlaylistEntryVideoSrv
-                                     p.set(id, new PlaylistEntryVideo(valueSrv.source, valueSrv.path))
-                                }
+                                    const p: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
+                                    for(const idStr in playlistSrv) {
+                                        const id = parseInt(idStr)
+                                        const type = playlistSrv[idStr].type
+                                        if(type === PlaylistEntryType.Video) {
+                                            const valueSrv = playlistSrv[idStr] as PlaylistEntryVideoSrv
+                                            p.set(id, new PlaylistEntryVideo(valueSrv.source, valueSrv.path))
+                                        }
 
-                                else if(type === PlaylistEntryType.Subtitles) {
-                                    const value = playlistSrv[idStr] as PlaylistEntrySubtitlesSrv
-                                    p.set(id, new PlaylistEntrySubtitles(value.source, value.path, value.video_id))
-                                }
+                                        else if(type === PlaylistEntryType.Subtitles) {
+                                            const value = playlistSrv[idStr] as PlaylistEntrySubtitlesSrv
+                                            p.set(id, new PlaylistEntrySubtitles(value.source, value.path, value.video_id))
+                                        }
 
-                                else if(type === PlaylistEntryType.Url) {
-                                    const value = playlistSrv[idStr] as PlaylistEntryUrlSrv
-                                    p.set(id, new PlaylistEntryUrl(value.url))
-                                }
-                            }
-                            setPlaylist(p)
+                                        else if(type === PlaylistEntryType.Url) {
+                                            const value = playlistSrv[idStr] as PlaylistEntryUrlSrv
+                                            p.set(id, new PlaylistEntryUrl(value.url))
+                                        }
+                                    }
+                                    setPlaylist(p)
 
-                            const s: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
-                            for(const vidStr in subsOrderSrv) {
-                                const sids = subsOrderSrv[vidStr]
-                                for(const sid of sids)
-                                    s.set(parseInt(vidStr), sid)
-                            }
-                            setSubtitles(s)
-                            setPlaylistOrder(playlistOrder)
+                                    const s: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
+                                    for(const vidStr in subsOrderSrv) {
+                                        const sids = subsOrderSrv[vidStr]
+                                        for(const sid of sids)
+                                            s.set(parseInt(vidStr), sid)
+                                    }
+                                    setSubtitles(s)
+                                    setPlaylistOrder(playlistOrder)
+                                })
+                                .catch(() => {
+                                    forceDisconnectFromRoomOnFetchFailure()
+                                })
                         }
                     })
                     .catch(() => {

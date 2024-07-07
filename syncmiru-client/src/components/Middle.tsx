@@ -1,5 +1,5 @@
 import React, {ReactElement} from "react";
-import Mpv from "@components/Mpv.tsx";
+import Mpv from "@components/mpv/Mpv.tsx";
 import Playlist from "@components/playlist/Playlist.tsx";
 import {Panel, PanelGroup, PanelResizeHandle} from "react-resizable-panels";
 import ResizableIndicator from "@components/svg/ResizableIndicator.tsx";
@@ -12,7 +12,7 @@ export default function Middle(): ReactElement {
             <PanelGroup direction="vertical">
                 <Panel
                     defaultSize={30}
-                    minSize={24}
+                    minSize={27}
                     style={{overflow: "auto"}}
                 >
                     <Playlist/>
@@ -26,7 +26,7 @@ export default function Middle(): ReactElement {
                 <Panel
                     className={`${mpvWinDetached ? 'hidden' : ''}`}
                     defaultSize={50}
-                    minSize={20}
+                    minSize={27}
                 >
                     <Mpv/>
                 </Panel>

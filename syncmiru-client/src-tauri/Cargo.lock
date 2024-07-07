@@ -4582,6 +4582,7 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "dirs",
+ "hex",
  "keyring",
  "machineid-rs",
  "octocrab",
@@ -4595,6 +4596,7 @@ dependencies = [
  "serde_with",
  "serial_test",
  "sevenz-rust",
+ "sha2",
  "sys-locale",
  "tauri",
  "tauri-build",

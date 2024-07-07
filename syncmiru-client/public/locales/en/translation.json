@@ -361,5 +361,8 @@
 
   "video-url-copied": "The video URL address has been copied",
   "video-set-active-error": "An error occurred while changing the video being played",
-  "playlist-entry-req-jwt-error": "An error occurred while requesting a JWT token for playlist entry"
+  "playlist-entry-req-jwt-error": "An error occurred while requesting a JWT token for playlist entry",
+
+  "mpv-quit-error": "An error occurred while quitting mpv",
+  "mpv-not-connected-to-room-msg": "Pro spuštění přehrávače mpv se připojte do místnosti"
 }

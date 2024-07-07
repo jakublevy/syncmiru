@@ -12,6 +12,8 @@ mod login;
 mod sys;
 mod player;
 mod license;
+mod mpv;
+mod hash;
 
 #[macro_use]
 extern crate rust_i18n;
@@ -25,6 +27,7 @@ use tauri::WindowEvent::CloseRequested;
 
 fn main() -> Result<()> {
     let appstate = appstate::AppState { appdata: config::appdata::read()?.into() };
+    mpv::init_prelude()?;
     let mut ctx = tauri::generate_context!();
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
@@ -65,6 +68,8 @@ fn main() -> Result<()> {
             login::frontend::new_login,
             login::frontend::reg_tkn_valid,
             license::open_license_window,
+            mpv::frontend::mpv_start,
+            mpv::frontend::mpv_quit,
         ])
         .on_window_event(handle_window_event)
         .manage(appstate)

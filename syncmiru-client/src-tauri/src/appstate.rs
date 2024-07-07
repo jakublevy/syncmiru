@@ -2,6 +2,7 @@ use tokio::sync::RwLock;
 use crate::config::appdata::AppData;
 use crate::result::Result;
 
+#[derive(Debug)]
 pub struct AppState {
     pub appdata: RwLock<AppData>,
 }

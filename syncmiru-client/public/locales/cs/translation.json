@@ -361,5 +361,8 @@
 
   "video-url-copied": "URL adresa videa byla zkopírována",
   "video-set-active-error": "Došlo k chybě při změně přehrávaného videa",
-  "playlist-entry-req-jwt-error": "Došlo k chybě při získávání JWT tokenu položky playlistu"
+  "playlist-entry-req-jwt-error": "Došlo k chybě při získávání JWT tokenu položky playlistu",
+
+  "mpv-quit-error": "Došlo k chybě při ukončování mpv",
+  "mpv-not-connected-to-room-msg": "Pro spuštění přehrávače mpv se připojte do místnosti"
 }

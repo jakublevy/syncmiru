@@ -7,6 +7,7 @@ use crate::files::syncmiru_config_ini;
 use crate::config::Theme;
 use crate::config::utils::{get_preferred_locale, ini_bool_to_string, ini_str_to_bool};
 
+#[derive(Debug)]
 pub struct AppData {
     pub first_run_seen: bool,
     pub home_srv: Option<String>,

@@ -1,4 +1,4 @@
-import {ReactElement, useState} from "react";
+import {ReactElement, useEffect, useState} from "react";
 import {PacmanLoader} from "react-spinners";
 import {BtnSecondary} from "@components/widgets/Button.tsx";
 import {useLocation} from "wouter";
@@ -6,12 +6,21 @@ import Loading from "@components/Loading.tsx";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import useClearJwt from "@hooks/useClearJwt.ts";
 import {useTranslation} from "react-i18next";
+import {invoke} from "@tauri-apps/api/core";
+import {showPersistentErrorAlert} from "../utils/alert.ts";
 
 export default function Reconnecting(): ReactElement {
     const [_, navigate] = useLocation()
     const {t} = useTranslation()
     const clearJwt = useClearJwt()
     const [loading, setLoading] = useState<boolean>(false)
+
+    useEffect(() => {
+        invoke('mpv_quit', {})
+            .catch(() => {
+                showPersistentErrorAlert(t('mpv-quit-error'))
+            })
+    }, []);
 
     function signout() {
         setLoading(true)
