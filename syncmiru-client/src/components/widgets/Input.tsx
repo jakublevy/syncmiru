@@ -212,10 +212,11 @@ export const SearchInput
 
     return (
         <div
-            className={`relative cursor-text ${p.className || ""}`}
+            className={`relative ${p.disabled ? '' : 'cursor-text'} ${p.className || ""}`}
             onClick={parentAreaClicked}
             onMouseDown={parentAreaMouseDown}
             ref={divRef}
+            aria-disabled={p.disabled}
         >
             <Input
                 {...passParams}
@@ -223,13 +224,15 @@ export const SearchInput
                 onChange={searchInputOnChange}
                 type="text"
                 placeholder={t('search-placeholder')}
-                className="pr-10"
+                className={`pr-10 ${p.disabled ? 'opacity-30' : ''}`}
                 value={value}
+                disabled={p.disabled}
             />
             {value === '' ?
                 <Search className="w-7 absolute top-2 right-1.5"/>
                 : <Btn
-                    className="rounded hover:bg-gray-200 p-1 dark:hover:bg-gray-600 w-7 absolute top-2 right-1.5"
+                    className={`rounded p-1 w-7 absolute top-2 right-1.5 ${p.disabled ? 'opacity-30' : 'hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+                    disabled={p.disabled}
                     onClick={clearBtnClicked}
                 >
                     <Cross fill="currentColor"/>
@@ -244,6 +247,7 @@ export interface SearchProps {
     setValue: (s: string) => void,
     className?: string,
     tabIndex?: number,
+    disabled?: boolean,
     onChange?: (e: ChangeEvent<HTMLInputElement>) => void,
 }
 

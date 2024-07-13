@@ -1,4 +1,5 @@
 pub mod frontend;
+mod ipc;
 
 use std::fs;
 use tauri::State;
@@ -18,10 +19,6 @@ pub fn init_prelude() -> Result<()> {
     let correct_hash = hash::of_file(&PRELUDE_LOCATION)?;
     if prelude_hash != correct_hash {
         fs::copy(PRELUDE_LOCATION, prelude_path)?;
-        println!("file updated")
-    }
-    else {
-        println!("file ok")
     }
     Ok(())
 }
@@ -36,4 +33,12 @@ pub fn stop_process() -> Result<()> {
 
 pub fn gen_pipe_name() -> String {
     "todo".to_string()
+}
+
+enum Iface {
+    Play,
+    Pause,
+    Seek { timestamp: u64 },
+    ChangeAudion { aid: u64 },
+    ChangeSubs { sid: u64 },
 }

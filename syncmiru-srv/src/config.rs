@@ -443,6 +443,9 @@ impl Source {
                 });
             }
         }
+        if sources.is_empty() {
+            warn!("No sources configured, files can be played only using URL");
+        }
         Ok(sources)
     }
 }

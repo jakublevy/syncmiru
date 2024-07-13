@@ -25,18 +25,20 @@ export function BtnPrimary(p: BtnProps): ReactElement {
 }
 
 export function BtnSecondary(p: BtnProps): ReactElement {
-    const {className, children, ...restParams} = p
+    const {className, children, disabled, ...restParams} = p
     return <Btn
-        className={`bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold border py-2 px-4 rounded ${className != null ? className : ''}`}
+        className={`bg-gray-300 text-gray-800 font-bold border py-2 px-4 rounded ${disabled ? 'opacity-30' : 'hover:bg-gray-400'} ${className != null ? className : ''}`}
+        disabled={disabled}
         {...restParams}>
         {children}
     </Btn>
 }
 
 export function BtnDanger(p: BtnProps): ReactElement {
-    const {className, children, ...restParams} = p
+    const {className, children, disabled, ...restParams} = p
     return <Btn
-        className={`bg-red-600 hover:bg-red-800 text-white font-bold py-2 px-4 border border-red-700 rounded ${className != null ? className : ''}`}
+        className={`bg-red-600 text-white font-bold py-2 px-4 border border-red-700 rounded ${disabled ? 'opacity-30' : 'hover:bg-red-800'} ${className != null ? className : ''}`}
+        disabled={disabled}
         {...restParams}>
         {children}
     </Btn>
@@ -148,9 +150,10 @@ export function SubtitlesBtn(p: SvgBtn): ReactElement {
 type SvgBtn = Omit<BtnProps, "children">
 
 export function BtnSecondarySvg(p: BtnProps): ReactElement {
-    const {className, children, ...restParams} = p
+    const {className, children, disabled, ...restParams} = p
     return <Btn
-        className={`bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold border py-1.5 px-1.5 rounded ${className != null ? className : ''}`}
+        className={`bg-gray-300 text-gray-800 font-bold border py-1.5 px-1.5 rounded ${disabled ? 'opacity-30' : 'hover:bg-gray-400'} ${className != null ? className : ''}`}
+        disabled={disabled}
         {...restParams}>
         {children}
     </Btn>

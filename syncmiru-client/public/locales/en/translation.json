@@ -348,6 +348,7 @@
   "file-picker-reload-btn": "Load again",
   "file-picker-nothing-added": "No items",
   "file-picker-summary": "Summary of items to add",
+  "file-picker-no-source-available": "No source is available, check the server settings",
   "datatable-no-files": "No files available",
 
   "playlist-modify-error": "An error occurred while modifying the playlist",
@@ -362,6 +363,9 @@
   "video-url-copied": "The video URL address has been copied",
   "video-set-active-error": "An error occurred while changing the video being played",
   "playlist-entry-req-jwt-error": "An error occurred while requesting a JWT token for playlist entry",
+
+  "select-placeholder": "Search...",
+  "select-no-options-msg": "No options available",
 
   "mpv-quit-error": "An error occurred while quitting mpv",
   "mpv-not-connected-to-room-msg": "Pro spuštění přehrávače mpv se připojte do místnosti"

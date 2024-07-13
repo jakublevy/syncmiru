@@ -3,62 +3,25 @@ import DoorOut from "@components/svg/DoorOut.tsx";
 import {Clickable} from "@components/widgets/Button.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {useTranslation} from "react-i18next";
-import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
-import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {RoomConnectionState} from "@models/context.ts";
-import {UserId} from "@models/user.ts";
-import {invoke} from "@tauri-apps/api/core";
+import {disconnectFromRoom} from "src/utils/room.ts";
 
 export default function JoinedRoom(): ReactElement {
-    const {
-        socket,
-        rooms,
-        currentRid,
-        setCurrentRid,
-        roomConnection,
-        setRoomConnection,
-        roomPingTimerRef,
-        setUidPing
-    } = useMainContext()
+    const ctx = useMainContext()
     const {t} = useTranslation()
 
-    if(currentRid == null)
+    if(ctx.currentRid == null)
         return <></>
 
-    const room = rooms.get(currentRid)
-    const connectionMsg = roomConnection === RoomConnectionState.Connecting
+    const room = ctx.rooms.get(ctx.currentRid)
+    const connectionMsg = ctx.roomConnection === RoomConnectionState.Connecting
         ? t('room-connecting')
-        : roomConnection === RoomConnectionState.Disconnecting
+        : ctx.roomConnection === RoomConnectionState.Disconnecting
             ? t('room-disconnecting')
             : t('room-connected')
 
     function disconnectClicked() {
-        setRoomConnection(RoomConnectionState.Disconnecting)
-        invoke('mpv_quit', {})
-            .then(() => {
-                socket!.emitWithAck("disconnect_room", {})
-                    .then((ack: SocketIoAck<null>) => {
-                        if(ack.status === SocketIoAckType.Err) {
-                            showPersistentErrorAlert(t('room-leave-failed'))
-                        }
-                        else {
-                            clearInterval(roomPingTimerRef?.current)
-                            setUidPing(new Map<UserId, number>())
-                            setCurrentRid(null)
-                        }
-                    })
-                    .catch(() => {
-                        showPersistentErrorAlert(t('room-leave-failed'))
-                        setRoomConnection(RoomConnectionState.Established)
-                    })
-                    .finally(() => {
-                        setRoomConnection(RoomConnectionState.Established)
-                    })
-            })
-            .catch(() => {
-                showPersistentErrorAlert(t('room-leave-failed'))
-                setRoomConnection(RoomConnectionState.Established)
-            })
+        disconnectFromRoom(ctx, t)
     }
 
     if(room == null)
@@ -73,7 +36,7 @@ export default function JoinedRoom(): ReactElement {
             <Clickable
                 className="p-2"
                 onClick={disconnectClicked}
-                disabled={[RoomConnectionState.Connecting, RoomConnectionState.Disconnecting].includes(roomConnection)}
+                disabled={[RoomConnectionState.Connecting, RoomConnectionState.Disconnecting].includes(ctx.roomConnection)}
             >
                 <DoorOut className="w-7"/>
             </Clickable>
