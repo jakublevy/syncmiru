@@ -21,6 +21,7 @@ export function disconnectFromRoom(ctx: MainContextModel, t: TFunction<"translat
     ctx.setRoomConnection(RoomConnectionState.Disconnecting)
     invoke('mpv_quit', {})
         .then(() => {
+            ctx.setMpvRunning(false)
             ctx.socket!.emitWithAck("disconnect_room", {})
                 .then((ack: SocketIoAck<null>) => {
                     if(ack.status === SocketIoAckType.Err) {

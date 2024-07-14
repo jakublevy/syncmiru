@@ -1,6 +1,6 @@
 import React, {ReactElement, useEffect, useState} from "react";
 import {useMpvStartDownloading} from "@hooks/useMpvStartDownloading.ts";
-import {Event, listen} from "@tauri-apps/api/event";
+import {Event, listen, UnlistenFn} from "@tauri-apps/api/event";
 import DownloadProgressBar from "@components/widgets/DownloadProgressBar.tsx";
 import Loading from "@components/Loading.tsx";
 import {useTranslation} from "react-i18next";
@@ -23,24 +23,28 @@ export default function MpvDownloading(): ReactElement {
         = useState<DownloadStart>({url: '', size: 1})
 
     useEffect(() => {
-        listen<DownloadStart>('mpv-download-start', (e: Event<DownloadStart>) => {
+        let unlisten: Array<Promise<UnlistenFn>> = []
+        unlisten.push(listen<DownloadStart>('mpv-download-start', (e: Event<DownloadStart>) => {
             setMpvDownloadInfo(e.payload)
-        })
-        listen<DownloadProgress>('mpv-download-progress', (e: Event<DownloadProgress>) => {
+        }))
+        unlisten.push(listen<DownloadProgress>('mpv-download-progress', (e: Event<DownloadProgress>) => {
             setMpvDownloadProgress(e.payload)
             setLoading(false)
-        })
-        listen<void>('mpv-download-finished', (e: Event<void>) => {
+        }))
+        unlisten.push(listen<void>('mpv-download-finished', (e: Event<void>) => {
             setMpvDownloadProgress((p) => {
                 return { speed: p.speed, received: mpvDownloadInfo.size}
             })
-        })
-        listen<void>('mpv-extract-finished', (e: Event<void>) => {
+        }))
+        unlisten.push(listen<void>('mpv-extract-finished', (e: Event<void>) => {
             if(yt_dlp)
                 navigate('/yt-dlp-download')
             else
                 navigate('/login-dispatch')
-        })
+        }))
+        return () => {
+            unlisten.forEach(x => x.then((unsub) => unsub()))
+        }
     }, [loading, mpvDownloadProgress, mpvDownloadInfo]);
 
     useMpvStartDownloading()

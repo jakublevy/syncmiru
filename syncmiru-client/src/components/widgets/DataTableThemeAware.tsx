@@ -24,13 +24,16 @@ export default function DataTableThemeAware<T>(p: Props<T>): ReactElement {
     }, [shownTheme]);
 
     useEffect(() => {
-        listen<string>('tauri://theme-changed', (e) => {
+        const unlisten = listen<string>('tauri://theme-changed', (e) => {
             if(e.payload === CSSTheme.Light)
                 setTheme(CSSTheme.Light)
             else
                 setTheme(CSSTheme.Dark)
 
         })
+        return () => {
+            unlisten.then((unsub) => unsub())
+        }
     }, []);
 
     return (

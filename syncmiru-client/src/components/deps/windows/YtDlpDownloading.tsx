@@ -1,5 +1,5 @@
 import React, {ReactElement, useEffect, useState} from "react";
-import {Event, listen} from "@tauri-apps/api/event";
+import {Event, listen, UnlistenFn} from "@tauri-apps/api/event";
 import Loading from "@components/Loading.tsx";
 import DownloadProgressBar from "@components/widgets/DownloadProgressBar.tsx";
 import {useYtDlpStartDownloading} from "@hooks/useYtDlpStartDownloading.ts";
@@ -20,21 +20,25 @@ export default function YtDlpDownloading(): ReactElement {
         = useState<DownloadStart>({url: '', size: 1})
 
     useEffect(() => {
-        listen<DownloadStart>('yt-dlp-download-start', (e: Event<DownloadStart>) => {
+        let unlisten: Array<Promise<UnlistenFn>> = []
+        unlisten.push(listen<DownloadStart>('yt-dlp-download-start', (e: Event<DownloadStart>) => {
             setYtDlpDownloadInfo(e.payload)
-        })
-        listen<DownloadProgress>('yt-dlp-download-progress', (e: Event<DownloadProgress>) => {
+        }))
+        unlisten.push(listen<DownloadProgress>('yt-dlp-download-progress', (e: Event<DownloadProgress>) => {
             setYtDlpDownloadProgress(e.payload)
             setLoading(false)
-        })
-        listen<void>('yt-dlp-download-finished', (e: Event<void>) => {
+        }))
+        unlisten.push(listen<void>('yt-dlp-download-finished', (e: Event<void>) => {
             setYtDlpDownloadProgress((p) => {
                 return { speed: p.speed, received: ytDlpDownloadInfo.size }
             })
-        })
-        listen<void>('yt-dlp-extract-finished', (e: Event<void>) => {
+        }))
+        unlisten.push(listen<void>('yt-dlp-extract-finished', (e: Event<void>) => {
             navigate('/login-dispatch')
-        })
+        }))
+        return () => {
+            unlisten.forEach(x => x.then((unsub) => unsub()))
+        }
     }, [loading, ytDlpDownloadProgress, ytDlpDownloadInfo]);
 
     useYtDlpStartDownloading()

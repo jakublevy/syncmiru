@@ -3,17 +3,21 @@ mod ipc;
 mod window;
 
 use std::fs;
+use std::ops::Deref;
 use std::path::PathBuf;
-use std::process::{Child, Command};
+use std::sync::Arc;
 use std::time::{SystemTime};
+use anyhow::anyhow;
 use tauri::{Manager, State};
-use tokio::sync::{oneshot, RwLock};
+use tokio::io::AsyncWriteExt;
+use tokio::sync::{Mutex, oneshot, RwLock};
 use crate::appstate::AppState;
 use crate::constants::PRELUDE_LOCATION;
 use crate::deps::utils::{mpv_exe, prelude_path};
 use crate::hash;
 use crate::result::Result;
 use tokio::task;
+use tokio::process::Command;
 
 pub fn init_prelude() -> Result<()> {
     let prelude_p = prelude_path()?;
@@ -28,7 +32,7 @@ pub fn init_prelude() -> Result<()> {
     Ok(())
 }
 
-pub async fn start_process(state: &AppState, pipe_id: &str, window: tauri::Window) -> Result<()> {
+pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::Window) -> Result<()> {
     let mut mpv_exe_path = PathBuf::from("mpv");
     {
         let appdata_rl = state.appdata.read().await;
@@ -41,7 +45,7 @@ pub async fn start_process(state: &AppState, pipe_id: &str, window: tauri::Windo
         ipcserver = format!("\\\\.\\pipe\\mpvipc-{}", pipe_id);
     }
 
-    let process_handle = Command::new(mpv_exe_path)
+    let mut process_handle = Command::new(mpv_exe_path)
         .arg(format!("--script={}", &prelude_path()?.display()))
         .arg(format!("--input-ipc-server={}", ipcserver))
         .arg("--no-window-dragging")
@@ -56,15 +60,38 @@ pub async fn start_process(state: &AppState, pipe_id: &str, window: tauri::Windo
         .spawn()?;
 
     {
-        let mut mpv_handle_wl = state.mpv_handle.write().await;
-        *mpv_handle_wl = Some(process_handle);
+        let mut mpv_id_wl = state.mpv_id.write().await;
+        *mpv_id_wl = Some(process_handle.id().expect("missing window handle ID"));
     }
-    task::spawn(wait_for_mpv_stop(&state.mpv_handle, window));
+    let (tx, rx) = oneshot::channel::<()>();
+    {
+        let mut mpv_tx_wl = state.mpv_tx.write().await;
+        *mpv_tx_wl = Some(tx);
+    }
+    let state_for_process = state.clone();
+    tokio::spawn(async move {
+       tokio::select! {
+           result = process_handle.wait() => match result {
+               Ok(_) => {
+                   let mut mpv_tx_wl = state_for_process.mpv_tx.write().await;
+                   mpv_tx_wl.take();
+                   window.emit("mpv-running", false).expect("tauri error")
+               },
+               Err(_) => panic!("Error while waiting for process")
+           },
+           _ = rx => { process_handle.kill().await.expect("kill error"); }
+       }
+    });
 
     Ok(())
 }
 
-pub fn stop_process() -> Result<()> {
+pub async fn stop_process(state: &Arc<AppState>, window: tauri::Window) -> Result<()> {
+    let mut mpv_tx_rl = state.mpv_tx.write().await;
+    let tx_opt= mpv_tx_rl.take();
+    if let Some(tx) = tx_opt {
+        tx.send(()).map_err(|e| anyhow!("killing process failed"))?;
+    }
     Ok(())
 }
 
@@ -74,14 +101,6 @@ pub fn gen_pipe_id() -> String {
         .expect("time went backwards");
 
     format!("mpvipc-{}", since_the_epoch.as_nanos().to_string())
-}
-
-async fn wait_for_mpv_stop(mpv_process_l: &RwLock<Option<Child>>, window: tauri::Window) -> Result<()> {
-    let mut mpv_process = mpv_process_l.write().await;
-    let child = mpv_process.as_mut().unwrap();
-    child.wait().expect("wait failed");
-    window.emit("mpv-stop", {})?;
-    Ok(())
 }
 
 enum Iface {

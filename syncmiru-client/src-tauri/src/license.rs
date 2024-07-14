@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use tauri::{LogicalSize, Manager};
 use crate::appstate::AppState;
 use crate::result::Result;
@@ -6,7 +7,7 @@ use crate::result::Result;
 pub async fn open_license_window(
     app: tauri::AppHandle,
     window: tauri::Window,
-    state: tauri::State<'_, AppState>
+    state: tauri::State<'_, Arc<AppState>>
 ) -> Result<()> {
     let license_window_opt = app.get_webview_window("license");
     if let Some(license_window) = license_window_opt {

@@ -12,7 +12,7 @@ export default function HCaptchaThemeAware(p: HCaptchaProps): ReactElement {
     }, [shownTheme]);
 
     useEffect(() => {
-        listen<string>('tauri://theme-changed', (e) => {
+        const unlisten = listen<string>('tauri://theme-changed', (e) => {
             if(p.onExpire !== undefined)
                 p.onExpire()
 
@@ -21,6 +21,9 @@ export default function HCaptchaThemeAware(p: HCaptchaProps): ReactElement {
             else
                 setTheme(CSSTheme.Dark)
         })
+        return () => {
+            unlisten.then((unsub) => unsub())
+        }
     }, []);
 
     return (

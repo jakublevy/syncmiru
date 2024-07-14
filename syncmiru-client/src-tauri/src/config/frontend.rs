@@ -7,13 +7,13 @@ use crate::result::Result;
 use crate::sys;
 
 #[tauri::command]
-pub async fn get_first_run_seen(state: tauri::State<'_, AppState>) -> Result<bool> {
+pub async fn get_first_run_seen(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
     let appdata = state.appdata.read().await;
     Ok(appdata.first_run_seen)
 }
 
 #[tauri::command]
-pub async fn set_first_run_seen(state: tauri::State<'_, AppState>) -> Result<()> {
+pub async fn set_first_run_seen(state: tauri::State<'_, Arc<AppState>>) -> Result<()> {
     {
         let mut appdata = state.appdata.write().await;
         appdata.first_run_seen = true;
@@ -24,13 +24,13 @@ pub async fn set_first_run_seen(state: tauri::State<'_, AppState>) -> Result<()>
 }
 
 #[tauri::command]
-pub async fn get_users_shown(state: tauri::State<'_, AppState>) -> Result<bool> {
+pub async fn get_users_shown(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
     let appdata = state.appdata.read().await;
     Ok(appdata.users_shown)
 }
 
 #[tauri::command]
-pub async fn set_users_shown(state: tauri::State<'_, AppState>, users_shown: bool) -> Result<()> {
+pub async fn set_users_shown(state: tauri::State<'_, Arc<AppState>>, users_shown: bool) -> Result<()> {
     {
         let mut appdata = state.appdata.write().await;
         appdata.users_shown = users_shown;
@@ -41,13 +41,13 @@ pub async fn set_users_shown(state: tauri::State<'_, AppState>, users_shown: boo
 }
 
 #[tauri::command]
-pub async fn get_audio_sync(state: tauri::State<'_, AppState>) -> Result<bool> {
+pub async fn get_audio_sync(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
     let appdata = state.appdata.read().await;
     Ok(appdata.audio_sync)
 }
 
 #[tauri::command]
-pub async fn set_audio_sync(state: tauri::State<'_, AppState>, audio_sync: bool) -> Result<()> {
+pub async fn set_audio_sync(state: tauri::State<'_, Arc<AppState>>, audio_sync: bool) -> Result<()> {
     {
         let mut appdata = state.appdata.write().await;
         appdata.audio_sync = audio_sync;
@@ -58,13 +58,13 @@ pub async fn set_audio_sync(state: tauri::State<'_, AppState>, audio_sync: bool)
 }
 
 #[tauri::command]
-pub async fn get_sub_sync(state: tauri::State<'_, AppState>) -> Result<bool> {
+pub async fn get_sub_sync(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
     let appdata = state.appdata.read().await;
     Ok(appdata.sub_sync)
 }
 
 #[tauri::command]
-pub async fn set_sub_sync(state: tauri::State<'_, AppState>, sub_sync: bool) -> Result<()> {
+pub async fn set_sub_sync(state: tauri::State<'_, Arc<AppState>>, sub_sync: bool) -> Result<()> {
     {
         let mut appdata = state.appdata.write().await;
         appdata.sub_sync = sub_sync;
@@ -75,13 +75,13 @@ pub async fn set_sub_sync(state: tauri::State<'_, AppState>, sub_sync: bool) -> 
 }
 
 #[tauri::command]
-pub async fn get_language(state: tauri::State<'_, AppState>) -> Result<Language> {
+pub async fn get_language(state: tauri::State<'_, Arc<AppState>>) -> Result<Language> {
     let appdata = state.appdata.read().await;
     Ok(appdata.lang)
 }
 
 #[tauri::command]
-pub async fn set_language(state: tauri::State<'_, AppState>, language: Language) -> Result<()> {
+pub async fn set_language(state: tauri::State<'_, Arc<AppState>>, language: Language) -> Result<()> {
     {
         let mut appdata = state.appdata.write().await;
         appdata.lang = language;
@@ -132,13 +132,13 @@ pub async fn get_is_supported_window_system() -> Result<bool> {
 }
 
 #[tauri::command]
-pub async fn get_mpv_win_detached(state: tauri::State<'_, AppState>) -> Result<bool> {
+pub async fn get_mpv_win_detached(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
     let appdata = state.appdata.read().await;
     Ok(appdata.mpv_win_detached)
 }
 
 #[tauri::command]
-pub async fn set_mpv_win_detached(state: tauri::State<'_, AppState>, mpv_win_detached: bool) -> Result<()> {
+pub async fn set_mpv_win_detached(state: tauri::State<'_, Arc<AppState>>, mpv_win_detached: bool) -> Result<()> {
     {
         let mut appdata = state.appdata.write().await;
         appdata.mpv_win_detached = mpv_win_detached;

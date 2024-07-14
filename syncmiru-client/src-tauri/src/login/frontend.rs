@@ -13,7 +13,7 @@ use crate::login::{ServiceStatus, RegData, BooleanResp, HttpMethod, TknEmail, Fo
 use crate::{sys};
 
 #[tauri::command]
-pub async fn can_auto_login(state: tauri::State<'_, AppState>) -> Result<bool> {
+pub async fn can_auto_login(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
     let appdata = state.appdata.read().await;
     let jwt = jwt::read()?;
     let login_possible = appdata.home_srv.is_some() && jwt.is_some();
@@ -21,13 +21,13 @@ pub async fn can_auto_login(state: tauri::State<'_, AppState>) -> Result<bool> {
 }
 
 #[tauri::command]
-pub async fn get_home_srv(state: tauri::State<'_, AppState>) -> Result<String> {
+pub async fn get_home_srv(state: tauri::State<'_, Arc<AppState>>) -> Result<String> {
     let srv = state.read_home_srv().await?;
     Ok(srv)
 }
 
 #[tauri::command]
-pub async fn set_home_srv(state: tauri::State<'_, AppState>, home_srv: String) -> Result<()> {
+pub async fn set_home_srv(state: tauri::State<'_, Arc<AppState>>, home_srv: String) -> Result<()> {
     {
         let mut appdata = state.appdata.write().await;
         appdata.home_srv = Some(home_srv.trim().to_string());
@@ -38,7 +38,7 @@ pub async fn set_home_srv(state: tauri::State<'_, AppState>, home_srv: String) -
 }
 
 #[tauri::command]
-pub async fn get_service_status(state: tauri::State<'_, AppState>) -> Result<ServiceStatus> {
+pub async fn get_service_status(state: tauri::State<'_, Arc<AppState>>) -> Result<ServiceStatus> {
     let home_srv = state.read_home_srv().await?;
     let service_status: ServiceStatus = serde_json::from_value(
         super::req_json(
@@ -51,7 +51,7 @@ pub async fn get_service_status(state: tauri::State<'_, AppState>) -> Result<Ser
 }
 
 #[tauri::command]
-pub async fn get_username_unique(state: tauri::State<'_, AppState>, username: String) -> Result<bool> {
+pub async fn get_username_unique(state: tauri::State<'_, Arc<AppState>>, username: String) -> Result<bool> {
     let home_srv = state.read_home_srv().await?;
     let payload = serde_json::json!({"username": username});
     let username_unique: BooleanResp = serde_json::from_value(
@@ -65,7 +65,7 @@ pub async fn get_username_unique(state: tauri::State<'_, AppState>, username: St
 }
 
 #[tauri::command]
-pub async fn get_email_unique(state: tauri::State<'_, AppState>, email: String) -> Result<bool> {
+pub async fn get_email_unique(state: tauri::State<'_, Arc<AppState>>, email: String) -> Result<bool> {
     let home_srv = state.read_home_srv().await?;
     let payload = serde_json::json!({"email": email});
     let email_unique: BooleanResp = serde_json::from_value(
@@ -79,7 +79,7 @@ pub async fn get_email_unique(state: tauri::State<'_, AppState>, email: String) 
 }
 
 #[tauri::command]
-pub async fn send_registration(state: tauri::State<'_, AppState>, data: String) -> Result<()> {
+pub async fn send_registration(state: tauri::State<'_, Arc<AppState>>, data: String) -> Result<()> {
     let home_srv = state.read_home_srv().await?;
     let reg_data: RegData = serde_json::from_str(&data)?;
     super::req(
@@ -91,7 +91,7 @@ pub async fn send_registration(state: tauri::State<'_, AppState>, data: String) 
 }
 
 #[tauri::command]
-pub async fn req_verification_email(state: tauri::State<'_, AppState>, email: String) -> Result<()> {
+pub async fn req_verification_email(state: tauri::State<'_, Arc<AppState>>, email: String) -> Result<()> {
     let home_srv = state.read_home_srv().await?;
     let lang = state.appdata.read().await.lang;
     let payload = serde_json::json!({"email": email, "lang": lang});
@@ -104,7 +104,7 @@ pub async fn req_verification_email(state: tauri::State<'_, AppState>, email: St
 }
 
 #[tauri::command]
-pub async fn get_email_verified(state: tauri::State<'_, AppState>, email: String) -> Result<bool> {
+pub async fn get_email_verified(state: tauri::State<'_, Arc<AppState>>, email: String) -> Result<bool> {
     let home_srv = state.read_home_srv().await?;
     let payload = serde_json::json!({"email": email});
     let verified: BooleanResp = serde_json::from_value(super::req_json(
@@ -116,7 +116,7 @@ pub async fn get_email_verified(state: tauri::State<'_, AppState>, email: String
 }
 
 #[tauri::command]
-pub async fn req_forgotten_password_email(state: tauri::State<'_, AppState>, email: String) -> Result<()> {
+pub async fn req_forgotten_password_email(state: tauri::State<'_, Arc<AppState>>, email: String) -> Result<()> {
     let home_srv = state.read_home_srv().await?;
     let lang = state.appdata.read().await.lang;
     let payload = serde_json::json!({"email": email, "lang": lang});
@@ -129,7 +129,7 @@ pub async fn req_forgotten_password_email(state: tauri::State<'_, AppState>, ema
 }
 
 #[tauri::command]
-pub async fn get_forgotten_password_tkn_valid(state: tauri::State<'_, AppState>, data: String) -> Result<bool> {
+pub async fn get_forgotten_password_tkn_valid(state: tauri::State<'_, Arc<AppState>>, data: String) -> Result<bool> {
     let home_srv = state.read_home_srv().await?;
     let tkn_email: TknEmail = serde_json::from_str(&data)?;
     let tkn_valid: BooleanResp = serde_json::from_value(super::req_json(
@@ -141,7 +141,7 @@ pub async fn get_forgotten_password_tkn_valid(state: tauri::State<'_, AppState>,
 }
 
 #[tauri::command]
-pub async fn forgotten_password_change_password(state: tauri::State<'_, AppState>, data: String) -> Result<()> {
+pub async fn forgotten_password_change_password(state: tauri::State<'_, Arc<AppState>>, data: String) -> Result<()> {
     let home_srv = state.read_home_srv().await?;
     let fp_change: ForgottenPasswordChange = serde_json::from_str(&data)?;
     super::req(
@@ -153,7 +153,7 @@ pub async fn forgotten_password_change_password(state: tauri::State<'_, AppState
 }
 
 #[tauri::command]
-pub async fn new_login(state: tauri::State<'_, AppState>, data: String) -> Result<()> {
+pub async fn new_login(state: tauri::State<'_, Arc<AppState>>, data: String) -> Result<()> {
     let home_srv = state.read_home_srv().await?;
     let login: LoginForm = serde_json::from_str(&data)?;
     let send = NewLogin {
@@ -173,7 +173,7 @@ pub async fn new_login(state: tauri::State<'_, AppState>, data: String) -> Resul
 }
 
 #[tauri::command]
-pub async fn reg_tkn_valid(state: tauri::State<'_, AppState>, data: String) -> Result<bool> {
+pub async fn reg_tkn_valid(state: tauri::State<'_, Arc<AppState>>, data: String) -> Result<bool> {
     let home_srv = state.read_home_srv().await?;
     let tkn: Tkn = serde_json::from_str(&data)?;
     let tkn_valid: BooleanResp = serde_json::from_value(super::req_json(

@@ -24,12 +24,12 @@ use rust_i18n::t;
 use tauri::{Manager, Window, WindowEvent};
 use tauri::WindowEvent::CloseRequested;
 
-
 fn main() -> Result<()> {
-    let appstate = appstate::AppState {
+    let appstate = Arc::new(appstate::AppState {
         appdata: config::appdata::read()?.into(),
-        mpv_handle: None.into()
-    };
+        mpv_id: None.into(),
+        mpv_tx: None.into()
+    });
     mpv::init_prelude()?;
     let mut ctx = tauri::generate_context!();
     tauri::Builder::default()
