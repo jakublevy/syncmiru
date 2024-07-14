@@ -52,7 +52,9 @@ export interface MainContextModel {
     subtitles: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>>
     setSubtitles: Dispatch<SetStateAction<MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>>>>,
     jwts: Map<PlaylistEntryId, string>,
-    setJwts: Dispatch<SetStateAction<Map<PlaylistEntryId, string>>>
+    setJwts: Dispatch<SetStateAction<Map<PlaylistEntryId, string>>>,
+    mpvRunning: boolean,
+    setMpvRunning: Dispatch<SetStateAction<boolean>>
 }
 
 export enum RoomConnectionState {

@@ -56,7 +56,9 @@ export const MainContext = createContext<MainContextModel>(
         subtitles: new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set),
         setSubtitles: (v) => {},
         jwts: new Map<PlaylistEntryId, string>(),
-        setJwts: (v) => {}
+        setJwts: (v) => {},
+        mpvRunning: false,
+        setMpvRunning: (v) => {}
     })
 
 export const useMainContext = () => useContext(MainContext)

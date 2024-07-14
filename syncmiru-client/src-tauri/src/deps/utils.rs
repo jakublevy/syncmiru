@@ -21,6 +21,10 @@ pub fn yt_dlp_exe() -> Result<PathBuf> {
     Ok(yt_dlp_dir()?.join(format!("yt-dlp{}", exe_suffix())))
 }
 
+pub fn prelude_path() -> Result<PathBuf> {
+    Ok(syncmiru_data_dir()?.join("prelude.lua"))
+}
+
 pub(super) fn delete_mpv() -> Result<()> {
     let mpv_dir = mpv_dir()?;
     if mpv_dir.exists() {

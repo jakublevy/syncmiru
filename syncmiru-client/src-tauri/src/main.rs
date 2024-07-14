@@ -10,7 +10,6 @@ mod deps;
 mod files;
 mod login;
 mod sys;
-mod player;
 mod license;
 mod mpv;
 mod hash;
@@ -19,6 +18,7 @@ mod hash;
 extern crate rust_i18n;
 rust_i18n::i18n!("locales");
 
+use std::sync::Arc;
 use result::Result;
 use rust_i18n::t;
 use tauri::{Manager, Window, WindowEvent};
@@ -26,7 +26,10 @@ use tauri::WindowEvent::CloseRequested;
 
 
 fn main() -> Result<()> {
-    let appstate = appstate::AppState { appdata: config::appdata::read()?.into() };
+    let appstate = appstate::AppState {
+        appdata: config::appdata::read()?.into(),
+        mpv_handle: None.into()
+    };
     mpv::init_prelude()?;
     let mut ctx = tauri::generate_context!();
     tauri::Builder::default()

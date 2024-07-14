@@ -5,6 +5,7 @@ use crate::result::Result;
 #[derive(Debug)]
 pub struct AppState {
     pub appdata: RwLock<AppData>,
+    pub mpv_handle: RwLock<Option<std::process::Child>>
 }
 
 impl AppState {
