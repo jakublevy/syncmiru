@@ -8,6 +8,7 @@ pub enum Interface {
     Seek { timestamp: u64 },
     ChangeAudio { aid: u64 },
     ChangeSubs { sid: u64 },
+    SetWindowSize { w: u32, h: u32 }
     // TODO:
 }
 

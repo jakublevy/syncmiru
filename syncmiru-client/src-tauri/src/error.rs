@@ -38,6 +38,9 @@ pub enum SyncmiruError {
     #[error("Serde JSON error")]
     SerdeJsonError(#[from] serde_json::Error),
 
+    #[error("WinApi error")]
+    WinApiError(#[from] windows::core::Error),
+
     #[error("URL missing version error")]
     LatestVersionMissingError,
 

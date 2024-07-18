@@ -111,27 +111,6 @@ pub async fn clear_jwt() -> Result<()> {
 pub async fn get_hwid_hash() -> Result<String> { sys::id_hashed() }
 
 #[tauri::command]
-pub async fn get_is_supported_window_system() -> Result<bool> {
-    if cfg!(target_family = "windows") {
-        Ok(true)
-    }
-    else if cfg!(target_family = "unix") {
-        if let Some(_) = env::var_os("WAYLAND_DISPLAY") {
-            Ok(false)
-        }
-        else if let Some(_) = env::var_os("DISPLAY") {
-            Ok(true)
-        }
-        else {
-            Ok(false)
-        }
-    }
-    else {
-        Ok(false)
-    }
-}
-
-#[tauri::command]
 pub async fn get_mpv_win_detached(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
     let appdata = state.appdata.read().await;
     Ok(appdata.mpv_win_detached)

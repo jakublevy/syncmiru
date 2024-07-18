@@ -13,6 +13,7 @@ mod sys;
 mod license;
 mod mpv;
 mod hash;
+mod window;
 
 #[macro_use]
 extern crate rust_i18n;
@@ -27,8 +28,9 @@ use tauri::WindowEvent::CloseRequested;
 fn main() -> Result<()> {
     let appstate = Arc::new(appstate::AppState {
         appdata: config::appdata::read()?.into(),
-        mpv_id: None.into(),
-        mpv_tx: None.into()
+        mpv_wid: None.into(),
+        mpv_stop_tx: None.into(),
+        mpv_ipc_tx: None.into(),
     });
     mpv::init_prelude()?;
     let mut ctx = tauri::generate_context!();
@@ -49,7 +51,6 @@ fn main() -> Result<()> {
             config::frontend::get_jwt,
             config::frontend::clear_jwt,
             config::frontend::get_hwid_hash,
-            config::frontend::get_is_supported_window_system,
             config::frontend::get_mpv_win_detached,
             config::frontend::set_mpv_win_detached,
             deps::frontend::get_deps_state,
@@ -73,6 +74,7 @@ fn main() -> Result<()> {
             license::open_license_window,
             mpv::frontend::mpv_start,
             mpv::frontend::mpv_quit,
+            mpv::frontend::get_is_supported_window_system,
         ])
         .on_window_event(handle_window_event)
         .manage(appstate)

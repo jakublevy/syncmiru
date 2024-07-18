@@ -1,12 +1,13 @@
 pub mod frontend;
-mod ipc;
+pub mod ipc;
 mod window;
 
 use std::fs;
 use std::ops::Deref;
 use std::path::PathBuf;
 use std::sync::Arc;
-use std::time::{SystemTime};
+use std::thread::sleep;
+use std::time::{Duration, SystemTime};
 use anyhow::anyhow;
 use tauri::{Manager, State};
 use tokio::io::AsyncWriteExt;
@@ -55,17 +56,21 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
         .arg("--osd-align-y=bottom")
         .arg("--osd-margin-y=100")
         .arg("--fullscreen=no")
-        .arg("--geometry=1x1+1+1")
+        .arg("--window-minimized=no")
+        .arg("--window-maximized=no")
+    //    .arg("--geometry=1x1+1+1")
         .arg("--keep-open=yes")
         .spawn()?;
 
+    let pid = process_handle.id().expect("missing process id");
+    let mpv_wid_opt = window::pid2wid(pid);
     {
-        let mut mpv_id_wl = state.mpv_id.write().await;
-        *mpv_id_wl = Some(process_handle.id().expect("missing window handle ID"));
+        let mut mpv_wid_wl = state.mpv_wid.write().await;
+        *mpv_wid_wl = Some(mpv_wid_opt.expect("missing mpv window"));
     }
     let (tx, rx) = oneshot::channel::<()>();
     {
-        let mut mpv_tx_wl = state.mpv_tx.write().await;
+        let mut mpv_tx_wl = state.mpv_stop_tx.write().await;
         *mpv_tx_wl = Some(tx);
     }
     let state_for_process = state.clone();
@@ -73,7 +78,7 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
        tokio::select! {
            result = process_handle.wait() => match result {
                Ok(_) => {
-                   let mut mpv_tx_wl = state_for_process.mpv_tx.write().await;
+                   let mut mpv_tx_wl = state_for_process.mpv_stop_tx.write().await;
                    mpv_tx_wl.take();
                    window.emit("mpv-running", false).expect("tauri error")
                },
@@ -87,7 +92,7 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
 }
 
 pub async fn stop_process(state: &Arc<AppState>, window: tauri::Window) -> Result<()> {
-    let mut mpv_tx_rl = state.mpv_tx.write().await;
+    let mut mpv_tx_rl = state.mpv_stop_tx.write().await;
     let tx_opt= mpv_tx_rl.take();
     if let Some(tx) = tx_opt {
         tx.send(()).map_err(|e| anyhow!("killing process failed"))?;
