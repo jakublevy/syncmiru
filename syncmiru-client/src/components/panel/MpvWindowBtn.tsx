@@ -4,20 +4,16 @@ import Eject from "@components/svg/Eject.tsx";
 import {Tooltip} from "react-tooltip";
 import {useTranslation} from "react-i18next";
 import {useMainContext} from "@hooks/useMainContext.ts";
-import {useChangeMpvWinDetached} from "@hooks/useMpvWinDetached.ts";
 import {useIsSupportedWindowSystem} from "@hooks/useIsSupportedWindowSystem.ts";
 import DockBottom from "@components/svg/DockBottom.tsx";
 
 export default function MpvWindowBtn(): ReactElement {
     const {mpvWinDetached, setMpvWinDetached} = useMainContext()
     const isSupportedWindowSystem = useIsSupportedWindowSystem()
-    const changeMpvWinDetached = useChangeMpvWinDetached()
     const {t} = useTranslation()
 
     function mpvWindowBtnClicked() {
-        changeMpvWinDetached(!mpvWinDetached).then(() => {
-            setMpvWinDetached(!mpvWinDetached)
-        })
+        setMpvWinDetached(!mpvWinDetached)
     }
 
     if (!isSupportedWindowSystem) {

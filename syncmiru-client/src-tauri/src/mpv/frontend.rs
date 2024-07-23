@@ -12,7 +12,12 @@ use crate::window::WindowExt;
 
 #[tauri::command]
 pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
-    if !state.mpv_is_running().await {
+    let mpv_running_rl = state.mpv_stop_tx.read().await;
+    let mpv_running = mpv_running_rl.is_some();
+
+    if !mpv_running {
+        drop(mpv_running_rl);
+
         let pipe_id = gen_pipe_id();
         start_process(&state, &pipe_id, window.clone()).await?;
 
@@ -30,19 +35,14 @@ pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Wi
             mpv_detached = appdata.mpv_win_detached;
         }
 
-        let mpv_wid = state.read_mpv_wid().await;
+        let mpv_wid_rl = state.mpv_wid.read().await;
+        let mpv_wid = mpv_wid_rl.unwrap();
+
         if mpv_detached {
             // TODO: set normal window size 960x480 (or 968x507) using ipc
         }
         else {
-            let syncmiru_id = window
-                .native_id()?
-                .context("could not get tauri window id, possibly broken window system")?;
-
-            window::hide_borders(mpv_wid);
-            window::reparent(mpv_wid, syncmiru_id)?;
-            window.emit("get-mpv-wrapper-size", {})?;
-            // TODO: notify js, it will call handler with dimensions and the handler will call set position
+            window::attach(&window, mpv_wid)?;
         }
 
         window.emit("mpv-running", true)?;
@@ -63,7 +63,9 @@ pub async fn get_is_supported_window_system() -> Result<bool> {
 
 #[tauri::command]
 pub async fn mpv_wrapper_size_changed(state: tauri::State<'_, Arc<AppState>>, wrapper_size: HtmlElementRect) -> Result<()> {
-    let mpv_wid = state.read_mpv_wid().await;
+    let mpv_wid_rl = state.mpv_wid.read().await;
+    let mpv_wid = mpv_wid_rl.unwrap();
+
     window::reposition(mpv_wid, &wrapper_size)?;
     Ok(())
 }

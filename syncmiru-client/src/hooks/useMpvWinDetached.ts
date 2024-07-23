@@ -11,6 +11,6 @@ const mpvWinDetached = (): Promise<boolean> => {
 
 export function useChangeMpvWinDetached(): (mpvWinDetached: boolean) => Promise<void> {
     return (mpvWinDetached: boolean): Promise<void> => {
-        return invoke('set_mpv_win_detached', {mpvWinDetached: mpvWinDetached})
+        return invoke('set_mpv_win_detached', {mpvWinDetachReq: mpvWinDetached})
     }
 }

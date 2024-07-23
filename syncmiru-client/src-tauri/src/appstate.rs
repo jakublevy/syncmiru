@@ -18,14 +18,4 @@ impl AppState {
         let home_srv = appdata_lock.home_srv.clone().unwrap_or("".to_string());
         Ok(home_srv)
     }
-
-    pub async fn read_mpv_wid(&self) -> usize {
-        let mpv_wid_rl = self.mpv_wid.read().await;
-        mpv_wid_rl.unwrap()
-    }
-
-    pub async fn mpv_is_running(&self) -> bool {
-        let mpv_tx_rl = self.mpv_stop_tx.read().await;
-        mpv_tx_rl.is_some()
-    }
 }

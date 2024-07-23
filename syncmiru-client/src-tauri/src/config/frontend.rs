@@ -4,7 +4,7 @@ use crate::appstate::AppState;
 use crate::config::{appdata, jwt};
 use crate::config::{Language};
 use crate::result::Result;
-use crate::sys;
+use crate::{mpv, sys};
 
 #[tauri::command]
 pub async fn get_first_run_seen(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
@@ -117,10 +117,24 @@ pub async fn get_mpv_win_detached(state: tauri::State<'_, Arc<AppState>>) -> Res
 }
 
 #[tauri::command]
-pub async fn set_mpv_win_detached(state: tauri::State<'_, Arc<AppState>>, mpv_win_detached: bool) -> Result<()> {
+pub async fn set_mpv_win_detached(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window, mpv_win_detach_req: bool) -> Result<()> {
+    let mpv_running_rl = state.mpv_stop_tx.read().await;
+    let mpv_running = mpv_running_rl.is_some();
+
+    if mpv_running {
+        let mpv_wid_rl = state.mpv_wid.read().await;
+        let mpv_wid = mpv_wid_rl.unwrap();
+
+        if mpv_win_detach_req {
+            mpv::window::detach(mpv_wid)?;
+        }
+        else {
+            mpv::window::attach(&window, mpv_wid)?;
+        }
+    }
     {
         let mut appdata = state.appdata.write().await;
-        appdata.mpv_win_detached = mpv_win_detached;
+        appdata.mpv_win_detached = mpv_win_detach_req;
     }
     let appdata = state.appdata.read().await;
     appdata::write(&appdata)?;

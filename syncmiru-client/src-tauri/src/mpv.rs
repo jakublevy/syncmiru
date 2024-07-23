@@ -1,6 +1,6 @@
 pub mod frontend;
 pub mod ipc;
-mod window;
+pub mod window;
 
 use std::fs;
 use std::ops::Deref;

@@ -7,10 +7,12 @@ import {disconnectFromRoom, forceDisconnectFromRoom} from "src/utils/room.ts";
 import {RoomConnectionState} from "@models/context.ts";
 import {invoke} from "@tauri-apps/api/core";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
+import {useChangeMpvWinDetached} from "@hooks/useMpvWinDetached.ts";
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
     const {t} = useTranslation()
+    const changeMpvWinDetached = useChangeMpvWinDetached()
     const mpvWrapperRef: React.MutableRefObject<HTMLDivElement | null> = useRef(null)
     const connectedToRoom = ctx.currentRid != null && ctx.roomConnection === RoomConnectionState.Established
 
@@ -24,7 +26,7 @@ export default function Mpv(p: Props): ReactElement {
             ctx.setMpvRunning(e.payload)
         }))
 
-        unlisten.push(listen<void>('get-mpv-wrapper-size', (e: Event<void>) => {
+        unlisten.push(listen<void>('mpv-resize', (e: Event<void>) => {
             mpvResize()
         }))
 
@@ -37,6 +39,13 @@ export default function Mpv(p: Props): ReactElement {
         if(ctx.mpvRunning)
             mpvResize()
     }, [p.mpvResizeVar, mpvWrapperRef.current]);
+
+    useEffect(() => {
+        changeMpvWinDetached(ctx.mpvWinDetached)
+            .catch(() => {
+                ctx.setMpvWinDetached(!ctx.mpvWinDetached)
+            })
+    }, [ctx.mpvWinDetached]);
 
     function mpvResize() {
         const mpvWrapper = mpvWrapperRef.current as HTMLDivElement

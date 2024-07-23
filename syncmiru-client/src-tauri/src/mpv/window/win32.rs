@@ -3,11 +3,11 @@ use std::ops::{BitAnd, BitOr};
 use std::thread::sleep;
 use std::time::Duration;
 use windows::Win32::Foundation::{BOOL, HWND, LPARAM};
-use windows::Win32::UI::WindowsAndMessaging::{EnumWindows, GetWindowLongPtrW, GetWindowThreadProcessId, GWL_STYLE, IsWindowVisible, SetParent, SetWindowLongPtrW, SetWindowPos, SWP_NOACTIVATE, SWP_NOZORDER, WINDOW_STYLE, WS_BORDER, WS_CAPTION, WS_EX_NOACTIVATE, WS_THICKFRAME};
+use windows::Win32::UI::WindowsAndMessaging::{EnumWindows, GetWindowLongPtrW, GetWindowThreadProcessId, GWL_STYLE, HWND_TOP, IsWindowVisible, SetForegroundWindow, SetParent, SetWindowLongPtrW, SetWindowPos, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, WINDOW_STYLE, WS_BORDER, WS_CAPTION, WS_THICKFRAME};
 use crate::mpv::window::HtmlElementRect;
 use crate::result::Result;
 
-pub fn hide_borders(mpv_wid: usize) {
+pub(super) fn hide_borders(mpv_wid: usize) {
     let hwnd = id2hwnd(mpv_wid);
     unsafe {
         let style = WINDOW_STYLE(GetWindowLongPtrW(hwnd, GWL_STYLE) as u32);
@@ -16,7 +16,16 @@ pub fn hide_borders(mpv_wid: usize) {
     }
 }
 
-pub fn reparent(mpv_wid: usize, parent_wid: usize) -> Result<()> {
+pub(super) fn show_borders(mpv_wid: usize) {
+    let hwnd = id2hwnd(mpv_wid);
+    unsafe {
+        let style = WINDOW_STYLE(GetWindowLongPtrW(hwnd, GWL_STYLE) as u32);
+        let new_style = style.bitor(WS_BORDER.bitor(WS_CAPTION).bitor(WS_THICKFRAME));
+        SetWindowLongPtrW(hwnd, GWL_STYLE, new_style.0 as isize);
+    }
+}
+
+pub(super) fn reparent(mpv_wid: usize, parent_wid: usize) -> Result<()> {
     let mpv = id2hwnd(mpv_wid);
     let parent = id2hwnd(parent_wid);
     Ok(unsafe {
@@ -36,6 +45,21 @@ pub fn reposition(mpv_wid: usize, container_rect: &HtmlElementRect) -> Result<()
             container_rect.height.round() as i32,
             SWP_NOZORDER | SWP_NOACTIVATE
         )?;
+    })
+}
+
+pub(super) fn unparent(mpv_wid: usize) -> Result<()> {
+    let hwnd = id2hwnd(mpv_wid);
+    Ok(unsafe {
+        SetParent(hwnd, HWND::default())?;
+    })
+}
+
+pub(super) fn focus(mpv_wid: usize) -> Result<()> {
+    let hwnd = id2hwnd(mpv_wid);
+    Ok(unsafe {
+        let _ = SetForegroundWindow(hwnd);
+        SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE)?;
     })
 }
 
