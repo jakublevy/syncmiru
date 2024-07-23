@@ -75,6 +75,7 @@ fn main() -> Result<()> {
             mpv::frontend::mpv_start,
             mpv::frontend::mpv_quit,
             mpv::frontend::get_is_supported_window_system,
+            mpv::frontend::mpv_wrapper_size_changed
         ])
         .on_window_event(handle_window_event)
         .manage(appstate)

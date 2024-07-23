@@ -8,7 +8,6 @@ use crate::mpv::window::HtmlElementRect;
 use crate::result::Result;
 
 pub fn hide_borders(mpv_wid: usize) {
-    println!("hiding borders of window id = {}", mpv_wid);
     let hwnd = id2hwnd(mpv_wid);
     unsafe {
         let style = WINDOW_STYLE(GetWindowLongPtrW(hwnd, GWL_STYLE) as u32);
@@ -61,6 +60,7 @@ pub fn pid2wid(pid: u32) -> Option<usize> {
     }
 
     unsafe {
+        FOUND_HWND = None;
         while FOUND_HWND.is_none() {
             EnumWindows(Some(enum_windows_proc), LPARAM(pid as isize)).ok();
             sleep(Duration::from_millis(10));
