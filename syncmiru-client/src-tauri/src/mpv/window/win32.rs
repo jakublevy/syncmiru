@@ -1,31 +1,33 @@
 use std::ffi::c_void;
 use std::ops::{BitAnd, BitOr};
-use std::thread::sleep;
+use std::sync::Arc;
 use std::time::Duration;
+use tokio::time::sleep;
 use windows::Win32::Foundation::{BOOL, HWND, LPARAM};
 use windows::Win32::UI::WindowsAndMessaging::{EnumWindows, GetWindowLongPtrW, GetWindowThreadProcessId, GWL_STYLE, HWND_TOP, IsWindowVisible, SetForegroundWindow, SetParent, SetWindowLongPtrW, SetWindowPos, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, WINDOW_STYLE, WS_BORDER, WS_CAPTION, WS_THICKFRAME};
+use crate::appstate::AppState;
 use crate::mpv::window::HtmlElementRect;
 use crate::result::Result;
 
-pub(super) fn hide_borders(mpv_wid: usize) {
+pub(super) async fn hide_borders(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
-    unsafe {
+    Ok(unsafe {
         let style = WINDOW_STYLE(GetWindowLongPtrW(hwnd, GWL_STYLE) as u32);
         let new_style = style.bitand(!WS_BORDER.bitor(WS_CAPTION).bitor(WS_THICKFRAME));
         SetWindowLongPtrW(hwnd, GWL_STYLE, new_style.0 as isize);
-    }
+    })
 }
 
-pub(super) fn show_borders(mpv_wid: usize) {
+pub(super) async fn show_borders(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
-    unsafe {
+    Ok(unsafe {
         let style = WINDOW_STYLE(GetWindowLongPtrW(hwnd, GWL_STYLE) as u32);
         let new_style = style.bitor(WS_BORDER.bitor(WS_CAPTION).bitor(WS_THICKFRAME));
         SetWindowLongPtrW(hwnd, GWL_STYLE, new_style.0 as isize);
-    }
+    })
 }
 
-pub(super) fn reparent(mpv_wid: usize, parent_wid: usize) -> Result<()> {
+pub(super) async fn reparent(state: &Arc<AppState>, mpv_wid: usize, parent_wid: usize) -> Result<()> {
     let mpv = id2hwnd(mpv_wid);
     let parent = id2hwnd(parent_wid);
     Ok(unsafe {
@@ -33,7 +35,7 @@ pub(super) fn reparent(mpv_wid: usize, parent_wid: usize) -> Result<()> {
     })
 }
 
-pub fn reposition(mpv_wid: usize, container_rect: &HtmlElementRect) -> Result<()> {
+pub async fn reposition(state: &Arc<AppState>, mpv_wid: usize, container_rect: &HtmlElementRect) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
     Ok(unsafe {
         SetWindowPos(
@@ -48,14 +50,14 @@ pub fn reposition(mpv_wid: usize, container_rect: &HtmlElementRect) -> Result<()
     })
 }
 
-pub(super) fn unparent(mpv_wid: usize) -> Result<()> {
+pub(super) fn unparent(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
     Ok(unsafe {
         SetParent(hwnd, HWND::default())?;
     })
 }
 
-pub(super) fn focus(mpv_wid: usize) -> Result<()> {
+pub(super) async fn focus(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
     Ok(unsafe {
         let _ = SetForegroundWindow(hwnd);
@@ -63,7 +65,7 @@ pub(super) fn focus(mpv_wid: usize) -> Result<()> {
     })
 }
 
-pub fn pid2wid(pid: u32) -> Option<usize> {
+pub async fn pid2wid(state: &Arc<AppState>, pid: u32) -> Result<Option<usize>> {
     static mut FOUND_HWND: Option<HWND> = None;
     unsafe extern "system" fn enum_windows_proc(hwnd: HWND, l_param: LPARAM) -> BOOL {
         let mut process_id = 0u32;
@@ -83,14 +85,14 @@ pub fn pid2wid(pid: u32) -> Option<usize> {
         }
     }
 
-    unsafe {
+    Ok(unsafe {
         FOUND_HWND = None;
         while FOUND_HWND.is_none() {
             EnumWindows(Some(enum_windows_proc), LPARAM(pid as isize)).ok();
-            sleep(Duration::from_millis(10));
+            sleep(Duration::from_millis(10)).await;
         }
         FOUND_HWND.map(|x|x.0 as usize)
-    }
+    })
 }
 
 fn id2hwnd(mpv_id: usize) -> HWND {

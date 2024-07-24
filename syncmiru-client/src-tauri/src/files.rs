@@ -18,6 +18,12 @@ pub fn syncmiru_config_ini() -> Result<PathBuf> {
     Ok(syncmiru_config_dir()?.join(constants::CONFIG_INI_FILE_NAME))
 }
 
+pub fn create_app_dirs() -> Result<()> {
+    fs::create_dir_all(syncmiru_config_dir()?)?;
+    fs::create_dir_all(syncmiru_data_dir()?)?;
+    Ok(())
+}
+
 pub fn delete_tmp() -> Result<()> {
     let data_dir = syncmiru_data_dir()?;
     let dir_read = fs::read_dir(data_dir);

@@ -1,22 +1,23 @@
 use std::env;
+use gtk::prelude::WidgetExt;
 use crate::result::Result;
 
 pub trait WindowExt {
-    fn native_id(&self) -> Result<Option<usize>>;
+    async fn native_id(&self) -> Result<Option<usize>>;
 }
 
 impl WindowExt for tauri::Window {
-    fn native_id(&self) -> Result<Option<usize>> {
+    async fn native_id(&self) -> Result<Option<usize>> {
         cfg_if::cfg_if!{
             if #[cfg(target_family = "windows")] {
                 Ok(Some(self.hwnd()?.0 as usize))
             }
             else {
-                if is_supported_window_system()? {
+                if is_supported_window_system().await? {
                     let gtk_window = self.gtk_window()?;
                     let window_opt = gtk_window.window();
                     let window = window_opt.unwrap();
-                    Ok(Some(unsafe {gdk_x11_window_get_xid(window)}))
+                    Ok(Some(unsafe {gdk_x11_window_get_xid(window) as usize}))
                 }
                 else {
                     Ok(None)

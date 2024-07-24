@@ -38,8 +38,21 @@ pub enum SyncmiruError {
     #[error("Serde JSON error")]
     SerdeJsonError(#[from] serde_json::Error),
 
+    #[cfg(target_family = "windows")]
     #[error("WinApi error")]
     WinApiError(#[from] windows::core::Error),
+
+    #[cfg(target_family = "unix")]
+    #[error("X11rb connect error")]
+    X11rbConnectError(#[from] x11rb::errors::ConnectError),
+
+    #[cfg(target_family = "unix")]
+    #[error("X11rb connection error")]
+    X11rbConnectionError(#[from] x11rb::errors::ConnectionError),
+
+    #[cfg(target_family = "unix")]
+    #[error("X11rb reply error")]
+    X11rbReplyError(#[from] x11rb::errors::ReplyError),
 
     #[error("URL missing version error")]
     LatestVersionMissingError,

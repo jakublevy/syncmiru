@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use anyhow::Context;
 use tauri::Manager;
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::{Sender, Receiver};
@@ -8,7 +7,6 @@ use crate::appstate::AppState;
 use crate::mpv::{gen_pipe_id, ipc, start_process, stop_process, window};
 use crate::mpv::window::HtmlElementRect;
 use crate::result::Result;
-use crate::window::WindowExt;
 
 #[tauri::command]
 pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
@@ -42,7 +40,7 @@ pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Wi
             // TODO: set normal window size 960x480 (or 968x507) using ipc
         }
         else {
-            window::attach(&window, mpv_wid)?;
+            window::attach(&state, &window, mpv_wid).await?;
         }
 
         window.emit("mpv-running", true)?;
@@ -66,7 +64,7 @@ pub async fn mpv_wrapper_size_changed(state: tauri::State<'_, Arc<AppState>>, wr
     let mpv_wid_rl = state.mpv_wid.read().await;
     let mpv_wid = mpv_wid_rl.unwrap();
 
-    window::reposition(mpv_wid, &wrapper_size)?;
+    window::reposition(&state, mpv_wid, &wrapper_size).await?;
     Ok(())
 }
 

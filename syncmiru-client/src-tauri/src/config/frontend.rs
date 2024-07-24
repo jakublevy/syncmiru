@@ -126,10 +126,10 @@ pub async fn set_mpv_win_detached(state: tauri::State<'_, Arc<AppState>>, window
         let mpv_wid = mpv_wid_rl.unwrap();
 
         if mpv_win_detach_req {
-            mpv::window::detach(mpv_wid)?;
+            mpv::window::detach(&state, mpv_wid).await?;
         }
         else {
-            mpv::window::attach(&window, mpv_wid)?;
+            mpv::window::attach(&state, &window, mpv_wid).await?;
         }
     }
     {
