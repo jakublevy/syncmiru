@@ -1,9 +1,11 @@
 use tokio::sync::{RwLock};
 use tokio::sync::mpsc::Sender;
-use x11rb::rust_connection::RustConnection;
 use crate::config::appdata::AppData;
 use crate::mpv;
 use crate::result::Result;
+
+#[cfg(target_family = "unix")]
+use x11rb::rust_connection::RustConnection;
 
 #[derive(Debug)]
 pub struct AppState {

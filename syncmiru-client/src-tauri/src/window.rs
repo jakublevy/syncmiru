@@ -1,6 +1,8 @@
 use std::env;
-use gtk::prelude::WidgetExt;
 use crate::result::Result;
+
+#[cfg(target_family = "unix")]
+use gtk::prelude::WidgetExt;
 
 pub trait WindowExt {
     async fn native_id(&self) -> Result<Option<usize>>;

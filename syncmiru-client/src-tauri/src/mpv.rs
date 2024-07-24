@@ -64,8 +64,10 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
 
     let pid = process_handle.id().expect("missing process id");
 
-    if cfg!(target_family = "unix") {
-        window::init_connection(state).await?;
+    cfg_if::cfg_if! {
+        if #[cfg(target_family = "unix")] {
+            window::init_connection(state).await?;
+        }
     }
 
     let mpv_wid_opt = window::pid2wid(state, pid).await?;
