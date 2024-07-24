@@ -68,7 +68,25 @@ pub async fn reposition(state: &Arc<AppState>, mpv_wid: usize, container_rect: &
     Ok(())
 }
 
-pub(super) fn unparent(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+pub(super) async fn unparent(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+    let conn_rl = state.x11_conn.read().await;
+    let conn = conn_rl.as_ref().unwrap();
+    let mpv_window = id2window(mpv_wid);
+
+    let mpv_reply = conn.query_tree(mpv_window)?.reply()?;
+    let parent_window = mpv_reply.parent;
+    let parent_reply = conn.query_tree(parent_window)?.reply()?;
+    let root = parent_reply.root;
+
+    let child_to_old_parent = conn.translate_coordinates(mpv_window, parent_window, 0, 0)?.reply()?;
+    let old_parent_to_root = conn.translate_coordinates(parent_window, root, 0, 0)?.reply()?;
+
+    let new_child_x = child_to_old_parent.dst_x + old_parent_to_root.dst_y;
+    let new_child_y = child_to_old_parent.dst_y + old_parent_to_root.dst_y;
+
+    reparent(state, mpv_window as usize, root as usize).await?;
+    set_position(conn, mpv_window, new_child_x as i32, new_child_y as i32)?;
+
     Ok(())
 }
 
@@ -92,6 +110,12 @@ fn set_decoration(conn: &RustConnection, window: xproto::Window, motif_hints: &[
         motif_hints
     )?;
     change_prop_cookie.check()?;
+    Ok(())
+}
+
+fn set_position(conn: &RustConnection, window: xproto::Window, x: i32, y: i32) -> Result<()> {
+    let cfg = ConfigureWindowAux::new().x(x).y(y);
+    conn.configure_window(window, &cfg)?.check()?;
     Ok(())
 }
 

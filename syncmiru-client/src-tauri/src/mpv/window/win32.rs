@@ -50,7 +50,7 @@ pub async fn reposition(state: &Arc<AppState>, mpv_wid: usize, container_rect: &
     })
 }
 
-pub(super) fn unparent(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+pub(super) async fn unparent(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
     Ok(unsafe {
         SetParent(hwnd, HWND::default())?;
