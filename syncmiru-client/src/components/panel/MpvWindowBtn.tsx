@@ -13,7 +13,7 @@ export default function MpvWindowBtn(): ReactElement {
     const {t} = useTranslation()
 
     function mpvWindowBtnClicked() {
-        setMpvWinDetached(!mpvWinDetached)
+        setMpvWinDetached((p) => !p)
     }
 
     if (!isSupportedWindowSystem) {

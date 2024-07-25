@@ -68,3 +68,28 @@ pub async fn mpv_wrapper_size_changed(state: tauri::State<'_, Arc<AppState>>, wr
     Ok(())
 }
 
+#[tauri::command]
+pub async fn mpv_reposition_to_small(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
+    let mpv_wid_rl = state.mpv_wid.read().await;
+    let mpv_wid = mpv_wid_rl.unwrap();
+
+    let size = window.inner_size()?;
+    let offset = 10.0;
+    let x = size.width as f64 / 2.0 + 384.0 + offset;
+    let w = size.width as f64 - x - 2.0*offset;
+    let h = w / 16.0 * 9.0;
+    let y = size.height as f64 - offset - h;
+    // let x = 0.83 * size.width as f64;
+    // let y = 0.83 * size.height as f64;
+    // let mx = 0.02 * size.width as f64;
+    // let my = 0.02 * size.height as f64;
+    // let w = size.width as f64 - x - mx;
+    // let h = size.height as f64 - y - my;
+    window::reposition(&state, mpv_wid, &HtmlElementRect {
+        x,
+        y,
+        width: w,
+        height: h,
+    }).await?;
+    Ok(())
+}

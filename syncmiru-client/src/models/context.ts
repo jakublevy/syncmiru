@@ -54,7 +54,13 @@ export interface MainContextModel {
     jwts: Map<PlaylistEntryId, string>,
     setJwts: Dispatch<SetStateAction<Map<PlaylistEntryId, string>>>,
     mpvRunning: boolean,
-    setMpvRunning: Dispatch<SetStateAction<boolean>>
+    setMpvRunning: Dispatch<SetStateAction<boolean>>,
+    modalShown: boolean,
+    setModalShown: Dispatch<SetStateAction<boolean>>,
+    settingsShown: boolean,
+    setSettingsShown: Dispatch<SetStateAction<boolean>>
+    mpvShowSmall: boolean
+    setMpvShowSmall: Dispatch<SetStateAction<boolean>>
 }
 
 export enum RoomConnectionState {

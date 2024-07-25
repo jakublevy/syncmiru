@@ -42,12 +42,8 @@ pub async fn detach(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
 
 #[derive(Deserialize, Debug)]
 pub struct HtmlElementRect {
-    x: f64,
-    y: f64,
-    top: f64,
-    right: f64,
-    bottom: f64,
-    left: f64,
-    width: f64,
-    height: f64,
+    pub x: f64,
+    pub y: f64,
+    pub width: f64,
+    pub height: f64,
 }

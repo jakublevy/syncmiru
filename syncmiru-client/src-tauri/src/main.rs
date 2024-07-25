@@ -25,7 +25,8 @@ use rust_i18n::t;
 use tauri::{Manager, Window, WindowEvent};
 use tauri::WindowEvent::CloseRequested;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let appstate = Arc::new(appstate::AppState {
         appdata: config::appdata::read()?.into(),
         mpv_wid: None.into(),
@@ -78,9 +79,14 @@ fn main() -> Result<()> {
             mpv::frontend::mpv_start,
             mpv::frontend::mpv_quit,
             mpv::frontend::get_is_supported_window_system,
-            mpv::frontend::mpv_wrapper_size_changed
+            mpv::frontend::mpv_wrapper_size_changed,
+            mpv::frontend::mpv_reposition_to_small
         ])
-        .on_window_event(handle_window_event)
+        .on_window_event(move |window: &Window, event: &WindowEvent| {
+            let w = window.clone();
+            let e = event.clone();
+            tokio::task::spawn(handle_window_event(w, e));
+        })
         .manage(appstate)
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_theme::init(ctx.config_mut()))
@@ -93,11 +99,15 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn handle_window_event(window: &Window, event: &WindowEvent) {
+async fn handle_window_event(window: Window, event: WindowEvent) {
     match event {
         CloseRequested { .. } => {
             if window.label() == "main" {
-                files::delete_tmp().expect("Deleting tmp files failed")
+                let state = window.app_handle().state();
+                mpv::stop_process(&state, window.clone())
+                    .await
+                    .expect("stopping mpv process failed");
+                files::delete_tmp().expect("Deleting tmp files failed");
             }
         }
         _ => {}

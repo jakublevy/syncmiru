@@ -1,4 +1,4 @@
-import {ReactElement} from "react";
+import {ReactElement, useEffect} from "react";
 import {NavLink} from "@components/widgets/Button.tsx";
 import Card from "@components/widgets/Card.tsx";
 import {useLocation} from "wouter";
@@ -8,10 +8,17 @@ import {navigateToUserSettingsAppearance} from "src/utils/navigate.ts";
 import {useTranslation} from "react-i18next";
 import Devices from "@components/user/Devices.tsx";
 import About from "@components/user/About.tsx";
+import {useMainContext} from "@hooks/useMainContext.ts";
 
 export default function UserSettings(): ReactElement {
     const [location, navigate] = useLocation()
     const {t} = useTranslation()
+    const {setSettingsShown} = useMainContext()
+
+    useEffect(() => {
+        setSettingsShown(true)
+        return () => { setSettingsShown(false) }
+    }, []);
 
     function isActive(link: Link) {
         return location === link

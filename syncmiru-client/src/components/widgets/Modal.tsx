@@ -1,11 +1,15 @@
-import {ReactElement, ReactNode} from 'react'
+import {ReactElement, ReactNode, useEffect} from 'react'
 import {Dialog} from '@headlessui/react'
 import {BtnDanger, BtnSecondary, CloseBtn} from "@components/widgets/Button.tsx";
 import {useTranslation} from "react-i18next";
 import {useMainContext} from "@hooks/useMainContext.ts";
 
 export function Modal(p: ModalProps): ReactElement {
-    const {reconnecting} = useMainContext()
+    const {reconnecting, setModalShown} = useMainContext()
+
+    useEffect(() => {
+        setModalShown(p.open)
+    }, [p.open]);
 
     return (
         <Dialog

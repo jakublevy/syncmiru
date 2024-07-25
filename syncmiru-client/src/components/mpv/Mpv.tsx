@@ -27,18 +27,28 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<void>('mpv-resize', (e: Event<void>) => {
-            mpvResize()
+            if(!ctx.mpvWinDetached)
+                mpvResize()
+        }))
+
+        unlisten.push(listen<Record<"width" | "height", number>>('tauri://resize', (e) => {
+            if(ctx.mpvRunning && !ctx.mpvWinDetached) {
+                if(!ctx.mpvShowSmall)
+                    mpvResize()
+                else
+                    mpvRepositionToSmall()
+            }
         }))
 
         return () => {
             unlisten.forEach(x => x.then((unsub) => unsub()))
         }
-    }, [ctx.currentRid, ctx.roomConnection]);
+    }, [ctx.currentRid, ctx.roomConnection, ctx.mpvWinDetached, ctx.mpvShowSmall, ctx.mpvRunning]);
 
     useEffect(() => {
-        if(ctx.mpvRunning)
+        if(ctx.mpvRunning && !ctx.mpvWinDetached && !ctx.mpvShowSmall)
             mpvResize()
-    }, [p.mpvResizeVar, mpvWrapperRef.current]);
+    }, [p.mpvResizeVar, mpvWrapperRef.current, ctx.mpvRunning, ctx.mpvShowSmall]);
 
     useEffect(() => {
         changeMpvWinDetached(ctx.mpvWinDetached)
@@ -47,10 +57,32 @@ export default function Mpv(p: Props): ReactElement {
             })
     }, [ctx.mpvWinDetached]);
 
+    useEffect(() => {
+        if(ctx.mpvRunning && !ctx.mpvWinDetached) {
+            if (ctx.modalShown || ctx.settingsShown) {
+                ctx.setMpvShowSmall(true)
+                mpvRepositionToSmall()
+            } else {
+                ctx.setMpvShowSmall(false)
+                mpvResize()
+            }
+        }
+    }, [ctx.modalShown, ctx.settingsShown, ctx.mpvRunning, ctx.mpvWinDetached]);
+
+
     function mpvResize() {
         const mpvWrapper = mpvWrapperRef.current as HTMLDivElement
         const rect = mpvWrapper.getBoundingClientRect()
+
         invoke('mpv_wrapper_size_changed', {wrapperSize: rect})
+            .catch(() => {
+                showPersistentErrorAlert(t('mpv-resize-error'))
+                forceDisconnectFromRoom(ctx)
+            })
+    }
+
+    function mpvRepositionToSmall() {
+        invoke('mpv_reposition_to_small', {})
             .catch(() => {
                 showPersistentErrorAlert(t('mpv-resize-error'))
                 forceDisconnectFromRoom(ctx)

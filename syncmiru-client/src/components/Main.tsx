@@ -80,6 +80,9 @@ export default function Main(): ReactElement {
     const [subtitles, setSubtitles] = useState<MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>>>(new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set))
     const [jwts, setJwts] = useState<Map<PlaylistEntryId, string>>(new Map<PlaylistEntryId, string>())
     const [mpvRunning, setMpvRunning] = useState<boolean>(false)
+    const [modalShown, setModalShown] = useState<boolean>(false)
+    const [settingsShown, setSettingsShown] = useState<boolean>(false)
+    const [mpvShowSmall, setMpvShowSmall] = useState<boolean>(false)
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -279,7 +282,13 @@ export default function Main(): ReactElement {
                     jwts: jwts,
                     setJwts: setJwts,
                     mpvRunning: mpvRunning,
-                    setMpvRunning: setMpvRunning
+                    setMpvRunning: setMpvRunning,
+                    modalShown: modalShown,
+                    setModalShown: setModalShown,
+                    settingsShown: settingsShown,
+                    setSettingsShown: setSettingsShown,
+                    mpvShowSmall: mpvShowSmall,
+                    setMpvShowSmall: setMpvShowSmall
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">
