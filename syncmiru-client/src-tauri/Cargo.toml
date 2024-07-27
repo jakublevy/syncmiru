@@ -38,6 +38,7 @@ tauri-plugin-single-instance = "2.0.0-beta.6"
 sha2 = "0.10.8"
 hex = "0.4.3"
 cfg-if = "1.0.0"
+interprocess = { version = "2.2.0", features = ["tokio"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 windows = {version = "0.58.0", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"]}

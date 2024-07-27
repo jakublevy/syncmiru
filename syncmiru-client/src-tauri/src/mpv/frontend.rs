@@ -1,10 +1,7 @@
 use std::sync::Arc;
 use tauri::Manager;
-use tokio::sync::mpsc;
-use tokio::sync::mpsc::{Sender, Receiver};
-use tokio::task;
 use crate::appstate::AppState;
-use crate::mpv::{gen_pipe_id, ipc, start_process, stop_process, window};
+use crate::mpv::{gen_pipe_id, ipc, start_ipc, start_process, stop_ipc, stop_process, window};
 use crate::mpv::window::HtmlElementRect;
 use crate::result::Result;
 
@@ -18,14 +15,7 @@ pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Wi
 
         let pipe_id = gen_pipe_id();
         start_process(&state, &pipe_id, window.clone()).await?;
-
-        let (tx, rx): (Sender<ipc::Interface>, Receiver<ipc::Interface>) = mpsc::channel(1024);
-        {
-            let mut mpv_ipc_tx_wl = state.mpv_ipc_tx.write().await;
-            *mpv_ipc_tx_wl = Some(tx);
-        }
-
-        task::spawn(ipc::start(rx, pipe_id, window.clone()));
+        start_ipc(&state, &pipe_id, window.clone()).await?;
 
         let mut mpv_detached = true;
         {
@@ -36,13 +26,9 @@ pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Wi
         let mpv_wid_rl = state.mpv_wid.read().await;
         let mpv_wid = mpv_wid_rl.unwrap();
 
-        if mpv_detached {
-            // TODO: set normal window size 960x480 (or 968x507) using ipc
-        }
-        else {
+        if !mpv_detached {
             window::attach(&state, &window, mpv_wid).await?;
         }
-
         window.emit("mpv-running", true)?;
     }
     Ok(())
@@ -51,6 +37,7 @@ pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Wi
 #[tauri::command]
 pub async fn mpv_quit(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
     stop_process(&state, window).await?;
+    stop_ipc(&state).await?;
     Ok(())
 }
 

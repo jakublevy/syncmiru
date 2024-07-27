@@ -17,8 +17,11 @@ use crate::constants::PRELUDE_LOCATION;
 use crate::deps::utils::{mpv_exe, prelude_path};
 use crate::hash;
 use crate::result::Result;
-use tokio::task;
 use tokio::process::Command;
+use tokio::sync::mpsc;
+use tokio::sync::mpsc::{Sender, Receiver};
+use tokio::task;
+use crate::mpv::ipc::Interface;
 
 pub fn init_prelude() -> Result<()> {
     let prelude_p = prelude_path()?;
@@ -41,10 +44,7 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
             mpv_exe_path = mpv_exe()?
         }
     }
-    let mut ipcserver = format!("/tmp/mpvipc-{}", pipe_id);
-    if cfg!(target_family = "windows") {
-        ipcserver = format!("\\\\.\\pipe\\mpvipc-{}", pipe_id);
-    }
+    let ipcserver = get_input_ipc_server(pipe_id);
 
     let mut process_handle = Command::new(mpv_exe_path)
         .arg(format!("--script={}", &prelude_path()?.display()))
@@ -107,6 +107,25 @@ pub async fn stop_process(state: &Arc<AppState>, window: tauri::Window) -> Resul
     Ok(())
 }
 
+pub async fn start_ipc(state: &Arc<AppState>, pipe_id: &str, window: tauri::Window) -> Result<()> {
+    let (tx, rx): (Sender<ipc::Interface>, Receiver<ipc::Interface>) = mpsc::channel(1024);
+    {
+        let mut mpv_ipc_tx_wl = state.mpv_ipc_tx.write().await;
+        *mpv_ipc_tx_wl = Some(tx);
+    }
+    task::spawn(ipc::start(rx, pipe_id.to_string(), window));
+    Ok(())
+}
+
+pub async fn stop_ipc(state: &Arc<AppState>) -> Result<()> {
+    let mut mpv_ipc_tx_wl = state.mpv_ipc_tx.write().await;
+    let tx_opt = mpv_ipc_tx_wl.take();
+    if let Some(tx) = tx_opt {
+        tx.send(Interface::Exit).await?;
+    }
+    Ok(())
+}
+
 pub fn gen_pipe_id() -> String {
     let start = SystemTime::now();
     let since_the_epoch = start.duration_since(std::time::UNIX_EPOCH)
@@ -115,10 +134,18 @@ pub fn gen_pipe_id() -> String {
     format!("mpvipc-{}", since_the_epoch.as_nanos().to_string())
 }
 
-enum Iface {
-    Play,
-    Pause,
-    Seek { timestamp: u64 },
-    ChangeAudion { aid: u64 },
-    ChangeSubs { sid: u64 },
+pub fn get_input_ipc_server(pipe_id: &str) -> String {
+    let mut ipcserver = format!("/tmp/{}.sock", pipe_id);
+    if cfg!(target_family = "windows") {
+        ipcserver = format!("\\\\.\\pipe\\{}", pipe_id)
+    }
+    ipcserver
+}
+
+pub fn get_pipe_ipc_path(pipe_id: &str) -> String {
+    let mut ipcserver = format!("/tmp/{}.sock", pipe_id);
+    if cfg!(target_family = "windows") {
+        ipcserver = pipe_id.to_string();
+    }
+    ipcserver
 }

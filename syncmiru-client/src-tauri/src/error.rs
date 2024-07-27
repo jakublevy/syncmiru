@@ -1,6 +1,7 @@
 use serde_with::DisplayFromStr;
 use std::io;
 use std::sync::PoisonError;
+use crate::mpv::ipc::Interface;
 
 #[derive(thiserror::Error, Debug)]
 pub enum SyncmiruError {
@@ -53,6 +54,9 @@ pub enum SyncmiruError {
     #[cfg(target_family = "unix")]
     #[error("X11rb reply error")]
     X11rbReplyError(#[from] x11rb::errors::ReplyError),
+
+    #[error("Mpsc mpv interface dend error")]
+    MpscMpvInterfaceSendError(#[from] tokio::sync::mpsc::error::SendError<Interface>),
 
     #[error("URL missing version error")]
     LatestVersionMissingError,
