@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 use crate::appstate::AppState;
 use crate::mpv::{gen_pipe_id, ipc, start_ipc, start_process, stop_ipc, stop_process, window};
 use crate::mpv::window::HtmlElementRect;

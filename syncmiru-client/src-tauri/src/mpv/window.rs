@@ -15,7 +15,7 @@ pub use self::win32::*;
 pub use self::x11::*;
 
 use serde::Deserialize;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 use crate::appstate::AppState;
 use crate::result::Result;
 use crate::window::WindowExt;

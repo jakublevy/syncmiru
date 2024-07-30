@@ -9,7 +9,7 @@ use std::sync::Arc;
 use std::thread::sleep;
 use std::time::{Duration, SystemTime};
 use anyhow::anyhow;
-use tauri::{Manager, State};
+use tauri::{Emitter, Manager, State};
 use tokio::io::AsyncWriteExt;
 use tokio::sync::{Mutex, oneshot, RwLock};
 use crate::appstate::AppState;

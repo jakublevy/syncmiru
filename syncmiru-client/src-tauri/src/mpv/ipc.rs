@@ -68,6 +68,7 @@ async fn listen(
                 }
             }
             _ = &mut exit_rx => {
+                println!("exit_rx");
                 break;
             }
         }
