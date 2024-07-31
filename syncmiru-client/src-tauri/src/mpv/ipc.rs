@@ -29,6 +29,7 @@ pub async fn start(
     window: tauri::Window,
 ) -> Result<()> {
     let pipe_name = get_pipe_name(&pipe_id)?;
+
     let conn = Stream::connect(pipe_name).await?;
     let (recv, mut sender) = conn.split();
 
@@ -68,7 +69,6 @@ async fn listen(
                 }
             }
             _ = &mut exit_rx => {
-                println!("exit_rx");
                 break;
             }
         }
@@ -121,9 +121,10 @@ async fn observe_property(
 
 fn get_pipe_name(pipe_id: &str) -> Result<interprocess::local_socket::Name> {
     let pipe_path = get_pipe_ipc_path(pipe_id);
-    if GenericNamespaced::is_supported() {
+    if cfg!(target_family = "windows") {
         Ok(pipe_path.to_ns_name::<GenericNamespaced>()?)
-    } else {
+    }
+    else {
         Ok(pipe_path.to_fs_name::<GenericFilePath>()?)
     }
 }

@@ -1,7 +1,7 @@
 use std::sync::Arc;
-use tauri::{Emitter, Manager};
+use tauri::{Emitter};
 use crate::appstate::AppState;
-use crate::mpv::{gen_pipe_id, ipc, start_ipc, start_process, stop_ipc, stop_process, window};
+use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, window};
 use crate::mpv::window::HtmlElementRect;
 use crate::result::Result;
 
