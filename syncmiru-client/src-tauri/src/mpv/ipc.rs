@@ -6,11 +6,12 @@ use interprocess::local_socket::{
 };
 use interprocess::local_socket::tokio::{RecvHalf, SendHalf};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
-use tokio::sync::mpsc::Receiver;
+use tokio::sync::mpsc::{Sender, Receiver};
 use tokio::sync::{oneshot};
 use crate::appstate::AppState;
 use crate::mpv;
 use crate::mpv::get_pipe_ipc_path;
+use crate::mpv::ipc::Interface::SetFullscreen;
 use crate::result::Result;
 
 #[derive(Debug, PartialEq)]
@@ -22,17 +23,20 @@ pub enum Interface {
     ChangeAudio { aid: u64 },
     ChangeSubs { sid: u64 },
     SetWindowSize { w: u32, h: u32 },
+    SetFullscreen,
     Exit
     // TODO:
 }
 
 struct IpcData {
     window: tauri::Window,
-    app_state: Arc<AppState>
+    app_state: Arc<AppState>,
+    mpv_write_tx: Sender<Interface>
 }
 
 pub async fn start(
-    mut rx: Receiver<Interface>,
+    mut mpv_write_tx: Sender<Interface>,
+    mut mpv_write_rx: Receiver<Interface>,
     pipe_id: String,
     window: tauri::Window,
     app_state: Arc<AppState>
@@ -45,10 +49,10 @@ pub async fn start(
     let (exit_tx, exit_rx) = oneshot::channel();
     let exit_tx_opt = Some(exit_tx);
 
-    let ipc_data = IpcData { app_state, window };
+    let ipc_data = IpcData { app_state, window, mpv_write_tx };
 
     let listen_task = listen(recv, &ipc_data, exit_rx);
-    let write_task = write(rx, sender, &ipc_data, exit_tx_opt);
+    let write_task = write(mpv_write_rx, sender, &ipc_data, exit_tx_opt);
 
     tokio::try_join!(listen_task, write_task);
     Ok(())
@@ -70,6 +74,7 @@ async fn listen(
                         break;
                      },
                      Ok(_) => {
+                        println!("listen {}", buffer);
                         process_mpv_msg(&buffer, ipc_data).await?;
                         buffer.clear();
                      },
@@ -89,7 +94,7 @@ async fn listen(
 
 async fn write(
     mut rx: Receiver<Interface>,
-    sender: SendHalf,
+    mut sender: SendHalf,
     ipc_data: &IpcData,
     mut exit_tx_opt: Option<oneshot::Sender<()>>,
 ) -> Result<()> {
@@ -97,14 +102,26 @@ async fn write(
     loop {
         let msg_opt = rx.recv().await;
         if let Some(msg) = msg_opt {
-            if msg == Interface::Exit {
-                exit_tx_opt
-                    .take()
-                    .unwrap()
-                    .send(())
-                    .map_err(|e| anyhow!("killing interprocess mpv communication failed"))?;
+            match msg {
+                Interface::PlayFromSource { .. } => {}
+                Interface::PlayFromUrl { .. } => {}
+                Interface::Pause { .. } => {}
+                Interface::Seek { .. } => {}
+                Interface::ChangeAudio { .. } => {}
+                Interface::ChangeSubs { .. } => {}
+                Interface::SetWindowSize { .. } => {}
+                Interface::SetFullscreen => {
+                    sender.write_all(b"{\"command\": [\"set\", \"fullscreen\", \"yes\"]}").await?;
+                }
+                Interface::Exit => {
+                    exit_tx_opt
+                        .take()
+                        .unwrap()
+                        .send(())
+                        .map_err(|e| anyhow!("killing interprocess mpv communication failed"))?;
+                }
             }
-            println!("todo handle msg {:?}", msg);
+            println!("msg {:?}", msg);
         } else {
             break;
         }
@@ -113,7 +130,7 @@ async fn write(
 }
 
 async fn init_observe_property(mut sender: &SendHalf) -> Result<()> {
-    let properties = vec!["aid", "sid", "pause", "fullscreen"];
+    let properties = vec!["aid", "sid", "pause"];
     for (i, property) in properties.iter().enumerate() {
         observe_property(sender, i, property).await?;
     }
@@ -132,7 +149,6 @@ async fn observe_property(
 
 async fn process_mpv_msg(msg: &str, ipc_data: &IpcData) -> Result<()> {
     let json: serde_json::Value = serde_json::from_str(msg)?;
-    println!("{:?}", json);
     if let Some(event) = json.get("event") {
         if let Some(event_msg) = event.as_str() {
             match event_msg {
@@ -148,30 +164,47 @@ async fn process_mpv_msg(msg: &str, ipc_data: &IpcData) -> Result<()> {
 async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -> Result<()> {
     if let Some(name_value) = msg.get("name") {
         if let Some(name) = name_value.as_str() {
-            if name == "fullscreen" {
-                let fullscreen_state = msg.get("data").unwrap().as_bool().unwrap();
-                fullscreen_changed(fullscreen_state, ipc_data).await?;
-            }
+            // if name == "fullscreen" {
+            //     let fullscreen_state = msg.get("data").unwrap().as_bool().unwrap();
+            //     fullscreen_changed(fullscreen_state, ipc_data).await?;
+            // }
         }
     }
     Ok(())
 }
 
-async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Result<()> {
-    if fullscreen_state {
-        let mut appdata_wl = ipc_data.app_state.appdata.write().await;
-        let mpv_win_detached = appdata_wl.mpv_win_detached;
-        if !mpv_win_detached {
-            let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
-            let mpv_wid = mpv_wid_rl.unwrap();
+// async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Result<()> {
+//     if fullscreen_state {
+//         let mut appdata_wl = ipc_data.app_state.appdata.write().await;
+//         let mpv_win_detached = appdata_wl.mpv_win_detached;
+//         if !mpv_win_detached {
+//             let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+//             let mpv_wid = mpv_wid_rl.unwrap();
+//
+//             mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
+//             mpv::window::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
+//             appdata_wl.mpv_win_detached = true;
+//
+//             let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
+//             *mpv_reattach_on_fullscreen_false_wl = true;
+//             // notify js about detach changed
+//         }
+//     }
+//     Ok(())
+// }
 
-            mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
-            mpv::window::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
-            appdata_wl.mpv_win_detached = true;
-
-            let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
-            *mpv_reattach_on_fullscreen_false_wl = true;
-            // notify js about detach changed
+async fn handle_mpv_dbl_click(ipc_data: &IpcData) -> Result<()> {
+    let mut appdata_wl = ipc_data.app_state.appdata.write().await;
+    let mpv_win_detached = appdata_wl.mpv_win_detached;
+    if !mpv_win_detached {
+        let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+        let mpv_wid = mpv_wid_rl.unwrap();
+        mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
+        if cfg!(target_family = "windows") {
+            mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
+        }
+        else {
+            ipc_data.mpv_write_tx.send(SetFullscreen).await?;
         }
     }
     Ok(())
@@ -183,11 +216,12 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
             if args.len() == 1 {
                 let cmd = args.get(0).unwrap().as_str().unwrap();
                 if cmd == "mouse-enter" {
-                    println!("mouse-enter msg todo")
                 }
                 else if cmd == "mouse-btn-click" {
                     focus_mpv(ipc_data).await?;
-                    println!("mouse-btn-clicked msg todo")
+                }
+                else if cmd == "mouse-left-dbl-click" {
+                    handle_mpv_dbl_click(ipc_data).await?;
                 }
             }
         }

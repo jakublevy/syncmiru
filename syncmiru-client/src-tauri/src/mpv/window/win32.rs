@@ -57,6 +57,12 @@ pub async fn reposition(state: &Arc<AppState>, mpv_wid: usize, container_rect: &
     })
 }
 
+pub async fn manual_fullscreen(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+    hide_borders(state, mpv_wid).await?;
+    maximize(state, mpv_wid).await?;
+    Ok(())
+}
+
 pub(super) async fn unparent(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
     Ok(unsafe {
