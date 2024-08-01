@@ -16,6 +16,9 @@ pub struct AppState {
     pub mpv_reattach_on_fullscreen_false: RwLock<bool>,
 
     #[cfg(target_family = "unix")]
+    pub mpv_ignore_next_fullscreen_event: RwLock<bool>,
+
+    #[cfg(target_family = "unix")]
     pub x11_conn: RwLock<Option<RustConnection>>
 }
 
