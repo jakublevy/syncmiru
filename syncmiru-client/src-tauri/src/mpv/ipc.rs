@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 use anyhow::anyhow;
 use interprocess::local_socket::{
     tokio::{prelude::*, Stream},
@@ -8,6 +9,7 @@ use interprocess::local_socket::tokio::{RecvHalf, SendHalf};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::sync::mpsc::{Sender, Receiver};
 use tokio::sync::{oneshot};
+use tokio::time::sleep;
 use crate::appstate::AppState;
 use crate::mpv;
 use crate::mpv::get_pipe_ipc_path;
@@ -111,7 +113,7 @@ async fn write(
                 Interface::ChangeSubs { .. } => {}
                 Interface::SetWindowSize { .. } => {}
                 Interface::SetFullscreen => {
-                    sender.write_all(b"{\"command\": [\"set\", \"fullscreen\", \"yes\"]}").await?;
+                    sender.write_all(b"{\"command\": [\"set\", \"fullscreen\", \"yes\"]}\n").await?;
                 }
                 Interface::Exit => {
                     exit_tx_opt
@@ -176,10 +178,12 @@ async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -
 async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Result<()> {
     cfg_if::cfg_if! {
         if #[cfg(target_family = "unix")] {
-            let mpv_ignore_next_fullscreen_event_rl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
-            if *mpv_ignore_next_fullscreen_event_rl {
-                *mpv_ignore_next_fullscreen_event_rl = false;
-                return Ok(())
+            {
+                let mut mpv_ignore_next_fullscreen_event_rl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
+                if *mpv_ignore_next_fullscreen_event_rl {
+                    *mpv_ignore_next_fullscreen_event_rl = false;
+                    return Ok(())
+                }
             }
         }
     }
@@ -192,8 +196,10 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
 
             cfg_if::cfg_if! {
                 if #[cfg(target_family = "unix")] {
-                    let mpv_ignore_next_fullscreen_event_wl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
-                    *mpv_ignore_next_fullscreen_event_wl = true;
+                    {
+                        let mut mpv_ignore_next_fullscreen_event_wl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
+                        *mpv_ignore_next_fullscreen_event_wl = true;
+                    }
                 }
             }
             mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
@@ -203,6 +209,7 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
                     mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
                 }
                 else {
+                    sleep(Duration::from_millis(50)).await;
                     ipc_data.mpv_write_tx.send(SetFullscreen).await?;
                 }
             }
@@ -211,31 +218,15 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
 
             let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
             *mpv_reattach_on_fullscreen_false_wl = true;
-            
+
             // todo notify js about detach changed
         }
     }
+    else {
+        println!("attach back")
+    }
     Ok(())
 }
-
-// async fn handle_mpv_dbl_click(ipc_data: &IpcData) -> Result<()> {
-//     let mut appdata_wl = ipc_data.app_state.appdata.write().await;
-//     let mpv_win_detached = appdata_wl.mpv_win_detached;
-//     if !mpv_win_detached {
-//         let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
-//         let mpv_wid = mpv_wid_rl.unwrap();
-//         mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
-//         cfg_if::cfg_if! {
-//             if #[cfg(target_family = "windows")] {
-//                 mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
-//             }
-//             else {
-//                 ipc_data.mpv_write_tx.send(SetFullscreen).await?;
-//             }
-//         }
-//     }
-//     Ok(())
-// }
 
 async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Result<()> {
     if let Some(args_value) = msg.get("args") {
