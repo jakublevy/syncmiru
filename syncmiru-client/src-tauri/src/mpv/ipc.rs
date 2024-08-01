@@ -185,7 +185,7 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
                 if cmd == "mouse-enter" {
                     println!("mouse-enter msg todo")
                 }
-                else if cmd == "mouse-btn-clicked" {
+                else if cmd == "mouse-btn-click" {
                     focus_mpv(ipc_data).await?;
                     println!("mouse-btn-clicked msg todo")
                 }

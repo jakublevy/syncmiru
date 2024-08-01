@@ -2,14 +2,13 @@ use std::collections::VecDeque;
 use std::sync::Arc;
 use tokio::time::sleep;
 use std::time::Duration;
-use windows::Win32::UI::WindowsAndMessaging::{ShowWindow, SW_MAXIMIZE};
 use x11rb::connection::Connection;
 use x11rb::rust_connection::RustConnection;
 use crate::appstate::AppState;
 use crate::mpv::window::HtmlElementRect;
 use crate::result::Result;
 use x11rb::protocol::xproto;
-use x11rb::protocol::xproto::{ConfigureWindowAux, ConnectionExt, InputFocus};
+use x11rb::protocol::xproto::{ClientMessageData, ClientMessageEvent, ConfigureWindowAux, ConnectionExt, EventMask, InputFocus};
 use x11rb::wrapper::ConnectionExt as OtherConnectionExt;
 
 pub async fn init_connection(state: &Arc<AppState>) -> Result<()> {
@@ -59,14 +58,13 @@ pub(super) async fn maximize(state: &Arc<AppState>, mpv_wid: usize) -> Result<()
     let conn = conn_rl.as_ref().unwrap();
     let mpv_window = id2window(mpv_wid);
 
-    let screen = &conn.setup().roots[screen_num];
+    // let screen = &conn.setup().roots[0];
+    //
+     let wm_state = conn.intern_atom(false, b"_NET_WM_STATE")?.reply()?.atom;
+     let wm_state_max_horz = conn.intern_atom(false, b"_NET_WM_STATE_MAXIMIZED_HORZ")?.reply()?.atom;
+     let wm_state_max_vert = conn.intern_atom(false, b"_NET_WM_STATE_MAXIMIZED_VERT")?.reply()?.atom;
 
-
-    let wm_state = conn.intern_atom(false, b"_NET_WM_STATE")?.reply()?.atom;
-    let wm_state_max_horz = conn.intern_atom(false, b"_NET_WM_STATE_MAXIMIZED_HORZ")?.reply()?.atom;
-    let wm_state_max_vert = conn.intern_atom(false, b"_NET_WM_STATE_MAXIMIZED_VERT")?.reply()?.atom;
-
-    let data = ClientMessageData::from_data32([
+    let data = ClientMessageData::from([
         1,
         wm_state_max_horz,
         wm_state_max_vert,
@@ -74,21 +72,22 @@ pub(super) async fn maximize(state: &Arc<AppState>, mpv_wid: usize) -> Result<()
         0,
     ]);
     let event = ClientMessageEvent {
-        response_type: x11rb::protocol::xproto::CLIENT_MESSAGE_EVENT,
+        response_type: xproto::CLIENT_MESSAGE_EVENT,
         format: 32,
         sequence: 0,
-        window,
+        window: mpv_window,
         type_: wm_state,
         data,
     };
-    
+
     conn.send_event(
         false,
-        window,
+        mpv_window,
         EventMask::STRUCTURE_NOTIFY | EventMask::SUBSTRUCTURE_REDIRECT,
         event,
     )?;
     conn.flush()?;
+    Ok(())
 }
 
 pub async fn reposition(state: &Arc<AppState>, mpv_wid: usize, container_rect: &HtmlElementRect) -> Result<()> {

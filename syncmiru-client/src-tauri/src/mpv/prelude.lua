@@ -144,11 +144,15 @@ function handle_mouse_btn2()
 end
 
 function handle_mouse_button()
-    mp.command_native_async({"script-message", "mouse-btn-clicked"}, function(success, result, error_msg) end)
+    mp.command_native_async({"script-message", "mouse-btn-click"}, function(success, result, error_msg) end)
 end
 
 function handle_mouse_enter()
     mp.command_native_async({"script-message", "mouse-enter"}, function(success, result, error_msg) end)
+end
+
+function handle_left_mouse_button_dbl_click()
+    mp.command_native_async({"script-message", "mouse-left-dbl-click"}, function(success, result, error_msg) end)
 end
 
 mp.add_key_binding("MOUSE_BTN0", handle_mouse_button)
@@ -174,3 +178,4 @@ mp.add_key_binding("MOUSE_BTN18", handle_mouse_button)
 mp.add_key_binding("MOUSE_BTN19", handle_mouse_button)
 
 mp.add_key_binding("mouse_enter", handle_mouse_enter)
+mp.add_key_binding('MBTN_LEFT_DBL', handle_left_mouse_button_dbl_click)
