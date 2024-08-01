@@ -200,11 +200,13 @@ async fn handle_mpv_dbl_click(ipc_data: &IpcData) -> Result<()> {
         let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
         let mpv_wid = mpv_wid_rl.unwrap();
         mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
-        if cfg!(target_family = "windows") {
-            mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
-        }
-        else {
-            ipc_data.mpv_write_tx.send(SetFullscreen).await?;
+        cfg_if::cfg_if! {
+            if #[cfg(target_family = "windows")] {
+                mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
+            }
+            else {
+                ipc_data.mpv_write_tx.send(SetFullscreen).await?;
+            }
         }
     }
     Ok(())
