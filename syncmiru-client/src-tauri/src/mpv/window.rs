@@ -40,6 +40,13 @@ pub async fn detach(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     Ok(())
 }
 
+pub async fn manual_fullscreen(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+    hide_borders(state, mpv_wid).await?;
+    maximize(state, mpv_wid).await?;
+    // todo: reposition and change window size to maximalize
+    Ok(())
+}
+
 #[derive(Deserialize, Debug)]
 pub struct HtmlElementRect {
     pub x: f64,

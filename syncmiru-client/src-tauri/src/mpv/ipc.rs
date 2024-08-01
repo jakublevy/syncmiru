@@ -136,10 +136,42 @@ async fn process_mpv_msg(msg: &str, ipc_data: &IpcData) -> Result<()> {
     if let Some(event) = json.get("event") {
         if let Some(event_msg) = event.as_str() {
             match event_msg {
-                "property-change" => {}
+                "property-change" => { process_property_changed(&json, ipc_data).await? }
                 "client-message" => { process_client_msg(&json, ipc_data).await? }
                 _ => {}
             }
+        }
+    }
+    Ok(())
+}
+
+async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -> Result<()> {
+    if let Some(name_value) = msg.get("name") {
+        if let Some(name) = name_value.as_str() {
+            if name == "fullscreen" {
+                let fullscreen_state = msg.get("data").unwrap().as_bool().unwrap();
+                fullscreen_changed(fullscreen_state, ipc_data).await?;
+            }
+        }
+    }
+    Ok(())
+}
+
+async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Result<()> {
+    if fullscreen_state {
+        let mut appdata_wl = ipc_data.app_state.appdata.write().await;
+        let mpv_win_detached = appdata_wl.mpv_win_detached;
+        if !mpv_win_detached {
+            let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+            let mpv_wid = mpv_wid_rl.unwrap();
+
+            mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
+            mpv::window::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
+            appdata_wl.mpv_win_detached = true;
+
+            let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
+            *mpv_reattach_on_fullscreen_false_wl = true;
+            // notify js about detach changed
         }
     }
     Ok(())

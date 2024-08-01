@@ -32,6 +32,7 @@ async fn main() -> Result<()> {
         mpv_wid: None.into(),
         mpv_stop_tx: None.into(),
         mpv_ipc_tx: None.into(),
+        mpv_reattach_on_fullscreen_false: false.into(),
         #[cfg(target_family = "unix")]
         x11_conn: None.into(),
     });

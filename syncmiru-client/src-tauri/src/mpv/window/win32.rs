@@ -4,7 +4,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::time::sleep;
 use windows::Win32::Foundation::{BOOL, HWND, LPARAM};
-use windows::Win32::UI::WindowsAndMessaging::{EnumWindows, GetWindowLongPtrW, GetWindowThreadProcessId, GWL_STYLE, HWND_TOP, IsWindowVisible, SetForegroundWindow, SetParent, SetWindowLongPtrW, SetWindowPos, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, WINDOW_STYLE, WS_BORDER, WS_CAPTION, WS_THICKFRAME};
+use windows::Win32::UI::WindowsAndMessaging::{EnumWindows, GetWindowLongPtrW, GetWindowThreadProcessId, GWL_STYLE, HWND_TOP, IsWindowVisible, SetForegroundWindow, SetParent, SetWindowLongPtrW, SetWindowPos, ShowWindow, SW_MAXIMIZE, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, WINDOW_STYLE, WS_BORDER, WS_CAPTION, WS_THICKFRAME};
 use crate::appstate::AppState;
 use crate::mpv::window::HtmlElementRect;
 use crate::result::Result;
@@ -32,6 +32,13 @@ pub(super) async fn reparent(state: &Arc<AppState>, mpv_wid: usize, parent_wid: 
     let parent = id2hwnd(parent_wid);
     Ok(unsafe {
         SetParent(mpv, parent)?;
+    })
+}
+
+pub(super) async fn maximize(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+    let hwnd = id2hwnd(mpv_wid);
+    Ok(unsafe {
+        let _ = ShowWindow(hwnd, SW_MAXIMIZE);
     })
 }
 

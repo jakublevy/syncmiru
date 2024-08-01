@@ -13,6 +13,7 @@ pub struct AppState {
     pub mpv_wid: RwLock<Option<usize>>,
     pub mpv_stop_tx: RwLock<Option<tokio::sync::oneshot::Sender<()>>>,
     pub mpv_ipc_tx: RwLock<Option<Sender<mpv::ipc::Interface>>>,
+    pub mpv_reattach_on_fullscreen_false: RwLock<bool>,
 
     #[cfg(target_family = "unix")]
     pub x11_conn: RwLock<Option<RustConnection>>
