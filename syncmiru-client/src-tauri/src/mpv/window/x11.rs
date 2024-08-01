@@ -90,7 +90,7 @@ pub(super) async fn unparent(state: &Arc<AppState>, mpv_wid: usize) -> Result<()
     Ok(())
 }
 
-pub(super) async fn focus(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+pub async fn focus(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     let conn_rl = state.x11_conn.read().await;
     let conn = conn_rl.as_ref().unwrap();
     let mpv_window = id2window(mpv_wid);

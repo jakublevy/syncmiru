@@ -113,7 +113,7 @@ pub async fn start_ipc(state: &Arc<AppState>, pipe_id: &str, window: tauri::Wind
         let mut mpv_ipc_tx_wl = state.mpv_ipc_tx.write().await;
         *mpv_ipc_tx_wl = Some(tx);
     }
-    task::spawn(ipc::start(rx, pipe_id.to_string(), window));
+    task::spawn(ipc::start(rx, pipe_id.to_string(), window, state.clone()));
     Ok(())
 }
 

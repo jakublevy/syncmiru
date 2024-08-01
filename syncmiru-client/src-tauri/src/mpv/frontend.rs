@@ -36,8 +36,8 @@ pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Wi
 
 #[tauri::command]
 pub async fn mpv_quit(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
-    stop_process(&state, window).await?;
     stop_ipc(&state).await?;
+    stop_process(&state, window).await?;
     Ok(())
 }
 

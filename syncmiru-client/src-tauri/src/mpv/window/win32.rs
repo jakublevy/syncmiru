@@ -57,7 +57,7 @@ pub(super) async fn unparent(state: &Arc<AppState>, mpv_wid: usize) -> Result<()
     })
 }
 
-pub(super) async fn focus(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+pub async fn focus(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
     Ok(unsafe {
         let _ = SetForegroundWindow(hwnd);

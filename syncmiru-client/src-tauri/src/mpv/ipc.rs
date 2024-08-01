@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use anyhow::anyhow;
 use interprocess::local_socket::{
     tokio::{prelude::*, Stream},
@@ -7,6 +8,8 @@ use interprocess::local_socket::tokio::{RecvHalf, SendHalf};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::sync::mpsc::Receiver;
 use tokio::sync::{oneshot};
+use crate::appstate::AppState;
+use crate::mpv;
 use crate::mpv::get_pipe_ipc_path;
 use crate::result::Result;
 
@@ -23,10 +26,16 @@ pub enum Interface {
     // TODO:
 }
 
+struct IpcData {
+    window: tauri::Window,
+    app_state: Arc<AppState>
+}
+
 pub async fn start(
     mut rx: Receiver<Interface>,
     pipe_id: String,
     window: tauri::Window,
+    app_state: Arc<AppState>
 ) -> Result<()> {
     let pipe_name = get_pipe_name(&pipe_id)?;
 
@@ -36,8 +45,10 @@ pub async fn start(
     let (exit_tx, exit_rx) = oneshot::channel();
     let exit_tx_opt = Some(exit_tx);
 
-    let listen_task = listen(recv, window.clone(), exit_rx);
-    let write_task = write(rx, sender, window, exit_tx_opt);
+    let ipc_data = IpcData { app_state, window };
+
+    let listen_task = listen(recv, &ipc_data, exit_rx);
+    let write_task = write(rx, sender, &ipc_data, exit_tx_opt);
 
     tokio::try_join!(listen_task, write_task);
     Ok(())
@@ -45,7 +56,7 @@ pub async fn start(
 
 async fn listen(
     recv: RecvHalf,
-    window: tauri::Window,
+    ipc_data: &IpcData,
     mut exit_rx: oneshot::Receiver<()>,
 ) -> Result<()> {
     let mut reader = BufReader::new(recv);
@@ -59,7 +70,7 @@ async fn listen(
                         break;
                      },
                      Ok(_) => {
-                        println!("listen Received: {}", buffer);
+                        process_mpv_msg(&buffer, ipc_data).await?;
                         buffer.clear();
                      },
                      Err(e) => {
@@ -79,7 +90,7 @@ async fn listen(
 async fn write(
     mut rx: Receiver<Interface>,
     sender: SendHalf,
-    window: tauri::Window,
+    ipc_data: &IpcData,
     mut exit_tx_opt: Option<oneshot::Sender<()>>,
 ) -> Result<()> {
     init_observe_property(&sender).await?;
@@ -116,6 +127,47 @@ async fn observe_property(
 ) -> Result<()> {
     let cmd = format!("{{\"command\": [\"observe_property\", {}, \"{}\"] }}\n", id, name);
     sender.write_all(cmd.as_bytes()).await?;
+    Ok(())
+}
+
+async fn process_mpv_msg(msg: &str, ipc_data: &IpcData) -> Result<()> {
+    let json: serde_json::Value = serde_json::from_str(msg)?;
+    println!("{:?}", json);
+    if let Some(event) = json.get("event") {
+        if let Some(event_msg) = event.as_str() {
+            match event_msg {
+                "property-change" => {}
+                "client-message" => { process_client_msg(&json, ipc_data).await? }
+                _ => {}
+            }
+        }
+    }
+    Ok(())
+}
+
+async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Result<()> {
+    if let Some(args_value) = msg.get("args") {
+        if let Some(args) =  args_value.as_array() {
+            if args.len() == 1 {
+                let cmd = args.get(0).unwrap().as_str().unwrap();
+                if cmd == "mouse-enter" {
+                    println!("mouse-enter msg todo")
+                }
+                else if cmd == "mouse-btn-clicked" {
+                    focus_mpv(ipc_data).await?;
+                    println!("mouse-btn-clicked msg todo")
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+async fn focus_mpv(ipc_data: &IpcData) -> Result<()> {
+    let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+    if let Some(mpv_wid) = *mpv_wid_rl {
+        mpv::window::focus(&ipc_data.app_state, mpv_wid).await?;
+    }
     Ok(())
 }
 
