@@ -7,12 +7,10 @@ import {disconnectFromRoom, forceDisconnectFromRoom} from "src/utils/room.ts";
 import {RoomConnectionState} from "@models/context.ts";
 import {invoke} from "@tauri-apps/api/core";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
-import {useChangeMpvWinDetached} from "@hooks/useMpvWinDetached.ts";
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
     const {t} = useTranslation()
-    const changeMpvWinDetached = useChangeMpvWinDetached()
     const mpvWrapperRef: React.MutableRefObject<HTMLDivElement | null> = useRef(null)
     const connectedToRoom = ctx.currentRid != null && ctx.roomConnection === RoomConnectionState.Established
 
@@ -40,6 +38,10 @@ export default function Mpv(p: Props): ReactElement {
             }
         }))
 
+        unlisten.push(listen<boolean>('mpv-win-detached-changed', (e: Event<boolean>) => {
+            ctx.setMpvWinDetached(e.payload)
+        }))
+
         return () => {
             unlisten.forEach(x => x.then((unsub) => unsub()))
         }
@@ -50,12 +52,9 @@ export default function Mpv(p: Props): ReactElement {
             mpvResize()
     }, [p.mpvResizeVar, mpvWrapperRef.current, ctx.mpvRunning, ctx.mpvShowSmall]);
 
-    useEffect(() => {
-        changeMpvWinDetached(ctx.mpvWinDetached)
-            .catch(() => {
-                ctx.setMpvWinDetached(!ctx.mpvWinDetached)
-            })
-    }, [ctx.mpvWinDetached]);
+    // useEffect(() => {
+    //
+    // }, [ctx.mpvWinDetached]);
 
     useEffect(() => {
         if(ctx.mpvRunning && !ctx.mpvWinDetached) {

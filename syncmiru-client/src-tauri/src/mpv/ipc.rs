@@ -6,6 +6,7 @@ use interprocess::local_socket::{
     GenericFilePath, GenericNamespaced,
 };
 use interprocess::local_socket::tokio::{RecvHalf, SendHalf};
+use tauri::Emitter;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::sync::mpsc::{Sender, Receiver};
 use tokio::sync::{oneshot};
@@ -219,7 +220,9 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
             let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
             *mpv_reattach_on_fullscreen_false_wl = true;
 
+            ipc_data.window.emit("mpv-win-detached-changed", true).ok();
             // todo notify js about detach changed
+
         }
     }
     else {
