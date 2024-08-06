@@ -221,12 +221,24 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
             *mpv_reattach_on_fullscreen_false_wl = true;
 
             ipc_data.window.emit("mpv-win-detached-changed", true).ok();
-            // todo notify js about detach changed
 
         }
     }
     else {
-        println!("attach back")
+        let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
+        if *mpv_reattach_on_fullscreen_false_wl {
+            *mpv_reattach_on_fullscreen_false_wl = false;
+            drop(mpv_reattach_on_fullscreen_false_wl);
+
+            let mut appdata_wl = ipc_data.app_state.appdata.write().await;
+            let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+            let mpv_wid = mpv_wid_rl.unwrap();
+
+            mpv::window::attach(&ipc_data.app_state, &ipc_data.window, mpv_wid).await?;
+            appdata_wl.mpv_win_detached = false;
+            ipc_data.window.emit("mpv-win-detached-changed", false).ok();
+            println!("attach back")
+        }
     }
     Ok(())
 }
