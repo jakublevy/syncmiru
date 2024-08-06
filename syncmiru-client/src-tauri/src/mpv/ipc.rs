@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 use anyhow::anyhow;
+use cfg_if::cfg_if;
 use interprocess::local_socket::{
     tokio::{prelude::*, Stream},
     GenericFilePath, GenericNamespaced,
@@ -26,7 +27,7 @@ pub enum Interface {
     ChangeAudio { aid: u64 },
     ChangeSubs { sid: u64 },
     SetWindowSize { w: u32, h: u32 },
-    SetFullscreen,
+    SetFullscreen(bool),
     Exit,
     // TODO:
 }
@@ -113,8 +114,9 @@ async fn write(
                 Interface::ChangeAudio { .. } => {}
                 Interface::ChangeSubs { .. } => {}
                 Interface::SetWindowSize { .. } => {}
-                Interface::SetFullscreen => {
-                    sender.write_all(b"{\"command\": [\"set\", \"fullscreen\", \"yes\"]}\n").await?;
+                Interface::SetFullscreen(state) => {
+                    let cmd = format!("{{\"command\": [\"set\", \"fullscreen\", \"{}\"]}}\n", bool2_yn(state));
+                    sender.write_all(cmd.as_bytes()).await?;
                 }
                 Interface::Exit => {
                     exit_tx_opt
@@ -204,16 +206,13 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
                 }
             }
             mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
-
+            sleep(Duration::from_millis(50)).await;
             cfg_if::cfg_if! {
                 if #[cfg(target_family = "windows")] {
-                    mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
-                }
-                else {
-                    sleep(Duration::from_millis(50)).await;
-                    ipc_data.mpv_write_tx.send(SetFullscreen).await?;
+                    ipc_data.mpv_write_tx.send(SetFullscreen(false)).await?;
                 }
             }
+            ipc_data.mpv_write_tx.send(SetFullscreen(true)).await?;
 
             appdata_wl.mpv_win_detached = true;
 
@@ -271,5 +270,14 @@ fn get_pipe_name(pipe_id: &str) -> Result<interprocess::local_socket::Name> {
         Ok(pipe_path.to_ns_name::<GenericNamespaced>()?)
     } else {
         Ok(pipe_path.to_fs_name::<GenericFilePath>()?)
+    }
+}
+
+fn bool2_yn(b: bool) -> String {
+    if b {
+        "yes".to_string()
+    }
+    else {
+        "no".to_string()
     }
 }
