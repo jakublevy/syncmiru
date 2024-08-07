@@ -35,6 +35,13 @@ pub(super) async fn reparent(state: &Arc<AppState>, mpv_wid: usize, parent_wid: 
     })
 }
 
+pub(super) async fn maximize(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+    let hwnd = id2hwnd(mpv_wid);
+    Ok(unsafe {
+        let _ = ShowWindow(hwnd, SW_MAXIMIZE);
+    })
+}
+
 pub async fn reposition(state: &Arc<AppState>, mpv_wid: usize, container_rect: &HtmlElementRect) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
     Ok(unsafe {
@@ -48,6 +55,12 @@ pub async fn reposition(state: &Arc<AppState>, mpv_wid: usize, container_rect: &
             SWP_NOZORDER | SWP_NOACTIVATE
         )?;
     })
+}
+
+pub async fn manual_fullscreen(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+    maximize(state, mpv_wid).await?;
+    hide_borders(state, mpv_wid).await?;
+    Ok(())
 }
 
 pub(super) async fn unparent(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {

@@ -118,6 +118,10 @@ pub async fn get_mpv_win_detached(state: tauri::State<'_, Arc<AppState>>) -> Res
 
 #[tauri::command]
 pub async fn set_mpv_win_detached(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window, mpv_win_detach_req: bool) -> Result<()> {
+    {
+        let mut mpv_reattach_on_fullscreen_false_wl = state.mpv_reattach_on_fullscreen_false.write().await;
+        *mpv_reattach_on_fullscreen_false_wl = false;
+    }
     let mpv_running_rl = state.mpv_stop_tx.read().await;
     let mpv_running = mpv_running_rl.is_some();
 

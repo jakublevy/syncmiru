@@ -25,6 +25,7 @@ pub async fn attach(state: &Arc<AppState>, window: &tauri::Window, mpv_wid: usiz
         .native_id().await?
         .context("could not get tauri window id, possibly broken window system")?;
 
+
     hide_borders(state, mpv_wid).await?;
     sleep(Duration::from_millis(50)).await;
     reparent(state, mpv_wid, syncmiru_id).await?;

@@ -206,13 +206,16 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
                 }
             }
             mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
-            sleep(Duration::from_millis(50)).await;
+
             cfg_if::cfg_if! {
                 if #[cfg(target_family = "windows")] {
-                    ipc_data.mpv_write_tx.send(SetFullscreen(false)).await?;
+                    mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
+                }
+                else {
+                    sleep(Duration::from_millis(50)).await;
+                    ipc_data.mpv_write_tx.send(SetFullscreen(true)).await?;
                 }
             }
-            ipc_data.mpv_write_tx.send(SetFullscreen(true)).await?;
 
             appdata_wl.mpv_win_detached = true;
 
@@ -236,11 +239,84 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
             mpv::window::attach(&ipc_data.app_state, &ipc_data.window, mpv_wid).await?;
             appdata_wl.mpv_win_detached = false;
             ipc_data.window.emit("mpv-win-detached-changed", false).ok();
-            println!("attach back")
         }
     }
     Ok(())
 }
+
+// async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Result<()> {
+//     if fullscreen_state {
+//         {
+//             let mut mpv_ignore_next_fullscreen_true_event_rl = ipc_data.app_state.mpv_ignore_next_fullscreen_true_event.write().await;
+//             if *mpv_ignore_next_fullscreen_true_event_rl {
+//                 *mpv_ignore_next_fullscreen_true_event_rl = false;
+//                 return Ok(())
+//             }
+//         }
+//
+//         let mut appdata_wl = ipc_data.app_state.appdata.write().await;
+//         let mpv_win_detached = appdata_wl.mpv_win_detached;
+//         if !mpv_win_detached {
+//             let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+//             let mpv_wid = mpv_wid_rl.unwrap();
+//
+//             {
+//                 let mut mpv_ignore_next_fullscreen_true_event_wl = ipc_data.app_state.mpv_ignore_next_fullscreen_true_event.write().await;
+//                 *mpv_ignore_next_fullscreen_true_event_wl = true;
+//             }
+//
+//             cfg_if::cfg_if! {
+//                 if #[cfg(target_family = "windows")] {
+//                     {
+//                         let mut mpv_ignore_next_fullscreen_false_event_wl = ipc_data.app_state.mpv_ignore_next_fullscreen_false_event.write().await;
+//                         *mpv_ignore_next_fullscreen_false_event_wl = true;
+//                     }
+//                 }
+//             }
+//
+//             mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
+//             sleep(Duration::from_millis(50)).await;
+//             // cfg_if::cfg_if! {
+//             //     if #[cfg(target_family = "windows")] {
+//             //         ipc_data.mpv_write_tx.send(SetFullscreen(false)).await?;
+//             //     }
+//             // }
+//            // ipc_data.mpv_write_tx.send(SetFullscreen(true)).await?;
+//
+//             appdata_wl.mpv_win_detached = true;
+//
+//             let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
+//             *mpv_reattach_on_fullscreen_false_wl = true;
+//
+//             ipc_data.window.emit("mpv-win-detached-changed", true).ok();
+//
+//         }
+//     }
+//     else {
+//         {
+//             let mut mpv_ignore_next_fullscreen_false_event_rl = ipc_data.app_state.mpv_ignore_next_fullscreen_false_event.write().await;
+//             if *mpv_ignore_next_fullscreen_false_event_rl {
+//                 *mpv_ignore_next_fullscreen_false_event_rl = false;
+//                 return Ok(())
+//             }
+//         }
+//
+//         let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
+//         if *mpv_reattach_on_fullscreen_false_wl {
+//             *mpv_reattach_on_fullscreen_false_wl = false;
+//             drop(mpv_reattach_on_fullscreen_false_wl);
+//
+//             let mut appdata_wl = ipc_data.app_state.appdata.write().await;
+//             let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+//             let mpv_wid = mpv_wid_rl.unwrap();
+//
+//             mpv::window::attach(&ipc_data.app_state, &ipc_data.window, mpv_wid).await?;
+//             appdata_wl.mpv_win_detached = false;
+//             ipc_data.window.emit("mpv-win-detached-changed", false).ok();
+//         }
+//     }
+//     Ok(())
+// }
 
 async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Result<()> {
     if let Some(args_value) = msg.get("args") {

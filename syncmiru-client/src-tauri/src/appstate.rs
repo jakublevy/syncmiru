@@ -1,3 +1,4 @@
+use anyhow::Context;
 use tokio::sync::{RwLock};
 use tokio::sync::mpsc::Sender;
 use crate::config::appdata::AppData;
@@ -6,6 +7,7 @@ use crate::result::Result;
 
 #[cfg(target_family = "unix")]
 use x11rb::rust_connection::RustConnection;
+use crate::mpv::ipc::Interface;
 
 #[derive(Debug)]
 pub struct AppState {
@@ -27,5 +29,12 @@ impl AppState {
         let appdata_lock = self.appdata.read().await;
         let home_srv = appdata_lock.home_srv.clone().unwrap_or("".to_string());
         Ok(home_srv)
+    }
+
+    pub async fn set_mpv_fullscreen(&self, state: bool) -> Result<()> {
+        let mpv_ipc_tx_rl = self.mpv_ipc_tx.read().await;
+        let iface = mpv_ipc_tx_rl.as_ref().context("mpv_ipc_tx is None")?;
+        iface.send(Interface::SetFullscreen(state)).await?;
+        Ok(())
     }
 }
