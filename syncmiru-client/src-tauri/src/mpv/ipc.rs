@@ -115,8 +115,10 @@ async fn write(
                 Interface::ChangeSubs { .. } => {}
                 Interface::SetWindowSize { .. } => {}
                 Interface::SetFullscreen(state) => {
+                    let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
                     let cmd = format!("{{\"command\": [\"set\", \"fullscreen\", \"{}\"]}}\n", bool2_yn(state));
                     sender.write_all(cmd.as_bytes()).await?;
+                    mpv::window::focus(&ipc_data.app_state, mpv_wid_rl.unwrap()).await?;
                 }
                 Interface::Exit => {
                     exit_tx_opt
@@ -237,6 +239,12 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
             let mpv_wid = mpv_wid_rl.unwrap();
 
             mpv::window::attach(&ipc_data.app_state, &ipc_data.window, mpv_wid).await?;
+            cfg_if::cfg_if! {
+                if #[cfg(target_family = "unix")] {
+                    sleep(Duration::from_millis(50)).await;
+                    mpv::window::focus(&ipc_data.app_state, mpv_wid).await?;
+                }
+            }
             appdata_wl.mpv_win_detached = false;
             ipc_data.window.emit("mpv-win-detached-changed", false).ok();
         }
