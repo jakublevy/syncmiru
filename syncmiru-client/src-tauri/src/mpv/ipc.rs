@@ -2,6 +2,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use anyhow::anyhow;
 use cfg_if::cfg_if;
+use gdk::glib::random_double;
 use interprocess::local_socket::{
     tokio::{prelude::*, Stream},
     GenericFilePath, GenericNamespaced,
@@ -252,98 +253,25 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
     Ok(())
 }
 
-// async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Result<()> {
-//     if fullscreen_state {
-//         {
-//             let mut mpv_ignore_next_fullscreen_true_event_rl = ipc_data.app_state.mpv_ignore_next_fullscreen_true_event.write().await;
-//             if *mpv_ignore_next_fullscreen_true_event_rl {
-//                 *mpv_ignore_next_fullscreen_true_event_rl = false;
-//                 return Ok(())
-//             }
-//         }
-//
-//         let mut appdata_wl = ipc_data.app_state.appdata.write().await;
-//         let mpv_win_detached = appdata_wl.mpv_win_detached;
-//         if !mpv_win_detached {
-//             let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
-//             let mpv_wid = mpv_wid_rl.unwrap();
-//
-//             {
-//                 let mut mpv_ignore_next_fullscreen_true_event_wl = ipc_data.app_state.mpv_ignore_next_fullscreen_true_event.write().await;
-//                 *mpv_ignore_next_fullscreen_true_event_wl = true;
-//             }
-//
-//             cfg_if::cfg_if! {
-//                 if #[cfg(target_family = "windows")] {
-//                     {
-//                         let mut mpv_ignore_next_fullscreen_false_event_wl = ipc_data.app_state.mpv_ignore_next_fullscreen_false_event.write().await;
-//                         *mpv_ignore_next_fullscreen_false_event_wl = true;
-//                     }
-//                 }
-//             }
-//
-//             mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
-//             sleep(Duration::from_millis(50)).await;
-//             // cfg_if::cfg_if! {
-//             //     if #[cfg(target_family = "windows")] {
-//             //         ipc_data.mpv_write_tx.send(SetFullscreen(false)).await?;
-//             //     }
-//             // }
-//            // ipc_data.mpv_write_tx.send(SetFullscreen(true)).await?;
-//
-//             appdata_wl.mpv_win_detached = true;
-//
-//             let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
-//             *mpv_reattach_on_fullscreen_false_wl = true;
-//
-//             ipc_data.window.emit("mpv-win-detached-changed", true).ok();
-//
-//         }
-//     }
-//     else {
-//         {
-//             let mut mpv_ignore_next_fullscreen_false_event_rl = ipc_data.app_state.mpv_ignore_next_fullscreen_false_event.write().await;
-//             if *mpv_ignore_next_fullscreen_false_event_rl {
-//                 *mpv_ignore_next_fullscreen_false_event_rl = false;
-//                 return Ok(())
-//             }
-//         }
-//
-//         let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
-//         if *mpv_reattach_on_fullscreen_false_wl {
-//             *mpv_reattach_on_fullscreen_false_wl = false;
-//             drop(mpv_reattach_on_fullscreen_false_wl);
-//
-//             let mut appdata_wl = ipc_data.app_state.appdata.write().await;
-//             let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
-//             let mpv_wid = mpv_wid_rl.unwrap();
-//
-//             mpv::window::attach(&ipc_data.app_state, &ipc_data.window, mpv_wid).await?;
-//             appdata_wl.mpv_win_detached = false;
-//             ipc_data.window.emit("mpv-win-detached-changed", false).ok();
-//         }
-//     }
-//     Ok(())
-// }
-
 async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Result<()> {
     if let Some(args_value) = msg.get("args") {
         if let Some(args) = args_value.as_array() {
             if args.len() == 1 {
                 let cmd = args.get(0).unwrap().as_str().unwrap();
-                if cmd == "mouse-enter" {} else if cmd == "mouse-btn-click" {
-                    focus_mpv(ipc_data).await?;
+                if cmd == "mouse-enter" {
+                    println!("{}", random_double());
+                    //let pos = ipc_data.window.cursor_position()?;
+                    //println!("{:?}", pos);
+                    //ipc_data.window.set_cursor_position(pos)?;
+                    //ipc_data.window.emit("set-normal-cursor", {}).ok();
+                    ipc_data.window.set_cursor_position(tauri::LogicalPosition::new(10,10))?;
+                }
+                else if cmd == "mouse-btn-click" {
+                    let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+                    mpv::window::focus(&ipc_data.app_state, mpv_wid_rl.unwrap()).await?;
                 }
             }
         }
-    }
-    Ok(())
-}
-
-async fn focus_mpv(ipc_data: &IpcData) -> Result<()> {
-    let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
-    if let Some(mpv_wid) = *mpv_wid_rl {
-        mpv::window::focus(&ipc_data.app_state, mpv_wid).await?;
     }
     Ok(())
 }
