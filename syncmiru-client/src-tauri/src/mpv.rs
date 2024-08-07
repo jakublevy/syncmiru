@@ -99,8 +99,8 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
 }
 
 pub async fn stop_process(state: &Arc<AppState>, window: tauri::Window) -> Result<()> {
-    let mut mpv_tx_rl = state.mpv_stop_tx.write().await;
-    let tx_opt= mpv_tx_rl.take();
+    let mut mpv_tx_wl = state.mpv_stop_tx.write().await;
+    let tx_opt= mpv_tx_wl.take();
     if let Some(tx) = tx_opt {
         tx.send(()).map_err(|e| anyhow!("killing process failed"))?;
     }

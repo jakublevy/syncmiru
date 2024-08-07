@@ -42,18 +42,6 @@ export default function Mpv(p: Props): ReactElement {
             ctx.setMpvWinDetached(e.payload)
         }))
 
-        unlisten.push(listen<void>('set-normal-cursor', (e: Event<void>) => {
-            console.log('set normal cursor')
-            const mouseoverEvent = new MouseEvent('mouseover', {
-                bubbles: true,
-                cancelable: true,
-                clientX: 10,
-                clientY: 10,
-            });
-
-            document.dispatchEvent(mouseoverEvent);
-        }))
-
         return () => {
             unlisten.forEach(x => x.then((unsub) => unsub()))
         }

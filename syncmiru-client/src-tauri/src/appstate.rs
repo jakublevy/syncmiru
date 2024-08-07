@@ -21,7 +21,10 @@ pub struct AppState {
     pub mpv_ignore_next_fullscreen_event: RwLock<bool>,
 
     #[cfg(target_family = "unix")]
-    pub x11_conn: RwLock<Option<RustConnection>>
+    pub x11_conn: RwLock<Option<RustConnection>>,
+
+    #[cfg(target_family = "unix")]
+    pub x11_screen_num: RwLock<Option<usize>>
 }
 
 impl AppState {

@@ -39,6 +39,9 @@ async fn main() -> Result<()> {
 
         #[cfg(target_family = "unix")]
         x11_conn: None.into(),
+
+        #[cfg(target_family = "unix")]
+        x11_screen_num: None.into(),
     });
     files::create_app_dirs()?;
     mpv::init_prelude()?;

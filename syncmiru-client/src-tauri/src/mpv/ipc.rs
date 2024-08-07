@@ -2,7 +2,6 @@ use std::sync::Arc;
 use std::time::Duration;
 use anyhow::anyhow;
 use cfg_if::cfg_if;
-use gdk::glib::random_double;
 use interprocess::local_socket::{
     tokio::{prelude::*, Stream},
     GenericFilePath, GenericNamespaced,
@@ -259,12 +258,15 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
             if args.len() == 1 {
                 let cmd = args.get(0).unwrap().as_str().unwrap();
                 if cmd == "mouse-enter" {
-                    println!("{}", random_double());
-                    //let pos = ipc_data.window.cursor_position()?;
-                    //println!("{:?}", pos);
-                    //ipc_data.window.set_cursor_position(pos)?;
-                    //ipc_data.window.emit("set-normal-cursor", {}).ok();
-                    ipc_data.window.set_cursor_position(tauri::LogicalPosition::new(10,10))?;
+                    cfg_if::cfg_if! {
+                        if #[cfg(target_family = "unix")] {
+                            let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+                            let mpv_wid = mpv_wid_rl.unwrap();
+                            mpv::window::x11::set_default_cursor(&ipc_data.app_state, mpv_wid).await?;
+                            sleep(Duration::from_millis(50)).await;
+                            mpv::window::x11::set_default_cursor(&ipc_data.app_state, mpv_wid).await?;
+                        }
+                    }
                 }
                 else if cmd == "mouse-btn-click" {
                     let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;

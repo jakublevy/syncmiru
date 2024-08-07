@@ -55,6 +55,10 @@ pub enum SyncmiruError {
     #[error("X11rb reply error")]
     X11rbReplyError(#[from] x11rb::errors::ReplyError),
 
+    #[cfg(target_family = "unix")]
+    #[error("X11rb reply or id error")]
+    X11rbReplyOrIdError(#[from] x11rb::errors::ReplyOrIdError),
+
     #[error("Mpsc mpv interface dend error")]
     MpscMpvInterfaceSendError(#[from] tokio::sync::mpsc::error::SendError<Interface>),
 

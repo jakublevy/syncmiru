@@ -8,13 +8,15 @@ use crate::appstate::AppState;
 use crate::mpv::window::HtmlElementRect;
 use crate::result::Result;
 use x11rb::protocol::xproto;
-use x11rb::protocol::xproto::{ClientMessageData, ClientMessageEvent, ConfigureWindowAux, ConnectionExt, EventMask, InputFocus};
+use x11rb::protocol::xproto::{ChangeWindowAttributesAux, ClientMessageData, ClientMessageEvent, ConfigureWindowAux, ConnectionExt, EventMask, InputFocus};
 use x11rb::wrapper::ConnectionExt as OtherConnectionExt;
 
 pub async fn init_connection(state: &Arc<AppState>) -> Result<()> {
-    let (conn, _) = RustConnection::connect(None)?;
+    let (conn, screen_num) = RustConnection::connect(None)?;
     let mut x11_conn_wl = state.x11_conn.write().await;
+    let mut x11_screen_num = state.x11_screen_num.write().await;
     *x11_conn_wl = Some(conn);
+    *x11_screen_num = Some(screen_num);
     Ok(())
 }
 
@@ -58,11 +60,9 @@ pub(super) async fn maximize(state: &Arc<AppState>, mpv_wid: usize) -> Result<()
     let conn = conn_rl.as_ref().unwrap();
     let mpv_window = id2window(mpv_wid);
 
-    // let screen = &conn.setup().roots[0];
-    //
-     let wm_state = conn.intern_atom(false, b"_NET_WM_STATE")?.reply()?.atom;
-     let wm_state_max_horz = conn.intern_atom(false, b"_NET_WM_STATE_MAXIMIZED_HORZ")?.reply()?.atom;
-     let wm_state_max_vert = conn.intern_atom(false, b"_NET_WM_STATE_MAXIMIZED_VERT")?.reply()?.atom;
+    let wm_state = conn.intern_atom(false, b"_NET_WM_STATE")?.reply()?.atom;
+    let wm_state_max_horz = conn.intern_atom(false, b"_NET_WM_STATE_MAXIMIZED_HORZ")?.reply()?.atom;
+    let wm_state_max_vert = conn.intern_atom(false, b"_NET_WM_STATE_MAXIMIZED_VERT")?.reply()?.atom;
 
     let data = ClientMessageData::from([
         1,
@@ -105,6 +105,24 @@ pub async fn reposition(state: &Arc<AppState>, mpv_wid: usize, container_rect: &
     Ok(())
 }
 
+pub async fn set_default_cursor(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+    let conn_rl = state.x11_conn.read().await;
+    let conn = conn_rl.as_ref().unwrap();
+    let mpv_window = id2window(mpv_wid);
+    let x11_screen_num_rl = state.x11_screen_num.read().await;
+    let x11_screen_num = x11_screen_num_rl.unwrap();
+
+    let cursor_context = x11rb::cursor::Handle::new(
+        conn,
+        x11_screen_num,
+        &x11rb::resource_manager::new_from_default(conn)?
+    )?.reply()?;
+
+    let cursor = cursor_context.load_cursor(conn, "default")?;
+    conn.change_window_attributes(mpv_window, &ChangeWindowAttributesAux::new().cursor(cursor))?;
+    Ok(())
+}
+
 pub(super) async fn unparent(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     let conn_rl = state.x11_conn.read().await;
     let conn = conn_rl.as_ref().unwrap();
@@ -144,7 +162,7 @@ fn set_decoration(conn: &RustConnection, window: xproto::Window, motif_hints: &[
         window,
         motif_hints_atom,
         motif_hints_atom,
-        motif_hints
+        motif_hints,
     )?;
     change_prop_cookie.check()?;
     Ok(())
@@ -215,7 +233,7 @@ impl<'a> Iterator for WindowWalker<'a> {
 fn get_window_property(
     conn: &RustConnection,
     window: xproto::Window,
-    property: xproto::Atom
+    property: xproto::Atom,
 ) -> Result<xproto::GetPropertyReply> {
     let prop = conn.get_property(false, window, property, xproto::AtomEnum::CARDINAL, 0, 1024)?.reply()?;
     Ok(prop)
