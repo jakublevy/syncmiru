@@ -163,9 +163,14 @@ export default function Rooms(): ReactElement {
         roomDisconnectChangeState()
         showPersistentErrorAlert(t('room-join-failed'))
         invoke('mpv_quit', {})
-        socket!.emitWithAck("disconnect_room", {})
-            .finally(() => {
-                setRoomConnection(RoomConnectionState.Established)
+            .then(() => {
+                socket!.emitWithAck("disconnect_room", {})
+                    .finally(() => {
+                        setRoomConnection(RoomConnectionState.Established)
+                    })
+            })
+            .catch(() => {
+                invoke('kill_app_with_error_msg', {msg: t('mpv-quit-error')})
             })
     }
 

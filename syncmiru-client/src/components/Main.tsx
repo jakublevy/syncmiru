@@ -36,6 +36,7 @@ import {useMpvWinDetached} from "@hooks/useMpvWinDetached.ts";
 import {useIsSupportedWindowSystem} from "@hooks/useIsSupportedWindowSystem.ts";
 import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
 import {MultiMap} from "mnemonist";
+import {invoke} from "@tauri-apps/api/core";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -123,13 +124,23 @@ export default function Main(): ReactElement {
     }, [subSyncInit]);
 
     useEffect(() => {
-        if(mpvWinDetachedInit)
+        if (mpvWinDetachedInit)
             setMpvWinDetached(true)
-        else if(isSupportedWindowSystem)
+        else if (isSupportedWindowSystem)
             setMpvWinDetached(false)
         else
             setMpvWinDetached(true)
     }, [mpvWinDetachedInit]);
+
+    useEffect(() => {
+        window.addEventListener('beforeunload', function () {
+            // invoke('mpv_quit', {})
+            //     .catch(() => {
+            //         invoke('kill_app_with_error_msg', {msg: t('mpv-quit-error')})
+            //     })
+            invoke('kill_app_with_error_msg', {msg: t('mpv-quit-error')})
+        });
+    }, []);
 
     function ioDisconnect(reason: Socket.DisconnectReason) {
         setRoomUidClicked(-1)
@@ -227,7 +238,7 @@ export default function Main(): ReactElement {
         return location.startsWith("/main/room-settings") && shouldRender()
     }
 
-    if(reconnecting)
+    if (reconnecting)
         return <Reconnecting/>
 
     return (

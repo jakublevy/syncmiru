@@ -14,6 +14,7 @@ mod license;
 mod mpv;
 mod hash;
 mod window;
+mod frontend;
 
 #[macro_use]
 extern crate rust_i18n;
@@ -88,7 +89,8 @@ async fn main() -> Result<()> {
             mpv::frontend::mpv_quit,
             mpv::frontend::get_is_supported_window_system,
             mpv::frontend::mpv_wrapper_size_changed,
-            mpv::frontend::mpv_reposition_to_small
+            mpv::frontend::mpv_reposition_to_small,
+            frontend::kill_app_with_error_msg
         ])
         .on_window_event(move |window: &Window, event: &WindowEvent| {
             let w = window.clone();
@@ -98,6 +100,7 @@ async fn main() -> Result<()> {
         .manage(appstate)
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_theme::init(ctx.config_mut()))
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_single_instance::init(|app, args, cwd| {
             let _ = focus_window(app);
         }))

@@ -367,7 +367,7 @@
   "select-placeholder": "Hledat...",
   "select-no-options-msg": "Žádné možnosti k dispozici",
 
-  "mpv-quit-error": "Došlo k chybě při ukončování mpv",
+  "mpv-quit-error": "Došlo k chybě při ukončování mpv, aplikace bude ukončena.",
   "mpv-not-connected-to-room-msg": "Pro spuštění přehrávače mpv se připojte do místnosti",
   "mpv-resize-error": "Došlo k chybě při změně velikosti okna mpv"
 }

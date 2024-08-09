@@ -119,7 +119,7 @@ export default function Playlist(): ReactElement {
                     .then((ack: SocketIoAck<string>) => {
                         if(ack.status === SocketIoAckType.Err) {
                             showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
-                            forceDisconnectFromRoom(ctx)
+                            forceDisconnectFromRoom(ctx, t)
                             return
                         }
                         const jwt = ack.payload as string
@@ -127,7 +127,7 @@ export default function Playlist(): ReactElement {
                     })
                     .catch(() => {
                         showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
-                        forceDisconnectFromRoom(ctx)
+                        forceDisconnectFromRoom(ctx, t)
                         return
                     }))
             }
@@ -235,7 +235,7 @@ export default function Playlist(): ReactElement {
                 .then((ack: SocketIoAck<string>) => {
                     if(ack.status === SocketIoAckType.Err) {
                         showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
-                        forceDisconnectFromRoom(ctx)
+                        forceDisconnectFromRoom(ctx, t)
                         return
                     }
                     const jwt = ack.payload as string
@@ -243,7 +243,7 @@ export default function Playlist(): ReactElement {
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
-                    forceDisconnectFromRoom(ctx)
+                    forceDisconnectFromRoom(ctx, t)
                     return
                 })
         }

@@ -367,7 +367,7 @@
   "select-placeholder": "Search...",
   "select-no-options-msg": "No options available",
 
-  "mpv-quit-error": "An error occurred while quitting mpv",
+  "mpv-quit-error": "An error occurred while quitting mpv, the application will be closed",
   "mpv-not-connected-to-room-msg": "Pro spuštění přehrávače mpv se připojte do místnosti",
   "mpv-resize-error": "An error occurred while changing the size of mpv window"
 }

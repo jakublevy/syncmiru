@@ -76,7 +76,7 @@ export default function Mpv(p: Props): ReactElement {
         invoke('mpv_wrapper_size_changed', {wrapperSize: rect})
             .catch(() => {
                 showPersistentErrorAlert(t('mpv-resize-error'))
-                forceDisconnectFromRoom(ctx)
+                forceDisconnectFromRoom(ctx, t)
             })
     }
 
@@ -84,7 +84,7 @@ export default function Mpv(p: Props): ReactElement {
         invoke('mpv_reposition_to_small', {})
             .catch(() => {
                 showPersistentErrorAlert(t('mpv-resize-error'))
-                forceDisconnectFromRoom(ctx)
+                forceDisconnectFromRoom(ctx, t)
             })
     }
 

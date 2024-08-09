@@ -1,6 +1,5 @@
 {
   "tauri-app-error": "Error while running the application.",
-  "data-dir-panic": "Data directory not available.",
-  "config-dir-panic": "Config directory not available.",
-  "license-window-title": "Licenses"
+  "license-window-title": "Licenses",
+  "error-window-title": "Error"
 }

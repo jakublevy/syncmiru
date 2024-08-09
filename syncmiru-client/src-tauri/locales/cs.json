@@ -1,6 +1,6 @@
 {
   "tauri-app-error": "Došlo k chybě při běhu aplikace.",
-  "data-dir-panic": "Datový adresář není dostupný.",
-  "config-dir-panic": "Konfigurační adresář není dostupný.",
-  "license-window-title": "Licence"
+  "license-window-title": "Licence",
+  "error-window-title": "Chyba"
+
 }

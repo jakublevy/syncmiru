@@ -7,11 +7,11 @@ use crate::constants;
 use crate::result::Result;
 
 pub fn syncmiru_data_dir() -> Result<PathBuf> {
-    Ok(dirs::data_dir().context(t!("data-dir-panic"))?.join(constants::APP_NAME))
+    Ok(dirs::data_dir().context("data directory not available")?.join(constants::APP_NAME))
 }
 
 pub fn syncmiru_config_dir() -> Result<PathBuf> {
-    Ok(dirs::config_dir().context(t!("config-dir-panic"))?.join(constants::APP_NAME))
+    Ok(dirs::config_dir().context("config directory not available")?.join(constants::APP_NAME))
 }
 
 pub fn syncmiru_config_ini() -> Result<PathBuf> {

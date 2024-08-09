@@ -7,7 +7,6 @@ import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import useClearJwt from "@hooks/useClearJwt.ts";
 import {useTranslation} from "react-i18next";
 import {invoke} from "@tauri-apps/api/core";
-import {showPersistentErrorAlert} from "../utils/alert.ts";
 
 export default function Reconnecting(): ReactElement {
     const [_, navigate] = useLocation()
@@ -18,7 +17,7 @@ export default function Reconnecting(): ReactElement {
     useEffect(() => {
         invoke('mpv_quit', {})
             .catch(() => {
-                showPersistentErrorAlert(t('mpv-quit-error'))
+                invoke('kill_app_with_error_msg', {msg: t('mpv-quit-error')})
             })
     }, []);
 
