@@ -28,18 +28,28 @@ pub enum Interface {
     ChangeSubs { sid: u64 },
     SetWindowSize { w: u32, h: u32 },
     SetFullscreen(bool),
+    GetAid(u32),
+    GetSid(u32),
+    GetFullscreen(u32),
+    GetTimePos(u32),
     Exit,
     // TODO:
+}
+
+#[derive(Debug, PartialEq)]
+enum Property {
+    Aid,
+    Sid,
+    TimePos,
+    Fullscreen
 }
 
 struct IpcData {
     window: tauri::Window,
     app_state: Arc<AppState>,
-    mpv_write_tx: Sender<Interface>,
 }
 
 pub async fn start(
-    mut mpv_write_tx: Sender<Interface>,
     mut mpv_write_rx: Receiver<Interface>,
     pipe_id: String,
     window: tauri::Window,
@@ -53,13 +63,30 @@ pub async fn start(
     let (exit_tx, exit_rx) = oneshot::channel();
     let exit_tx_opt = Some(exit_tx);
 
-    let ipc_data = IpcData { app_state, window, mpv_write_tx };
+    let ipc_data = IpcData { app_state, window };
 
     let listen_task = listen(recv, &ipc_data, exit_rx);
     let write_task = write(mpv_write_rx, sender, &ipc_data, exit_tx_opt);
 
     tokio::try_join!(listen_task, write_task);
     Ok(())
+}
+
+pub async fn make_fullscreen_false_if_not_true(ipc_data: &IpcData) -> Result<()> {
+
+    Ok(())
+}
+
+async fn send_get_property(ipc_data: &IpcData, property: Property) -> Result<u32> {
+    let req_id = ipc_data.app_state.next_req_id().await;
+    // todo match
+    match property {
+        Property::Aid => {}
+        Property::Sid => {}
+        Property::TimePos => {}
+        Property::Fullscreen => {}
+    }
+    Ok(req_id)
 }
 
 async fn listen(
@@ -120,6 +147,22 @@ async fn write(
                     sender.write_all(cmd.as_bytes()).await?;
                     mpv::window::focus(&ipc_data.app_state, mpv_wid_rl.unwrap()).await?;
                 }
+                Interface::GetAid(req_id) => {
+                    let cmd = create_mpv_command("aid", req_id);
+                    sender.write_all(cmd.as_bytes()).await?;
+                }
+                Interface::GetSid(req_id) => {
+                    let cmd = create_mpv_command("sid", req_id);
+                    sender.write_all(cmd.as_bytes()).await?;
+                }
+                Interface::GetFullscreen(req_id) => {
+                    let cmd = create_mpv_command("fullscreen", req_id);
+                    sender.write_all(cmd.as_bytes()).await?;
+                }
+                Interface::GetTimePos(req_id) => {
+                    let cmd = create_mpv_command("time-pos", req_id);
+                    sender.write_all(cmd.as_bytes()).await?;
+                }
                 Interface::Exit => {
                     exit_tx_opt
                         .take()
@@ -134,6 +177,10 @@ async fn write(
         }
     }
     Ok(())
+}
+
+fn create_mpv_command(prop: &str, req_id: u32) -> String {
+    format!("{{\"command\": [\"get_property\", \"{}\"], \"request_id\": \"{}\"}}\n", prop, req_id)
 }
 
 async fn init_observe_property(mut sender: &SendHalf) -> Result<()> {

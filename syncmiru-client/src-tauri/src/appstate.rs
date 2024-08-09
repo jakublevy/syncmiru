@@ -16,6 +16,7 @@ pub struct AppState {
     pub mpv_stop_tx: RwLock<Option<tokio::sync::oneshot::Sender<()>>>,
     pub mpv_ipc_tx: RwLock<Option<Sender<mpv::ipc::Interface>>>,
     pub mpv_reattach_on_fullscreen_false: RwLock<bool>,
+    pub mpv_next_req_id: RwLock<u32>,
 
     #[cfg(target_family = "unix")]
     pub mpv_ignore_next_fullscreen_event: RwLock<bool>,
@@ -39,5 +40,12 @@ impl AppState {
         let iface = mpv_ipc_tx_rl.as_ref().context("mpv_ipc_tx is None")?;
         iface.send(Interface::SetFullscreen(state)).await?;
         Ok(())
+    }
+
+    pub async fn next_req_id(&self) -> u32 {
+        let mut mpv_next_req_id_wl = self.mpv_next_req_id.write().await;
+        let req_id = *mpv_next_req_id_wl;
+        *mpv_next_req_id_wl = *mpv_next_req_id_wl + 1;
+        req_id
     }
 }

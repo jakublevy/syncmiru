@@ -50,11 +50,7 @@ export default function Mpv(p: Props): ReactElement {
     useEffect(() => {
         if(ctx.mpvRunning && !ctx.mpvWinDetached && !ctx.mpvShowSmall)
             mpvResize()
-    }, [p.mpvResizeVar, mpvWrapperRef.current, ctx.mpvRunning, ctx.mpvShowSmall]);
-
-    // useEffect(() => {
-    //
-    // }, [ctx.mpvWinDetached]);
+    }, [p.mpvResizeVar, mpvWrapperRef.current, ctx.mpvRunning, ctx.mpvShowSmall, ctx.usersShown]);
 
     useEffect(() => {
         if(ctx.mpvRunning && !ctx.mpvWinDetached) {
