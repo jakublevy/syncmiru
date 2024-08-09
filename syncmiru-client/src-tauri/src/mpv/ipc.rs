@@ -262,7 +262,9 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
                 }
                 else {
                     sleep(Duration::from_millis(50)).await;
-                    ipc_data.mpv_write_tx.send(SetFullscreen(true)).await?;
+                    let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
+                    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+                    mpv_ipc_tx.send(SetFullscreen(true)).await?;
                 }
             }
 
