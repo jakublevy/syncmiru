@@ -3,6 +3,7 @@ pub mod win32;
 mod utils;
 
 use std::sync::Arc;
+use std::time::Duration;
 use anyhow::anyhow;
 use cfg_if::cfg_if;
 use interprocess::local_socket::{
@@ -13,8 +14,10 @@ use tauri::Emitter;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::sync::mpsc::{Receiver};
 use tokio::sync::{mpsc, oneshot};
+use tokio::time::sleep;
 use crate::appstate::AppState;
 use crate::mpv;
+use crate::mpv::ipc::Interface::SetFullscreen;
 use crate::result::Result;
 
 #[derive(Debug, PartialEq)]

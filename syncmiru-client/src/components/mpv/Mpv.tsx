@@ -30,12 +30,14 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<Record<"width" | "height", number>>('tauri://resize', (e) => {
-            if(ctx.mpvRunning && !ctx.mpvWinDetached) {
-                if(!ctx.mpvShowSmall)
-                    mpvResize()
-                else
-                    mpvRepositionToSmall()
-            }
+            setTimeout(() => {
+                if(ctx.mpvRunning && !ctx.mpvWinDetached) {
+                    if(!ctx.mpvShowSmall)
+                        mpvResize()
+                    else
+                        mpvRepositionToSmall()
+                }
+            }, 50)
         }))
 
         unlisten.push(listen<boolean>('mpv-win-detached-changed', (e: Event<boolean>) => {
