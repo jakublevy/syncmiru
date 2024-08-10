@@ -37,8 +37,6 @@ async fn main() -> Result<()> {
         mpv_reattach_on_fullscreen_false: false.into(),
         mpv_next_req_id: 1.into(),
         mpv_response_senders: HashMap::new().into(),
-
-        #[cfg(target_family = "unix")]
         mpv_ignore_next_fullscreen_event: false.into(),
 
         #[cfg(target_family = "unix")]

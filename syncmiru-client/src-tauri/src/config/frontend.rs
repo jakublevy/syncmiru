@@ -1,10 +1,14 @@
 use std::env;
 use std::sync::Arc;
+use tokio::time::sleep;
+use std::time::Duration;
+use cfg_if::cfg_if;
 use crate::appstate::AppState;
 use crate::config::{appdata, jwt};
 use crate::config::{Language};
 use crate::result::Result;
 use crate::{mpv, sys};
+use crate::mpv::ipc::IpcData;
 
 #[tauri::command]
 pub async fn get_first_run_seen(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
@@ -133,6 +137,12 @@ pub async fn set_mpv_win_detached(state: tauri::State<'_, Arc<AppState>>, window
             mpv::window::detach(&state, mpv_wid).await?;
         }
         else {
+            cfg_if! {
+                if #[cfg(target_family = "windows")] {
+                    mpv::ipc::win32::make_fullscreen_false_if_not(&IpcData { app_state: state.inner().clone(), window: window.clone() }).await?;
+                    sleep(Duration::from_millis(50)).await;
+                }
+            }
             mpv::window::attach(&state, &window, mpv_wid).await?;
         }
     }

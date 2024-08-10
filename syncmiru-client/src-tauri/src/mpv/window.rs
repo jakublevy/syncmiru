@@ -18,8 +18,6 @@ pub use self::x11::*;
 use serde::Deserialize;
 use tauri::{Emitter, Manager};
 use crate::appstate::AppState;
-use crate::mpv::ipc;
-use crate::mpv::ipc::IpcData;
 use crate::result::Result;
 use crate::window::WindowExt;
 
@@ -27,12 +25,6 @@ pub async fn attach(state: &Arc<AppState>, window: &tauri::Window, mpv_wid: usiz
     let syncmiru_id = window
         .native_id().await?
         .context("could not get tauri window id, possibly broken window system")?;
-
-    cfg_if! {
-        if #[cfg(target_family = "windows")] {
-            ipc::make_fullscreen_false_if_not_true(&IpcData { app_state: state.clone(), window: window.clone() }).await?;
-        }
-    }
 
     hide_borders(state, mpv_wid).await?;
     sleep(Duration::from_millis(50)).await;

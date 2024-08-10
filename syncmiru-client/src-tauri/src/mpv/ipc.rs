@@ -1,22 +1,20 @@
+#[cfg(target_family = "windows")]
+pub mod win32;
+mod utils;
+
 use std::sync::Arc;
-use std::time::Duration;
 use anyhow::anyhow;
 use cfg_if::cfg_if;
 use interprocess::local_socket::{
     tokio::{prelude::*, Stream},
-    GenericFilePath, GenericNamespaced,
 };
 use interprocess::local_socket::tokio::{RecvHalf, SendHalf};
 use tauri::Emitter;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
-use tokio::sync::mpsc::{Sender, Receiver};
+use tokio::sync::mpsc::{Receiver};
 use tokio::sync::{mpsc, oneshot};
-use tokio::time::sleep;
 use crate::appstate::AppState;
-use crate::deps::utils::mpv_exe;
 use crate::mpv;
-use crate::mpv::get_pipe_ipc_path;
-use crate::mpv::ipc::Interface::SetFullscreen;
 use crate::result::Result;
 
 #[derive(Debug, PartialEq)]
@@ -34,7 +32,6 @@ pub enum Interface {
     GetFullscreen(u32),
     GetTimePos(u32),
     Exit,
-    // TODO:
 }
 
 #[derive(Debug, PartialEq)]
@@ -56,7 +53,7 @@ pub async fn start(
     window: tauri::Window,
     app_state: Arc<AppState>,
 ) -> Result<()> {
-    let pipe_name = get_pipe_name(&pipe_id)?;
+    let pipe_name = utils::get_pipe_name(&pipe_id)?;
 
     let conn = Stream::connect(pipe_name).await?;
     let (recv, mut sender) = conn.split();
@@ -70,20 +67,6 @@ pub async fn start(
     let write_task = write(mpv_write_rx, sender, &ipc_data, exit_tx_opt);
 
     tokio::try_join!(listen_task, write_task);
-    Ok(())
-}
-
-pub async fn make_fullscreen_false_if_not_true(ipc_data: &IpcData) -> Result<()> {
-    let mut tx = send_get_property(ipc_data, Property::Fullscreen).await?;
-    if let Some(json) = tx.recv().await {
-        if let Some(data) = json.get("data") {
-            if let Some(fullscreen) = data.as_bool() {
-                if fullscreen {
-
-                }
-            }
-        }
-    }
     Ok(())
 }
 
@@ -160,24 +143,24 @@ async fn write(
                 Interface::SetWindowSize { .. } => {}
                 Interface::SetFullscreen(state) => {
                     let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
-                    let cmd = format!("{{\"command\": [\"set\", \"fullscreen\", \"{}\"]}}\n", bool2_yn(state));
+                    let cmd = format!("{{\"command\": [\"set\", \"fullscreen\", \"{}\"]}}\n", utils::bool2_yn(state));
                     sender.write_all(cmd.as_bytes()).await?;
                     mpv::window::focus(&ipc_data.app_state, mpv_wid_rl.unwrap()).await?;
                 }
                 Interface::GetAid(req_id) => {
-                    let cmd = create_mpv_command("aid", req_id);
+                    let cmd = utils::create_mpv_command("aid", req_id);
                     sender.write_all(cmd.as_bytes()).await?;
                 }
                 Interface::GetSid(req_id) => {
-                    let cmd = create_mpv_command("sid", req_id);
+                    let cmd = utils::create_mpv_command("sid", req_id);
                     sender.write_all(cmd.as_bytes()).await?;
                 }
                 Interface::GetFullscreen(req_id) => {
-                    let cmd = create_mpv_command("fullscreen", req_id);
+                    let cmd = utils::create_mpv_command("fullscreen", req_id);
                     sender.write_all(cmd.as_bytes()).await?;
                 }
                 Interface::GetTimePos(req_id) => {
-                    let cmd = create_mpv_command("time-pos", req_id);
+                    let cmd = utils::create_mpv_command("time-pos", req_id);
                     sender.write_all(cmd.as_bytes()).await?;
                 }
                 Interface::Exit => {
@@ -194,10 +177,6 @@ async fn write(
         }
     }
     Ok(())
-}
-
-fn create_mpv_command(prop: &str, req_id: u32) -> String {
-    format!("{{\"command\": [\"get_property\", \"{}\"], \"request_id\": \"{}\"}}\n", prop, req_id)
 }
 
 async fn init_observe_property(mut sender: &SendHalf) -> Result<()> {
@@ -253,17 +232,24 @@ async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -
 }
 
 async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Result<()> {
-    cfg_if! {
-        if #[cfg(target_family = "unix")] {
-            {
-                let mut mpv_ignore_next_fullscreen_event_rl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
-                if *mpv_ignore_next_fullscreen_event_rl {
-                    *mpv_ignore_next_fullscreen_event_rl = false;
-                    return Ok(())
-                }
-            }
+    {
+        let mut mpv_ignore_next_fullscreen_event_rl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
+        if *mpv_ignore_next_fullscreen_event_rl {
+            *mpv_ignore_next_fullscreen_event_rl = false;
+            return Ok(())
         }
     }
+    // cfg_if! {
+    //     if #[cfg(target_family = "unix")] {
+    //         {
+    //             let mut mpv_ignore_next_fullscreen_event_rl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
+    //             if *mpv_ignore_next_fullscreen_event_rl {
+    //                 *mpv_ignore_next_fullscreen_event_rl = false;
+    //                 return Ok(())
+    //             }
+    //         }
+    //     }
+    // }
     if fullscreen_state {
         let mut appdata_wl = ipc_data.app_state.appdata.write().await;
         let mpv_win_detached = appdata_wl.mpv_win_detached;
@@ -350,22 +336,4 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
         }
     }
     Ok(())
-}
-
-fn get_pipe_name(pipe_id: &str) -> Result<interprocess::local_socket::Name> {
-    let pipe_path = get_pipe_ipc_path(pipe_id);
-    if cfg!(target_family = "windows") {
-        Ok(pipe_path.to_ns_name::<GenericNamespaced>()?)
-    } else {
-        Ok(pipe_path.to_fs_name::<GenericFilePath>()?)
-    }
-}
-
-fn bool2_yn(b: bool) -> String {
-    if b {
-        "yes".to_string()
-    }
-    else {
-        "no".to_string()
-    }
 }
