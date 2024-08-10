@@ -133,6 +133,14 @@ mp.register_script_message('msg-del', function(id_str)
     render_msgs()
 end)
 
+mp.register_script_message('msg-edit', function(id_str, text)
+    local id = tonumber(id_str)
+    print(msgs[id].text)
+    msgs[id].text = text
+    print(msgs[id].text)
+    render_msgs()
+end)
+
 local function on_window_size_change(name, dimensions)
     render_msgs()
 end
@@ -149,10 +157,6 @@ end
 
 function handle_mouse_enter()
     mp.command_native_async({"script-message", "mouse-enter"}, function(success, result, error_msg) end)
-end
-
-function handle_left_mouse_button_dbl_click()
-    mp.command_native_async({"script-message", "mouse-left-dbl-click"}, function(success, result, error_msg) end)
 end
 
 mp.add_key_binding("MOUSE_BTN0", handle_mouse_button)
@@ -178,4 +182,3 @@ mp.add_key_binding("MOUSE_BTN18", handle_mouse_button)
 mp.add_key_binding("MOUSE_BTN19", handle_mouse_button)
 
 mp.add_key_binding("mouse_enter", handle_mouse_enter)
-mp.add_key_binding('MBTN_LEFT_DBL', handle_left_mouse_button_dbl_click)

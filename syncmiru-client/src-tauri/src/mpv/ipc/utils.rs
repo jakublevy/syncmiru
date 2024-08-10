@@ -2,7 +2,7 @@ use interprocess::local_socket::{GenericFilePath, GenericNamespaced, ToFsName, T
 use crate::mpv::get_pipe_ipc_path;
 
 pub(super) fn create_mpv_command(prop: &str, req_id: u32) -> String {
-    format!("{{\"command\": [\"get_property\", \"{}\"], \"request_id\": \"{}\"}}\n", prop, req_id)
+    format!("{{\"command\": [\"get_property\", \"{}\"], \"request_id\": {}}}\n", prop, req_id)
 }
 
 pub(super) fn get_pipe_name(pipe_id: &str) -> crate::result::Result<interprocess::local_socket::Name> {

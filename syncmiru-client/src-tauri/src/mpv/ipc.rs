@@ -212,7 +212,7 @@ async fn process_mpv_msg(msg: &str, ipc_data: &IpcData) -> Result<()> {
         }
     }
     if let Some(request_id) = json.get("request_id") {
-        if let Some(req_id) = request_id.as_str().and_then(|x| x.parse::<u32>().ok()) {
+        if let Some(req_id) = request_id.as_u64().and_then(|x| Some(x as u32)) {
             let mpv_response_senders_wl = ipc_data.app_state.mpv_response_senders.read().await;
             if let Some(tx) = mpv_response_senders_wl.get(&req_id) {
                 tx.send(json).await?;

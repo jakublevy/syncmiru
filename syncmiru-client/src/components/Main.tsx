@@ -134,11 +134,10 @@ export default function Main(): ReactElement {
 
     useEffect(() => {
         window.addEventListener('beforeunload', function () {
-            // invoke('mpv_quit', {})
-            //     .catch(() => {
-            //         invoke('kill_app_with_error_msg', {msg: t('mpv-quit-error')})
-            //     })
-            invoke('kill_app_with_error_msg', {msg: t('mpv-quit-error')})
+            invoke('mpv_quit', {})
+                .catch(() => {
+                    invoke('kill_app_with_error_msg', {msg: t('mpv-quit-error')})
+                })
         });
     }, []);
 
