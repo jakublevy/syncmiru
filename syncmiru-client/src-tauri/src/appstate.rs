@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use anyhow::Context;
 use tokio::sync::{RwLock};
 use tokio::sync::mpsc::Sender;
@@ -17,6 +18,7 @@ pub struct AppState {
     pub mpv_ipc_tx: RwLock<Option<Sender<mpv::ipc::Interface>>>,
     pub mpv_reattach_on_fullscreen_false: RwLock<bool>,
     pub mpv_next_req_id: RwLock<u32>,
+    pub mpv_response_senders: RwLock<HashMap<u32, Sender<serde_json::Value>>>,
 
     #[cfg(target_family = "unix")]
     pub mpv_ignore_next_fullscreen_event: RwLock<bool>,

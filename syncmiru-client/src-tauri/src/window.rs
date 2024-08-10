@@ -1,4 +1,5 @@
 use std::env;
+use cfg_if::cfg_if;
 use crate::result::Result;
 
 #[cfg(target_family = "unix")]
@@ -10,7 +11,7 @@ pub trait WindowExt {
 
 impl WindowExt for tauri::Window {
     async fn native_id(&self) -> Result<Option<usize>> {
-        cfg_if::cfg_if!{
+        cfg_if!{
             if #[cfg(target_family = "windows")] {
                 Ok(Some(self.hwnd()?.0 as usize))
             }

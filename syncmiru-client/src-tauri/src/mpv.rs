@@ -9,6 +9,7 @@ use std::sync::Arc;
 use std::thread::sleep;
 use std::time::{Duration, SystemTime};
 use anyhow::anyhow;
+use cfg_if::cfg_if;
 use tauri::{Emitter, Manager, State};
 use tokio::io::AsyncWriteExt;
 use tokio::sync::{Mutex, oneshot, RwLock};
@@ -64,7 +65,7 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
 
     let pid = process_handle.id().expect("missing process id");
 
-    cfg_if::cfg_if! {
+    cfg_if! {
         if #[cfg(target_family = "unix")] {
             window::init_connection(state).await?;
         }

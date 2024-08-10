@@ -20,6 +20,7 @@ mod frontend;
 extern crate rust_i18n;
 rust_i18n::i18n!("locales");
 
+use std::collections::HashMap;
 use std::sync::Arc;
 use result::Result;
 use rust_i18n::t;
@@ -35,6 +36,7 @@ async fn main() -> Result<()> {
         mpv_ipc_tx: None.into(),
         mpv_reattach_on_fullscreen_false: false.into(),
         mpv_next_req_id: 1.into(),
+        mpv_response_senders: HashMap::new().into(),
 
         #[cfg(target_family = "unix")]
         mpv_ignore_next_fullscreen_event: false.into(),

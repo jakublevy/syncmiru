@@ -62,6 +62,9 @@ pub enum SyncmiruError {
     #[error("Mpsc mpv interface dend error")]
     MpscMpvInterfaceSendError(#[from] tokio::sync::mpsc::error::SendError<Interface>),
 
+    #[error("df")]
+    MpscSerdeJsonValueSendError(#[from] tokio::sync::mpsc::error::SendError<serde_json::Value>),
+
     #[error("URL missing version error")]
     LatestVersionMissingError,
 

@@ -10,9 +10,10 @@ use interprocess::local_socket::tokio::{RecvHalf, SendHalf};
 use tauri::Emitter;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::sync::mpsc::{Sender, Receiver};
-use tokio::sync::{oneshot};
+use tokio::sync::{mpsc, oneshot};
 use tokio::time::sleep;
 use crate::appstate::AppState;
+use crate::deps::utils::mpv_exe;
 use crate::mpv;
 use crate::mpv::get_pipe_ipc_path;
 use crate::mpv::ipc::Interface::SetFullscreen;
@@ -44,9 +45,9 @@ enum Property {
     Fullscreen
 }
 
-struct IpcData {
-    window: tauri::Window,
-    app_state: Arc<AppState>,
+pub struct IpcData {
+    pub window: tauri::Window,
+    pub app_state: Arc<AppState>,
 }
 
 pub async fn start(
@@ -73,20 +74,36 @@ pub async fn start(
 }
 
 pub async fn make_fullscreen_false_if_not_true(ipc_data: &IpcData) -> Result<()> {
+    let mut tx = send_get_property(ipc_data, Property::Fullscreen).await?;
+    if let Some(json) = tx.recv().await {
+        if let Some(data) = json.get("data") {
+            if let Some(fullscreen) = data.as_bool() {
+                if fullscreen {
 
+                }
+            }
+        }
+    }
     Ok(())
 }
 
-async fn send_get_property(ipc_data: &IpcData, property: Property) -> Result<u32> {
+async fn send_get_property(ipc_data: &IpcData, property: Property) -> Result<Receiver<serde_json::Value>> {
     let req_id = ipc_data.app_state.next_req_id().await;
-    // todo match
+
+    let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+
+    let mut mpv_response_senders_wl = ipc_data.app_state.mpv_response_senders.write().await;
+    let (tx, rx) = mpsc::channel::<serde_json::Value>(1024);
+    mpv_response_senders_wl.insert(req_id, tx);
+
     match property {
-        Property::Aid => {}
-        Property::Sid => {}
-        Property::TimePos => {}
-        Property::Fullscreen => {}
+        Property::Aid => { mpv_ipc_tx.send(Interface::GetAid(req_id)).await? }
+        Property::Sid => { mpv_ipc_tx.send(Interface::GetSid(req_id)).await? }
+        Property::TimePos => { mpv_ipc_tx.send(Interface::GetTimePos(req_id)).await? }
+        Property::Fullscreen => { mpv_ipc_tx.send(Interface::GetFullscreen(req_id)).await? }
     }
-    Ok(req_id)
+    Ok(rx)
 }
 
 async fn listen(
@@ -212,6 +229,14 @@ async fn process_mpv_msg(msg: &str, ipc_data: &IpcData) -> Result<()> {
             }
         }
     }
+    if let Some(request_id) = json.get("request_id") {
+        if let Some(req_id) = request_id.as_str().and_then(|x| x.parse::<u32>().ok()) {
+            let mpv_response_senders_wl = ipc_data.app_state.mpv_response_senders.read().await;
+            if let Some(tx) = mpv_response_senders_wl.get(&req_id) {
+                tx.send(json).await?;
+            }
+        }
+    }
     Ok(())
 }
 
@@ -228,7 +253,7 @@ async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -
 }
 
 async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Result<()> {
-    cfg_if::cfg_if! {
+    cfg_if! {
         if #[cfg(target_family = "unix")] {
             {
                 let mut mpv_ignore_next_fullscreen_event_rl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
@@ -246,7 +271,7 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
             let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
             let mpv_wid = mpv_wid_rl.unwrap();
 
-            cfg_if::cfg_if! {
+            cfg_if! {
                 if #[cfg(target_family = "unix")] {
                     {
                         let mut mpv_ignore_next_fullscreen_event_wl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
@@ -256,7 +281,7 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
             }
             mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
 
-            cfg_if::cfg_if! {
+            cfg_if! {
                 if #[cfg(target_family = "windows")] {
                     mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
                 }
@@ -288,7 +313,7 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
             let mpv_wid = mpv_wid_rl.unwrap();
 
             mpv::window::attach(&ipc_data.app_state, &ipc_data.window, mpv_wid).await?;
-            cfg_if::cfg_if! {
+            cfg_if! {
                 if #[cfg(target_family = "unix")] {
                     sleep(Duration::from_millis(50)).await;
                     mpv::window::focus(&ipc_data.app_state, mpv_wid).await?;
@@ -307,7 +332,7 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
             if args.len() == 1 {
                 let cmd = args.get(0).unwrap().as_str().unwrap();
                 if cmd == "mouse-enter" {
-                    cfg_if::cfg_if! {
+                    cfg_if! {
                         if #[cfg(target_family = "unix")] {
                             let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
                             let mpv_wid = mpv_wid_rl.unwrap();
