@@ -11,11 +11,12 @@ use std::time::{Duration, SystemTime};
 use anyhow::anyhow;
 use cfg_if::cfg_if;
 use tauri::{Emitter, Manager, State};
+use thiserror::__private::AsDisplay;
 use tokio::io::AsyncWriteExt;
 use tokio::sync::{Mutex, oneshot, RwLock};
 use crate::appstate::AppState;
 use crate::constants::PRELUDE_LOCATION;
-use crate::deps::utils::{mpv_exe, prelude_path};
+use crate::deps::utils::{mpv_exe, prelude_path, yt_dlp_exe};
 use crate::hash;
 use crate::result::Result;
 use tokio::process::Command;
@@ -39,12 +40,15 @@ pub fn init_prelude() -> Result<()> {
 
 pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::Window) -> Result<()> {
     let mut mpv_exe_path = PathBuf::from("mpv");
+    let mut yt_dlp_path = PathBuf::from("yt-dlp");
     {
         let appdata_rl = state.appdata.read().await;
         if appdata_rl.deps_managed {
-            mpv_exe_path = mpv_exe()?
+            mpv_exe_path = mpv_exe()?;
+            yt_dlp_path = yt_dlp_exe()?;
         }
     }
+
     let ipcserver = get_input_ipc_server(pipe_id);
 
     let mut process_handle = Command::new(mpv_exe_path)
@@ -61,6 +65,7 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
         .arg("--window-maximized=no")
     //    .arg("--geometry=1x1+1+1")
         .arg("--keep-open=yes")
+        .arg(format!("--script-opts=ytdl_hook-ytdl_path={}", yt_dlp_path.as_display()))
         .spawn()?;
 
     let pid = process_handle.id().expect("missing process id");

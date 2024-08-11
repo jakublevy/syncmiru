@@ -1,4 +1,4 @@
-import {ReactElement} from "react";
+import {ReactElement, useEffect} from "react";
 import {NavLink} from "@components/widgets/Button.tsx";
 import Card from "@components/widgets/Card.tsx";
 import {useLocation} from "wouter";
@@ -7,11 +7,18 @@ import RoomSyncSettings from "@components/rooms/RoomSyncSettings.tsx";
 import RoomGeneralSettings from "@components/rooms/RoomGeneralSettings.tsx";
 import {useHistoryState} from 'wouter/use-browser-location'
 import {RoomSettingsHistoryState} from "@models/historyState.ts";
+import {useMainContext} from "@hooks/useMainContext.ts";
 
 export default function RoomSettings(): ReactElement {
     const [location, navigate] = useLocation()
     const {t} = useTranslation()
     const {rid} = useHistoryState<RoomSettingsHistoryState>()
+    const {setSettingsShown} = useMainContext()
+
+    useEffect(() => {
+        setSettingsShown(true)
+        return () => { setSettingsShown(false) }
+    }, []);
 
     function isActive(link: Link) {
         return location === link
