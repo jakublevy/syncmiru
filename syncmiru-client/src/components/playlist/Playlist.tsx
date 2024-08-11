@@ -1,4 +1,4 @@
-import React, {ReactElement, useEffect, useState} from "react";
+import React, {MouseEvent, ReactElement, useEffect, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {
@@ -38,12 +38,13 @@ export default function Playlist(): ReactElement {
 
     const [showSubtitlesModal, setShowSubtitlesModal] = useState<boolean>(false)
     const [videoIdSelectedSubtitles, setVideoIdSelectedSubtitles] = useState<PlaylistEntryId>(0)
+    const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
 
     const [activeVideoId, setActiveVideoId] = useState<PlaylistEntryId | null>(null)
 
     useEffect(() => {
         if (ctx.socket !== undefined) {
-            ctx.socket.on('add_video_files', onAddAddVideoFiles)
+            ctx.socket.on('add_video_files', onAddVideoFiles)
             ctx.socket.on('add_urls', onAddUrls)
             ctx.socket.on('playlist_order', onPlaylistOrder)
             ctx.socket.on('del_playlist_entry', onDelPlaylistEntry)
@@ -82,7 +83,7 @@ export default function Playlist(): ReactElement {
             })
     }
 
-    function onAddAddVideoFiles(r: Record<string, PlaylistEntryVideoSrv>) {
+    function onAddVideoFiles(r: Record<string, PlaylistEntryVideoSrv>) {
         const m: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
         for (const idStr in r) {
             const value = r[idStr]
@@ -319,6 +320,24 @@ export default function Playlist(): ReactElement {
         return ''
     }
 
+    function onPlaylistEntryMouseDown(e: MouseEvent<HTMLDivElement>, entryId: PlaylistEntryId) {
+        setMousePos([e.clientX, e.clientY])
+    }
+
+    function onPlaylistEntryMouseUp(e: MouseEvent<HTMLDivElement>, entryId: PlaylistEntryId) {
+        if(e.button !== 0)
+            return
+
+        const x = e.clientX - mousePos[0]
+        const y = e.clientY - mousePos[1]
+        if (x * x + y * y <= 25)
+            playlistEntryClicked(entryId)
+    }
+
+    function playlistEntryClicked(entryId: PlaylistEntryId) {
+        setAsActiveVideo(entryId)
+    }
+
     if (ctx.playlistLoading) {
         return <div className="flex justify-center items-center h-full">
             <Loading/>
@@ -368,6 +387,8 @@ export default function Playlist(): ReactElement {
                                 <div className="flex flex-col">
                                     <div
                                         data-movable-handle={true}
+                                        onMouseDown={(e) => onPlaylistEntryMouseDown(e, playlistEntryId)}
+                                        onMouseUp={(e) => onPlaylistEntryMouseUp(e, playlistEntryId)}
                                         className="flex items-center mb-0.5 gap-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 hover:cursor-pointer rounded group">
                                         <VideoFile className="min-w-6 w-6"/>
                                         <p className={`text-sm ${activeVideoId === playlistEntryId ? 'font-bold' : ''}`}>{renderTxt}</p>

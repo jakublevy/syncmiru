@@ -4,7 +4,7 @@ use rust_decimal::Decimal;
 use serde::{Serialize, Deserialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use validator::Validate;
-use crate::models::playlist::PlaylistEntry;
+use crate::models::playlist::{ClientUserStatus, PlaylistEntry};
 use crate::validators;
 use crate::models::query::{Id, RoomSettings};
 use crate::srvstate::PlaylistEntryId;
@@ -249,7 +249,8 @@ pub struct JoinedRoomInfo<'a> {
     pub room_settings: RoomSettings,
     pub playlist: HashMap<PlaylistEntryId, &'a PlaylistEntry>,
     pub playlist_order: IndexSet<PlaylistEntryId>,
-    pub subs_order: HashMap<PlaylistEntryId, IndexSet<PlaylistEntryId>>
+    pub subs_order: HashMap<PlaylistEntryId, IndexSet<PlaylistEntryId>>,
+    pub ready_status: HashMap<Id, ClientUserStatus>
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]

@@ -29,7 +29,7 @@ pub enum PlayingState {
     Play, Pause
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct UserPlayInfo {
     pub status: UserStatus,
     pub timestamp: u64,
@@ -39,7 +39,21 @@ pub struct UserPlayInfo {
     pub sub_sync: bool
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum UserStatus {
     Ready, NotReady
+}
+
+#[derive(Debug, Copy, Clone, Serialize)]
+pub enum ClientUserStatus {
+    Ready, NotReady, Loading
+}
+
+impl From<UserStatus> for ClientUserStatus {
+    fn from(value: UserStatus) -> Self {
+        match value {
+            UserStatus::Ready => ClientUserStatus::Ready,
+            UserStatus::NotReady => ClientUserStatus::NotReady
+        }
+    }
 }

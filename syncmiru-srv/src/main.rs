@@ -75,7 +75,7 @@ async fn main() -> Result<()> {
          rid_video_id: BiMultiMap::new().into(),
          video_id2subtitles_ids: BiMultiMap::new().into(),
          rid2play_info: HashMap::new().into(),
-         uid2_play_info: HashMap::new().into(),
+         uid2play_info: HashMap::new().into(),
          rid2runtime_state: HashMap::new().into(),
       });
 

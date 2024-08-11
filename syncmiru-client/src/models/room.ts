@@ -7,6 +7,7 @@ import {
     PlaylistEntryUrl,
     PlaylistEntryVideoSrv
 } from "@models/playlist.ts";
+import {UserId} from "@models/user.ts";
 
 export type RoomId = number
 
@@ -56,11 +57,5 @@ export interface JoinedRoomInfoSrv {
     playlist: Record<string, PlaylistEntryVideoSrv | PlaylistEntrySubtitlesSrv | PlaylistEntryUrl>,
     playlist_order: Array<PlaylistEntryId>
     subs_order: Record<PlaylistEntryId, Array<PlaylistEntryId>>
-}
-
-export interface JoinedRoomInfoClient {
-    room_pings: UserRoomPingsClient
-    room_settings: RoomSettingsClient,
-    playlist: Map<PlaylistEntryId, PlaylistEntry>,
-    playlist_order: Array<PlaylistEntryId>
+    ready_status: Record<UserId, string>
 }

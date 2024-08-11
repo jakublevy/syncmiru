@@ -45,6 +45,9 @@ import {
 } from "@models/playlist.ts";
 import {MultiMap} from "mnemonist";
 import {invoke} from "@tauri-apps/api/core";
+import ReadyState, {UserReadyState} from "@components/widgets/ReadyState.tsx";
+import BubbleCrossed from "@components/svg/BubbleCrossed.tsx";
+import Subtitles from "@components/svg/Subtitles.tsx";
 
 export default function Rooms(): ReactElement {
     const {
@@ -78,6 +81,7 @@ export default function Rooms(): ReactElement {
     const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
     const [roomsFetching, setRoomsFetching] = useState<boolean>(true)
     const [roomUsersFetching, setRoomUsersFetching] = useState<boolean>(true)
+    const [uid2ready, setUid2ready] = useState<Map<UserId, UserReadyState>>(new Map<UserId, UserReadyState>())
 
     useEffect(() => {
         if (socket !== undefined) {
@@ -381,6 +385,7 @@ export default function Rooms(): ReactElement {
                                     const playlistSrv = payload.playlist
                                     const playlistOrder = payload.playlist_order
                                     const subsOrderSrv = payload.subs_order
+                                    const uid2ReadyStateSrv = payload.ready_status
 
                                     const pings: UserRoomPingsClient = new Map<UserId, number>()
                                     for(const uidStr in roomPingsSrv) {
@@ -425,6 +430,14 @@ export default function Rooms(): ReactElement {
                                     }
                                     setSubtitles(s)
                                     setPlaylistOrder(playlistOrder)
+
+                                    const readyStates: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+                                    for(const uidStr in uid2ReadyStateSrv) {
+                                        const uid = parseInt(uidStr)
+                                        const readyState = uid2ReadyStateSrv[uid] as UserReadyState
+                                        readyStates.set(uid, readyState)
+                                    }
+                                    setUid2ready(readyStates)
                                 })
                                 .catch(() => {
                                     forceDisconnectFromRoomOnFetchFailure()
@@ -558,6 +571,7 @@ export default function Rooms(): ReactElement {
                                         const user = users.get(uid)
                                         const showAdditional = rid === currentRid
                                         const ping = uidPing.get(uid)
+                                        const readyState = uid2ready.get(uid)
                                         if (user == null)
                                             return <div key={uid}></div>
                                         return (
@@ -570,10 +584,13 @@ export default function Rooms(): ReactElement {
                                                         <Clickable
                                                             className={`w-full py-1.5 ${uid === roomUidClicked ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
                                                             <div className="flex items-center ml-2 mr-1">
-                                                                <div className="w-5"></div>
-                                                                {/*<ReadyState*/}
-                                                                {/*    className="w-3 mr-2"*/}
-                                                                {/*    state={UserReadyState.Loading}/>*/}
+                                                                {}
+                                                                {readyState != null
+                                                                    ? <ReadyState
+                                                                        className="w-3 mr-2"
+                                                                        state={readyState}/>
+                                                                    : <div className="w-5"></div>
+                                                                }
                                                                 {showAdditional && ping != null
                                                                     ? <Ping id={`${uid}_ping`} ping={ping} className="w-3 mr-2"/>
                                                                     : <div className="w-5"></div>

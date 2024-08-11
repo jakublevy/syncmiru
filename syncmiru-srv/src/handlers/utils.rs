@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 use axum::Json;
@@ -8,6 +9,7 @@ use crate::models::query::{EmailTknType, Id};
 use crate::models::socketio::{EmailChangeTkn, EmailChangeTknType, SocketIoAck};
 use crate::{crypto, query};
 use crate::models::http::BooleanResp;
+use crate::models::playlist::{ClientUserStatus, PlaylistEntry};
 use crate::models::Tkn;
 use crate::srvstate::{PlaylistEntryId, SrvState};
 use crate::result::Result;
@@ -142,7 +144,7 @@ pub(super) async fn disconnect_from_room(
     rid: Id,
 ) {
     let mut rid_uids_lock = state.rid_uids.write().await;
-    let mut uid2_play_info_lock = state.uid2_play_info.write().await;
+    let mut uid2_play_info_lock = state.uid2play_info.write().await;
     s.leave_all().ok();
     rid_uids_lock.remove_by_right(&uid);
     uid2_play_info_lock.remove(&uid);
@@ -212,6 +214,7 @@ pub(super) async fn subtitles_id_in_room(
     video_id_in_room(state, rid, *video_id).await
 }
 
+
 pub(super) fn debug_print(state: &Arc<SrvState>) {
     println!("playlist: {:?}", state.playlist);
     println!("---------------------------------------");
@@ -223,5 +226,5 @@ pub(super) fn debug_print(state: &Arc<SrvState>) {
     println!("---------------------------------------");
     println!("rid2play_info: {:?}", state.rid2play_info);
     println!("---------------------------------------");
-    println!("uid2_play_info: {:?}", state.uid2_play_info);
+    println!("uid2_play_info: {:?}", state.uid2play_info);
 }

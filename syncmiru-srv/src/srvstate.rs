@@ -29,7 +29,7 @@ pub struct SrvState {
     pub rid2runtime_state: RwLock<HashMap<Id, RoomRuntimeState>>,
     pub rid2play_info: RwLock<HashMap<Id, RoomPlayInfo>>,
 
-    pub uid2_play_info: RwLock<HashMap<Id, UserPlayInfo>>
+    pub uid2play_info: RwLock<HashMap<Id, UserPlayInfo>>
 }
 
 impl SrvState {
@@ -62,7 +62,7 @@ impl SrvState {
     }
 
     pub async fn clear_uid2_play_info_by_rid(&self, rid: Id) {
-        let mut uid2_play_info_wl = self.uid2_play_info.write().await;
+        let mut uid2_play_info_wl = self.uid2play_info.write().await;
         let rid_uids_rl = self.rid_uids.read().await;
         let uids = rid_uids_rl.get_by_left(&rid).unwrap();
         for uid in uids {

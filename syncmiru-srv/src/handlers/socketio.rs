@@ -13,7 +13,7 @@ use crate::models::file::FileInfo;
 use crate::handlers::utils;
 use crate::handlers::utils::{disconnect_from_room, subtitles_id_in_room, video_id_in_room};
 use crate::models::file::FileType;
-use crate::models::playlist::{PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState};
+use crate::models::playlist::{ClientUserStatus, PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState};
 use crate::srvstate::{PlaylistEntryId, SrvState};
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -1382,12 +1382,31 @@ pub async fn join_room(
 
     playlist.extend(playlist_subs);
 
+    let mut ready_status: HashMap<Id, ClientUserStatus> = HashMap::new();
+    ready_status.insert(11, ClientUserStatus::Ready);
+    ready_status.insert(22, ClientUserStatus::Loading);
+    ready_status.insert(33, ClientUserStatus::NotReady);
+    if !playlist.is_empty() {
+        let uid2play_info_rl = state.uid2play_info.read().await;
+        let room_uids = rid_uids_wl.get_by_left(&payload.rid).unwrap();
+        for uid in room_uids {
+            let play_info_opt = uid2play_info_rl.get(uid);
+            if let Some(play_info) = play_info_opt {
+                ready_status.insert(*uid, play_info.status.into());
+            }
+            else {
+                ready_status.insert(*uid, ClientUserStatus::Loading);
+            }
+        }
+    }
+
     ack.send(SocketIoAck::<JoinedRoomInfo>::ok(Some(JoinedRoomInfo {
         room_settings,
         room_pings,
         playlist,
         playlist_order,
-        subs_order
+        subs_order,
+        ready_status
     }))).ok();
     transaction.commit().await.expect("db error");
 

@@ -27,8 +27,7 @@ interface Props {
 }
 
 export enum UserReadyState {
-    Ready,
-    NotReady,
-    Loading,
-    Indeterminate
+    Ready = "Ready",
+    NotReady = "NotReady",
+    Loading = "Loading",
 }
