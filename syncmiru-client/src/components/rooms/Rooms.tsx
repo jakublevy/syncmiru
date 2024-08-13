@@ -134,10 +134,15 @@ export default function Rooms(): ReactElement {
     useEffect(() => {
         if(socket !== undefined) {
             socket.on('del_rooms', onDeleteRooms)
+        }
+    }, [socket, currentRid]);
+
+    useEffect(() => {
+        if(socket !== undefined) {
             socket.on('user_room_join', onUserRoomJoin)
             socket.on('user_room_change', onUserRoomChange)
         }
-    }, [socket, currentRid]);
+    }, [socket, currentRid, roomConnection]);
 
     useEffect(() => {
         if (socket !== undefined) {
@@ -240,10 +245,7 @@ export default function Rooms(): ReactElement {
             }
             m.set(userRoomJoin.rid, roomUids)
 
-            if(
-                userRoomJoin.rid === currentRid && roomConnection === RoomConnectionState.Established
-                || userRoomJoin.uid === uid
-            ) {
+            if(userRoomJoin.rid === currentRid && roomConnection === RoomConnectionState.Established) {
                 addNewUserWithLoadingState(userRoomJoin.uid)
             }
 
@@ -277,10 +279,7 @@ export default function Rooms(): ReactElement {
             }
             m.set(userRoomChange.new_rid, newRoomUids)
 
-            if(
-                userRoomChange.new_rid === currentRid && roomConnection === RoomConnectionState.Established
-                || userRoomChange.uid === uid
-            ) {
+            if(userRoomChange.new_rid === currentRid && roomConnection === RoomConnectionState.Established) {
                 addNewUserWithLoadingState(userRoomChange.uid)
             }
 
@@ -397,6 +396,7 @@ export default function Rooms(): ReactElement {
         const start = performance.now()
         setPlaylistLoading(true)
         setActiveVideoId(null)
+        setUid2ready(new Map<UserId, UserReadyState>())
         socket!.emitWithAck("ping", {})
             .then(() => {
                 const took = performance.now() - start
