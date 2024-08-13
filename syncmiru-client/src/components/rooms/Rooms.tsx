@@ -38,16 +38,18 @@ import Ping from "@components/widgets/Ping.tsx";
 import Decimal from "decimal.js";
 import {
     PlaylistEntry,
-    PlaylistEntryId, PlaylistEntrySubtitles, PlaylistEntrySubtitlesSrv,
+    PlaylistEntryId,
+    PlaylistEntrySubtitles,
+    PlaylistEntrySubtitlesSrv,
     PlaylistEntryType,
-    PlaylistEntryUrl, PlaylistEntryUrlSrv,
-    PlaylistEntryVideo, PlaylistEntryVideoSrv
+    PlaylistEntryUrl,
+    PlaylistEntryUrlSrv,
+    PlaylistEntryVideo,
+    PlaylistEntryVideoSrv
 } from "@models/playlist.ts";
 import {MultiMap} from "mnemonist";
 import {invoke} from "@tauri-apps/api/core";
 import ReadyState, {UserReadyState} from "@components/widgets/ReadyState.tsx";
-import BubbleCrossed from "@components/svg/BubbleCrossed.tsx";
-import Subtitles from "@components/svg/Subtitles.tsx";
 
 export default function Rooms(): ReactElement {
     const {
@@ -73,7 +75,11 @@ export default function Rooms(): ReactElement {
         setPlaylist,
         setPlaylistOrder,
         setPlaylistLoading,
-        setSubtitles
+        setSubtitles,
+        uid2ready,
+        setUid2ready,
+        activeVideoId,
+        setActiveVideoId
     } = useMainContext()
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
@@ -81,7 +87,6 @@ export default function Rooms(): ReactElement {
     const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
     const [roomsFetching, setRoomsFetching] = useState<boolean>(true)
     const [roomUsersFetching, setRoomUsersFetching] = useState<boolean>(true)
-    const [uid2ready, setUid2ready] = useState<Map<UserId, UserReadyState>>(new Map<UserId, UserReadyState>())
 
     useEffect(() => {
         if (socket !== undefined) {
@@ -91,8 +96,6 @@ export default function Rooms(): ReactElement {
             socket.on('rooms', onRooms)
             socket.on('room_name_change', onRoomNameChange)
             socket.on('room_order', onRoomOrder)
-            socket.on('user_room_join', onUserRoomJoin)
-            socket.on('user_room_change', onUserRoomChange)
             socket.on('room_user_ping', onRoomUserPing)
             socket.on('joined_room_playback_change', onJoinedRoomPlaybackChange)
             socket.on('joined_room_minor_desync_playback_slow', onJoinedRoomMinorDesyncPlaybackSlow)
@@ -131,6 +134,8 @@ export default function Rooms(): ReactElement {
     useEffect(() => {
         if(socket !== undefined) {
             socket.on('del_rooms', onDeleteRooms)
+            socket.on('user_room_join', onUserRoomJoin)
+            socket.on('user_room_change', onUserRoomChange)
         }
     }, [socket, currentRid]);
 
@@ -234,6 +239,14 @@ export default function Rooms(): ReactElement {
                 roomUids.add(userRoomJoin.uid)
             }
             m.set(userRoomJoin.rid, roomUids)
+
+            if(
+                userRoomJoin.rid === currentRid && roomConnection === RoomConnectionState.Established
+                || userRoomJoin.uid === uid
+            ) {
+                addNewUserWithLoadingState(userRoomJoin.uid)
+            }
+
             return m
         })
 
@@ -263,6 +276,14 @@ export default function Rooms(): ReactElement {
                 newRoomUids.add(userRoomChange.uid)
             }
             m.set(userRoomChange.new_rid, newRoomUids)
+
+            if(
+                userRoomChange.new_rid === currentRid && roomConnection === RoomConnectionState.Established
+                || userRoomChange.uid === uid
+            ) {
+                addNewUserWithLoadingState(userRoomChange.uid)
+            }
+
             return m
         })
 
@@ -291,6 +312,17 @@ export default function Rooms(): ReactElement {
                 minor_desync_playback_slow: new Decimal(minorDesyncPlaybackSlow),
                 ...rest
             }
+        })
+    }
+
+    function addNewUserWithLoadingState(uid: UserId) {
+        setUid2ready((p) => {
+            const r: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+            for(const [k,v] of p) {
+                r.set(k, v)
+            }
+            r.set(uid, UserReadyState.Loading)
+            return r
         })
     }
 
@@ -364,6 +396,7 @@ export default function Rooms(): ReactElement {
         setRoomConnection(RoomConnectionState.Connecting)
         const start = performance.now()
         setPlaylistLoading(true)
+        setActiveVideoId(null)
         socket!.emitWithAck("ping", {})
             .then(() => {
                 const took = performance.now() - start
@@ -437,7 +470,7 @@ export default function Rooms(): ReactElement {
                                         const readyState = uid2ReadyStateSrv[uid] as UserReadyState
                                         readyStates.set(uid, readyState)
                                     }
-                                    setUid2ready(readyStates)
+                                    setUid2ready((p) => new Map<UserId, UserReadyState>([...p, ...readyStates]))
                                 })
                                 .catch(() => {
                                     forceDisconnectFromRoomOnFetchFailure()
@@ -584,13 +617,16 @@ export default function Rooms(): ReactElement {
                                                         <Clickable
                                                             className={`w-full py-1.5 ${uid === roomUidClicked ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
                                                             <div className="flex items-center ml-2 mr-1">
-                                                                {}
-                                                                {readyState != null
-                                                                    ? <ReadyState
-                                                                        className="w-3 mr-2"
-                                                                        state={readyState}/>
-                                                                    : <div className="w-5"></div>
-                                                                }
+                                                                {activeVideoId != null
+                                                                    ? <>
+                                                                        {readyState != null
+                                                                            ? <ReadyState
+                                                                                className="w-3 mr-2"
+                                                                                state={readyState}/>
+                                                                            : <div className="w-5"></div>
+                                                                        }
+                                                                      </>
+                                                                    : <div className="w-5"></div>}
                                                                 {showAdditional && ping != null
                                                                     ? <Ping id={`${uid}_ping`} ping={ping} className="w-3 mr-2"/>
                                                                     : <div className="w-5"></div>

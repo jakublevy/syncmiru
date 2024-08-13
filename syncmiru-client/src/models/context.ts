@@ -5,6 +5,7 @@ import {Dispatch, MutableRefObject, SetStateAction} from "react";
 import {UserRoomMap, UserRoomPingsClient} from "@models/roomUser.ts";
 import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
 import {MultiMap} from "mnemonist";
+import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 
 export interface MainContextModel {
     uid: number
@@ -61,6 +62,10 @@ export interface MainContextModel {
     setSettingsShown: Dispatch<SetStateAction<boolean>>
     mpvShowSmall: boolean
     setMpvShowSmall: Dispatch<SetStateAction<boolean>>
+    uid2ready: Map<UserId, UserReadyState>,
+    setUid2ready: Dispatch<SetStateAction<Map<UserId, UserReadyState>>>
+    activeVideoId: PlaylistEntryId | null
+    setActiveVideoId: Dispatch<SetStateAction<PlaylistEntryId | null>>,
 }
 
 export enum RoomConnectionState {

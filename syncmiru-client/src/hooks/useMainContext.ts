@@ -5,6 +5,7 @@ import {RoomId, RoomValue} from "@models/room.ts";
 import Decimal from "decimal.js";
 import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
 import {MultiMap} from "mnemonist";
+import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 
 export const MainContext = createContext<MainContextModel>(
     {
@@ -64,7 +65,11 @@ export const MainContext = createContext<MainContextModel>(
         settingsShown: false,
         setSettingsShown: (v) => {},
         mpvShowSmall: false,
-        setMpvShowSmall: (v) => {}
+        setMpvShowSmall: (v) => {},
+        uid2ready: new Map<UserId, UserReadyState>(),
+        setUid2ready: (v) => {},
+        activeVideoId: null,
+        setActiveVideoId: (v) => {}
     })
 
 export const useMainContext = () => useContext(MainContext)

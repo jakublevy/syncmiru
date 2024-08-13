@@ -4,6 +4,7 @@ import {UserId} from "@models/user.ts";
 import {invoke} from "@tauri-apps/api/core";
 import {showPersistentErrorAlert} from "./alert.ts";
 import {TFunction} from "i18next";
+import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 
 export function forceDisconnectFromRoom(ctx: MainContextModel, t: TFunction<"translation", undefined>) {
     ctx.setRoomConnection(RoomConnectionState.Disconnecting)
@@ -15,6 +16,7 @@ export function forceDisconnectFromRoom(ctx: MainContextModel, t: TFunction<"tra
                     ctx.setUidPing(new Map<UserId, number>())
                     ctx.setCurrentRid(null)
                     ctx.setRoomConnection(RoomConnectionState.Established)
+                    ctx.setUid2ready(new Map<UserId, UserReadyState>())
                 })
         })
         .catch(() => {
@@ -36,6 +38,7 @@ export function disconnectFromRoom(ctx: MainContextModel, t: TFunction<"translat
                         clearInterval(ctx.roomPingTimerRef?.current)
                         ctx.setUidPing(new Map<UserId, number>())
                         ctx.setCurrentRid(null)
+                        ctx.setUid2ready(new Map<UserId, UserReadyState>())
                     }
                 })
                 .catch(() => {

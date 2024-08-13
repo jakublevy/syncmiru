@@ -1383,9 +1383,6 @@ pub async fn join_room(
     playlist.extend(playlist_subs);
 
     let mut ready_status: HashMap<Id, ClientUserStatus> = HashMap::new();
-    ready_status.insert(11, ClientUserStatus::Ready);
-    ready_status.insert(22, ClientUserStatus::Loading);
-    ready_status.insert(33, ClientUserStatus::NotReady);
     if !playlist.is_empty() {
         let uid2play_info_rl = state.uid2play_info.read().await;
         let room_uids = rid_uids_wl.get_by_left(&payload.rid).unwrap();

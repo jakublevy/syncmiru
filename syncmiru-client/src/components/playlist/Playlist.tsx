@@ -40,8 +40,6 @@ export default function Playlist(): ReactElement {
     const [videoIdSelectedSubtitles, setVideoIdSelectedSubtitles] = useState<PlaylistEntryId>(0)
     const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
 
-    const [activeVideoId, setActiveVideoId] = useState<PlaylistEntryId | null>(null)
-
     useEffect(() => {
         if (ctx.socket !== undefined) {
             ctx.socket.on('add_video_files', onAddVideoFiles)
@@ -61,7 +59,7 @@ export default function Playlist(): ReactElement {
         if(ctx.socket !== undefined) {
             ctx.socket.on('add_subtitles_files', onAddSubtitlesFiles)
         }
-    }, [ctx.socket, activeVideoId]);
+    }, [ctx.socket, ctx.activeVideoId]);
 
     useEffect(() => {
         if(ctx.currentRid == null) {
@@ -115,7 +113,7 @@ export default function Playlist(): ReactElement {
             const value = r[idStr]
             const subId = parseInt(idStr)
 
-            if(value.video_id === activeVideoId) {
+            if(value.video_id === ctx.activeVideoId) {
                 promises.push(ctx.socket!.emitWithAck("req_playing_jwt", {playlist_entry_id: subId})
                     .then((ack: SocketIoAck<string>) => {
                         if(ack.status === SocketIoAckType.Err) {
@@ -197,7 +195,16 @@ export default function Playlist(): ReactElement {
                 if(subIds != null)
                     playlistIdsToRemove = new Set([...playlistIdsToRemove, ...subIds])
 
-                ctx.setPlaylistOrder((p) => p.filter(x => x !== entryId))
+
+                ctx.setPlaylistOrder((p) => {
+                    if(p.length > 1) {
+                        setAsActiveVideo(p[1])
+                    }
+                    else {
+                        ctx.setActiveVideoId(null)
+                    }
+                    return p.filter(x => x !== entryId)
+                })
 
                 ctx.setSubtitles((p) => {
                     const subs: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
@@ -249,7 +256,7 @@ export default function Playlist(): ReactElement {
                 })
         }
         ctx.setJwts(jwtsTmp)
-        setActiveVideoId(entryId)
+        ctx.setActiveVideoId(entryId)
     }
 
     function orderChanged(e: OnChangeMeta) {
@@ -391,7 +398,7 @@ export default function Playlist(): ReactElement {
                                         onMouseUp={(e) => onPlaylistEntryMouseUp(e, playlistEntryId)}
                                         className="flex items-center mb-0.5 gap-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 hover:cursor-pointer rounded group">
                                         <VideoFile className="min-w-6 w-6"/>
-                                        <p className={`text-sm ${activeVideoId === playlistEntryId ? 'font-bold' : ''}`}>{renderTxt}</p>
+                                        <p className={`text-sm ${ctx.activeVideoId === playlistEntryId ? 'font-bold' : ''}`}>{renderTxt}</p>
                                         <div className="flex-1"></div>
                                         {entry instanceof PlaylistEntryUrl &&
                                             <div
@@ -484,7 +491,7 @@ export default function Playlist(): ReactElement {
                     return (
                         <div key={eid} className="flex gap-x-2 items-center">
                             {pic}
-                            <p className={`text-sm ${activeVideoId === eid ? 'font-bold' : ''}`}>{renderTxt}</p>
+                            <p className={`text-sm ${ctx.activeVideoId === eid ? 'font-bold' : ''}`}>{renderTxt}</p>
                         </div>
                     )
                 }))

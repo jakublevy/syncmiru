@@ -37,6 +37,7 @@ import {useIsSupportedWindowSystem} from "@hooks/useIsSupportedWindowSystem.ts";
 import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
 import {MultiMap} from "mnemonist";
 import {invoke} from "@tauri-apps/api/core";
+import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -84,6 +85,8 @@ export default function Main(): ReactElement {
     const [modalShown, setModalShown] = useState<boolean>(false)
     const [settingsShown, setSettingsShown] = useState<boolean>(false)
     const [mpvShowSmall, setMpvShowSmall] = useState<boolean>(false)
+    const [uid2ready, setUid2ready] = useState<Map<UserId, UserReadyState>>(new Map<UserId, UserReadyState>())
+    const [activeVideoId, setActiveVideoId] = useState<PlaylistEntryId | null>(null)
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -298,7 +301,11 @@ export default function Main(): ReactElement {
                     settingsShown: settingsShown,
                     setSettingsShown: setSettingsShown,
                     mpvShowSmall: mpvShowSmall,
-                    setMpvShowSmall: setMpvShowSmall
+                    setMpvShowSmall: setMpvShowSmall,
+                    uid2ready: uid2ready,
+                    setUid2ready: setUid2ready,
+                    activeVideoId: activeVideoId,
+                    setActiveVideoId: setActiveVideoId
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">
