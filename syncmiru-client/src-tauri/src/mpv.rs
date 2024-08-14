@@ -1,6 +1,7 @@
 pub mod frontend;
 pub mod ipc;
 pub mod window;
+mod models;
 
 use std::fs;
 use std::ops::Deref;

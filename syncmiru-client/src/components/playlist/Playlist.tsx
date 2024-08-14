@@ -238,8 +238,9 @@ export default function Playlist(): ReactElement {
             reqIds = new Set<PlaylistEntryId>([entryId, ...subs])
         }
         const jwtsTmp: Map<PlaylistEntryId, string> = new Map<PlaylistEntryId, string>()
+        let promises = []
         for(const id of reqIds) {
-            ctx.socket!.emitWithAck("req_playing_jwt", {playlist_entry_id: id})
+            promises.push(ctx.socket!.emitWithAck("req_playing_jwt", {playlist_entry_id: id})
                 .then((ack: SocketIoAck<string>) => {
                     if(ack.status === SocketIoAckType.Err) {
                         showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
@@ -253,10 +254,13 @@ export default function Playlist(): ReactElement {
                     showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
                     forceDisconnectFromRoom(ctx, t)
                     return
-                })
+                }))
         }
-        ctx.setJwts(jwtsTmp)
-        ctx.setActiveVideoId(entryId)
+        Promise.all(promises)
+            .then(() => {
+                ctx.setJwts(jwtsTmp)
+                ctx.setActiveVideoId(entryId)
+            })
     }
 
     function orderChanged(e: OnChangeMeta) {

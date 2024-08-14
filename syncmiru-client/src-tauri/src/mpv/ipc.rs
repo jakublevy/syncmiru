@@ -22,12 +22,12 @@ use crate::result::Result;
 
 #[derive(Debug, PartialEq)]
 pub enum Interface {
-    PlayFromSource { source: String, path: String, jwt: String },
-    PlayFromUrl { url: String },
-    Pause { state: bool },
-    Seek { timestamp: u64 },
-    ChangeAudio { aid: u64 },
-    ChangeSubs { sid: u64 },
+    LoadFromSource { source_url: String, jwt: String },
+    LoadFromUrl(String),
+    SetPause(bool),
+    Seek(f64),
+    ChangeAudio(u64),
+    ChangeSubs(u64),
     SetWindowSize { w: u32, h: u32 },
     SetFullscreen(bool),
     GetAid(u32),
@@ -137,9 +137,20 @@ async fn write(
         let msg_opt = rx.recv().await;
         if let Some(msg) = msg_opt {
             match msg {
-                Interface::PlayFromSource { .. } => {}
-                Interface::PlayFromUrl { .. } => {}
-                Interface::Pause { .. } => {}
+                Interface::LoadFromSource { ref source_url, ref jwt } => {
+                    let cmd = format!(
+                        "{{\"command\":  [\"loadfile\", \"{}\", \"replace\", {{\"http-header-fields\": \"Authorization: Bearer {}\"}}]}}\n",
+                        source_url,
+                        jwt
+                    );
+                    println!("{}", cmd);
+                    sender.write_all(cmd.as_bytes()).await?;
+                }
+                Interface::LoadFromUrl(ref url) => {}
+                Interface::SetPause(p) => {
+                    let cmd = format!("{{\"command\": [\"set_property\", \"pause\", {}]}}\n", p);
+                    sender.write_all(cmd.as_bytes()).await?;
+                }
                 Interface::Seek { .. } => {}
                 Interface::ChangeAudio { .. } => {}
                 Interface::ChangeSubs { .. } => {}
@@ -206,7 +217,8 @@ async fn process_mpv_msg(msg: &str, ipc_data: &IpcData) -> Result<()> {
         if let Some(event_msg) = event.as_str() {
             match event_msg {
                 "property-change" => { process_property_changed(&json, ipc_data).await? }
-                "client-message" => { process_client_msg(&json, ipc_data).await? }
+                "client-message" => { process_client_msg(&json, ipc_data).await? },
+                "file-loaded" => { process_file_loaded(ipc_data).await?; }
                 _ => {}
             }
         }
@@ -242,17 +254,6 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
             return Ok(())
         }
     }
-    // cfg_if! {
-    //     if #[cfg(target_family = "unix")] {
-    //         {
-    //             let mut mpv_ignore_next_fullscreen_event_rl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
-    //             if *mpv_ignore_next_fullscreen_event_rl {
-    //                 *mpv_ignore_next_fullscreen_event_rl = false;
-    //                 return Ok(())
-    //             }
-    //         }
-    //     }
-    // }
     if fullscreen_state {
         let mut appdata_wl = ipc_data.app_state.appdata.write().await;
         let mpv_win_detached = appdata_wl.mpv_win_detached;
@@ -301,6 +302,11 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
             let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
             let mpv_wid = mpv_wid_rl.unwrap();
 
+            cfg_if! {
+                if #[cfg(target_family = "windows")] {
+                    sleep(Duration::from_millis(50)).await;
+                }
+            }
             mpv::window::attach(&ipc_data.app_state, &ipc_data.window, mpv_wid).await?;
             cfg_if! {
                 if #[cfg(target_family = "unix")] {
@@ -338,5 +344,11 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
             }
         }
     }
+    Ok(())
+}
+
+async fn process_file_loaded(ipc_data: &IpcData) -> Result<()> {
+    let mpv_file_loaded_rl = ipc_data.app_state.mpv_file_loaded_sender.read().await;
+    mpv_file_loaded_rl.as_ref().unwrap().send(()).await?;
     Ok(())
 }

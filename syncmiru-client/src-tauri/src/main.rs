@@ -24,6 +24,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use result::Result;
 use rust_i18n::t;
+use tokio::sync::mpsc;
 use tauri::{Manager, Window, WindowEvent};
 use tauri::WindowEvent::CloseRequested;
 
@@ -37,6 +38,7 @@ async fn main() -> Result<()> {
         mpv_reattach_on_fullscreen_false: false.into(),
         mpv_next_req_id: 1.into(),
         mpv_response_senders: HashMap::new().into(),
+        mpv_file_loaded_sender: None.into(),
         mpv_ignore_next_fullscreen_event: false.into(),
 
         #[cfg(target_family = "unix")]
@@ -91,6 +93,7 @@ async fn main() -> Result<()> {
             mpv::frontend::get_is_supported_window_system,
             mpv::frontend::mpv_wrapper_size_changed,
             mpv::frontend::mpv_reposition_to_small,
+            mpv::frontend::mpv_load_from_source,
             frontend::kill_app_with_error_msg
         ])
         .on_window_event(move |window: &Window, event: &WindowEvent| {

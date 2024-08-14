@@ -7,6 +7,13 @@ import {disconnectFromRoom, forceDisconnectFromRoom} from "src/utils/room.ts";
 import {RoomConnectionState} from "@models/context.ts";
 import {invoke} from "@tauri-apps/api/core";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
+import {
+    PlaylistEntry,
+    PlaylistEntryId,
+    PlaylistEntrySubtitles,
+    PlaylistEntryUrl,
+    PlaylistEntryVideo
+} from "@models/playlist.ts";
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
@@ -65,6 +72,41 @@ export default function Mpv(p: Props): ReactElement {
             }
         }
     }, [ctx.modalShown, ctx.settingsShown, ctx.mpvRunning, ctx.mpvWinDetached]);
+
+    useEffect(() => {
+        if(ctx.activeVideoId == null)
+            return
+
+        const id = ctx.activeVideoId as PlaylistEntryId
+        console.log(`active id: ${id}`)
+        const jwt = ctx.jwts.get(id) as string
+        console.log(`jwt: ${jwt}`)
+        console.log(ctx.jwts)
+        const entry = ctx.playlist.get(id) as PlaylistEntry
+        if(entry instanceof PlaylistEntryVideo) {
+            const video = entry as PlaylistEntryVideo
+            const source = ctx.source2url.get(video.source) as string
+            const data = {source_url: source, jwt: jwt}
+            invoke('mpv_load_from_source', {data: JSON.stringify(data)})
+                .then(() => {
+                    console.log('source loaded')
+                })
+                .catch(() => {
+                    console.log('source load failed')
+                })
+            console.log(`source: ${source}`)
+        }
+        else if(entry instanceof PlaylistEntryUrl) {
+            const url = entry as PlaylistEntryUrl
+            console.log(`url ${url.url}`)
+        }
+        else {
+            const sub = entry as PlaylistEntrySubtitles
+            const source = ctx.source2url.get(sub.source) as string
+            console.log(`source: ${source}`)
+        }
+
+    }, [ctx.activeVideoId, ctx.jwts, ctx.source2url]);
 
 
     function mpvResize() {

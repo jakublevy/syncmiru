@@ -1,8 +1,13 @@
 use std::sync::Arc;
+use std::time::Duration;
 use tauri::{Emitter};
 use crate::appstate::AppState;
 use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, window};
+use crate::mpv::ipc::Interface;
+use crate::mpv::models::LoadFromSource;
 use crate::mpv::window::HtmlElementRect;
+use tokio::sync::mpsc;
+use tokio::time::sleep;
 use crate::result::Result;
 
 #[tauri::command]
@@ -78,5 +83,37 @@ pub async fn mpv_reposition_to_small(state: tauri::State<'_, Arc<AppState>>, win
         width: w,
         height: h,
     }).await?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn mpv_load_from_source(
+    state: tauri::State<'_, Arc<AppState>>,
+    data: String
+) -> Result<()> {
+    let data_obj: LoadFromSource = serde_json::from_str(&data)?;
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+
+    mpv_ipc_tx.send(Interface::SetPause(true)).await?;
+
+    let (loaded_sender, mut loaded_recv) = mpsc::channel::<()>(1);
+    {
+        let mut mpv_file_loaded_sender_wl = state.mpv_file_loaded_sender.write().await;
+        *mpv_file_loaded_sender_wl = Some(loaded_sender);
+    }
+
+    mpv_ipc_tx.send(Interface::LoadFromSource {
+        source_url: data_obj.source_url,
+        jwt: data_obj.jwt
+    }).await?;
+
+    loaded_recv.recv().await;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn mpv_load_from_url(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
+
     Ok(())
 }

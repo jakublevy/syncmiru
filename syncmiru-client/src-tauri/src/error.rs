@@ -59,11 +59,14 @@ pub enum SyncmiruError {
     #[error("X11rb reply or id error")]
     X11rbReplyOrIdError(#[from] x11rb::errors::ReplyOrIdError),
 
-    #[error("Mpsc mpv interface dend error")]
+    #[error("Mpsc mpv interface send error")]
     MpscMpvInterfaceSendError(#[from] tokio::sync::mpsc::error::SendError<Interface>),
 
-    #[error("df")]
+    #[error("Mpsc serde_json::Value send error")]
     MpscSerdeJsonValueSendError(#[from] tokio::sync::mpsc::error::SendError<serde_json::Value>),
+
+    #[error("Mpsc void send error")]
+    MpscVoidSendError(#[from] tokio::sync::mpsc::error::SendError<()>),
 
     #[error("URL missing version error")]
     LatestVersionMissingError,
