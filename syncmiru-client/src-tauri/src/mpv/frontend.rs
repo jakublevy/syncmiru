@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use std::time::Duration;
+use cfg_if::cfg_if;
 use tauri::{Emitter};
 use crate::appstate::AppState;
 use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, window};
@@ -7,7 +7,6 @@ use crate::mpv::ipc::Interface;
 use crate::mpv::models::LoadFromSource;
 use crate::mpv::window::HtmlElementRect;
 use tokio::sync::mpsc;
-use tokio::time::sleep;
 use crate::result::Result;
 
 #[tauri::command]
@@ -71,18 +70,18 @@ pub async fn mpv_reposition_to_small(state: tauri::State<'_, Arc<AppState>>, win
     let w = size.width as f64 - x - 2.0*offset;
     let h = w / 16.0 * 9.0;
     let y = size.height as f64 - offset - h;
-    // let x = 0.83 * size.width as f64;
-    // let y = 0.83 * size.height as f64;
-    // let mx = 0.02 * size.width as f64;
-    // let my = 0.02 * size.height as f64;
-    // let w = size.width as f64 - x - mx;
-    // let h = size.height as f64 - y - my;
+
     window::reposition(&state, mpv_wid, &HtmlElementRect {
         x,
         y,
         width: w,
         height: h,
     }).await?;
+    cfg_if! {
+        if #[cfg(target_family = "windows")] {
+            window::win32::hide_borders(&state, mpv_wid).await?;
+        }
+    }
     Ok(())
 }
 

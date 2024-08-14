@@ -9,7 +9,7 @@ use crate::appstate::AppState;
 use crate::mpv::window::HtmlElementRect;
 use crate::result::Result;
 
-pub(super) async fn hide_borders(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+pub async fn hide_borders(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
     Ok(unsafe {
         let style = WINDOW_STYLE(GetWindowLongPtrW(hwnd, GWL_STYLE) as u32);
