@@ -143,7 +143,6 @@ end)
 
 local function on_window_size_change(name, dimensions)
     render_msgs()
-    mp.command_native_async({"script-message", "window-size-changed"}, function(success, result, error_msg) end)
 end
 mp.observe_property("osd-dimensions", "native", on_window_size_change)
 
