@@ -42,7 +42,7 @@ enum Property {
     Aid,
     Sid,
     TimePos,
-    Fullscreen
+    Fullscreen,
 }
 
 pub struct IpcData {
@@ -217,8 +217,9 @@ async fn process_mpv_msg(msg: &str, ipc_data: &IpcData) -> Result<()> {
         if let Some(event_msg) = event.as_str() {
             match event_msg {
                 "property-change" => { process_property_changed(&json, ipc_data).await? }
-                "client-message" => { process_client_msg(&json, ipc_data).await? },
+                "client-message" => { process_client_msg(&json, ipc_data).await? }
                 "file-loaded" => { process_file_loaded(ipc_data).await?; }
+                "playback-restart" => { process_playback_restart(ipc_data)?; }
                 _ => {}
             }
         }
@@ -251,7 +252,7 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
         let mut mpv_ignore_next_fullscreen_event_rl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
         if *mpv_ignore_next_fullscreen_event_rl {
             *mpv_ignore_next_fullscreen_event_rl = false;
-            return Ok(())
+            return Ok(());
         }
     }
     if fullscreen_state {
@@ -289,10 +290,8 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
             *mpv_reattach_on_fullscreen_false_wl = true;
 
             ipc_data.window.emit("mpv-win-detached-changed", true).ok();
-
         }
-    }
-    else {
+    } else {
         let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
         if *mpv_reattach_on_fullscreen_false_wl {
             *mpv_reattach_on_fullscreen_false_wl = false;
@@ -336,8 +335,7 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
                             mpv::window::x11::set_default_cursor(&ipc_data.app_state, mpv_wid).await?;
                         }
                     }
-                }
-                else if cmd == "mouse-btn-click" {
+                } else if cmd == "mouse-btn-click" {
                     let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
                     mpv::window::focus(&ipc_data.app_state, mpv_wid_rl.unwrap()).await?;
                 }
@@ -350,5 +348,14 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
 async fn process_file_loaded(ipc_data: &IpcData) -> Result<()> {
     let mpv_file_loaded_rl = ipc_data.app_state.mpv_file_loaded_sender.read().await;
     mpv_file_loaded_rl.as_ref().unwrap().send(()).await?;
+    Ok(())
+}
+
+fn process_playback_restart(ipc_data: &IpcData) -> Result<()> {
+    cfg_if! {
+        if #[cfg(target_family = "unix")] {
+            ipc_data.window.emit("mpv-resize", {})?;
+        }
+    }
     Ok(())
 }
