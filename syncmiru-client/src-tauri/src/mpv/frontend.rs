@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 use cfg_if::cfg_if;
 use tauri::{Emitter};
 use crate::appstate::AppState;
@@ -7,6 +8,7 @@ use crate::mpv::ipc::Interface;
 use crate::mpv::models::LoadFromSource;
 use crate::mpv::window::HtmlElementRect;
 use tokio::sync::mpsc;
+use tokio::time::sleep;
 use crate::result::Result;
 
 #[tauri::command]
@@ -55,6 +57,13 @@ pub async fn mpv_wrapper_size_changed(state: tauri::State<'_, Arc<AppState>>, wr
     let mpv_wid_rl = state.mpv_wid.read().await;
     let mpv_wid = mpv_wid_rl.unwrap();
 
+    cfg_if! {
+        if #[cfg(target_family = "windows")] {
+            window::win32::hide_borders(&state, mpv_wid).await?;
+            sleep(Duration::from_millis(50)).await;
+        }
+    }
+
     window::reposition(&state, mpv_wid, &wrapper_size).await?;
     Ok(())
 }
@@ -77,11 +86,6 @@ pub async fn mpv_reposition_to_small(state: tauri::State<'_, Arc<AppState>>, win
         width: w,
         height: h,
     }).await?;
-    cfg_if! {
-        if #[cfg(target_family = "windows")] {
-            window::win32::hide_borders(&state, mpv_wid).await?;
-        }
-    }
     Ok(())
 }
 
