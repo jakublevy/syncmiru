@@ -270,11 +270,13 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
                     }
                 }
             }
+            println!("1");
             mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
-
+            println!("2");
             cfg_if! {
                 if #[cfg(target_family = "windows")] {
                     mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
+                    println!("3");
                 }
                 else {
                     sleep(Duration::from_millis(50)).await;
@@ -286,10 +288,14 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
 
             appdata_wl.mpv_win_detached = true;
 
+            println!("4");
             let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
+            println!("5");
             *mpv_reattach_on_fullscreen_false_wl = true;
 
+            println!("6");
             ipc_data.window.emit("mpv-win-detached-changed", true).ok();
+            println!("7");
         }
     } else {
         let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
