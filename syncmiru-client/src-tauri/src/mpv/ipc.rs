@@ -108,7 +108,7 @@ async fn listen(
                         break;
                      },
                      Ok(_) => {
-                        println!("listen {}", buffer);
+                       // println!("listen {}", buffer);
                         process_mpv_msg(&buffer, ipc_data).await?;
                         buffer.clear();
                      },
@@ -156,10 +156,16 @@ async fn write(
                 Interface::ChangeSubs { .. } => {}
                 Interface::SetWindowSize { .. } => {}
                 Interface::SetFullscreen(state) => {
-                    let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
-                    let cmd = format!("{{\"command\": [\"set\", \"fullscreen\", \"{}\"]}}\n", utils::bool2_yn(state));
-                    sender.write_all(cmd.as_bytes()).await?;
-                    mpv::window::focus(&ipc_data.app_state, mpv_wid_rl.unwrap()).await?;
+                    {
+                        let mut mpv_ignore_next_fullscreen_event_wl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
+                        *mpv_ignore_next_fullscreen_event_wl = true;
+
+                        let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+                        let cmd = format!("{{\"command\": [\"set\", \"fullscreen\", \"{}\"]}}\n", utils::bool2_yn(state));
+                        sender.write_all(cmd.as_bytes()).await?;
+
+                        mpv::window::focus(&ipc_data.app_state, mpv_wid_rl.unwrap()).await?;
+                    }
                 }
                 Interface::GetAid(req_id) => {
                     let cmd = utils::create_mpv_command("aid", req_id);
@@ -239,6 +245,7 @@ async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -
     if let Some(name_value) = msg.get("name") {
         if let Some(name) = name_value.as_str() {
             if name == "fullscreen" {
+                println!("listen {}", msg);
                 let fullscreen_state = msg.get("data").unwrap().as_bool().unwrap();
                 fullscreen_changed(fullscreen_state, ipc_data).await?;
             }
@@ -252,77 +259,99 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
         let mut mpv_ignore_next_fullscreen_event_rl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
         if *mpv_ignore_next_fullscreen_event_rl {
             *mpv_ignore_next_fullscreen_event_rl = false;
+            println!("fullscreen func ignored");
             return Ok(());
         }
     }
-    if fullscreen_state {
-        let mut appdata_wl = ipc_data.app_state.appdata.write().await;
-        let mpv_win_detached = appdata_wl.mpv_win_detached;
-        if !mpv_win_detached {
-            let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
-            let mpv_wid = mpv_wid_rl.unwrap();
-
-            cfg_if! {
-                if #[cfg(target_family = "unix")] {
-                    {
-                        let mut mpv_ignore_next_fullscreen_event_wl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
-                        *mpv_ignore_next_fullscreen_event_wl = true;
-                    }
-                }
+    let mut appdata_wl = ipc_data.app_state.appdata.write().await;
+    let mpv_win_detached = appdata_wl.mpv_win_detached;
+    let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+    let mpv_wid = mpv_wid_rl.unwrap();
+    if !mpv_win_detached {
+        if fullscreen_state {
+            {
+                let mut mpv_ignore_next_fullscreen_event_wl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
+                *mpv_ignore_next_fullscreen_event_wl = true;
+                mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
             }
-            println!("1");
-            mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
-            println!("2");
-            cfg_if! {
-                if #[cfg(target_family = "windows")] {
-                    mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
-                    println!("3");
-                }
-                else {
-                    sleep(Duration::from_millis(50)).await;
-                    let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
-                    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
-                    mpv_ipc_tx.send(SetFullscreen(true)).await?;
-                }
-            }
-
-            appdata_wl.mpv_win_detached = true;
-
-            println!("4");
-            let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
-            println!("5");
-            *mpv_reattach_on_fullscreen_false_wl = true;
-
-            println!("6");
-            ipc_data.window.emit("mpv-win-detached-changed", true).ok();
-            println!("7");
-        }
-    } else {
-        let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
-        if *mpv_reattach_on_fullscreen_false_wl {
-            *mpv_reattach_on_fullscreen_false_wl = false;
-            drop(mpv_reattach_on_fullscreen_false_wl);
-
-            let mut appdata_wl = ipc_data.app_state.appdata.write().await;
-            let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
-            let mpv_wid = mpv_wid_rl.unwrap();
-
-            cfg_if! {
-                if #[cfg(target_family = "windows")] {
-                    sleep(Duration::from_millis(50)).await;
-                }
-            }
-            mpv::window::attach(&ipc_data.app_state, &ipc_data.window, mpv_wid).await?;
-            cfg_if! {
-                if #[cfg(target_family = "unix")] {
-                    sleep(Duration::from_millis(50)).await;
-                    mpv::window::focus(&ipc_data.app_state, mpv_wid).await?;
-                }
-            }
-            appdata_wl.mpv_win_detached = false;
-            ipc_data.window.emit("mpv-win-detached-changed", false).ok();
+            // sleep(Duration::from_millis(500)).await;
+            // let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
+            // let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+            // mpv_ipc_tx.send(SetFullscreen(true)).await?;
         }
     }
+    else {
+        // reattach if flag
+    }
+    // if fullscreen_state {
+    //     let mut appdata_wl = ipc_data.app_state.appdata.write().await;
+    //     let mpv_win_detached = appdata_wl.mpv_win_detached;
+    //     if !mpv_win_detached {
+    //         let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+    //         let mpv_wid = mpv_wid_rl.unwrap();
+    //
+    //         cfg_if! {
+    //             if #[cfg(target_family = "unix")] {
+    //                 {
+    //                     let mut mpv_ignore_next_fullscreen_event_wl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
+    //                     *mpv_ignore_next_fullscreen_event_wl = true;
+    //                     mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
+    //                 }
+    //             }
+    //             else {
+    //                 mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
+    //             }
+    //         }
+    //
+    //         cfg_if! {
+    //             if #[cfg(target_family = "windows")] {
+    //                 mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
+    //                 println!("3");
+    //             }
+    //             else {
+    //                 sleep(Duration::from_millis(2000)).await;
+    //                 let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
+    //                 let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+    //                 mpv_ipc_tx.send(SetFullscreen(true)).await?;
+    //                 sleep(Duration::from_millis(2000)).await;
+    //             }
+    //         }
+    //
+    //         appdata_wl.mpv_win_detached = true;
+    //
+    //         let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
+    //         *mpv_reattach_on_fullscreen_false_wl = true;
+    //
+    //         ipc_data.window.emit("mpv-win-detached-changed", true).ok();
+    //     }
+    // } else {
+    //     let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
+    //     if *mpv_reattach_on_fullscreen_false_wl {
+    //         *mpv_reattach_on_fullscreen_false_wl = false;
+    //         drop(mpv_reattach_on_fullscreen_false_wl);
+    //
+    //         let mut appdata_wl = ipc_data.app_state.appdata.write().await;
+    //         let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+    //         let mpv_wid = mpv_wid_rl.unwrap();
+    //
+    //         cfg_if! {
+    //             if #[cfg(target_family = "windows")] {
+    //                 sleep(Duration::from_millis(50)).await;
+    //             }
+    //         }
+    //         sleep(Duration::from_millis(2000)).await;
+    //         mpv::window::attach(&ipc_data.app_state, &ipc_data.window, mpv_wid).await?;
+    //
+    //         cfg_if! {
+    //             if #[cfg(target_family = "unix")] {
+    //                 sleep(Duration::from_millis(2000)).await;
+    //                 mpv::window::focus(&ipc_data.app_state, mpv_wid).await?;
+    //             }
+    //         }
+    //         appdata_wl.mpv_win_detached = false;
+    //         ipc_data.window.emit("mpv-win-detached-changed", false).ok();
+    //     }
+    // }
     Ok(())
 }
 

@@ -4,8 +4,10 @@ pub mod window;
 mod models;
 
 use std::fs;
+use std::io::Stdout;
 use std::ops::Deref;
 use std::path::PathBuf;
+use std::process::Stdio;
 use std::sync::Arc;
 use std::thread::sleep;
 use std::time::{Duration, SystemTime};
@@ -67,6 +69,7 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
     //    .arg("--geometry=1x1+1+1")
         .arg("--keep-open=yes")
         .arg(format!("--script-opts=ytdl_hook-ytdl_path={}", yt_dlp_path.as_display()))
+        .arg("--terminal=no")
         .spawn()?;
 
     let pid = process_handle.id().expect("missing process id");
