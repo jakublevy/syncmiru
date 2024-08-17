@@ -52,6 +52,7 @@ pub(super) async fn reparent(state: &Arc<AppState>, mpv_wid: usize, parent_wid: 
         if reply.parent == parent_window {
             return Ok(())
         }
+        sleep(Duration::from_millis(10)).await;
     }
 }
 
