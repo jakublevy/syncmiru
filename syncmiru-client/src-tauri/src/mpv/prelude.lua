@@ -182,3 +182,21 @@ mp.add_key_binding("MOUSE_BTN18", handle_mouse_button)
 mp.add_key_binding("MOUSE_BTN19", handle_mouse_button)
 
 mp.add_key_binding("mouse_enter", handle_mouse_enter)
+
+
+
+
+local last_fullscreen_state = mp.get_property_native("fullscreen")
+
+local function on_fullscreen_change(name, value)
+    if value ~= last_fullscreen_state then
+        if value then
+            mp.command_native_async({"script-message", "fullscreen-by-user", "true"}, function(success, result, error_msg) end)
+        else
+            mp.command_native_async({"script-message", "fullscreen-by-user", "false"}, function(success, result, error_msg) end)
+        end
+        last_fullscreen_state = value
+    end
+end
+
+mp.observe_property("fullscreen", "bool", on_fullscreen_change)

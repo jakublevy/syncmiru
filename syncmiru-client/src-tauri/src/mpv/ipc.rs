@@ -194,7 +194,7 @@ async fn write(
 }
 
 async fn init_observe_property(mut sender: &SendHalf) -> Result<()> {
-    let properties = vec!["aid", "sid", "pause", "fullscreen"];
+    let properties = vec!["aid", "sid", "pause"];
     for (i, property) in properties.iter().enumerate() {
         observe_property(sender, i, property).await?;
     }
@@ -329,10 +329,9 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
 async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Result<()> {
     if let Some(args_value) = msg.get("args") {
         if let Some(args) = args_value.as_array() {
-            if args.len() == 1 {
-                let cmd = args.get(0).unwrap().as_str().unwrap();
-                if cmd == "mouse-enter" {
-                    cfg_if! {
+            let cmd = args.get(0).unwrap().as_str().unwrap();
+            if cmd == "mouse-enter" {
+                cfg_if! {
                         if #[cfg(target_family = "unix")] {
                             let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
                             let mpv_wid = mpv_wid_rl.unwrap();
@@ -341,10 +340,14 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
                             mpv::window::x11::set_default_cursor(&ipc_data.app_state, mpv_wid).await?;
                         }
                     }
-                } else if cmd == "mouse-btn-click" {
-                    let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
-                    mpv::window::focus(&ipc_data.app_state, mpv_wid_rl.unwrap()).await?;
-                }
+            }
+            else if cmd == "mouse-btn-click" {
+                let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+                mpv::window::focus(&ipc_data.app_state, mpv_wid_rl.unwrap()).await?;
+            }
+            else if cmd == "fullscreen-by-user" {
+                let state = args.get(1).unwrap().as_str().unwrap().parse::<bool>()?;
+                println!("fullscreen-by-user {}", state);
             }
         }
     }

@@ -1,5 +1,6 @@
 use serde_with::DisplayFromStr;
 use std::io;
+use std::str::ParseBoolError;
 use std::sync::PoisonError;
 use crate::mpv::ipc::Interface;
 
@@ -67,6 +68,9 @@ pub enum SyncmiruError {
 
     #[error("Mpsc void send error")]
     MpscVoidSendError(#[from] tokio::sync::mpsc::error::SendError<()>),
+
+    #[error("ParseBoolError")]
+    ParseBoolError(#[from] ParseBoolError),
 
     #[error("URL missing version error")]
     LatestVersionMissingError,
