@@ -200,7 +200,7 @@ async fn write(
 }
 
 async fn init_observe_property(mut sender: &SendHalf) -> Result<()> {
-    let properties = vec!["aid", "sid", "pause"];
+    let properties = vec!["aid", "sid", "pause", "fullscreen"];
     for (i, property) in properties.iter().enumerate() {
         observe_property(sender, i, property).await?;
     }
@@ -259,30 +259,121 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
         let mut mpv_ignore_next_fullscreen_event_rl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
         if *mpv_ignore_next_fullscreen_event_rl {
             *mpv_ignore_next_fullscreen_event_rl = false;
-            println!("fullscreen func ignored");
             return Ok(());
         }
     }
-    let mut appdata_wl = ipc_data.app_state.appdata.write().await;
-    let mpv_win_detached = appdata_wl.mpv_win_detached;
-    let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
-    let mpv_wid = mpv_wid_rl.unwrap();
-    if !mpv_win_detached {
-        if fullscreen_state {
-            {
-                let mut mpv_ignore_next_fullscreen_event_wl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
-                *mpv_ignore_next_fullscreen_event_wl = true;
-                mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
+    if fullscreen_state {
+        let mut appdata_wl = ipc_data.app_state.appdata.write().await;
+        let mpv_win_detached = appdata_wl.mpv_win_detached;
+        if !mpv_win_detached {
+            let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+            let mpv_wid = mpv_wid_rl.unwrap();
+
+            cfg_if! {
+                if #[cfg(target_family = "unix")] {
+                    {
+                        let mut mpv_ignore_next_fullscreen_event_wl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
+                        *mpv_ignore_next_fullscreen_event_wl = true;
+                    }
+                }
             }
-            // sleep(Duration::from_millis(500)).await;
-            // let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
-            // let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
-            // mpv_ipc_tx.send(SetFullscreen(true)).await?;
+            mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
+
+            cfg_if! {
+                if #[cfg(target_family = "windows")] {
+                    mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
+                }
+                else {
+                    sleep(Duration::from_millis(50)).await;
+                    let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
+                    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+                    mpv_ipc_tx.send(SetFullscreen(true)).await?;
+                }
+            }
+
+            appdata_wl.mpv_win_detached = true;
+
+            let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
+            *mpv_reattach_on_fullscreen_false_wl = true;
+
+            ipc_data.window.emit("mpv-win-detached-changed", true).ok();
+        }
+    } else {
+        let mut mpv_reattach_on_fullscreen_false_wl = ipc_data.app_state.mpv_reattach_on_fullscreen_false.write().await;
+        if *mpv_reattach_on_fullscreen_false_wl {
+            *mpv_reattach_on_fullscreen_false_wl = false;
+            drop(mpv_reattach_on_fullscreen_false_wl);
+
+            let mut appdata_wl = ipc_data.app_state.appdata.write().await;
+            let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+            let mpv_wid = mpv_wid_rl.unwrap();
+
+            cfg_if! {
+                if #[cfg(target_family = "windows")] {
+                    sleep(Duration::from_millis(50)).await;
+                }
+            }
+            mpv::window::attach(&ipc_data.app_state, &ipc_data.window, mpv_wid).await?;
+            cfg_if! {
+                if #[cfg(target_family = "unix")] {
+                    sleep(Duration::from_millis(50)).await;
+                    mpv::window::focus(&ipc_data.app_state, mpv_wid).await?;
+                }
+            }
+            appdata_wl.mpv_win_detached = false;
+            ipc_data.window.emit("mpv-win-detached-changed", false).ok();
         }
     }
-    else {
-        // reattach if flag
-    }
+    Ok(())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // {
+    //     let mut mpv_ignore_next_fullscreen_event_rl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
+    //     if *mpv_ignore_next_fullscreen_event_rl {
+    //         *mpv_ignore_next_fullscreen_event_rl = false;
+    //         println!("fullscreen func ignored");
+    //         return Ok(());
+    //     }
+    // }
+    // let mut appdata_wl = ipc_data.app_state.appdata.write().await;
+    // let mpv_win_detached = appdata_wl.mpv_win_detached;
+    // let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+    // let mpv_wid = mpv_wid_rl.unwrap();
+    // if !mpv_win_detached {
+    //     if fullscreen_state {
+    //         {
+    //             let mut mpv_ignore_next_fullscreen_event_wl = ipc_data.app_state.mpv_ignore_next_fullscreen_event.write().await;
+    //             *mpv_ignore_next_fullscreen_event_wl = true;
+    //             mpv::window::detach(&ipc_data.app_state, mpv_wid).await?;
+    //         }
+    //         sleep(Duration::from_millis(50)).await;
+    //         let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
+    //         let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+    //         mpv_ipc_tx.send(SetFullscreen(true)).await?;
+    //     }
+    // }
+    // else {
+    //     // reattach if flag
+    // }
+    //
+
+
+
+
+
     // if fullscreen_state {
     //     let mut appdata_wl = ipc_data.app_state.appdata.write().await;
     //     let mpv_win_detached = appdata_wl.mpv_win_detached;
@@ -352,7 +443,7 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
     //         ipc_data.window.emit("mpv-win-detached-changed", false).ok();
     //     }
     // }
-    Ok(())
+    //Ok(())
 }
 
 async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Result<()> {
@@ -377,6 +468,7 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
             else if cmd == "fullscreen-by-user" {
                 let state = args.get(1).unwrap().as_str().unwrap().parse::<bool>()?;
                 println!("fullscreen-by-user {}", state);
+                fullscreen_changed(state, ipc_data).await?;
             }
         }
     }
