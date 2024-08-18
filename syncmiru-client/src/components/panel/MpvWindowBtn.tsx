@@ -6,17 +6,16 @@ import {useTranslation} from "react-i18next";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {useIsSupportedWindowSystem} from "@hooks/useIsSupportedWindowSystem.ts";
 import DockBottom from "@components/svg/DockBottom.tsx";
-import {useChangeMpvWinDetached} from "@hooks/useMpvWinDetached.ts";
+import {invoke} from "@tauri-apps/api/core";
 
 export default function MpvWindowBtn(): ReactElement {
     const {t} = useTranslation()
     const {mpvWinDetached, setMpvWinDetached} = useMainContext()
     const isSupportedWindowSystem = useIsSupportedWindowSystem()
-    const changeMpvWinDetached = useChangeMpvWinDetached()
 
     function mpvWindowBtnClicked() {
         setMpvWinDetached((p) => {
-            changeMpvWinDetached(!p)
+            invoke('set_mpv_win_detached', {mpvWinDetachReq: !p})
                 .catch(() => {
                     return p
                 })

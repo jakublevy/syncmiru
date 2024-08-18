@@ -43,10 +43,14 @@ pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Wi
 #[tauri::command]
 pub async fn mpv_quit(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
     stop_ipc(&state).await?;
-    stop_process(&state, window).await?;
+    stop_process(&state).await?;
 
     let mut mpv_reattach_on_fullscreen_false_wl = state.mpv_reattach_on_fullscreen_false.write().await;
-    *mpv_reattach_on_fullscreen_false_wl = false;
+    if *mpv_reattach_on_fullscreen_false_wl {
+        *mpv_reattach_on_fullscreen_false_wl = false;
+        let mut appdata_wl = state.appdata.write().await;
+        appdata_wl.mpv_win_detached = false;
+    }
     Ok(())
 }
 

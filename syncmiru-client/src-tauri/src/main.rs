@@ -119,7 +119,7 @@ async fn handle_window_event(window: Window, event: WindowEvent) {
         CloseRequested { .. } => {
             if window.label() == "main" {
                 let state = window.app_handle().state();
-                mpv::stop_process(&state, window.clone())
+                mpv::stop_process(&state)
                     .await
                     .expect("stopping mpv process failed");
                 files::delete_tmp().expect("Deleting tmp files failed");

@@ -32,12 +32,12 @@ import {useSubSync} from "@hooks/useSubSync.ts";
 import {RoomConnectionState} from "@models/context.ts";
 import {UserRoomMap, UserRoomPingsClient} from "@models/roomUser.ts";
 import Decimal from "decimal.js";
-import {useMpvWinDetached} from "@hooks/useMpvWinDetached.ts";
 import {useIsSupportedWindowSystem} from "@hooks/useIsSupportedWindowSystem.ts";
 import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
 import {MultiMap} from "mnemonist";
 import {invoke} from "@tauri-apps/api/core";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
+import {refresh} from "@mittwald/react-use-promise";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -74,7 +74,6 @@ export default function Main(): ReactElement {
         playback_speed: new Decimal(1),
         minor_desync_playback_slow: new Decimal(0.05),
     })
-    const mpvWinDetachedInit = useMpvWinDetached()
     const [mpvWinDetached, setMpvWinDetached] = useState<boolean>(false)
     const [source2url, setSource2url] = useState<Map<string, string>>(new Map<string, string>())
     const [playlist, setPlaylist] = useState<Map<PlaylistEntryId, PlaylistEntry>>(new Map<PlaylistEntryId, PlaylistEntry>())
@@ -127,15 +126,6 @@ export default function Main(): ReactElement {
     }, [subSyncInit]);
 
     useEffect(() => {
-        if (mpvWinDetachedInit)
-            setMpvWinDetached(true)
-        else if (isSupportedWindowSystem)
-            setMpvWinDetached(false)
-        else
-            setMpvWinDetached(true)
-    }, [mpvWinDetachedInit]);
-
-    useEffect(() => {
         window.addEventListener('beforeunload', function () {
             invoke('mpv_quit', {})
                 .then(() => {
@@ -178,6 +168,19 @@ export default function Main(): ReactElement {
     }
 
     function loadInitialData(s: Socket) {
+        invoke<boolean>('get_mpv_win_detached', {})
+            .then((mpvWinDetached) => {
+                if (mpvWinDetached)
+                    setMpvWinDetached(true)
+                else if (isSupportedWindowSystem)
+                    setMpvWinDetached(false)
+                else
+                    setMpvWinDetached(true)
+            })
+            .catch(() => {
+                navigateToLoginFormMain(navigate)
+            })
+
         s.emitWithAck("get_users")
             .then((users: Array<UserSrv>) => {
                 setUsersFromSrv(users)
