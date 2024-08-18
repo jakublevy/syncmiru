@@ -32,7 +32,7 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<void>('mpv-resize', (e: Event<void>) => {
-            if(!ctx.mpvWinDetached) {
+            if(ctx.mpvRunning && !ctx.mpvWinDetached) {
                 if(!ctx.mpvShowSmall)
                     mpvResize()
                 else

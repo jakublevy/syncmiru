@@ -138,6 +138,9 @@ export default function Main(): ReactElement {
     useEffect(() => {
         window.addEventListener('beforeunload', function () {
             invoke('mpv_quit', {})
+                .then(() => {
+                    setMpvRunning(false)
+                })
                 .catch(() => {
                     invoke('kill_app_with_error_msg', {msg: t('mpv-quit-error')})
                 })
@@ -152,6 +155,14 @@ export default function Main(): ReactElement {
         setCurrentRid(null)
         setUidPing(new Map<UserId, number>())
         setReconnecting(true)
+        setSource2url(new Map<string, string>())
+        setPlaylist(new Map<PlaylistEntryId, PlaylistEntry>())
+        setPlaylistOrder([])
+        setSubtitles(new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set))
+        setJwts(new Map<PlaylistEntryId, string>())
+        setUid2ready(new Map<UserId, UserReadyState>())
+        setActiveVideoId(null)
+        setMpvRunning(false)
     }
 
     function ioConnError(e: Error) {

@@ -7,15 +7,20 @@ import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import useClearJwt from "@hooks/useClearJwt.ts";
 import {useTranslation} from "react-i18next";
 import {invoke} from "@tauri-apps/api/core";
+import {useMainContext} from "@hooks/useMainContext.ts";
 
 export default function Reconnecting(): ReactElement {
     const [_, navigate] = useLocation()
     const {t} = useTranslation()
     const clearJwt = useClearJwt()
     const [loading, setLoading] = useState<boolean>(false)
+    const {setMpvRunning} = useMainContext()
 
     useEffect(() => {
         invoke('mpv_quit', {})
+            .then(() => {
+                setMpvRunning(false)
+            })
             .catch(() => {
                 invoke('kill_app_with_error_msg', {msg: t('mpv-quit-error')})
             })

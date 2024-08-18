@@ -10,6 +10,7 @@ export function forceDisconnectFromRoom(ctx: MainContextModel, t: TFunction<"tra
     ctx.setRoomConnection(RoomConnectionState.Disconnecting)
     invoke('mpv_quit', {})
         .then(() => {
+            ctx.setMpvRunning(false)
             ctx.socket?.emitWithAck("disconnect_room", {})
                 .then((ack: SocketIoAck<null>) => {
                     clearInterval(ctx.roomPingTimerRef?.current)
