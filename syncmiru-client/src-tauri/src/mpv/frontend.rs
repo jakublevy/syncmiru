@@ -21,9 +21,6 @@ pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Wi
 
         let pipe_id = gen_pipe_id();
         start_process(&state, &pipe_id, window.clone()).await?;
-
-        let mut mpv_ignore_next_fullscreen_event_wl = state.mpv_ignore_next_fullscreen_event.write().await;
-        *mpv_ignore_next_fullscreen_event_wl = true;
         start_ipc(&state, &pipe_id, window.clone()).await?;
 
         let mut mpv_detached = true;

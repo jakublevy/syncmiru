@@ -20,7 +20,7 @@ pub struct AppState {
     pub mpv_next_req_id: RwLock<u32>,
     pub mpv_response_senders: RwLock<HashMap<u32, Sender<serde_json::Value>>>,
     pub mpv_file_loaded_sender: RwLock<Option<Sender<()>>>,
-    pub mpv_ignore_next_fullscreen_event: RwLock<bool>,
+    pub mpv_ignore_fullscreen_events_timestamp: RwLock<tokio::time::Instant>,
 
     #[cfg(target_family = "unix")]
     pub x11_conn: RwLock<Option<RustConnection>>,
@@ -34,13 +34,6 @@ impl AppState {
         let appdata_lock = self.appdata.read().await;
         let home_srv = appdata_lock.home_srv.clone().unwrap_or("".to_string());
         Ok(home_srv)
-    }
-
-    pub async fn set_mpv_fullscreen(&self, state: bool) -> Result<()> {
-        let mpv_ipc_tx_rl = self.mpv_ipc_tx.read().await;
-        let iface = mpv_ipc_tx_rl.as_ref().context("mpv_ipc_tx is None")?;
-        iface.send(Interface::SetFullscreen(state)).await?;
-        Ok(())
     }
 
     pub async fn next_req_id(&self) -> u32 {

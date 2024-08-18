@@ -24,9 +24,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use result::Result;
 use rust_i18n::t;
-use tokio::sync::mpsc;
 use tauri::{Manager, Window, WindowEvent};
 use tauri::WindowEvent::CloseRequested;
+use tokio::time::Instant;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -39,7 +39,7 @@ async fn main() -> Result<()> {
         mpv_next_req_id: 1.into(),
         mpv_response_senders: HashMap::new().into(),
         mpv_file_loaded_sender: None.into(),
-        mpv_ignore_next_fullscreen_event: false.into(),
+        mpv_ignore_fullscreen_events_timestamp: Instant::now().into(),
 
         #[cfg(target_family = "unix")]
         x11_conn: None.into(),
