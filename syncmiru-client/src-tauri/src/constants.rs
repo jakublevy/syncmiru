@@ -8,3 +8,4 @@ pub const MPV_RELEASES_URL: &'static str = "https://sourceforge.net/projects/mpv
 pub const HTTP_TIMEOUT: u64 = 5;
 pub const HWID_KEY: &'static str = "&-]#pBy7Wkxn72l|r#lW$6rAD:I7;ksbX976_ltp=LVM8iGKqzpQsK0v+<(Yf7e";
 pub const PRELUDE_LOCATION: &'static str = "src/mpv/prelude.lua";
+pub const MPV_IGNORE_FULLSCREEN_MILLIS: u128 = 300;

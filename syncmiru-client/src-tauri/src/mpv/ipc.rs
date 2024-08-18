@@ -16,7 +16,7 @@ use tokio::sync::mpsc::{Receiver};
 use tokio::sync::{mpsc, oneshot};
 use tokio::time::{sleep, Instant};
 use crate::appstate::AppState;
-use crate::mpv;
+use crate::{constants, mpv};
 use crate::mpv::ipc::Interface::SetFullscreen;
 use crate::result::Result;
 
@@ -254,7 +254,7 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
         let mut mpv_ignore_fullscreen_events_timestamp_rl = ipc_data.app_state.mpv_ignore_fullscreen_events_timestamp.write().await;
         let now = Instant::now();
         if let Some(duration) = now.checked_duration_since(*mpv_ignore_fullscreen_events_timestamp_rl) {
-            if duration.as_millis() < 200 {
+            if duration.as_millis() < constants::MPV_IGNORE_FULLSCREEN_MILLIS {
                 println!("fullscreen ignored");
                 return Ok(())
             }
@@ -277,7 +277,7 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
                     mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
                 }
                 else {
-                    sleep(Duration::from_millis(50)).await;
+                    sleep(Duration::from_millis(70)).await;
                     let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
                     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
                     mpv_ipc_tx.send(SetFullscreen(true)).await?;
@@ -326,14 +326,14 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
             let cmd = args.get(0).unwrap().as_str().unwrap();
             if cmd == "mouse-enter" {
                 cfg_if! {
-                        if #[cfg(target_family = "unix")] {
-                            let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
-                            let mpv_wid = mpv_wid_rl.unwrap();
-                            mpv::window::x11::set_default_cursor(&ipc_data.app_state, mpv_wid).await?;
-                            sleep(Duration::from_millis(50)).await;
-                            mpv::window::x11::set_default_cursor(&ipc_data.app_state, mpv_wid).await?;
-                        }
+                    if #[cfg(target_family = "unix")] {
+                        let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+                        let mpv_wid = mpv_wid_rl.unwrap();
+                        mpv::window::x11::set_default_cursor(&ipc_data.app_state, mpv_wid).await?;
+                        sleep(Duration::from_millis(50)).await;
+                        mpv::window::x11::set_default_cursor(&ipc_data.app_state, mpv_wid).await?;
                     }
+                }
             }
             else if cmd == "mouse-btn-click" {
                 let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
