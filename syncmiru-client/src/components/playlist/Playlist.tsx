@@ -1,4 +1,4 @@
-import React, {MouseEvent, ReactElement, useEffect, useState} from "react";
+import React, {MouseEvent, ReactElement, useEffect, useRef, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {
@@ -88,14 +88,19 @@ export default function Playlist(): ReactElement {
             m.set(parseInt(idStr), new PlaylistEntryVideo(value.source, value.path))
         }
 
+        let changeActiveVideo = false
+
         ctx.setPlaylist((p) => {
             if(p.size === 0)
-                setAsActiveVideo(m.keys().next().value)
+                changeActiveVideo = true;
 
             return new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m])
         })
         let entryIds = [...m.keys()]
         ctx.setPlaylistOrder((p) => [...new Set([...p, ...entryIds])])
+
+        if(changeActiveVideo)
+            setAsActiveVideo(m.keys().next().value)
     }
 
     function onAddSubtitlesFiles(r: Record<string, PlaylistEntrySubtitlesSrv>) {
@@ -225,9 +230,11 @@ export default function Playlist(): ReactElement {
     }
 
     function onChangeActiveVideo(entryId: PlaylistEntryId) {
-        const entry = ctx.playlist.get(entryId)
-        if(entry == null)
-            return
+        let entry: PlaylistEntry | undefined = undefined
+        ctx.setPlaylist((p) => {
+            entry = ctx.playlist.get(entryId)
+            return p
+        })
 
         const subs = ctx.subtitles.get(entryId)
         let reqIds: Set<PlaylistEntryId>
