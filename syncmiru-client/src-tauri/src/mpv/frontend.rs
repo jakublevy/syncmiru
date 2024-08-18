@@ -63,7 +63,6 @@ pub async fn mpv_wrapper_size_changed(state: tauri::State<'_, Arc<AppState>>, wr
             sleep(Duration::from_millis(50)).await;
         }
     }
-
     window::reposition(&state, mpv_wid, &wrapper_size).await?;
     Ok(())
 }

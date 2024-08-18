@@ -32,8 +32,12 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<void>('mpv-resize', (e: Event<void>) => {
-            if(!ctx.mpvWinDetached)
-                mpvResize()
+            if(!ctx.mpvWinDetached) {
+                if(!ctx.mpvShowSmall)
+                    mpvResize()
+                else
+                    mpvResizeToSmall()
+            }
         }))
 
         unlisten.push(listen<Record<"width" | "height", number>>('tauri://resize', (e) => {
@@ -42,7 +46,7 @@ export default function Mpv(p: Props): ReactElement {
                     if(!ctx.mpvShowSmall)
                         mpvResize()
                     else
-                        mpvRepositionToSmall()
+                        mpvResizeToSmall()
                 }
             }, 50)
         }))
@@ -65,7 +69,7 @@ export default function Mpv(p: Props): ReactElement {
         if(ctx.mpvRunning && !ctx.mpvWinDetached) {
             if (ctx.modalShown || ctx.settingsShown) {
                 ctx.setMpvShowSmall(true)
-                mpvRepositionToSmall()
+                mpvResizeToSmall()
             } else {
                 ctx.setMpvShowSmall(false)
                 mpvResize()
@@ -120,7 +124,7 @@ export default function Mpv(p: Props): ReactElement {
             })
     }
 
-    function mpvRepositionToSmall() {
+    function mpvResizeToSmall() {
         invoke('mpv_reposition_to_small', {})
             .catch(() => {
                 showPersistentErrorAlert(t('mpv-resize-error'))
