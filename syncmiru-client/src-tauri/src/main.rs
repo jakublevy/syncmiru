@@ -94,6 +94,7 @@ async fn main() -> Result<()> {
             mpv::frontend::mpv_wrapper_size_changed,
             mpv::frontend::mpv_reposition_to_small,
             mpv::frontend::mpv_load_from_source,
+            mpv::frontend::mpv_remove_current_from_playlist,
             frontend::kill_app_with_error_msg
         ])
         .on_window_event(move |window: &Window, event: &WindowEvent| {

@@ -34,6 +34,7 @@ pub enum Interface {
     GetSid(u32),
     GetFullscreen(u32),
     GetTimePos(u32),
+    PlaylistRemoveCurrent,
     Exit,
 }
 
@@ -102,6 +103,7 @@ async fn listen(
     loop {
         tokio::select! {
             read_bytes = reader.read_line(&mut buffer) => {
+                println!("listen start");
                 match read_bytes {
                      Ok(0) => {
                         println!("Connection closed");
@@ -117,8 +119,10 @@ async fn listen(
                         break;
                      }
                 }
+                println!("listen end");
             }
             _ = &mut exit_rx => {
+                println!("listen exit called");
                 break;
             }
         }
@@ -135,6 +139,7 @@ async fn write(
     init_observe_property(&sender).await?;
     loop {
         let msg_opt = rx.recv().await;
+        println!("write start");
         if let Some(msg) = msg_opt {
             match msg {
                 Interface::LoadFromSource { ref source_url, ref jwt } => {
@@ -177,6 +182,9 @@ async fn write(
                 Interface::GetTimePos(req_id) => {
                     let cmd = utils::create_mpv_command("time-pos", req_id);
                     sender.write_all(cmd.as_bytes()).await?;
+                },
+                Interface::PlaylistRemoveCurrent => {
+                    sender.write_all(b"{\"command\": [\"playlist_remove\", \"current\"]}\n").await?;
                 }
                 Interface::Exit => {
                     exit_tx_opt
@@ -186,8 +194,10 @@ async fn write(
                         .map_err(|e| anyhow!("killing interprocess mpv communication failed"))?;
                 }
             }
-            println!("msg {:?}", msg);
+            println!("write end");
+            //println!("msg {:?}", msg);
         } else {
+            println!("msg None");
             break;
         }
     }
@@ -240,7 +250,6 @@ async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -
     if let Some(name_value) = msg.get("name") {
         if let Some(name) = name_value.as_str() {
             if name == "fullscreen" {
-                println!("listen {}", msg);
                 let fullscreen_state = msg.get("data").unwrap().as_bool().unwrap();
                 fullscreen_changed(fullscreen_state, ipc_data).await?;
             }
@@ -250,12 +259,14 @@ async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -
 }
 
 async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Result<()> {
+    let start = Instant::now();
+    println!("fullscreen_changed enter");
     {
         let mut mpv_ignore_fullscreen_events_timestamp_rl = ipc_data.app_state.mpv_ignore_fullscreen_events_timestamp.write().await;
         let now = Instant::now();
         if let Some(duration) = now.checked_duration_since(*mpv_ignore_fullscreen_events_timestamp_rl) {
             if duration.as_millis() < constants::MPV_IGNORE_FULLSCREEN_MILLIS {
-                println!("fullscreen ignored");
+                println!("fullscreen_changed exit");
                 return Ok(())
             }
             else {
@@ -317,6 +328,10 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
             ipc_data.window.emit("mpv-win-detached-changed", false).ok();
         }
     }
+    println!("fullscreen_changed exit");
+    let end = Instant::now();
+    let elapsed = end.duration_since(start);
+    println!("elapsed {}", elapsed.as_millis());
     Ok(())
 }
 
@@ -338,11 +353,6 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
             else if cmd == "mouse-btn-click" {
                 let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
                 mpv::window::focus(&ipc_data.app_state, mpv_wid_rl.unwrap()).await?;
-            }
-            else if cmd == "fullscreen-by-user" {
-                let state = args.get(1).unwrap().as_str().unwrap().parse::<bool>()?;
-                println!("fullscreen-by-user {}", state);
-                fullscreen_changed(state, ipc_data).await?;
             }
         }
     }
