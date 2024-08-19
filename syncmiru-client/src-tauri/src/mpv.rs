@@ -118,7 +118,7 @@ pub async fn stop_process(state: &Arc<AppState>) -> Result<()> {
 }
 
 pub async fn start_ipc(state: &Arc<AppState>, pipe_id: &str, window: tauri::Window) -> Result<()> {
-    let (tx, rx): (Sender<ipc::Interface>, Receiver<ipc::Interface>) = mpsc::channel(1024);
+    let (tx, rx): (Sender<ipc::Interface>, Receiver<ipc::Interface>) = mpsc::channel(1);
     {
         let mut mpv_ipc_tx_wl = state.mpv_ipc_tx.write().await;
         *mpv_ipc_tx_wl = Some(tx);

@@ -172,6 +172,8 @@ export default function Playlist(): ReactElement {
     }
 
     function onDelPlaylistEntry(entryId: PlaylistEntryId) {
+        let playlistEmpty = false
+
         ctx.setPlaylist((playlist => {
             const newPlaylist: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
 
@@ -224,18 +226,18 @@ export default function Playlist(): ReactElement {
                     if(!playlistIdsToRemove.has(k))
                         newPlaylist.set(k, v)
                 }
+                if(newPlaylist.size === 0)
+                    playlistEmpty = true
+
                 return newPlaylist
             }
         }))
+        if(playlistEmpty)
+            console.log('playlist empty')
     }
 
     function onChangeActiveVideo(entryId: PlaylistEntryId) {
-        let entry: PlaylistEntry | undefined = undefined
-        ctx.setPlaylist((p) => {
-            entry = ctx.playlist.get(entryId)
-            return p
-        })
-
+        let entry = getFromPlaylist(entryId)
         const subs = ctx.subtitles.get(entryId)
         let reqIds: Set<PlaylistEntryId>
         if(subs == null) {
@@ -268,6 +270,15 @@ export default function Playlist(): ReactElement {
                 ctx.setJwts(jwtsTmp)
                 ctx.setActiveVideoId(entryId)
             })
+    }
+
+    function getFromPlaylist(entryId: PlaylistEntryId): PlaylistEntry | undefined {
+        let entry: PlaylistEntry | undefined = undefined
+        ctx.setPlaylist((p) => {
+            entry = ctx.playlist.get(entryId)
+            return p
+        })
+        return entry
     }
 
     function orderChanged(e: OnChangeMeta) {

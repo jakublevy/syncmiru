@@ -12,7 +12,7 @@ use interprocess::local_socket::{
 use interprocess::local_socket::tokio::{RecvHalf, SendHalf};
 use tauri::Emitter;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
-use tokio::sync::mpsc::{Receiver};
+use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::sync::{mpsc, oneshot};
 use tokio::time::{sleep, Instant};
 use crate::appstate::AppState;
@@ -36,6 +36,7 @@ pub enum Interface {
     GetTimePos(u32),
     PlaylistRemoveCurrent,
     Exit,
+    Nop
 }
 
 #[derive(Debug, PartialEq)]
@@ -74,6 +75,12 @@ pub async fn start(
     Ok(())
 }
 
+pub async fn send_cmd_wait(tx: &Sender<Interface>, cmd: Interface) -> Result<()> {
+    tx.send(cmd).await?;
+    tx.send(Interface::Nop).await?;
+    Ok(())
+}
+
 async fn send_get_property(ipc_data: &IpcData, property: Property) -> Result<Receiver<serde_json::Value>> {
     let req_id = ipc_data.app_state.next_req_id().await;
 
@@ -81,7 +88,7 @@ async fn send_get_property(ipc_data: &IpcData, property: Property) -> Result<Rec
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
 
     let mut mpv_response_senders_wl = ipc_data.app_state.mpv_response_senders.write().await;
-    let (tx, rx) = mpsc::channel::<serde_json::Value>(1024);
+    let (tx, rx) = mpsc::channel::<serde_json::Value>(1);
     mpv_response_senders_wl.insert(req_id, tx);
 
     match property {
@@ -192,7 +199,8 @@ async fn write(
                         .unwrap()
                         .send(())
                         .map_err(|e| anyhow!("killing interprocess mpv communication failed"))?;
-                }
+                },
+                Interface::Nop => {}
             }
             println!("write end");
             //println!("msg {:?}", msg);
