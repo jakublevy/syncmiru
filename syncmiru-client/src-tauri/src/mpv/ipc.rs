@@ -191,26 +191,15 @@ async fn write(
                     sender.write_all(cmd.as_bytes()).await?;
                 },
                 Interface::PlaylistRemoveCurrent => {
+                    sender.write_all(b"{\"command\": [\"playlist_remove\", \"current\"]}\n").await?;
                     cfg_if! {
                         if #[cfg(target_family = "windows")] {
-                            let req_id = ipc_data.app_state.next_req_id().await;
-                            let (tx, mut rx) = mpsc::channel::<serde_json::Value>(1);
-                            {
-                                let mut mpv_response_senders_wl = ipc_data.app_state.mpv_response_senders.write().await;
-                                mpv_response_senders_wl.insert(req_id, tx);
-                            }
-
-                            let cmd = format!("{{\"command\": [\"playlist_remove\", \"current\"], \"request_id\": {}}}\n", req_id);
-                            sender.write_all(cmd.as_bytes()).await?;
-
-                            rx.recv().await;
-                            sleep(Duration::from_millis(10)).await;
-
                             let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+                            sleep(Duration::from_millis(50)).await;
                             mpv::window::win32::hide_borders(&ipc_data.app_state, mpv_wid_rl.unwrap()).await?;
                         }
                         else {
-
+                            ipc_data.window.emit("mpv-resize", {})?;
                         }
                     }
                 }
