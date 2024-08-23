@@ -81,7 +81,7 @@ pub async fn send_cmd_wait(tx: &Sender<Interface>, cmd: Interface) -> Result<()>
     Ok(())
 }
 
-async fn send_get_property(ipc_data: &IpcData, property: Property) -> Result<Receiver<serde_json::Value>> {
+async fn send_with_response(ipc_data: &IpcData, property: Property) -> Result<Receiver<serde_json::Value>> {
     let req_id = ipc_data.app_state.next_req_id().await;
 
     let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
@@ -192,6 +192,13 @@ async fn write(
                 },
                 Interface::PlaylistRemoveCurrent => {
                     sender.write_all(b"{\"command\": [\"playlist_remove\", \"current\"]}\n").await?;
+                    cfg_if! {
+                        if #[cfg(target_family = "windows")] {
+                            let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+                            sleep(Duration::from_millis(50)).await;
+                            mpv::window::win32::hide_borders(&ipc_data.app_state, mpv_wid_rl.unwrap()).await?;
+                        }
+                    }
                 }
                 Interface::Exit => {
                     exit_tx_opt

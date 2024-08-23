@@ -27,6 +27,7 @@ import AddSubtitlesFromFileSrv from "@components/playlist/AddSubtitlesFromFileSr
 import {MultiMap} from 'mnemonist'
 import Copy from "@components/svg/Copy.tsx";
 import {forceDisconnectFromRoom} from "src/utils/room.ts";
+import {invoke} from "@tauri-apps/api/core";
 
 export default function Playlist(): ReactElement {
     const ctx = useMainContext()
@@ -88,19 +89,14 @@ export default function Playlist(): ReactElement {
             m.set(parseInt(idStr), new PlaylistEntryVideo(value.source, value.path))
         }
 
-        let changeActiveVideo = false
-
         ctx.setPlaylist((p) => {
             if(p.size === 0)
-                changeActiveVideo = true;
+                setAsActiveVideo(m.keys().next().value)
 
             return new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m])
         })
         let entryIds = [...m.keys()]
         ctx.setPlaylistOrder((p) => [...new Set([...p, ...entryIds])])
-
-        if(changeActiveVideo)
-            setAsActiveVideo(m.keys().next().value)
     }
 
     function onAddSubtitlesFiles(r: Record<string, PlaylistEntrySubtitlesSrv>) {
@@ -172,8 +168,6 @@ export default function Playlist(): ReactElement {
     }
 
     function onDelPlaylistEntry(entryId: PlaylistEntryId) {
-        let playlistEmpty = false
-
         ctx.setPlaylist((playlist => {
             const newPlaylist: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
 
@@ -227,17 +221,17 @@ export default function Playlist(): ReactElement {
                         newPlaylist.set(k, v)
                 }
                 if(newPlaylist.size === 0)
-                    playlistEmpty = true
+                    invoke('mpv_remove_current_from_playlist', {})
+                        .catch(() => {
+                            showPersistentErrorAlert(t('mpv-remove-from-playlist-error'))
+                        })
 
                 return newPlaylist
             }
         }))
-        if(playlistEmpty)
-            console.log('playlist empty')
     }
 
     function onChangeActiveVideo(entryId: PlaylistEntryId) {
-        let entry = getFromPlaylist(entryId)
         const subs = ctx.subtitles.get(entryId)
         let reqIds: Set<PlaylistEntryId>
         if(subs == null) {
@@ -270,15 +264,6 @@ export default function Playlist(): ReactElement {
                 ctx.setJwts(jwtsTmp)
                 ctx.setActiveVideoId(entryId)
             })
-    }
-
-    function getFromPlaylist(entryId: PlaylistEntryId): PlaylistEntry | undefined {
-        let entry: PlaylistEntry | undefined = undefined
-        ctx.setPlaylist((p) => {
-            entry = ctx.playlist.get(entryId)
-            return p
-        })
-        return entry
     }
 
     function orderChanged(e: OnChangeMeta) {
