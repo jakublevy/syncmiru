@@ -119,9 +119,13 @@ pub async fn mpv_load_from_source(
 
     loaded_recv.recv().await;
     println!("file loaded");
+
+    // TODO: set room default playback speed
+
     // TODO:
     // not ready
     // get timestamp, sid, aid, audio_sync, sub_sync
+    // send to frontend and then to server
 
     Ok(())
 }

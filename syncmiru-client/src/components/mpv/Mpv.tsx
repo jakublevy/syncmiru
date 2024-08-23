@@ -21,6 +21,10 @@ export default function Mpv(p: Props): ReactElement {
     const mpvWrapperRef: React.MutableRefObject<HTMLDivElement | null> = useRef(null)
     const connectedToRoom = ctx.currentRid != null && ctx.roomConnection === RoomConnectionState.Established
 
+    const jwtsRef = useRef(ctx.jwts);
+    const source2urlRef = useRef(ctx.source2url);
+    const playlistRef = useRef(ctx.playlist)
+
     useEffect(() => {
         let unlisten: Array<Promise<UnlistenFn>> = []
 
@@ -61,6 +65,12 @@ export default function Mpv(p: Props): ReactElement {
     }, [ctx.currentRid, ctx.roomConnection, ctx.mpvWinDetached, ctx.mpvShowSmall, ctx.mpvRunning]);
 
     useEffect(() => {
+        jwtsRef.current = ctx.jwts;
+        source2urlRef.current = ctx.source2url;
+        playlistRef.current = ctx.playlist
+    }, [ctx.jwts, ctx.source2url, ctx.playlist]);
+
+    useEffect(() => {
         if(ctx.mpvRunning && !ctx.mpvWinDetached && !ctx.mpvShowSmall)
             mpvResize()
     }, [p.mpvResizeVar, mpvWrapperRef.current, ctx.mpvRunning, ctx.mpvShowSmall, ctx.usersShown]);
@@ -82,15 +92,13 @@ export default function Mpv(p: Props): ReactElement {
             return
 
         const id = ctx.activeVideoId as PlaylistEntryId
-        //console.log(`active id: ${id}`)
-        const jwt = ctx.jwts.get(id) as string
-        //console.log(`jwt: ${jwt}`)
-        //console.log(ctx.jwts)
-        const entry = ctx.playlist.get(id) as PlaylistEntry
+        const jwt = jwtsRef.current.get(id) as string
+        const entry = playlistRef.current.get(id) as PlaylistEntry
         if(entry instanceof PlaylistEntryVideo) {
             const video = entry as PlaylistEntryVideo
-            const source = ctx.source2url.get(video.source) as string
+            const source = source2urlRef.current.get(video.source) as string
             const data = {source_url: source, jwt: jwt}
+            console.log('new file')
             invoke('mpv_load_from_source', {data: JSON.stringify(data)})
                 .then(() => {
                     //console.log('source loaded')
@@ -106,11 +114,11 @@ export default function Mpv(p: Props): ReactElement {
         }
         else {
             const sub = entry as PlaylistEntrySubtitles
-            const source = ctx.source2url.get(sub.source) as string
+            const source = source2urlRef.current.get(sub.source) as string
             //console.log(`source: ${source}`)
         }
 
-    }, [ctx.activeVideoId, ctx.jwts, ctx.source2url]);
+    }, [ctx.activeVideoId]);
 
 
     function mpvResize() {
