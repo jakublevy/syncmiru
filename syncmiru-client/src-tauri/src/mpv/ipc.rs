@@ -110,7 +110,6 @@ async fn listen(
     loop {
         tokio::select! {
             read_bytes = reader.read_line(&mut buffer) => {
-                println!("listen start");
                 match read_bytes {
                      Ok(0) => {
                         println!("Connection closed");
@@ -126,7 +125,6 @@ async fn listen(
                         break;
                      }
                 }
-                println!("listen end");
             }
             _ = &mut exit_rx => {
                 println!("listen exit called");
@@ -146,7 +144,6 @@ async fn write(
     init_observe_property(&sender).await?;
     loop {
         let msg_opt = rx.recv().await;
-        println!("write start");
         if let Some(msg) = msg_opt {
             match msg {
                 Interface::LoadFromSource { ref source_url, ref jwt } => {
@@ -155,7 +152,6 @@ async fn write(
                         source_url,
                         jwt
                     );
-                    println!("{}", cmd);
                     sender.write_all(cmd.as_bytes()).await?;
                 }
                 Interface::LoadFromUrl(ref url) => {}
@@ -212,7 +208,6 @@ async fn write(
                 },
                 Interface::Nop => {}
             }
-            println!("write end");
             //println!("msg {:?}", msg);
         } else {
             println!("msg None");
@@ -278,13 +273,11 @@ async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -
 
 async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Result<()> {
     let start = Instant::now();
-    println!("fullscreen_changed enter");
     {
         let mut mpv_ignore_fullscreen_events_timestamp_rl = ipc_data.app_state.mpv_ignore_fullscreen_events_timestamp.write().await;
         let now = Instant::now();
         if let Some(duration) = now.checked_duration_since(*mpv_ignore_fullscreen_events_timestamp_rl) {
             if duration.as_millis() < constants::MPV_IGNORE_FULLSCREEN_MILLIS {
-                println!("fullscreen_changed exit");
                 return Ok(())
             }
             else {
@@ -346,7 +339,6 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
             ipc_data.window.emit("mpv-win-detached-changed", false).ok();
         }
     }
-    println!("fullscreen_changed exit");
     let end = Instant::now();
     let elapsed = end.duration_since(start);
     println!("elapsed {}", elapsed.as_millis());

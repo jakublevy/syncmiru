@@ -82,10 +82,10 @@ export default function Mpv(p: Props): ReactElement {
             return
 
         const id = ctx.activeVideoId as PlaylistEntryId
-        console.log(`active id: ${id}`)
+        //console.log(`active id: ${id}`)
         const jwt = ctx.jwts.get(id) as string
-        console.log(`jwt: ${jwt}`)
-        console.log(ctx.jwts)
+        //console.log(`jwt: ${jwt}`)
+        //console.log(ctx.jwts)
         const entry = ctx.playlist.get(id) as PlaylistEntry
         if(entry instanceof PlaylistEntryVideo) {
             const video = entry as PlaylistEntryVideo
@@ -93,21 +93,21 @@ export default function Mpv(p: Props): ReactElement {
             const data = {source_url: source, jwt: jwt}
             invoke('mpv_load_from_source', {data: JSON.stringify(data)})
                 .then(() => {
-                    console.log('source loaded')
+                    //console.log('source loaded')
                 })
                 .catch(() => {
-                    console.log('source load failed')
+                    //console.log('source load failed')
                 })
-            console.log(`source: ${source}`)
+            //console.log(`source: ${source}`)
         }
         else if(entry instanceof PlaylistEntryUrl) {
             const url = entry as PlaylistEntryUrl
-            console.log(`url ${url.url}`)
+            //console.log(`url ${url.url}`)
         }
         else {
             const sub = entry as PlaylistEntrySubtitles
             const source = ctx.source2url.get(sub.source) as string
-            console.log(`source: ${source}`)
+            //console.log(`source: ${source}`)
         }
 
     }, [ctx.activeVideoId, ctx.jwts, ctx.source2url]);

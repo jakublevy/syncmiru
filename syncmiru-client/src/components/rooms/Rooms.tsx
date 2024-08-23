@@ -142,7 +142,7 @@ export default function Rooms(): ReactElement {
             socket.on('user_room_join', onUserRoomJoin)
             socket.on('user_room_change', onUserRoomChange)
         }
-    }, [socket, currentRid, roomConnection]);
+    }, [socket, currentRid, roomConnection, uid]);
 
     useEffect(() => {
         if (socket !== undefined) {
@@ -245,7 +245,8 @@ export default function Rooms(): ReactElement {
             }
             m.set(userRoomJoin.rid, roomUids)
 
-            if(userRoomJoin.rid === currentRid && roomConnection === RoomConnectionState.Established) {
+            if(userRoomJoin.rid === currentRid
+                && (roomConnection === RoomConnectionState.Established || userRoomJoin.uid === uid)) {
                 addNewUserWithLoadingState(userRoomJoin.uid)
             }
 
@@ -279,7 +280,8 @@ export default function Rooms(): ReactElement {
             }
             m.set(userRoomChange.new_rid, newRoomUids)
 
-            if(userRoomChange.new_rid === currentRid && roomConnection === RoomConnectionState.Established) {
+            if(userRoomChange.new_rid === currentRid
+                && (roomConnection === RoomConnectionState.Established || userRoomChange.uid === uid)) {
                 addNewUserWithLoadingState(userRoomChange.uid)
             }
 
@@ -605,6 +607,7 @@ export default function Rooms(): ReactElement {
                                         const showAdditional = rid === currentRid
                                         const ping = uidPing.get(uid)
                                         const readyState = uid2ready.get(uid)
+                                        console.log(readyState)
                                         if (user == null)
                                             return <div key={uid}></div>
                                         return (

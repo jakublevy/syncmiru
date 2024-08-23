@@ -32,7 +32,7 @@ pub enum PlayingState {
 #[derive(Debug, Copy, Clone)]
 pub struct UserPlayInfo {
     pub status: UserStatus,
-    pub timestamp: u64,
+    pub timestamp: f64,
     pub aid: u64,
     pub sid: u64,
     pub audio_sync: bool,

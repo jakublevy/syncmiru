@@ -118,6 +118,11 @@ pub async fn mpv_load_from_source(
     }).await?;
 
     loaded_recv.recv().await;
+    println!("file loaded");
+    // TODO:
+    // not ready
+    // get timestamp, sid, aid, audio_sync, sub_sync
+
     Ok(())
 }
 
