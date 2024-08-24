@@ -39,7 +39,7 @@ pub struct UserPlayInfo {
     pub sub_sync: bool
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Serialize)]
 pub enum UserStatus {
     Ready, NotReady
 }

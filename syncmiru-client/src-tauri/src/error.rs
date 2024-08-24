@@ -72,6 +72,9 @@ pub enum SyncmiruError {
     #[error("ParseBoolError")]
     ParseBoolError(#[from] ParseBoolError),
 
+    #[error("Mpv obtaining property failed")]
+    MpvObtainPropertyError,
+
     #[error("URL missing version error")]
     LatestVersionMissingError,
 

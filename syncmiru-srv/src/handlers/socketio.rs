@@ -13,7 +13,8 @@ use crate::models::file::FileInfo;
 use crate::handlers::utils;
 use crate::handlers::utils::{disconnect_from_room, subtitles_id_in_room, video_id_in_room};
 use crate::models::file::FileType;
-use crate::models::playlist::{ClientUserStatus, PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState};
+use crate::models::mpv::{UserLoadedInfo, UserPlayInfoClient};
+use crate::models::playlist::{ClientUserStatus, PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo, UserStatus};
 use crate::srvstate::{PlaylistEntryId, SrvState};
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -80,6 +81,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("change_active_video", change_active_video);
     s.on("set_playlist_order", set_playlist_order);
     s.on("delete_playlist_entry", delete_playlist_entry);
+    s.on("mpv_file_loaded", mpv_file_loaded);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1894,4 +1896,49 @@ pub async fn delete_playlist_entry(
 
     println!("after delete_playlist_entry");
     utils::debug_print(state);
+}
+
+pub async fn mpv_file_loaded(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<UserLoadedInfo>,
+) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    let uid = state.socket2uid(&s).await;
+
+    let mut uid2play_info_wl = state.uid2play_info.write().await;
+    uid2play_info_wl.insert(
+        uid,
+        UserPlayInfo {
+            aid: payload.aid,
+            sid: payload.sid,
+            audio_sync: payload.audio_sync,
+            sub_sync: payload.sub_sync,
+            timestamp: 0f64,
+            status: UserStatus::NotReady
+        }
+    );
+    s.within(rid.to_string()).emit(
+        "user_play_info_changed",
+              UserPlayInfoClient {
+                  aid: payload.aid,
+                  sid: payload.sid,
+                  audio_sync: payload.audio_sync,
+                  sub_sync: payload.sub_sync,
+                  status: UserStatus::NotReady,
+                  uid
+              }
+    ).ok();
+
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
 }

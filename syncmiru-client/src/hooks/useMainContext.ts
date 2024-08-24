@@ -6,6 +6,7 @@ import Decimal from "decimal.js";
 import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
 import {MultiMap} from "mnemonist";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
+import {UserAudioSubtitles} from "@models/mpv.ts";
 
 export const MainContext = createContext<MainContextModel>(
     {
@@ -69,7 +70,9 @@ export const MainContext = createContext<MainContextModel>(
         uid2ready: new Map<UserId, UserReadyState>(),
         setUid2ready: (v) => {},
         activeVideoId: null,
-        setActiveVideoId: (v) => {}
+        setActiveVideoId: (v) => {},
+        uid2audioSub: new Map<UserId, UserAudioSubtitles>(),
+        setUid2audioSub: (v) => {}
     })
 
 export const useMainContext = () => useContext(MainContext)

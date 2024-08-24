@@ -50,6 +50,10 @@ import {
 import {MultiMap} from "mnemonist";
 import {invoke} from "@tauri-apps/api/core";
 import ReadyState, {UserReadyState} from "@components/widgets/ReadyState.tsx";
+import Bubble from "@components/svg/Bubble.tsx";
+import BubbleCrossed from "@components/svg/BubbleCrossed.tsx";
+import Subtitles from "@components/svg/Subtitles.tsx";
+import SubtitlesCrossed from "@components/svg/SubtitlesCrossed.tsx";
 
 export default function Rooms(): ReactElement {
     const {
@@ -79,7 +83,8 @@ export default function Rooms(): ReactElement {
         uid2ready,
         setUid2ready,
         activeVideoId,
-        setActiveVideoId
+        setActiveVideoId,
+        uid2audioSub
     } = useMainContext()
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
@@ -607,7 +612,7 @@ export default function Rooms(): ReactElement {
                                         const showAdditional = rid === currentRid
                                         const ping = uidPing.get(uid)
                                         const readyState = uid2ready.get(uid)
-                                        console.log(readyState)
+                                        const audioSub = uid2audioSub.get(uid)
                                         if (user == null)
                                             return <div key={uid}></div>
                                         return (
@@ -638,9 +643,19 @@ export default function Rooms(): ReactElement {
                                                                 <p className="text-sm text-left ml-1.5 w-[4.4rem] break-words">{user.displayname}</p>
                                                                 <div className="flex-1"></div>
 
-                                                                {/*<p className="text-xs">A:4/S:3</p>*/}
-                                                                {/*<BubbleCrossed className="w-4 ml-1"/>*/}
-                                                                {/*<Subtitles className="ml-1 w-4"/>*/}
+                                                                {readyState !== UserReadyState.Loading && audioSub != null
+                                                                && <>
+                                                                        <p className="text-xs">{`A:${audioSub.aid}/S:${audioSub.sid}`}</p>
+                                                                        {audioSub.audioSync
+                                                                            ? <Bubble className="w-4 ml-1"/>
+                                                                            : <BubbleCrossed className="w-4 ml-1"/>
+                                                                        }
+                                                                        {audioSub.subSync
+                                                                            ? <Subtitles className="w-4 ml-1"/>
+                                                                            : <SubtitlesCrossed className="w-4 ml-1"/>
+                                                                        }
+                                                                    </>
+                                                                }
                                                             </div>
                                                         </Clickable>
                                                     }

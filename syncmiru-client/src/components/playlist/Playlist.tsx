@@ -1,4 +1,4 @@
-import React, {MouseEvent, ReactElement, useEffect, useRef, useState} from "react";
+import React, {MouseEvent, ReactElement, useEffect, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {
@@ -13,10 +13,7 @@ import {
 import {arrayMove, List, OnChangeMeta, RenderListParams} from "react-movable";
 import VideoFile from "@components/svg/VideoFile.tsx";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
-import {
-    showPersistentErrorAlert,
-    showTemporalSuccessAlertForModal
-} from "src/utils/alert.ts";
+import {showPersistentErrorAlert, showTemporalSuccessAlertForModal} from "src/utils/alert.ts";
 import {useTranslation} from "react-i18next";
 import Delete from "@components/svg/Delete.tsx";
 import Subtitles from "@components/svg/Subtitles.tsx";
@@ -28,6 +25,8 @@ import {MultiMap} from 'mnemonist'
 import Copy from "@components/svg/Copy.tsx";
 import {forceDisconnectFromRoom} from "src/utils/room.ts";
 import {invoke} from "@tauri-apps/api/core";
+import {UserId} from "@models/user.ts";
+import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 
 export default function Playlist(): ReactElement {
     const ctx = useMainContext()
@@ -232,6 +231,14 @@ export default function Playlist(): ReactElement {
     }
 
     function onChangeActiveVideo(entryId: PlaylistEntryId) {
+        ctx.setUid2ready((p) => {
+            const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+            for (const [id, value] of p) {
+                m.set(id, UserReadyState.Loading)
+            }
+            return m
+        })
+
         const subs = ctx.subtitles.get(entryId)
         let reqIds: Set<PlaylistEntryId>
         if(subs == null) {

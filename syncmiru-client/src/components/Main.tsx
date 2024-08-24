@@ -37,7 +37,7 @@ import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
 import {MultiMap} from "mnemonist";
 import {invoke} from "@tauri-apps/api/core";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
-import {refresh} from "@mittwald/react-use-promise";
+import {UserAudioSubtitles} from "@models/mpv.ts";
 
 export default function Main(): ReactElement {
     const [location, navigate] = useLocation()
@@ -86,6 +86,7 @@ export default function Main(): ReactElement {
     const [mpvShowSmall, setMpvShowSmall] = useState<boolean>(false)
     const [uid2ready, setUid2ready] = useState<Map<UserId, UserReadyState>>(new Map<UserId, UserReadyState>())
     const [activeVideoId, setActiveVideoId] = useState<PlaylistEntryId | null>(null)
+    const [uid2audioSub, setUid2audioSub] = useState<Map<UserId, UserAudioSubtitles>>(new Map<UserId, UserAudioSubtitles>())
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -319,7 +320,9 @@ export default function Main(): ReactElement {
                     uid2ready: uid2ready,
                     setUid2ready: setUid2ready,
                     activeVideoId: activeVideoId,
-                    setActiveVideoId: setActiveVideoId
+                    setActiveVideoId: setActiveVideoId,
+                    uid2audioSub: uid2audioSub,
+                    setUid2audioSub: setUid2audioSub
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">

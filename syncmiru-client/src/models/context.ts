@@ -6,6 +6,7 @@ import {UserRoomMap, UserRoomPingsClient} from "@models/roomUser.ts";
 import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
 import {MultiMap} from "mnemonist";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
+import {UserAudioSubtitles} from "@models/mpv.ts";
 
 export interface MainContextModel {
     uid: number
@@ -66,6 +67,8 @@ export interface MainContextModel {
     setUid2ready: Dispatch<SetStateAction<Map<UserId, UserReadyState>>>
     activeVideoId: PlaylistEntryId | null
     setActiveVideoId: Dispatch<SetStateAction<PlaylistEntryId | null>>,
+    uid2audioSub: Map<UserId, UserAudioSubtitles>
+    setUid2audioSub: Dispatch<SetStateAction<Map<UserId, UserAudioSubtitles>>>,
 }
 
 export enum RoomConnectionState {

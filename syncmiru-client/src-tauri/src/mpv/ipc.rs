@@ -17,6 +17,7 @@ use tokio::sync::{mpsc, oneshot};
 use tokio::time::{sleep, Instant};
 use crate::appstate::AppState;
 use crate::{constants, mpv};
+use crate::error::SyncmiruError;
 use crate::mpv::ipc::Interface::SetFullscreen;
 use crate::result::Result;
 
@@ -79,6 +80,42 @@ pub async fn send_cmd_wait(tx: &Sender<Interface>, cmd: Interface) -> Result<()>
     tx.send(cmd).await?;
     tx.send(Interface::Nop).await?;
     Ok(())
+}
+
+pub async fn get_aid(ipc_data: &IpcData) -> Result<u64> {
+    let mut rx = send_with_response(ipc_data, Property::Aid).await?;
+    if let Some(json) = rx.recv().await {
+        if let Some(data) = json.get("data") {
+            if let Some(aid) = data.as_u64() {
+                return Ok(aid)
+            }
+        }
+    }
+    Err(SyncmiruError::MpvObtainPropertyError)
+}
+
+pub async fn get_sid(ipc_data: &IpcData) -> Result<u64> {
+    let mut rx = send_with_response(ipc_data, Property::Sid).await?;
+    if let Some(json) = rx.recv().await {
+        if let Some(data) = json.get("data") {
+            if let Some(sid) = data.as_u64() {
+                return Ok(sid)
+            }
+        }
+    }
+    Err(SyncmiruError::MpvObtainPropertyError)
+}
+
+pub async fn get_timestamp(ipc_data: &IpcData) -> Result<f64> {
+    let mut rx = send_with_response(ipc_data, Property::TimePos).await?;
+    if let Some(json) = rx.recv().await {
+        if let Some(data) = json.get("data") {
+            if let Some(timepos) = data.as_f64() {
+                return Ok(timepos)
+            }
+        }
+    }
+    Err(SyncmiruError::MpvObtainPropertyError)
 }
 
 async fn send_with_response(ipc_data: &IpcData, property: Property) -> Result<Receiver<serde_json::Value>> {

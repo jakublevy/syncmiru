@@ -4,12 +4,14 @@ use cfg_if::cfg_if;
 use tauri::{Emitter};
 use crate::appstate::AppState;
 use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, window};
-use crate::mpv::ipc::Interface;
-use crate::mpv::models::LoadFromSource;
+use crate::mpv::ipc::{Interface, IpcData};
+use crate::mpv::models::{LoadFromSource, UserLoadedInfo};
 use crate::mpv::window::HtmlElementRect;
 use tokio::sync::mpsc;
 use tokio::time::sleep;
 use crate::result::Result;
+use mpv::ipc;
+use crate::mpv;
 
 #[tauri::command]
 pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
@@ -98,8 +100,9 @@ pub async fn mpv_reposition_to_small(state: tauri::State<'_, Arc<AppState>>, win
 #[tauri::command]
 pub async fn mpv_load_from_source(
     state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window,
     data: String
-) -> Result<()> {
+) -> Result<UserLoadedInfo> {
     let data_obj: LoadFromSource = serde_json::from_str(&data)?;
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
@@ -118,16 +121,28 @@ pub async fn mpv_load_from_source(
     }).await?;
 
     loaded_recv.recv().await;
-    println!("file loaded");
 
     // TODO: set room default playback speed
 
-    // TODO:
-    // not ready
-    // get timestamp, sid, aid, audio_sync, sub_sync
-    // send to frontend and then to server
+    let ipc_data = IpcData { app_state: state.inner().clone(), window };
+    let aid = ipc::get_aid(&ipc_data).await?;
+    let sid = ipc::get_sid(&ipc_data).await?;
+    let mut audio_sync = false;
+    let mut sub_sync = false;
+    {
+        let appdata = state.appdata.read().await;
+        audio_sync = appdata.audio_sync;
+        sub_sync = appdata.sub_sync;
+    }
 
-    Ok(())
+    let user_loaded_info = UserLoadedInfo {
+        aid,
+        sid,
+        audio_sync,
+        sub_sync,
+    };
+
+    Ok(user_loaded_info)
 }
 
 #[tauri::command]

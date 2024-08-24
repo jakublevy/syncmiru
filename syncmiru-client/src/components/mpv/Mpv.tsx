@@ -14,6 +14,9 @@ import {
     PlaylistEntryUrl,
     PlaylistEntryVideo
 } from "@models/playlist.ts";
+import {UserAudioSubtitles, UserLoadedInfo, UserPlayInfo} from "@models/mpv.ts";
+import {UserReadyState} from "@components/widgets/ReadyState.tsx";
+import {UserId} from "@models/user.ts";
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
@@ -24,6 +27,12 @@ export default function Mpv(p: Props): ReactElement {
     const jwtsRef = useRef(ctx.jwts);
     const source2urlRef = useRef(ctx.source2url);
     const playlistRef = useRef(ctx.playlist)
+
+    useEffect(() => {
+        if (ctx.socket !== undefined) {
+            ctx.socket.on('user_play_info_changed', onUserPlayInfoChanged)
+        }
+    }, [ctx.socket]);
 
     useEffect(() => {
         let unlisten: Array<Promise<UnlistenFn>> = []
@@ -98,13 +107,17 @@ export default function Mpv(p: Props): ReactElement {
             const video = entry as PlaylistEntryVideo
             const source = source2urlRef.current.get(video.source) as string
             const data = {source_url: source, jwt: jwt}
-            console.log('new file')
-            invoke('mpv_load_from_source', {data: JSON.stringify(data)})
-                .then(() => {
-                    //console.log('source loaded')
+            invoke<UserLoadedInfo>('mpv_load_from_source', {data: JSON.stringify(data)})
+                .then((userLoadedInfo: UserLoadedInfo) => {
+                    ctx.socket?.emitWithAck('mpv_file_loaded', userLoadedInfo)
+                        .catch(() => {
+                            showPersistentErrorAlert(t('mpv-load-error'))
+                            disconnectFromRoom(ctx, t)
+                        })
                 })
                 .catch(() => {
-                    //console.log('source load failed')
+                    showPersistentErrorAlert(t('mpv-load-error'))
+                    disconnectFromRoom(ctx, t)
                 })
             //console.log(`source: ${source}`)
         }
@@ -138,6 +151,35 @@ export default function Mpv(p: Props): ReactElement {
                 showPersistentErrorAlert(t('mpv-resize-error'))
                 forceDisconnectFromRoom(ctx, t)
             })
+    }
+
+    function onUserPlayInfoChanged(userPlayInfo: UserPlayInfo) {
+        ctx.setUid2audioSub((p) => {
+            const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
+            for (const [id, value] of p) {
+                if(userPlayInfo.uid !== id) {
+                    m.set(id, value)
+                }
+            }
+            m.set(userPlayInfo.uid, {
+                aid: userPlayInfo.aid,
+                sid: userPlayInfo.sid,
+                audioSync: userPlayInfo.audio_sync,
+                subSync: userPlayInfo.sub_sync
+            })
+            return m
+        })
+
+        ctx.setUid2ready((p) => {
+            const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+            for (const [id, value] of p) {
+                if(userPlayInfo.uid !== id) {
+                    m.set(id, value)
+                }
+            }
+            m.set(userPlayInfo.uid, userPlayInfo.status)
+            return m
+        })
     }
 
     return (

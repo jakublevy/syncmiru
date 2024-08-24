@@ -370,5 +370,6 @@
   "mpv-quit-error": "Došlo k chybě při ukončování mpv, aplikace bude ukončena.",
   "mpv-not-connected-to-room-msg": "Pro spuštění přehrávače mpv se připojte do místnosti",
   "mpv-resize-error": "Došlo k chybě při změně velikosti okna mpv",
-  "mpv-remove-from-playlist-error": "Došlo k chybě při odebírání přehrávaného videa z playlistu"
+  "mpv-remove-from-playlist-error": "Došlo k chybě při odebírání přehrávaného videa z playlistu",
+  "mpv-load-error": "Došlo k chybě při načítání videa"
 }
