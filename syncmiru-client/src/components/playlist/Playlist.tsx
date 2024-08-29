@@ -1,4 +1,4 @@
-import React, {MouseEvent, ReactElement, useEffect, useState} from "react";
+import React, {MouseEvent, ReactElement, useEffect, useRef, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {
@@ -39,6 +39,12 @@ export default function Playlist(): ReactElement {
     const [showSubtitlesModal, setShowSubtitlesModal] = useState<boolean>(false)
     const [videoIdSelectedSubtitles, setVideoIdSelectedSubtitles] = useState<PlaylistEntryId>(0)
     const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
+
+    const playlistRef = useRef(ctx.playlist)
+
+    useEffect(() => {
+        playlistRef.current = ctx.playlist
+    }, [ctx.playlist]);
 
     useEffect(() => {
         if (ctx.socket !== undefined) {
@@ -156,7 +162,10 @@ export default function Playlist(): ReactElement {
         }
 
         ctx.setPlaylist((p) => {
-            return new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m])
+            const r = new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m])
+            if(r.size === 1)
+                setAsActiveVideo(r.keys().next().value)
+            return r
         })
         let entryIds = [...m.keys()]
         ctx.setPlaylistOrder((p) => [...new Set([...p, ...entryIds])])
@@ -231,6 +240,8 @@ export default function Playlist(): ReactElement {
     }
 
     function onChangeActiveVideo(entryId: PlaylistEntryId) {
+        const entry = playlistRef.current.get(entryId)
+
         ctx.setUid2ready((p) => {
             const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
             for (const [id, value] of p) {
@@ -240,13 +251,16 @@ export default function Playlist(): ReactElement {
         })
 
         const subs = ctx.subtitles.get(entryId)
-        let reqIds: Set<PlaylistEntryId>
-        if(subs == null) {
-            reqIds = new Set<PlaylistEntryId>([entryId])
+        let reqIds: Set<PlaylistEntryId> = new Set<PlaylistEntryId>()
+
+        if(entry instanceof PlaylistEntryVideo)
+            reqIds.add(entryId)
+
+        if(subs != null) {
+            for (const sub of subs)
+                reqIds.add(sub)
         }
-        else {
-            reqIds = new Set<PlaylistEntryId>([entryId, ...subs])
-        }
+
         const jwtsTmp: Map<PlaylistEntryId, string> = new Map<PlaylistEntryId, string>()
         let promises = []
         for(const id of reqIds) {

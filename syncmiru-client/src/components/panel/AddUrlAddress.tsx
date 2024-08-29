@@ -22,6 +22,7 @@ export default function AddUrlAddress(): ReactElement {
     const urlInputValid = filledUrlCount === urls.length && urls.length > 0
 
     function addClicked() {
+        setUrlContent('')
         setShowModal(true)
     }
 
