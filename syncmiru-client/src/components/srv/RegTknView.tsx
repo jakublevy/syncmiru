@@ -3,7 +3,7 @@ import {BackBtn, CloseBtn, CopyBtn, DeleteBtn} from "@components/widgets/Button.
 import {navigateToMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
 import {useTranslation} from "react-i18next";
-import {RegDetail, RegTkn, RegTknType} from "@models/srv.ts";
+import {RegDetail, RegTkn, RegTknType} from "@models/regTkn.ts";
 import {copyRegTkn} from "src/utils/regTkn.ts";
 import Loading from "@components/Loading.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";

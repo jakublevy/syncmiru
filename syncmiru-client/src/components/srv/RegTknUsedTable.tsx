@@ -1,7 +1,7 @@
 import {ReactElement, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {useTranslation} from "react-i18next";
-import {RegDetail} from "@models/srv.ts";
+import {RegDetail} from "@models/regTkn.ts";
 import {TableColumn} from "react-data-table-component";
 import DateTimeLocalPretty from "@components/widgets/DateTimeLocalPretty.tsx";
 import {SearchInput} from "@components/widgets/Input.tsx";

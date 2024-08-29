@@ -1,7 +1,7 @@
 import React, {ReactElement, useEffect, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
-import {RegTkn, RegTknType} from "@models/srv.ts";
+import {RegTkn, RegTknType} from "@models/regTkn.ts";
 import RegTknView from "@components/srv/RegTknView.tsx";
 import RegTknsList from "@components/srv/RegTknsList.tsx";
 

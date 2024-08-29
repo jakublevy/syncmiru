@@ -4,7 +4,7 @@ use rust_decimal::Decimal;
 use serde::{Serialize, Deserialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use validator::Validate;
-use crate::models::playlist::{ClientUserStatus, PlaylistEntry};
+use crate::models::playlist::{ClientUserStatus, PlaylistEntry, UserStatus};
 use crate::validators;
 use crate::models::query::{Id, RoomSettings};
 use crate::srvstate::PlaylistEntryId;
@@ -299,6 +299,17 @@ pub struct PlaylistEntryIdStruct {
 pub struct PlaylistOrder {
     #[validate(custom(function = "validators::check_playlist_order"))]
     pub playlist_order: Vec<PlaylistEntryId>
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct UserReadyStateChangeReq {
+    pub ready_state: UserStatus
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct UserReadyStateChangeClient {
+    pub uid: Id,
+    pub ready_state: UserStatus
 }
 
 #[serde_with::serde_as]

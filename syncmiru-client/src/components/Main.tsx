@@ -60,7 +60,6 @@ export default function Main(): ReactElement {
     const [usersShown, setUsersShown] = useState<boolean>(true)
     const [audioSync, setAudioSync] = useState<boolean>(true)
     const [subSync, setSubSync] = useState<boolean>(true)
-    const [ready, setReady] = useState<boolean>(false)
     const [currentRid, setCurrentRid] = useState<RoomId | null>(null)
     const [roomUsers, setRoomUsers] = useState<UserRoomMap>(new Map<RoomId, Set<UserId>>())
     const [roomConnection, setRoomConnection] = useState<RoomConnectionState>(RoomConnectionState.Established)
@@ -280,8 +279,6 @@ export default function Main(): ReactElement {
                     setAudioSync: setAudioSync,
                     subSync: subSync,
                     setSubSync: setSubSync,
-                    ready: ready,
-                    setReady: setReady,
                     currentRid: currentRid,
                     setCurrentRid: setCurrentRid,
                     roomConnection: roomConnection,

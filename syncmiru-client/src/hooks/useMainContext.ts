@@ -27,8 +27,6 @@ export const MainContext = createContext<MainContextModel>(
         setAudioSync: (v) => {},
         subSync: true,
         setSubSync: (v) => {},
-        ready: false,
-        setReady: (v) => {},
         currentRid: null,
         setCurrentRid: (v) => {},
         roomConnection: RoomConnectionState.Established,

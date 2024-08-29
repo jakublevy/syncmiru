@@ -7,7 +7,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlaylistEntryIdStruct, PlaylistOrder, AddSubtitlesFiles, AddUrls};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlaylistEntryIdStruct, PlaylistOrder, AddSubtitlesFiles, AddUrls, UserReadyStateChangeReq, UserReadyStateChangeClient};
 use crate::{crypto, email, file, query};
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
@@ -82,6 +82,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("set_playlist_order", set_playlist_order);
     s.on("delete_playlist_entry", delete_playlist_entry);
     s.on("mpv_file_loaded", mpv_file_loaded);
+    s.on("user_ready_state_change", user_ready_state_change);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1941,4 +1942,38 @@ pub async fn mpv_file_loaded(
     ).ok();
 
     ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn user_ready_state_change(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<UserReadyStateChangeReq>,
+) {
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    let uid = state.socket2uid(&s).await;
+
+    let mut uid2play_info_rl = state.uid2play_info.write().await;
+    if let Some(upi) = uid2play_info_rl.get_mut(&uid) {
+        if upi.status != payload.ready_state {
+            upi.status = payload.ready_state;
+
+            s
+                .to(rid.to_string())
+                .emit("user_ready_state_change", UserReadyStateChangeClient {
+                    uid,
+                    ready_state: payload.ready_state
+                }).ok();
+        }
+
+        ack.send(SocketIoAck::<()>::ok(None)).ok();
+    }
+    else {
+        ack.send(SocketIoAck::<()>::err()).ok();
+    }
 }

@@ -4,7 +4,7 @@ import {navigateToMain} from "src/utils/navigate.ts";
 import {WarningBanner} from "@components/widgets/Banner.tsx";
 import RegTknCreate from "@components/srv/RegTknCreate.tsx";
 import RegTknsTable from "@components/srv/RegTknTable.tsx";
-import {RegTkn, RegTknType} from "@models/srv.ts";
+import {RegTkn, RegTknType} from "@models/regTkn.ts";
 import {useTranslation} from "react-i18next";
 import {useLocation} from "wouter";
 import Loading from "@components/Loading.tsx";

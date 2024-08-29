@@ -1,4 +1,4 @@
-import {RegTkn} from "@models/srv.ts";
+import {RegTkn} from "@models/regTkn.ts";
 import {showTemporalSuccessAlertForModal} from "./alert.ts";
 import {TFunction} from "i18next";
 

@@ -1,3 +1,5 @@
+import {UserReadyState} from "@components/widgets/ReadyState.tsx";
+
 export interface UserClient extends UserValueClient {
     id: number
 }
@@ -47,6 +49,11 @@ export interface DisplaynameChange extends UserPropChange{
 
 export interface AvatarChange extends UserPropChange {
     avatar: Array<number>
+}
+
+export interface UserReadyStateChangeClient {
+    uid: UserId,
+    ready_state: UserReadyState
 }
 
 export interface EmailChangeTkn {

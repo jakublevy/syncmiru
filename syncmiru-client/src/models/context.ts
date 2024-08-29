@@ -26,8 +26,6 @@ export interface MainContextModel {
     setAudioSync: Dispatch<SetStateAction<boolean>>,
     subSync: boolean,
     setSubSync: Dispatch<SetStateAction<boolean>>,
-    ready: boolean,
-    setReady: Dispatch<SetStateAction<boolean>>,
     currentRid: RoomId | null,
     setCurrentRid: Dispatch<SetStateAction<RoomId | null>>,
     roomConnection: RoomConnectionState

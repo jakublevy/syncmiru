@@ -2,7 +2,7 @@ import {useTranslation} from "react-i18next";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {ReactElement, useEffect, useState} from "react";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
-import {RegTkn, RegTknId, RegTknType, RegTknValue} from "@models/srv.ts";
+import {RegTkn, RegTknId, RegTknType, RegTknValue} from "@models/regTkn.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {TableColumn} from "react-data-table-component";
 import {CopyBtn, DeleteBtn, ViewBtn} from "@components/widgets/Button.tsx";

@@ -29,7 +29,7 @@ import {
     UserRoomPingsClient,
     UserRoomSrv
 } from "@models/roomUser.ts";
-import {UserId} from "@models/user.ts";
+import {UserId, UserReadyStateChangeClient} from "@models/user.ts";
 import {Clickable} from "@components/widgets/Button.tsx";
 import Avatar from "@components/widgets/Avatar.tsx";
 import {RoomConnectionState} from "@models/context.ts";
@@ -104,6 +104,7 @@ export default function Rooms(): ReactElement {
             socket.on('room_user_ping', onRoomUserPing)
             socket.on('joined_room_playback_change', onJoinedRoomPlaybackChange)
             socket.on('joined_room_minor_desync_playback_slow', onJoinedRoomMinorDesyncPlaybackSlow)
+            socket.on('user_ready_state_change', onUserReadyStateChange)
 
             socket.emitWithAck("get_rooms")
                 .then((roomsWOrder: RoomsWOrder) => {
@@ -319,6 +320,10 @@ export default function Rooms(): ReactElement {
                 ...rest
             }
         })
+    }
+
+    function onUserReadyStateChange(userReadyStateChange: UserReadyStateChangeClient) {
+        console.log(userReadyStateChange)
     }
 
     function addNewUserWithLoadingState(uid: UserId) {

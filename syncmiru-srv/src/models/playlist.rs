@@ -1,5 +1,5 @@
 use rust_decimal::Decimal;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use crate::models::query::RoomSettings;
 use crate::srvstate::PlaylistEntryId;
 
@@ -39,7 +39,7 @@ pub struct UserPlayInfo {
     pub sub_sync: bool
 }
 
-#[derive(Debug, Copy, Clone, Serialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
 pub enum UserStatus {
     Ready, NotReady
 }
