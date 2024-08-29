@@ -119,7 +119,6 @@ export default function Mpv(p: Props): ReactElement {
                     showPersistentErrorAlert(t('mpv-load-error'))
                     disconnectFromRoom(ctx, t)
                 })
-            //console.log(`source: ${source}`)
         }
         else if(entry instanceof PlaylistEntryUrl) {
             const url = entry as PlaylistEntryUrl

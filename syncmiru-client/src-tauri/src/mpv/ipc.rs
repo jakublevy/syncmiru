@@ -4,7 +4,7 @@ mod utils;
 
 use std::sync::Arc;
 use std::time::Duration;
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use cfg_if::cfg_if;
 use interprocess::local_socket::{
     tokio::{prelude::*, Stream},
@@ -119,7 +119,7 @@ pub async fn get_timestamp(ipc_data: &IpcData) -> Result<f64> {
 }
 
 async fn send_with_response(ipc_data: &IpcData, property: Property) -> Result<Receiver<serde_json::Value>> {
-    let req_id = ipc_data.app_state.next_req_id().await;
+    let req_id = ipc_data.app_state.get_mpv_next_req_id().await;
 
     let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
@@ -183,7 +183,7 @@ async fn write(
         let msg_opt = rx.recv().await;
         if let Some(msg) = msg_opt {
             match msg {
-                Interface::LoadFromSource { ref source_url, ref jwt } => {
+                Interface::LoadFromSource {  ref source_url, ref jwt } => {
                     let cmd = format!(
                         "{{\"command\":  [\"loadfile\", \"{}\", \"replace\", {{\"http-header-fields\": \"Authorization: Bearer {}\"}}]}}\n",
                         source_url,
@@ -407,8 +407,11 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
 }
 
 async fn process_file_loaded(ipc_data: &IpcData) -> Result<()> {
-    let mpv_file_loaded_rl = ipc_data.app_state.mpv_file_loaded_sender.read().await;
-    mpv_file_loaded_rl.as_ref().unwrap().send(()).await?;
+    let mut mpv_file_loaded_wl = ipc_data.app_state.mpv_file_loaded_sender.write().await;
+    mpv_file_loaded_wl
+        .take()
+        .unwrap()
+        .send(())?;
     Ok(())
 }
 

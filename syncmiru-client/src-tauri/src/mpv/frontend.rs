@@ -8,6 +8,7 @@ use crate::mpv::ipc::{Interface, IpcData};
 use crate::mpv::models::{LoadFromSource, UserLoadedInfo};
 use crate::mpv::window::HtmlElementRect;
 use tokio::sync::mpsc;
+use tokio::sync::oneshot;
 use tokio::time::sleep;
 use crate::result::Result;
 use mpv::ipc;
@@ -104,23 +105,24 @@ pub async fn mpv_load_from_source(
     data: String
 ) -> Result<UserLoadedInfo> {
     let data_obj: LoadFromSource = serde_json::from_str(&data)?;
-    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
-    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
 
-    mpv_ipc_tx.send(Interface::SetPause(true)).await?;
-
-    let (loaded_sender, mut loaded_recv) = mpsc::channel::<()>(1);
+    let (loaded_sender, mut loaded_recv) = oneshot::channel::<()>();
     {
-        let mut mpv_file_loaded_sender_wl = state.mpv_file_loaded_sender.write().await;
-        *mpv_file_loaded_sender_wl = Some(loaded_sender);
+        let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+        let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+
+        mpv_ipc_tx.send(Interface::SetPause(true)).await?;
+        {
+            let mut mpv_file_loaded_sender_wl = state.mpv_file_loaded_sender.write().await;
+            *mpv_file_loaded_sender_wl = Some(loaded_sender)
+        }
+
+        mpv_ipc_tx.send(Interface::LoadFromSource {
+            source_url: data_obj.source_url,
+            jwt: data_obj.jwt
+        }).await?;
     }
-
-    mpv_ipc_tx.send(Interface::LoadFromSource {
-        source_url: data_obj.source_url,
-        jwt: data_obj.jwt
-    }).await?;
-
-    loaded_recv.recv().await;
+    loaded_recv.await?;
 
     // TODO: set room default playback speed
 

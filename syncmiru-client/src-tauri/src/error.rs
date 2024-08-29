@@ -66,11 +66,17 @@ pub enum SyncmiruError {
     #[error("Mpsc serde_json::Value send error")]
     MpscSerdeJsonValueSendError(#[from] tokio::sync::mpsc::error::SendError<serde_json::Value>),
 
+    #[error("Oneshot void recv error")]
+    OneshotVoidRecvError(#[from] tokio::sync::oneshot::error::RecvError),
+
     #[error("Mpsc void send error")]
     MpscVoidSendError(#[from] tokio::sync::mpsc::error::SendError<()>),
 
     #[error("ParseBoolError")]
     ParseBoolError(#[from] ParseBoolError),
+
+    #[error("Void error")]
+    VoidError(),
 
     #[error("Mpv obtaining property failed")]
     MpvObtainPropertyError,
@@ -88,6 +94,12 @@ pub enum SyncmiruError {
 impl<T> From<PoisonError<T>> for SyncmiruError {
     fn from(_: PoisonError<T>) -> Self {
         Self::PoisonError
+    }
+}
+
+impl From<()> for SyncmiruError {
+    fn from(value: ()) -> Self {
+        Self::VoidError()
     }
 }
 

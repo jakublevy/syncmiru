@@ -5,6 +5,9 @@ import {invoke} from "@tauri-apps/api/core";
 import {showPersistentErrorAlert} from "./alert.ts";
 import {TFunction} from "i18next";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
+import {RoomId} from "@models/room.ts";
+import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
+import {MultiMap} from "mnemonist";
 
 export function forceDisconnectFromRoom(ctx: MainContextModel, t: TFunction<"translation", undefined>) {
     ctx.setRoomConnection(RoomConnectionState.Disconnecting)
@@ -13,11 +16,7 @@ export function forceDisconnectFromRoom(ctx: MainContextModel, t: TFunction<"tra
             ctx.setMpvRunning(false)
             ctx.socket?.emitWithAck("disconnect_room", {})
                 .then((ack: SocketIoAck<null>) => {
-                    clearInterval(ctx.roomPingTimerRef?.current)
-                    ctx.setUidPing(new Map<UserId, number>())
-                    ctx.setCurrentRid(null)
-                    ctx.setRoomConnection(RoomConnectionState.Established)
-                    ctx.setUid2ready(new Map<UserId, UserReadyState>())
+                    clearValuesAfterDisconnect(ctx)
                 })
         })
         .catch(() => {
@@ -36,10 +35,7 @@ export function disconnectFromRoom(ctx: MainContextModel, t: TFunction<"translat
                         showPersistentErrorAlert(t('room-leave-failed'))
                     }
                     else {
-                        clearInterval(ctx.roomPingTimerRef?.current)
-                        ctx.setUidPing(new Map<UserId, number>())
-                        ctx.setCurrentRid(null)
-                        ctx.setUid2ready(new Map<UserId, UserReadyState>())
+                        clearValuesAfterDisconnect(ctx)
                     }
                 })
                 .catch(() => {
@@ -54,4 +50,19 @@ export function disconnectFromRoom(ctx: MainContextModel, t: TFunction<"translat
             showPersistentErrorAlert(t('room-leave-failed'))
             ctx.setRoomConnection(RoomConnectionState.Established)
         })
+}
+
+function clearValuesAfterDisconnect(ctx: MainContextModel) {
+    ctx.setRoomUidClicked(-1)
+    ctx.setUsersClickedUid(-1)
+    clearInterval(ctx.roomPingTimerRef?.current)
+    ctx.setCurrentRid(null)
+    ctx.setUidPing(new Map<UserId, number>())
+    ctx.setPlaylist(new Map<PlaylistEntryId, PlaylistEntry>())
+    ctx.setPlaylistOrder([])
+    ctx.setSubtitles(new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set))
+    ctx.setJwts(new Map<PlaylistEntryId, string>())
+    ctx.setUid2ready(new Map<UserId, UserReadyState>())
+    ctx.setActiveVideoId(null)
+    ctx.setMpvRunning(false)
 }
