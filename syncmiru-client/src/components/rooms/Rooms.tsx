@@ -323,7 +323,16 @@ export default function Rooms(): ReactElement {
     }
 
     function onUserReadyStateChange(userReadyStateChange: UserReadyStateChangeClient) {
-        console.log(userReadyStateChange)
+        setUid2ready((p) => {
+            const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+            for (const [id, value] of p) {
+                if(userReadyStateChange.uid !== id) {
+                    m.set(id, value)
+                }
+            }
+            m.set(userReadyStateChange.uid, userReadyStateChange.ready_state)
+            return m
+        })
     }
 
     function addNewUserWithLoadingState(uid: UserId) {
