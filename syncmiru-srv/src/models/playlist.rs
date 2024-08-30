@@ -33,8 +33,8 @@ pub enum PlayingState {
 pub struct UserPlayInfo {
     pub status: UserStatus,
     pub timestamp: f64,
-    pub aid: u64,
-    pub sid: u64,
+    pub aid: Option<u64>,
+    pub sid: Option<u64>,
     pub audio_sync: bool,
     pub sub_sync: bool
 }

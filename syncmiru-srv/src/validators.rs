@@ -235,3 +235,12 @@ pub fn check_playlist_order(order: &Vec<PlaylistEntryId>) -> Result<(), Validati
     }
     Ok(())
 }
+
+pub fn check_aid_sid(aid_sid: &Option<u64>) -> Result<(), ValidationError> {
+    if aid_sid.is_none() || aid_sid.is_some_and(|x| x > 0) {
+        Ok(())
+    }
+    else {
+        Err(ValidationError::new("invalid aid or sid value"))
+    }
+}

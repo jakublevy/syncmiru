@@ -38,7 +38,6 @@ async fn main() -> Result<()> {
         mpv_reattach_on_fullscreen_false: false.into(),
         mpv_next_req_id: 1.into(),
         mpv_response_senders: HashMap::new().into(),
-        mpv_file_loaded_sender: None.into(),
         mpv_ignore_fullscreen_events_timestamp: Instant::now().into(),
 
         #[cfg(target_family = "unix")]
@@ -94,7 +93,9 @@ async fn main() -> Result<()> {
             mpv::frontend::mpv_wrapper_size_changed,
             mpv::frontend::mpv_reposition_to_small,
             mpv::frontend::mpv_load_from_source,
+            mpv::frontend::mpv_load_from_url,
             mpv::frontend::mpv_remove_current_from_playlist,
+            mpv::frontend::mpv_get_loaded_info,
             frontend::kill_app_with_error_msg
         ])
         .on_window_event(move |window: &Window, event: &WindowEvent| {

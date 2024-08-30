@@ -4,7 +4,7 @@ use cfg_if::cfg_if;
 use tauri::{Emitter};
 use crate::appstate::AppState;
 use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, window};
-use crate::mpv::ipc::{Interface, IpcData};
+use crate::mpv::ipc::{get_aid, get_sid, Interface, IpcData};
 use crate::mpv::models::{LoadFromSource, UserLoadedInfo};
 use crate::mpv::window::HtmlElementRect;
 use tokio::sync::mpsc;
@@ -103,52 +103,38 @@ pub async fn mpv_load_from_source(
     state: tauri::State<'_, Arc<AppState>>,
     window: tauri::Window,
     data: String
-) -> Result<UserLoadedInfo> {
+) -> Result<()> {
     let data_obj: LoadFromSource = serde_json::from_str(&data)?;
-
-    let (loaded_sender, mut loaded_recv) = oneshot::channel::<()>();
     {
         let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
         let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
 
         mpv_ipc_tx.send(Interface::SetPause(true)).await?;
-        {
-            let mut mpv_file_loaded_sender_wl = state.mpv_file_loaded_sender.write().await;
-            *mpv_file_loaded_sender_wl = Some(loaded_sender)
-        }
 
         mpv_ipc_tx.send(Interface::LoadFromSource {
             source_url: data_obj.source_url,
             jwt: data_obj.jwt
         }).await?;
     }
-    loaded_recv.await?;
 
     // TODO: set room default playback speed
 
-    let ipc_data = IpcData { app_state: state.inner().clone(), window };
-    let aid = ipc::get_aid(&ipc_data).await?;
-    let sid = ipc::get_sid(&ipc_data).await?;
-    let mut audio_sync = false;
-    let mut sub_sync = false;
-    {
-        let appdata = state.appdata.read().await;
-        audio_sync = appdata.audio_sync;
-        sub_sync = appdata.sub_sync;
-    }
-
-    let user_loaded_info = UserLoadedInfo {
-        aid,
-        sid,
-        audio_sync,
-        sub_sync,
-    };
-
-    Ok(user_loaded_info)
+    Ok(())
 }
 
 #[tauri::command]
-pub async fn mpv_load_from_url(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
+pub async fn mpv_load_from_url(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window,
+    url: String
+) -> Result<()> {
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+
+    mpv_ipc_tx.send(Interface::SetPause(true)).await?;
+    mpv_ipc_tx.send(Interface::LoadFromUrl(url)).await?;
+
+    // TODO: set room default playback speed
 
     Ok(())
 }
@@ -159,4 +145,26 @@ pub async fn mpv_remove_current_from_playlist(state: tauri::State<'_, Arc<AppSta
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
     mpv_ipc_tx.send(Interface::PlaylistRemoveCurrent).await?;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn mpv_get_loaded_info(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<UserLoadedInfo> {
+    let ipc_data = IpcData { app_state: state.inner().clone(), window };
+    let aid = get_aid(&ipc_data).await?;
+    let sid = get_sid(&ipc_data).await?;
+    let mut audio_sync = false;
+    let mut sub_sync = false;
+    {
+        let appdata = ipc_data.app_state.appdata.read().await;
+        audio_sync = appdata.audio_sync;
+        sub_sync = appdata.sub_sync;
+    }
+
+    let user_loaded_info = UserLoadedInfo {
+        aid,
+        sid,
+        audio_sync,
+        sub_sync,
+    };
+    Ok(user_loaded_info)
 }

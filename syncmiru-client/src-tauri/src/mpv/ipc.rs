@@ -19,6 +19,7 @@ use crate::appstate::AppState;
 use crate::{constants, mpv};
 use crate::error::SyncmiruError;
 use crate::mpv::ipc::Interface::SetFullscreen;
+use crate::mpv::models::UserLoadedInfo;
 use crate::result::Result;
 
 #[derive(Debug, PartialEq)]
@@ -82,24 +83,31 @@ pub async fn send_cmd_wait(tx: &Sender<Interface>, cmd: Interface) -> Result<()>
     Ok(())
 }
 
-pub async fn get_aid(ipc_data: &IpcData) -> Result<u64> {
+pub async fn get_aid(ipc_data: &IpcData) -> Result<Option<u64>> {
     let mut rx = send_with_response(ipc_data, Property::Aid).await?;
     if let Some(json) = rx.recv().await {
         if let Some(data) = json.get("data") {
+            if let Some(_) = data.as_bool() {
+                return Ok(None)
+            }
             if let Some(aid) = data.as_u64() {
-                return Ok(aid)
+                return Ok(Some(aid))
             }
         }
     }
     Err(SyncmiruError::MpvObtainPropertyError)
 }
 
-pub async fn get_sid(ipc_data: &IpcData) -> Result<u64> {
+pub async fn get_sid(ipc_data: &IpcData) -> Result<Option<u64>> {
     let mut rx = send_with_response(ipc_data, Property::Sid).await?;
     if let Some(json) = rx.recv().await {
+        println!("{:?}", json);
         if let Some(data) = json.get("data") {
+            if let Some(_) = data.as_bool() {
+                return Ok(None)
+            }
             if let Some(sid) = data.as_u64() {
-                return Ok(sid)
+                return Ok(Some(sid))
             }
         }
     }
@@ -191,7 +199,12 @@ async fn write(
                     );
                     sender.write_all(cmd.as_bytes()).await?;
                 }
-                Interface::LoadFromUrl(ref url) => {}
+                Interface::LoadFromUrl(ref url) => {
+                    let cmd = format!("{{\"command\":  [\"loadfile\", \"{}\", \"replace\"]}}\n",
+                        url
+                    );
+                    sender.write_all(cmd.as_bytes()).await?;
+                }
                 Interface::SetPause(p) => {
                     let cmd = format!("{{\"command\": [\"set_property\", \"pause\", {}]}}\n", p);
                     sender.write_all(cmd.as_bytes()).await?;
@@ -407,11 +420,7 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
 }
 
 async fn process_file_loaded(ipc_data: &IpcData) -> Result<()> {
-    let mut mpv_file_loaded_wl = ipc_data.app_state.mpv_file_loaded_sender.write().await;
-    mpv_file_loaded_wl
-        .take()
-        .unwrap()
-        .send(())?;
+    ipc_data.window.emit("mpv-file-loaded", {}).ok();
     Ok(())
 }
 

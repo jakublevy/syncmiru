@@ -659,14 +659,14 @@ export default function Rooms(): ReactElement {
 
                                                                 {readyState !== UserReadyState.Loading && audioSub != null
                                                                 && <>
-                                                                        <p className="text-xs">{`A:${audioSub.aid}/S:${audioSub.sid}`}</p>
+                                                                        <p className="text-xs">{`A:${audioSub.aid != null ? audioSub.aid : '∅'}/S:${audioSub.sid != null ? audioSub.sid : '∅'}`}</p>
                                                                         {audioSub.audioSync
-                                                                            ? <Bubble className="w-4 ml-1"/>
-                                                                            : <BubbleCrossed className="w-4 ml-1"/>
+                                                                            ? <Bubble className="min-w-4 w-4 ml-1"/>
+                                                                            : <BubbleCrossed className="min-w-4 w-4 ml-1"/>
                                                                         }
                                                                         {audioSub.subSync
-                                                                            ? <Subtitles className="w-4 ml-1"/>
-                                                                            : <SubtitlesCrossed className="w-4 ml-1"/>
+                                                                            ? <Subtitles className="min-w-4 w-4 ml-1"/>
+                                                                            : <SubtitlesCrossed className="min-w-4 w-4 ml-1"/>
                                                                         }
                                                                     </>
                                                                 }

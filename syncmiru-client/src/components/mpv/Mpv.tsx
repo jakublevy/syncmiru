@@ -68,6 +68,21 @@ export default function Mpv(p: Props): ReactElement {
             ctx.setMpvWinDetached(e.payload)
         }))
 
+        unlisten.push(listen<void>('mpv-file-loaded', (e: Event<void>) => {
+            invoke<UserLoadedInfo>('mpv_get_loaded_info', {})
+                .then((payload: UserLoadedInfo) => {
+                    ctx.socket?.emitWithAck('mpv_file_loaded', payload)
+                        .catch(() => {
+                            showPersistentErrorAlert(t('mpv-load-error'))
+                            disconnectFromRoom(ctx, t)
+                        })
+                })
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-load-error'))
+                    disconnectFromRoom(ctx, t)
+                })
+        }))
+
         return () => {
             unlisten.forEach(x => x.then((unsub) => unsub()))
         }
@@ -101,28 +116,25 @@ export default function Mpv(p: Props): ReactElement {
             return
 
         const id = ctx.activeVideoId as PlaylistEntryId
-        const jwt = jwtsRef.current.get(id) as string
         const entry = playlistRef.current.get(id) as PlaylistEntry
         if(entry instanceof PlaylistEntryVideo) {
+            const jwt = jwtsRef.current.get(id) as string
             const video = entry as PlaylistEntryVideo
             const source = source2urlRef.current.get(video.source) as string
             const data = {source_url: source, jwt: jwt}
             invoke<UserLoadedInfo>('mpv_load_from_source', {data: JSON.stringify(data)})
-                .then((userLoadedInfo: UserLoadedInfo) => {
-                    ctx.socket?.emitWithAck('mpv_file_loaded', userLoadedInfo)
-                        .catch(() => {
-                            showPersistentErrorAlert(t('mpv-load-error'))
-                            disconnectFromRoom(ctx, t)
-                        })
-                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-load-error'))
                     disconnectFromRoom(ctx, t)
                 })
         }
         else if(entry instanceof PlaylistEntryUrl) {
-            const url = entry as PlaylistEntryUrl
-            //console.log(`url ${url.url}`)
+            const video = entry as PlaylistEntryUrl
+            invoke('mpv_load_from_url', {url: video.url})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-load-error'))
+                    disconnectFromRoom(ctx, t)
+                })
         }
         else {
             const sub = entry as PlaylistEntrySubtitles

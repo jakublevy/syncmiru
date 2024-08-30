@@ -2,8 +2,8 @@ import {UserId} from "@models/user.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 
 export interface UserLoadedInfo {
-    aid: number
-    sid: number
+    aid: number | null
+    sid: number | null
     audio_sync: boolean
     sub_sync: boolean
 }
@@ -11,15 +11,15 @@ export interface UserLoadedInfo {
 export interface UserPlayInfo {
     uid: UserId,
     status: UserReadyState,
-    aid: number,
-    sid: number,
+    aid: number | null,
+    sid: number | null,
     audio_sync: boolean,
     sub_sync: boolean
 }
 
 export interface UserAudioSubtitles {
-    aid: number
-    sid: number
+    aid: number | null
+    sid: number | null
     audioSync: boolean,
     subSync: boolean
 }

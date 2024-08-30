@@ -19,7 +19,6 @@ pub struct AppState {
     pub mpv_reattach_on_fullscreen_false: RwLock<bool>,
     pub mpv_next_req_id: RwLock<u32>,
     pub mpv_response_senders: RwLock<HashMap<u32, mpsc::Sender<serde_json::Value>>>,
-    pub mpv_file_loaded_sender: RwLock<Option<oneshot::Sender<()>>>,
     pub mpv_ignore_fullscreen_events_timestamp: RwLock<tokio::time::Instant>,
 
     #[cfg(target_family = "unix")]
