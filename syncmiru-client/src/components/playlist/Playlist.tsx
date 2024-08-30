@@ -426,7 +426,7 @@ export default function Playlist(): ReactElement {
                                         onMouseUp={(e) => onPlaylistEntryMouseUp(e, playlistEntryId)}
                                         className="flex items-center mb-0.5 gap-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 hover:cursor-pointer rounded group">
                                         <VideoFile className="min-w-6 w-6"/>
-                                        <p className={`text-sm ${ctx.activeVideoId === playlistEntryId ? 'font-bold' : ''}`}>{renderTxt}</p>
+                                        <p className={`text-sm break-words break-all ${ctx.activeVideoId === playlistEntryId ? 'font-bold' : ''}`}>{renderTxt}</p>
                                         <div className="flex-1"></div>
                                         {entry instanceof PlaylistEntryUrl &&
                                             <div
