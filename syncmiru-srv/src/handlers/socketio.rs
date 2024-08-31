@@ -1777,7 +1777,7 @@ pub async fn change_active_video(
         ack.send(SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    state.clear_uid2_play_info_by_rid(rid).await;
+    state.clear_uid2play_info_by_rid(rid).await;
     rid2play_info_wl.insert(
         rid,
         RoomPlayInfo {
@@ -1785,6 +1785,13 @@ pub async fn change_active_video(
             playing_state: PlayingState::Pause
         }
     );
+
+    let mut uid2ready_status_wl = state.uid2ready_status.write().await;
+    let rid_uids_rl = state.rid_uids.read().await;
+    let uids = rid_uids_rl.get_by_left(&rid).unwrap();
+    for uid in uids {
+        uid2ready_status_wl.insert(*uid, UserReadyStatus::Loading);
+    }
 
     ack.send(SocketIoAck::<()>::ok(None)).ok();
     s.within(rid.to_string()).emit("change_active_video", payload.playlist_entry_id).ok();
@@ -1882,7 +1889,7 @@ pub async fn delete_playlist_entry(
         if let Some(room_play_info) = room_play_info_opt {
             if room_play_info.playing_entry_id == payload.playlist_entry_id {
                 rid2play_info_wl.remove(&rid);
-                state.clear_uid2_play_info_by_rid(rid).await;
+                state.clear_uid2play_info_by_rid(rid).await;
             }
         }
         state.remove_video_entry(payload.playlist_entry_id).await;

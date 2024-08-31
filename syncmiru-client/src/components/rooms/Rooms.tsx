@@ -657,7 +657,7 @@ export default function Rooms(): ReactElement {
                                                                 <p className="text-sm text-left ml-1.5 w-[4.4rem] break-words">{user.displayname}</p>
                                                                 <div className="flex-1"></div>
 
-                                                                {readyState !== UserReadyState.Loading && audioSub != null
+                                                                {readyState != null && ![UserReadyState.Loading, UserReadyState.Error].includes(readyState) && audioSub != null
                                                                 && <>
                                                                         <p className="text-xs">{`A:${audioSub.aid != null ? audioSub.aid : '∅'}/S:${audioSub.sid != null ? audioSub.sid : '∅'}`}</p>
                                                                         {audioSub.audioSync

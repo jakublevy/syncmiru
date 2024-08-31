@@ -10,7 +10,6 @@ import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {
     PlaylistEntry,
     PlaylistEntryId,
-    PlaylistEntrySubtitles,
     PlaylistEntryUrl,
     PlaylistEntryVideo
 } from "@models/playlist.ts";
@@ -201,6 +200,7 @@ export default function Mpv(p: Props): ReactElement {
     }
 
     function onUserFileLoadFailed(uid: UserId) {
+        console.log('i should set user to error')
         ctx.setUid2ready((p) => {
             const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
             for (const [id, value] of p) {
@@ -209,6 +209,15 @@ export default function Mpv(p: Props): ReactElement {
                 }
             }
             m.set(uid, UserReadyState.Error)
+            return m
+        })
+        ctx.setUid2audioSub((p) => {
+            const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
+            for (const [id, value] of p) {
+                if(uid !== id) {
+                    m.set(id, value)
+                }
+            }
             return m
         })
     }

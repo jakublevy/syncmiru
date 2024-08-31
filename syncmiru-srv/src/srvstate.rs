@@ -62,12 +62,12 @@ impl SrvState {
         ret_id
     }
 
-    pub async fn clear_uid2_play_info_by_rid(&self, rid: Id) {
-        let mut uid2_play_info_wl = self.uid2play_info.write().await;
+    pub async fn clear_uid2play_info_by_rid(&self, rid: Id) {
+        let mut uid2play_info_wl = self.uid2play_info.write().await;
         let rid_uids_rl = self.rid_uids.read().await;
         let uids = rid_uids_rl.get_by_left(&rid).unwrap();
         for uid in uids {
-            uid2_play_info_wl.remove(uid);
+            uid2play_info_wl.remove(uid);
         }
     }
 

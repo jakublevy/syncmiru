@@ -27,6 +27,7 @@ import {forceDisconnectFromRoom} from "src/utils/room.ts";
 import {invoke} from "@tauri-apps/api/core";
 import {UserId} from "@models/user.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
+import {UserAudioSubtitles} from "@models/mpv.ts";
 
 export default function Playlist(): ReactElement {
     const ctx = useMainContext()
@@ -162,10 +163,9 @@ export default function Playlist(): ReactElement {
         }
 
         ctx.setPlaylist((p) => {
-            const r = new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m])
-            if(r.size === 1)
-                setAsActiveVideo(r.keys().next().value)
-            return r
+            if(p.size === 0)
+                setAsActiveVideo(m.keys().next().value)
+            return new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m])
         })
         let entryIds = [...m.keys()]
         ctx.setPlaylistOrder((p) => [...new Set([...p, ...entryIds])])
@@ -211,6 +211,13 @@ export default function Playlist(): ReactElement {
                     }
                     else {
                         ctx.setActiveVideoId(null)
+                        ctx.setUid2ready((p) => {
+                            const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+                            for (const [id, value] of p)
+                                m.set(id, UserReadyState.Loading)
+                            return m
+                        })
+                        ctx.setUid2audioSub(new Map<UserId, UserAudioSubtitles>())
                     }
                     return p.filter(x => x !== entryId)
                 })
