@@ -1,16 +1,12 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
-use axum::Json;
 use rand::Rng;
 use socketioxide::extract::SocketRef;
 use crate::config::Rate;
 use crate::models::query::{EmailTknType, Id};
-use crate::models::socketio::{EmailChangeTkn, EmailChangeTknType, SocketIoAck};
+use crate::models::socketio::{EmailChangeTkn, EmailChangeTknType};
 use crate::{crypto, query};
-use crate::models::http::BooleanResp;
-use crate::models::playlist::{ClientUserStatus, PlaylistEntry};
-use crate::models::Tkn;
 use crate::srvstate::{PlaylistEntryId, SrvState};
 use crate::result::Result;
 

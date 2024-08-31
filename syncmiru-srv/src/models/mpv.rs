@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
-use crate::models::playlist::UserStatus;
+use crate::models::playlist::UserReadyStatus;
 use crate::models::query::Id;
 use crate::validators;
 
@@ -19,7 +19,7 @@ pub struct UserLoadedInfo {
 #[derive(Debug, Copy, Clone, Serialize)]
 pub struct UserPlayInfoClient {
     pub uid: Id,
-    pub status: UserStatus,
+    pub status: UserReadyStatus,
     pub aid: Option<u64>,
     pub sid: Option<u64>,
     pub audio_sync: bool,

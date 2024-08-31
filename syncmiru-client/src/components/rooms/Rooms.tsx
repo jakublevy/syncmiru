@@ -643,7 +643,7 @@ export default function Rooms(): ReactElement {
                                                                     ? <>
                                                                         {readyState != null
                                                                             ? <ReadyState
-                                                                                className="w-3 mr-2"
+                                                                                className="w-3 h-5 mr-2"
                                                                                 state={readyState}/>
                                                                             : <div className="w-5"></div>
                                                                         }

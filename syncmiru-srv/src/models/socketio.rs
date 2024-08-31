@@ -4,7 +4,7 @@ use rust_decimal::Decimal;
 use serde::{Serialize, Deserialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use validator::Validate;
-use crate::models::playlist::{ClientUserStatus, PlaylistEntry, UserStatus};
+use crate::models::playlist::{PlaylistEntry, UserReadyStatus};
 use crate::validators;
 use crate::models::query::{Id, RoomSettings};
 use crate::srvstate::PlaylistEntryId;
@@ -250,7 +250,7 @@ pub struct JoinedRoomInfo<'a> {
     pub playlist: HashMap<PlaylistEntryId, &'a PlaylistEntry>,
     pub playlist_order: IndexSet<PlaylistEntryId>,
     pub subs_order: HashMap<PlaylistEntryId, IndexSet<PlaylistEntryId>>,
-    pub ready_status: HashMap<Id, ClientUserStatus>
+    pub ready_status: HashMap<Id, UserReadyStatus>,
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]
@@ -301,15 +301,16 @@ pub struct PlaylistOrder {
     pub playlist_order: Vec<PlaylistEntryId>
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Validate)]
 pub struct UserReadyStateChangeReq {
-    pub ready_state: UserStatus
+    #[validate(custom(function = "validators::check_ready_not_ready"))]
+    pub ready_state: UserReadyStatus
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct UserReadyStateChangeClient {
     pub uid: Id,
-    pub ready_state: UserStatus
+    pub ready_state: UserReadyStatus
 }
 
 #[serde_with::serde_as]

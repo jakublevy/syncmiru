@@ -372,5 +372,7 @@
   "mpv-resize-error": "Došlo k chybě při změně velikosti okna mpv",
   "mpv-remove-from-playlist-error": "Došlo k chybě při odebírání přehrávaného videa z playlistu",
   "mpv-load-error": "Došlo k chybě při načítání videa",
-  "ready-state-change-error": "Došlo k chybě při změně stavu připravenosti"
+  "ready-state-change-error": "Došlo k chybě při změně stavu připravenosti",
+  "mpv-invalid-file": "Došlo k chybě při načítání videa, zkontrolujte zdroj (soubor, URL). V případě YouTube může být detekován bot",
+  "mpv-file-load-retry-error": "Došlo k chybě při opětovném pokusu načtení vybraného videa"
 }

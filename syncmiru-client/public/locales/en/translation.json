@@ -372,5 +372,7 @@
   "mpv-resize-error": "An error occurred while changing the size of mpv window",
   "mpv-remove-from-playlist-error": "An error occurred while removing the currently played video from the playlist",
   "mpv-load-error": "An error occurred while loading the video",
-  "ready-state-change-error": "An error occurred while changing the ready state"
+  "ready-state-change-error": "An error occurred while changing the ready state",
+  "mpv-invalid-file": "An error occurred while loading the video, check the source (file, URL). If the source is YouTube, bot might be detected",
+  "mpv-file-load-retry-error": "An error occurred while trying to reload the chosen video"
 }

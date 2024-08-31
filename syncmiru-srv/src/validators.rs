@@ -4,6 +4,7 @@ use sqlx::PgPool;
 use url::Url;
 use validator::ValidationError;
 use crate::constants::SOCKETIO_ACK_TIMEOUT;
+use crate::models::playlist::UserReadyStatus;
 use crate::models::query::Id;
 use crate::query;
 use crate::srvstate::PlaylistEntryId;
@@ -242,5 +243,14 @@ pub fn check_aid_sid(aid_sid: &Option<u64>) -> Result<(), ValidationError> {
     }
     else {
         Err(ValidationError::new("invalid aid or sid value"))
+    }
+}
+
+pub fn check_ready_not_ready(r: &UserReadyStatus) -> Result<(), ValidationError> {
+    if *r == UserReadyStatus::Ready || *r == UserReadyStatus::NotReady {
+        Ok(())
+    }
+    else {
+        Err(ValidationError::new("User ready status is not ready or not ready"))
     }
 }

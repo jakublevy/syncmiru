@@ -31,6 +31,8 @@ export default function Mpv(p: Props): ReactElement {
     useEffect(() => {
         if (ctx.socket !== undefined) {
             ctx.socket.on('user_play_info_changed', onUserPlayInfoChanged)
+            ctx.socket.on('user_file_load_failed', onUserFileLoadFailed)
+            ctx.socket.on('user_file_load_retry', onUserFileLoadRetry)
         }
     }, [ctx.socket]);
 
@@ -76,6 +78,17 @@ export default function Mpv(p: Props): ReactElement {
                             showPersistentErrorAlert(t('mpv-load-error'))
                             disconnectFromRoom(ctx, t)
                         })
+                })
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-load-error'))
+                    disconnectFromRoom(ctx, t)
+                })
+        }))
+
+        unlisten.push(listen<void>('mpv-file-load-failed', (e: Event<void>) => {
+            ctx.socket!.emitWithAck('mpv_file_load_failed', {})
+                .then(() => {
+                    showPersistentErrorAlert(t('mpv-invalid-file'))
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-load-error'))
@@ -136,12 +149,6 @@ export default function Mpv(p: Props): ReactElement {
                     disconnectFromRoom(ctx, t)
                 })
         }
-        else {
-            const sub = entry as PlaylistEntrySubtitles
-            const source = source2urlRef.current.get(sub.source) as string
-            //console.log(`source: ${source}`)
-        }
-
     }, [ctx.activeVideoId]);
 
 
@@ -189,6 +196,32 @@ export default function Mpv(p: Props): ReactElement {
                 }
             }
             m.set(userPlayInfo.uid, userPlayInfo.status)
+            return m
+        })
+    }
+
+    function onUserFileLoadFailed(uid: UserId) {
+        ctx.setUid2ready((p) => {
+            const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+            for (const [id, value] of p) {
+                if(uid !== id) {
+                    m.set(id, value)
+                }
+            }
+            m.set(uid, UserReadyState.Error)
+            return m
+        })
+    }
+
+    function onUserFileLoadRetry(uid: UserId) {
+        ctx.setUid2ready((p) => {
+            const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+            for (const [id, value] of p) {
+                if(uid !== id) {
+                    m.set(id, value)
+                }
+            }
+            m.set(uid, UserReadyState.Loading)
             return m
         })
     }

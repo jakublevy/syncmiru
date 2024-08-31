@@ -14,7 +14,7 @@ use crate::handlers::utils;
 use crate::handlers::utils::{disconnect_from_room, subtitles_id_in_room, video_id_in_room};
 use crate::models::file::FileType;
 use crate::models::mpv::{UserLoadedInfo, UserPlayInfoClient};
-use crate::models::playlist::{ClientUserStatus, PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo, UserStatus};
+use crate::models::playlist::{PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo, UserReadyStatus};
 use crate::srvstate::{PlaylistEntryId, SrvState};
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -82,7 +82,9 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("set_playlist_order", set_playlist_order);
     s.on("delete_playlist_entry", delete_playlist_entry);
     s.on("mpv_file_loaded", mpv_file_loaded);
+    s.on("mpv_file_load_failed", mpv_file_load_failed);
     s.on("user_ready_state_change", user_ready_state_change);
+    s.on("user_file_load_retry", user_file_load_retry);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1308,6 +1310,7 @@ pub async fn join_room(
 
     let mut uid_ping_wl = state.uid_ping.write().await;
     let mut rid_uids_wl = state.rid_uids.write().await;
+    let mut uid2ready_status_wl = state.uid2ready_status.write().await;
 
     let new_room_name = payload.rid.to_string();
     let mut room_pings = HashMap::<Id, f64>::new();
@@ -1327,6 +1330,7 @@ pub async fn join_room(
 
     rid_uids_wl.insert(payload.rid, uid);
     uid_ping_wl.insert(uid, payload.ping);
+    uid2ready_status_wl.insert(uid, UserReadyStatus::Loading);
 
     s.leave_all().ok();
     s.join(new_room_name.clone()).ok();
@@ -1385,19 +1389,12 @@ pub async fn join_room(
 
     playlist.extend(playlist_subs);
 
-    let mut ready_status: HashMap<Id, ClientUserStatus> = HashMap::new();
-    if !playlist.is_empty() {
-        let uid2play_info_rl = state.uid2play_info.read().await;
-        let room_uids = rid_uids_wl.get_by_left(&payload.rid).unwrap();
-        for uid in room_uids {
-            let play_info_opt = uid2play_info_rl.get(uid);
-            if let Some(play_info) = play_info_opt {
-                ready_status.insert(*uid, play_info.status.into());
-            }
-            else {
-                ready_status.insert(*uid, ClientUserStatus::Loading);
-            }
-        }
+    let mut ready_status: HashMap<Id, UserReadyStatus> = HashMap::new();
+
+    let room_uids = rid_uids_wl.get_by_left(&payload.rid).unwrap();
+    for uid in room_uids {
+        let r = uid2ready_status_wl.get(uid).unwrap();
+        ready_status.insert(*uid, *r);
     }
 
     ack.send(SocketIoAck::<JoinedRoomInfo>::ok(Some(JoinedRoomInfo {
@@ -1918,6 +1915,7 @@ pub async fn mpv_file_loaded(
     let uid = state.socket2uid(&s).await;
 
     let mut uid2play_info_wl = state.uid2play_info.write().await;
+    let mut uid2ready_status_wl = state.uid2ready_status.write().await;
     uid2play_info_wl.insert(
         uid,
         UserPlayInfo {
@@ -1925,10 +1923,11 @@ pub async fn mpv_file_loaded(
             sid: payload.sid,
             audio_sync: payload.audio_sync,
             sub_sync: payload.sub_sync,
-            timestamp: 0f64,
-            status: UserStatus::NotReady
+            timestamp: 0f64
         }
     );
+    uid2ready_status_wl.insert(uid, UserReadyStatus::NotReady);
+
     s.within(rid.to_string()).emit(
         "user_play_info_changed",
               UserPlayInfoClient {
@@ -1936,10 +1935,39 @@ pub async fn mpv_file_loaded(
                   sid: payload.sid,
                   audio_sync: payload.audio_sync,
                   sub_sync: payload.sub_sync,
-                  status: UserStatus::NotReady,
+                  status: UserReadyStatus::NotReady,
                   uid
               }
     ).ok();
+
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn mpv_file_load_failed(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+) {
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    let uid = state.socket2uid(&s).await;
+
+    let mut uid2ready_status_wl = state.uid2ready_status.write().await;
+    let ready_status = uid2ready_status_wl.get_mut(&uid).unwrap();
+    if *ready_status != UserReadyStatus::Loading {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    *ready_status = UserReadyStatus::Error;
+
+    s
+        .within(rid.to_string())
+        .emit("user_file_load_failed", uid)
+        .ok();
 
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
@@ -1950,6 +1978,11 @@ pub async fn user_ready_state_change(
     ack: AckSender,
     Data(payload): Data<UserReadyStateChangeReq>,
 ) {
+    if let Err(_) = payload.validate() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
         ack.send(SocketIoAck::<()>::err()).ok();
@@ -1958,10 +1991,10 @@ pub async fn user_ready_state_change(
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
 
-    let mut uid2play_info_rl = state.uid2play_info.write().await;
-    if let Some(upi) = uid2play_info_rl.get_mut(&uid) {
-        if upi.status != payload.ready_state {
-            upi.status = payload.ready_state;
+    let mut uid2ready_status_wl = state.uid2ready_status.write().await;
+    if let Some(rs) = uid2ready_status_wl.get_mut(&uid) {
+        if *rs != payload.ready_state {
+            *rs = payload.ready_state;
 
             s
                 .to(rid.to_string())
@@ -1969,6 +2002,36 @@ pub async fn user_ready_state_change(
                     uid,
                     ready_state: payload.ready_state
                 }).ok();
+        }
+
+        ack.send(SocketIoAck::<()>::ok(None)).ok();
+    }
+    else {
+        ack.send(SocketIoAck::<()>::err()).ok();
+    }
+}
+
+pub async fn user_file_load_retry(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender
+) {
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    let uid = state.socket2uid(&s).await;
+
+    let mut uid2ready_status_wl = state.uid2ready_status.write().await;
+    if let Some(rs) = uid2ready_status_wl.get_mut(&uid) {
+        if *rs == UserReadyStatus::Error {
+            *rs = UserReadyStatus::Loading;
+
+            s
+                .within(rid.to_string())
+                .emit("user_file_load_retry", uid).ok();
         }
 
         ack.send(SocketIoAck::<()>::ok(None)).ok();
