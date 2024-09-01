@@ -19,7 +19,6 @@ use crate::appstate::AppState;
 use crate::{constants, mpv};
 use crate::error::SyncmiruError;
 use crate::mpv::ipc::Interface::SetFullscreen;
-use crate::mpv::models::UserLoadedInfo;
 use crate::result::Result;
 
 #[derive(Debug, PartialEq)]
@@ -294,7 +293,8 @@ async fn process_mpv_msg(msg: &str, ipc_data: &IpcData) -> Result<()> {
                 "client-message" => { process_client_msg(&json, ipc_data).await? }
                 "file-loaded" => { process_file_loaded(ipc_data).await?; }
                 "playback-restart" => { process_playback_restart(ipc_data)?; }
-                "end-file" => { process_end_file(&json, ipc_data).await?; }
+                "end-file" => { process_end_file(&json, ipc_data)?; }
+                "idle" => { process_idle_msg(ipc_data)?; }
                 _ => {}
             }
         }
@@ -434,11 +434,20 @@ fn process_playback_restart(ipc_data: &IpcData) -> Result<()> {
     Ok(())
 }
 
-async fn process_end_file(msg: &serde_json::Value, ipc_data: &IpcData) -> Result<()> {
+fn process_end_file(msg: &serde_json::Value, ipc_data: &IpcData) -> Result<()> {
     if let Some(reason_v) = msg.get("reason") {
         let reason = reason_v.as_str().unwrap();
         if reason == "error" {
             ipc_data.window.emit("mpv-file-load-failed", {}).ok();
+        }
+    }
+    Ok(())
+}
+
+fn process_idle_msg(ipc_data: &IpcData) -> Result<()> {
+    cfg_if! {
+        if #[cfg(target_family = "unix")] {
+            ipc_data.window.emit("mpv-resize", {})?;
         }
     }
     Ok(())
