@@ -168,3 +168,10 @@ pub async fn mpv_get_loaded_info(state: tauri::State<'_, Arc<AppState>>, window:
     };
     Ok(user_loaded_info)
 }
+
+#[tauri::command]
+pub async fn mpv_play(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
+    let ipc_data = IpcData { app_state: state.inner().clone(), window };
+    ipc::set_pause(false, &ipc_data).await?;
+    Ok(())
+}

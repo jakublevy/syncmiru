@@ -85,6 +85,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("mpv_file_load_failed", mpv_file_load_failed);
     s.on("user_ready_state_change", user_ready_state_change);
     s.on("user_file_load_retry", user_file_load_retry);
+    s.on("mpv-play", mpv_play);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -2046,4 +2047,24 @@ pub async fn user_file_load_retry(
     else {
         ack.send(SocketIoAck::<()>::err()).ok();
     }
+}
+
+pub async fn mpv_play(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender
+) {
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    let uid = state.socket2uid(&s).await;
+
+    s
+        .within(rid.to_string())
+        .emit("mpv_play", uid).ok();
+
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
 }

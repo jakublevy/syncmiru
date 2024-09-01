@@ -374,5 +374,6 @@
   "mpv-load-error": "Došlo k chybě při načítání videa",
   "ready-state-change-error": "Došlo k chybě při změně stavu připravenosti",
   "mpv-invalid-file": "Došlo k chybě při načítání videa, zkontrolujte zdroj (soubor, URL). V případě YouTube může být detekován bot",
-  "mpv-file-load-retry-error": "Došlo k chybě při opětovném pokusu načtení vybraného videa"
+  "mpv-file-load-retry-error": "Došlo k chybě při opětovném pokusu načtení vybraného videa",
+  "mpv-play-error": "Došlo k chybě při spuštění přehrávání"
 }

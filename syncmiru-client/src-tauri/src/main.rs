@@ -96,6 +96,7 @@ async fn main() -> Result<()> {
             mpv::frontend::mpv_load_from_url,
             mpv::frontend::mpv_remove_current_from_playlist,
             mpv::frontend::mpv_get_loaded_info,
+            mpv::frontend::mpv_play,
             frontend::kill_app_with_error_msg
         ])
         .on_window_event(move |window: &Window, event: &WindowEvent| {

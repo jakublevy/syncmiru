@@ -125,6 +125,13 @@ pub async fn get_timestamp(ipc_data: &IpcData) -> Result<f64> {
     Err(SyncmiruError::MpvObtainPropertyError)
 }
 
+pub async fn set_pause(pause: bool, ipc_data: &IpcData) -> Result<()> {
+    let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+    mpv_ipc_tx.send(Interface::SetPause(pause)).await?;
+    Ok(())
+}
+
 async fn send_with_response(ipc_data: &IpcData, property: Property) -> Result<Receiver<serde_json::Value>> {
     let req_id = ipc_data.app_state.get_mpv_next_req_id().await;
 

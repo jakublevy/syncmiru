@@ -32,6 +32,7 @@ export default function Mpv(p: Props): ReactElement {
             ctx.socket.on('user_play_info_changed', onUserPlayInfoChanged)
             ctx.socket.on('user_file_load_failed', onUserFileLoadFailed)
             ctx.socket.on('user_file_load_retry', onUserFileLoadRetry)
+            ctx.socket.on("mpv_play", onMpvPlay)
         }
     }, [ctx.socket]);
 
@@ -96,7 +97,16 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<boolean>('mpv-pause-changed', (e: Event<boolean>) => {
-            console.log(`pause = ${e.payload}`)
+            if(e.payload) {
+
+            }
+            else {
+                ctx.socket?.emitWithAck('mpv-play', {})
+                    .catch(() => {
+                        showPersistentErrorAlert(t('mpv-play-error'))
+                        disconnectFromRoom(ctx, t)
+                    })
+            }
         }))
 
         return () => {
@@ -237,6 +247,18 @@ export default function Mpv(p: Props): ReactElement {
             m.set(uid, UserReadyState.Loading)
             return m
         })
+    }
+
+    function onMpvPlay(uid: UserId) {
+        console.log(`uid ${uid} has unpaused`)
+        if(uid != ctx.uid) {
+            invoke('mpv_play', {})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-play-error'))
+                    disconnectFromRoom(ctx, t)
+                })
+        }
+
     }
 
     return (
