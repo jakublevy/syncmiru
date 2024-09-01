@@ -68,6 +68,7 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
         .arg("--window-maximized=no")
     //    .arg("--geometry=1x1+1+1")
         .arg("--keep-open=yes")
+        .arg("--cache-pause=no")
         .arg(format!("--script-opts=ytdl_hook-ytdl_path={}", yt_dlp_path.as_display()))
         .arg("--terminal=no")
         .spawn()?;

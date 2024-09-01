@@ -95,6 +95,10 @@ export default function Mpv(p: Props): ReactElement {
                 })
         }))
 
+        unlisten.push(listen<boolean>('mpv-pause-changed', (e: Event<boolean>) => {
+            console.log(`pause = ${e.payload}`)
+        }))
+
         return () => {
             unlisten.forEach(x => x.then((unsub) => unsub()))
         }

@@ -317,6 +317,10 @@ async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -
                 let fullscreen_state = msg.get("data").unwrap().as_bool().unwrap();
                 fullscreen_changed(fullscreen_state, ipc_data).await?;
             }
+            else if name == "pause" {
+                let pause_state = msg.get("data").unwrap().as_bool().unwrap();
+                pause_changed(pause_state, ipc_data)?;
+            }
         }
     }
     Ok(())
@@ -450,5 +454,10 @@ fn process_idle_msg(ipc_data: &IpcData) -> Result<()> {
             ipc_data.window.emit("mpv-resize", {})?;
         }
     }
+    Ok(())
+}
+
+fn pause_changed(pause_state: bool, ipc_data: &IpcData) -> Result<()> {
+    ipc_data.window.emit("mpv-pause-changed", pause_state).ok();
     Ok(())
 }
