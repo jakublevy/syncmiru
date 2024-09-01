@@ -25,3 +25,9 @@ pub struct UserPlayInfoClient {
     pub audio_sync: bool,
     pub sub_sync: bool
 }
+
+#[derive(Debug, Copy, Clone, Serialize)]
+pub struct UserPause {
+    pub uid: Id,
+    pub timestamp: f64
+}

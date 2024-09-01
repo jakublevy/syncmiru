@@ -2,6 +2,7 @@ pub mod frontend;
 pub mod ipc;
 pub mod window;
 mod models;
+mod utils;
 
 use std::fs;
 use std::io::Stdout;

@@ -13,7 +13,7 @@ import {
     PlaylistEntryUrl,
     PlaylistEntryVideo
 } from "@models/playlist.ts";
-import {UserAudioSubtitles, UserLoadedInfo, UserPlayInfo} from "@models/mpv.ts";
+import {UserAudioSubtitles, UserLoadedInfo, UserPause, UserPlayInfo} from "@models/mpv.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
 
@@ -32,9 +32,15 @@ export default function Mpv(p: Props): ReactElement {
             ctx.socket.on('user_play_info_changed', onUserPlayInfoChanged)
             ctx.socket.on('user_file_load_failed', onUserFileLoadFailed)
             ctx.socket.on('user_file_load_retry', onUserFileLoadRetry)
-            ctx.socket.on("mpv_play", onMpvPlay)
         }
     }, [ctx.socket]);
+
+    useEffect(() => {
+        if (ctx.socket !== undefined) {
+            ctx.socket.on("mpv_play", onMpvPlay)
+            ctx.socket.on('mpv_pause', onMpvPause)
+        }
+    }, [ctx.socket, ctx.uid]);
 
     useEffect(() => {
         let unlisten: Array<Promise<UnlistenFn>> = []
@@ -98,10 +104,22 @@ export default function Mpv(p: Props): ReactElement {
 
         unlisten.push(listen<boolean>('mpv-pause-changed', (e: Event<boolean>) => {
             if(e.payload) {
-
+                invoke<number>('mpv_get_timestamp', {})
+                    .then((time: number) => {
+                        ctx.socket!.emitWithAck('mpv_pause', time)
+                            .catch(() => {
+                                showPersistentErrorAlert(t('mpv-pause-error'))
+                                disconnectFromRoom(ctx, t)
+                            })
+                        console.log(`timestamp = ${time}`)
+                    })
+                    .catch(() => {
+                        showPersistentErrorAlert(t('mpv-play-error'))
+                        disconnectFromRoom(ctx, t)
+                    })
             }
             else {
-                ctx.socket?.emitWithAck('mpv-play', {})
+                ctx.socket?.emitWithAck('mpv_play', {})
                     .catch(() => {
                         showPersistentErrorAlert(t('mpv-play-error'))
                         disconnectFromRoom(ctx, t)
@@ -214,7 +232,6 @@ export default function Mpv(p: Props): ReactElement {
     }
 
     function onUserFileLoadFailed(uid: UserId) {
-        console.log('i should set user to error')
         ctx.setUid2ready((p) => {
             const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
             for (const [id, value] of p) {
@@ -250,15 +267,23 @@ export default function Mpv(p: Props): ReactElement {
     }
 
     function onMpvPlay(uid: UserId) {
-        console.log(`uid ${uid} has unpaused`)
         if(uid != ctx.uid) {
-            invoke('mpv_play', {})
+            invoke('mpv_set_pause', {pause: false})
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-play-error'))
                     disconnectFromRoom(ctx, t)
                 })
         }
+    }
 
+    function onMpvPause(payload: UserPause) {
+        if(payload.uid != ctx.uid) {
+            invoke('mpv_set_pause', {pause: true})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-play-error'))
+                    disconnectFromRoom(ctx, t)
+                })
+        }
     }
 
     return (

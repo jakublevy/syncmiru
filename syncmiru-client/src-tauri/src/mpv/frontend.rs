@@ -3,7 +3,7 @@ use std::time::Duration;
 use cfg_if::cfg_if;
 use tauri::{Emitter};
 use crate::appstate::AppState;
-use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, window};
+use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, utils, window};
 use crate::mpv::ipc::{get_aid, get_sid, Interface, IpcData};
 use crate::mpv::models::{LoadFromSource, UserLoadedInfo};
 use crate::mpv::window::HtmlElementRect;
@@ -105,20 +105,17 @@ pub async fn mpv_load_from_source(
     data: String
 ) -> Result<()> {
     let data_obj: LoadFromSource = serde_json::from_str(&data)?;
-    {
-        let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
-        let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
 
-        mpv_ipc_tx.send(Interface::SetPause(true)).await?;
+    utils::mpv_pause_if_not(&state, window).await?;
 
-        mpv_ipc_tx.send(Interface::LoadFromSource {
-            source_url: data_obj.source_url,
-            jwt: data_obj.jwt
-        }).await?;
-    }
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+    mpv_ipc_tx.send(Interface::LoadFromSource {
+        source_url: data_obj.source_url,
+        jwt: data_obj.jwt
+    }).await?;
 
     // TODO: set room default playback speed
-
     Ok(())
 }
 
@@ -128,14 +125,14 @@ pub async fn mpv_load_from_url(
     window: tauri::Window,
     url: String
 ) -> Result<()> {
+    utils::mpv_pause_if_not(&state, window).await?;
+
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
 
-    mpv_ipc_tx.send(Interface::SetPause(true)).await?;
     mpv_ipc_tx.send(Interface::LoadFromUrl(url)).await?;
 
     // TODO: set room default playback speed
-
     Ok(())
 }
 
@@ -170,8 +167,19 @@ pub async fn mpv_get_loaded_info(state: tauri::State<'_, Arc<AppState>>, window:
 }
 
 #[tauri::command]
-pub async fn mpv_play(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
+pub async fn mpv_set_pause(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window,
+    pause: bool
+) -> Result<()> {
     let ipc_data = IpcData { app_state: state.inner().clone(), window };
-    ipc::set_pause(false, &ipc_data).await?;
+    ipc::set_pause(pause, &ipc_data).await?;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn mpv_get_timestamp(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<f64> {
+    let ipc_data = IpcData { app_state: state.inner().clone(), window };
+    let time = ipc::get_timestamp(&ipc_data).await?;
+    Ok(time)
 }

@@ -23,3 +23,8 @@ export interface UserAudioSubtitles {
     audioSync: boolean,
     subSync: boolean
 }
+
+export interface UserPause {
+    uid: UserId
+    timestamp: number
+}

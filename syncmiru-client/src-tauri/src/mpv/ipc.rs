@@ -35,6 +35,7 @@ pub enum Interface {
     GetSid(u32),
     GetFullscreen(u32),
     GetTimePos(u32),
+    GetPause(u32),
     PlaylistRemoveCurrent,
     Exit,
     Nop
@@ -46,6 +47,7 @@ enum Property {
     Sid,
     TimePos,
     Fullscreen,
+    Pause
 }
 
 pub struct IpcData {
@@ -125,6 +127,18 @@ pub async fn get_timestamp(ipc_data: &IpcData) -> Result<f64> {
     Err(SyncmiruError::MpvObtainPropertyError)
 }
 
+pub async fn get_pause(ipc_data: &IpcData) -> Result<bool> {
+    let mut rx = send_with_response(ipc_data, Property::Pause).await?;
+    if let Some(json) = rx.recv().await {
+        if let Some(data) = json.get("data") {
+            if let Some(pause) = data.as_bool() {
+                return Ok(pause)
+            }
+        }
+    }
+    Err(SyncmiruError::MpvObtainPropertyError)
+}
+
 pub async fn set_pause(pause: bool, ipc_data: &IpcData) -> Result<()> {
     let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
@@ -147,6 +161,7 @@ async fn send_with_response(ipc_data: &IpcData, property: Property) -> Result<Re
         Property::Sid => { mpv_ipc_tx.send(Interface::GetSid(req_id)).await? }
         Property::TimePos => { mpv_ipc_tx.send(Interface::GetTimePos(req_id)).await? }
         Property::Fullscreen => { mpv_ipc_tx.send(Interface::GetFullscreen(req_id)).await? }
+        Property::Pause => { mpv_ipc_tx.send(Interface::GetPause(req_id)).await? }
     }
     Ok(rx)
 }
@@ -242,6 +257,10 @@ async fn write(
                     let cmd = utils::create_get_property_cmd("time-pos", req_id);
                     sender.write_all(cmd.as_bytes()).await?;
                 },
+                Interface::GetPause(req_id) => {
+                    let cmd = utils::create_get_property_cmd("pause", req_id);
+                    sender.write_all(cmd.as_bytes()).await?;
+                }
                 Interface::PlaylistRemoveCurrent => {
                     sender.write_all(b"{\"command\": [\"playlist_remove\", \"current\"]}\n").await?;
                     cfg_if! {
@@ -326,6 +345,13 @@ async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -
             }
             else if name == "pause" {
                 let pause_state = msg.get("data").unwrap().as_bool().unwrap();
+                if pause_state {
+                    let mut mpv_ignore_next_pause_true_event_wl =  ipc_data.app_state.mpv_ignore_next_pause_true_event.write().await;
+                    if *mpv_ignore_next_pause_true_event_wl {
+                        *mpv_ignore_next_pause_true_event_wl = false;
+                        return Ok(())
+                    }
+                }
                 pause_changed(pause_state, ipc_data)?;
             }
         }

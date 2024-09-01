@@ -39,6 +39,7 @@ async fn main() -> Result<()> {
         mpv_next_req_id: 1.into(),
         mpv_response_senders: HashMap::new().into(),
         mpv_ignore_fullscreen_events_timestamp: Instant::now().into(),
+        mpv_ignore_next_pause_true_event: false.into(),
 
         #[cfg(target_family = "unix")]
         x11_conn: None.into(),
@@ -96,7 +97,8 @@ async fn main() -> Result<()> {
             mpv::frontend::mpv_load_from_url,
             mpv::frontend::mpv_remove_current_from_playlist,
             mpv::frontend::mpv_get_loaded_info,
-            mpv::frontend::mpv_play,
+            mpv::frontend::mpv_set_pause,
+            mpv::frontend::mpv_get_timestamp,
             frontend::kill_app_with_error_msg
         ])
         .on_window_event(move |window: &Window, event: &WindowEvent| {
