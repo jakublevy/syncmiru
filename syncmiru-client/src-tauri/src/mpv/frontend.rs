@@ -7,8 +7,6 @@ use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, 
 use crate::mpv::ipc::{get_aid, get_sid, Interface, IpcData};
 use crate::mpv::models::{LoadFromSource, UserLoadedInfo};
 use crate::mpv::window::HtmlElementRect;
-use tokio::sync::mpsc;
-use tokio::sync::oneshot;
 use tokio::time::sleep;
 use crate::result::Result;
 use mpv::ipc;
@@ -182,4 +180,15 @@ pub async fn mpv_get_timestamp(state: tauri::State<'_, Arc<AppState>>, window: t
     let ipc_data = IpcData { app_state: state.inner().clone(), window };
     let time = ipc::get_timestamp(&ipc_data).await?;
     Ok(time)
+}
+
+#[tauri::command]
+pub async fn mpv_seek(
+    state: tauri::State<'_, Arc<AppState>>,
+    timestamp: f64
+) -> Result<()> {
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+    mpv_ipc_tx.send(Interface::Seek(timestamp)).await?;
+    Ok(())
 }

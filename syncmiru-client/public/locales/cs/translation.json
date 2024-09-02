@@ -376,5 +376,6 @@
   "mpv-invalid-file": "Došlo k chybě při načítání videa, zkontrolujte zdroj (soubor, URL). V případě YouTube může být detekován bot",
   "mpv-file-load-retry-error": "Došlo k chybě při opětovném pokusu načtení vybraného videa",
   "mpv-play-error": "Došlo k chybě při spuštění přehrávání",
-  "mpv-pause-error": "Došlo k chybě při pokusu o pozastavení přehrávání"
+  "mpv-pause-error": "Došlo k chybě při pokusu o pozastavení přehrávání",
+  "mpv-seek-error": "Došlo k chybě při pokusu o přetočení přehrávání"
 }

@@ -99,6 +99,7 @@ async fn main() -> Result<()> {
             mpv::frontend::mpv_get_loaded_info,
             mpv::frontend::mpv_set_pause,
             mpv::frontend::mpv_get_timestamp,
+            mpv::frontend::mpv_seek,
             frontend::kill_app_with_error_msg
         ])
         .on_window_event(move |window: &Window, event: &WindowEvent| {

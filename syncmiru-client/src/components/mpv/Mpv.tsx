@@ -278,9 +278,16 @@ export default function Mpv(p: Props): ReactElement {
 
     function onMpvPause(payload: UserPause) {
         if(payload.uid != ctx.uid) {
-            invoke('mpv_set_pause', {pause: true})
+            invoke('mpv_seek', {timestamp: payload.timestamp})
+                .then(() => {
+                    invoke('mpv_set_pause', {pause: true})
+                        .catch(() => {
+                            showPersistentErrorAlert(t('mpv-pause-error'))
+                            disconnectFromRoom(ctx, t)
+                        })
+                })
                 .catch(() => {
-                    showPersistentErrorAlert(t('mpv-play-error'))
+                    showPersistentErrorAlert(t('mpv-seek-error'))
                     disconnectFromRoom(ctx, t)
                 })
         }

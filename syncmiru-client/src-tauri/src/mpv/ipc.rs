@@ -230,7 +230,10 @@ async fn write(
                     let cmd = format!("{{\"command\": [\"set_property\", \"pause\", {}]}}\n", p);
                     sender.write_all(cmd.as_bytes()).await?;
                 }
-                Interface::Seek { .. } => {}
+                Interface::Seek(timestamp) => {
+                    let cmd = format!("{{\"command\": [\"set_property\", \"time-pos\", {}]}}\n", timestamp);
+                    sender.write_all(cmd.as_bytes()).await?;
+                }
                 Interface::ChangeAudio { .. } => {}
                 Interface::ChangeSubs { .. } => {}
                 Interface::SetWindowSize { .. } => {}
