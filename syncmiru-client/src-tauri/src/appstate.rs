@@ -21,6 +21,7 @@ pub struct AppState {
     pub mpv_response_senders: RwLock<HashMap<u32, mpsc::Sender<serde_json::Value>>>,
     pub mpv_ignore_fullscreen_events_timestamp: RwLock<tokio::time::Instant>,
     pub mpv_ignore_next_pause_true_event: RwLock<bool>,
+    pub mpv_ignore_next_seek_event: RwLock<bool>,
 
     #[cfg(target_family = "unix")]
     pub x11_conn: RwLock<Option<RustConnection>>,

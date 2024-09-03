@@ -324,7 +324,7 @@ async fn process_mpv_msg(msg: &str, ipc_data: &IpcData) -> Result<()> {
                 "playback-restart" => { process_playback_restart(ipc_data)?; }
                 "end-file" => { process_end_file(&json, ipc_data)?; }
                 "idle" => { process_idle_msg(ipc_data)?; },
-                "seek" => { process_seek_msg(ipc_data)?; }
+                "seek" => { process_seek_msg(ipc_data).await?; }
                 _ => {}
             }
         }
@@ -499,7 +499,13 @@ fn pause_changed(pause_state: bool, ipc_data: &IpcData) -> Result<()> {
     Ok(())
 }
 
-fn process_seek_msg(ipc_data: &IpcData) -> Result<()> {
+async fn process_seek_msg(ipc_data: &IpcData) -> Result<()> {
+    let mut mpv_ignore_next_seek_event_wl = ipc_data.app_state.mpv_ignore_next_seek_event.write().await;
+    if *mpv_ignore_next_seek_event_wl {
+        *mpv_ignore_next_seek_event_wl = false;
+        return Ok(())
+    }
+
     ipc_data.window.emit("mpv-seek", {}).ok();
     Ok(())
 }

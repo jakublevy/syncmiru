@@ -130,7 +130,7 @@ export default function Mpv(p: Props): ReactElement {
         unlisten.push(listen<void>('mpv-seek', (e: Event<void>) => {
             invoke<number>('mpv_get_timestamp', {})
                 .then((time: number) => {
-                    ctx.socket!.emitWithAck('mpv_seek', {timestamp: time})
+                    ctx.socket!.emitWithAck('mpv_seek', time)
                         .catch(() => {
                             showPersistentErrorAlert(t('mpv-seek-error'))
                             disconnectFromRoom(ctx, t)

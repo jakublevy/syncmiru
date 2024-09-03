@@ -40,6 +40,7 @@ async fn main() -> Result<()> {
         mpv_response_senders: HashMap::new().into(),
         mpv_ignore_fullscreen_events_timestamp: Instant::now().into(),
         mpv_ignore_next_pause_true_event: false.into(),
+        mpv_ignore_next_seek_event: false.into(),
 
         #[cfg(target_family = "unix")]
         x11_conn: None.into(),

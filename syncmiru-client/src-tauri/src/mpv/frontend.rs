@@ -189,6 +189,8 @@ pub async fn mpv_seek(
 ) -> Result<()> {
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+    let mut mpv_ignore_next_seek_event_wl = state.mpv_ignore_next_seek_event.write().await;
+    *mpv_ignore_next_seek_event_wl = true;
     mpv_ipc_tx.send(Interface::Seek(timestamp)).await?;
     Ok(())
 }
