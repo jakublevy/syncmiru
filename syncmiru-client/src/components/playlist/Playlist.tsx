@@ -42,25 +42,22 @@ export default function Playlist(): ReactElement {
     const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
 
     const playlistRef = useRef(ctx.playlist)
+    const subtitlesRef = useRef(ctx.subtitles)
 
     useEffect(() => {
         playlistRef.current = ctx.playlist
-    }, [ctx.playlist]);
+        subtitlesRef.current = ctx.subtitles
+    }, [ctx.playlist, ctx.subtitles]);
 
     useEffect(() => {
         if (ctx.socket !== undefined) {
             ctx.socket.on('add_video_files', onAddVideoFiles)
             ctx.socket.on('add_urls', onAddUrls)
+            ctx.socket.on('change_active_video', onChangeActiveVideo)
             ctx.socket.on('playlist_order', onPlaylistOrder)
             ctx.socket.on('del_playlist_entry', onDelPlaylistEntry)
         }
     }, [ctx.socket]);
-
-    useEffect(() => {
-        if(ctx.socket !== undefined) {
-            ctx.socket.on('change_active_video', onChangeActiveVideo)
-        }
-    }, [ctx.socket, ctx.playlist, ctx.subtitles]);
 
     useEffect(() => {
         if(ctx.socket !== undefined) {

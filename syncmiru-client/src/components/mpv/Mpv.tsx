@@ -16,7 +16,6 @@ import {
 import {UserAudioSubtitles, UserLoadedInfo, UserPause, UserPlayInfo, UserSeek} from "@models/mpv.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
-import {join} from "@tauri-apps/api/path";
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
