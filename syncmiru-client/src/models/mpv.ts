@@ -28,3 +28,8 @@ export interface UserPause {
     uid: UserId
     timestamp: number
 }
+
+export interface UserSeek {
+    uid: UserId
+    timestamp: number
+}

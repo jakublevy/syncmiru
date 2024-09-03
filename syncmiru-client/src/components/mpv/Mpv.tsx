@@ -13,7 +13,7 @@ import {
     PlaylistEntryUrl,
     PlaylistEntryVideo
 } from "@models/playlist.ts";
-import {UserAudioSubtitles, UserLoadedInfo, UserPause, UserPlayInfo} from "@models/mpv.ts";
+import {UserAudioSubtitles, UserLoadedInfo, UserPause, UserPlayInfo, UserSeek} from "@models/mpv.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
 
@@ -39,6 +39,7 @@ export default function Mpv(p: Props): ReactElement {
         if (ctx.socket !== undefined) {
             ctx.socket.on("mpv_play", onMpvPlay)
             ctx.socket.on('mpv_pause', onMpvPause)
+            ctx.socket.on("mpv_seek", onMpvSeek)
         }
     }, [ctx.socket, ctx.uid]);
 
@@ -111,7 +112,6 @@ export default function Mpv(p: Props): ReactElement {
                                 showPersistentErrorAlert(t('mpv-pause-error'))
                                 disconnectFromRoom(ctx, t)
                             })
-                        console.log(`timestamp = ${time}`)
                     })
                     .catch(() => {
                         showPersistentErrorAlert(t('mpv-play-error'))
@@ -125,6 +125,21 @@ export default function Mpv(p: Props): ReactElement {
                         disconnectFromRoom(ctx, t)
                     })
             }
+        }))
+
+        unlisten.push(listen<void>('mpv-seek', (e: Event<void>) => {
+            invoke<number>('mpv_get_timestamp', {})
+                .then((time: number) => {
+                    ctx.socket!.emitWithAck('mpv_seek', {timestamp: time})
+                        .catch(() => {
+                            showPersistentErrorAlert(t('mpv-seek-error'))
+                            disconnectFromRoom(ctx, t)
+                        })
+                })
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-seek-error'))
+                    disconnectFromRoom(ctx, t)
+                })
         }))
 
         return () => {
@@ -286,6 +301,17 @@ export default function Mpv(p: Props): ReactElement {
                             disconnectFromRoom(ctx, t)
                         })
                 })
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-seek-error'))
+                    disconnectFromRoom(ctx, t)
+                })
+        }
+    }
+
+    function onMpvSeek(payload: UserSeek) {
+        console.log(`mpv seek ${payload}`)
+        if(payload.uid != ctx.uid) {
+            invoke('mpv_seek', {timestamp: payload.timestamp})
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-seek-error'))
                     disconnectFromRoom(ctx, t)

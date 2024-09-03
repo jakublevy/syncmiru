@@ -323,7 +323,8 @@ async fn process_mpv_msg(msg: &str, ipc_data: &IpcData) -> Result<()> {
                 "file-loaded" => { process_file_loaded(ipc_data).await?; }
                 "playback-restart" => { process_playback_restart(ipc_data)?; }
                 "end-file" => { process_end_file(&json, ipc_data)?; }
-                "idle" => { process_idle_msg(ipc_data)?; }
+                "idle" => { process_idle_msg(ipc_data)?; },
+                "seek" => { process_seek_msg(ipc_data)?; }
                 _ => {}
             }
         }
@@ -495,5 +496,10 @@ fn process_idle_msg(ipc_data: &IpcData) -> Result<()> {
 
 fn pause_changed(pause_state: bool, ipc_data: &IpcData) -> Result<()> {
     ipc_data.window.emit("mpv-pause-changed", pause_state).ok();
+    Ok(())
+}
+
+fn process_seek_msg(ipc_data: &IpcData) -> Result<()> {
+    ipc_data.window.emit("mpv-seek", {}).ok();
     Ok(())
 }

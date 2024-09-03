@@ -31,3 +31,9 @@ pub struct UserPause {
     pub uid: Id,
     pub timestamp: f64
 }
+
+#[derive(Debug, Copy, Clone, Serialize)]
+pub struct UserSeek {
+    pub uid: Id,
+    pub timestamp: f64
+}

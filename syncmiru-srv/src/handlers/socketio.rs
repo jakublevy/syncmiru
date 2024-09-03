@@ -13,7 +13,7 @@ use crate::models::file::FileInfo;
 use crate::handlers::utils;
 use crate::handlers::utils::{disconnect_from_room, subtitles_id_in_room, video_id_in_room};
 use crate::models::file::FileType;
-use crate::models::mpv::{UserLoadedInfo, UserPause, UserPlayInfoClient};
+use crate::models::mpv::{UserLoadedInfo, UserPause, UserPlayInfoClient, UserSeek};
 use crate::models::playlist::{PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo, UserReadyStatus};
 use crate::srvstate::{PlaylistEntryId, SrvState};
 
@@ -87,6 +87,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("user_file_load_retry", user_file_load_retry);
     s.on("mpv_play", mpv_play);
     s.on("mpv_pause", mpv_pause);
+    s.on("mpv_seek", mpv_seek);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -2087,6 +2088,27 @@ pub async fn mpv_pause(
     s
         .within(rid.to_string())
         .emit("mpv_pause", UserPause { uid, timestamp: payload }).ok();
+
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn mpv_seek(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<f64>,
+) {
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    let uid = state.socket2uid(&s).await;
+
+    s
+        .within(rid.to_string())
+        .emit("mpv_seek", UserSeek { uid, timestamp: payload }).ok();
 
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
