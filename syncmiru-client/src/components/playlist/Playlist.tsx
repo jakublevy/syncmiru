@@ -28,6 +28,8 @@ import {invoke} from "@tauri-apps/api/core";
 import {UserId} from "@models/user.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserAudioSubtitles} from "@models/mpv.ts";
+import {Simulate} from "react-dom/test-utils";
+import play = Simulate.play;
 
 export default function Playlist(): ReactElement {
     const ctx = useMainContext()
@@ -41,23 +43,20 @@ export default function Playlist(): ReactElement {
     const [videoIdSelectedSubtitles, setVideoIdSelectedSubtitles] = useState<PlaylistEntryId>(0)
     const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
 
-    const playlistRef = useRef(ctx.playlist)
-    const subtitlesRef = useRef(ctx.subtitles)
-
-    useEffect(() => {
-        playlistRef.current = ctx.playlist
-        subtitlesRef.current = ctx.subtitles
-    }, [ctx.playlist, ctx.subtitles]);
-
     useEffect(() => {
         if (ctx.socket !== undefined) {
             ctx.socket.on('add_video_files', onAddVideoFiles)
             ctx.socket.on('add_urls', onAddUrls)
-            ctx.socket.on('change_active_video', onChangeActiveVideo)
             ctx.socket.on('playlist_order', onPlaylistOrder)
             ctx.socket.on('del_playlist_entry', onDelPlaylistEntry)
         }
     }, [ctx.socket]);
+
+    useEffect(() => {
+        if(ctx.socket !== undefined) {
+            ctx.socket.on('change_active_video', onChangeActiveVideo)
+        }
+    }, [ctx.socket, ctx.subtitles]);
 
     useEffect(() => {
         if(ctx.socket !== undefined) {
@@ -244,51 +243,55 @@ export default function Playlist(): ReactElement {
     }
 
     function onChangeActiveVideo(entryId: PlaylistEntryId) {
-        const entry = playlistRef.current.get(entryId)
+        ctx.setPlaylist((playlist) => {
+            const entry = playlist.get(entryId)
 
-        ctx.setUid2ready((p) => {
-            const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
-            for (const [id, value] of p) {
-                m.set(id, UserReadyState.Loading)
+            ctx.setUid2ready((p) => {
+                const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+                for (const [id, value] of p) {
+                    m.set(id, UserReadyState.Loading)
+                }
+                return m
+            })
+
+            const subs = ctx.subtitles.get(entryId)
+            let reqIds: Set<PlaylistEntryId> = new Set<PlaylistEntryId>()
+
+            if(entry instanceof PlaylistEntryVideo)
+                reqIds.add(entryId)
+
+            if(subs != null) {
+                for (const sub of subs)
+                    reqIds.add(sub)
             }
-            return m
-        })
 
-        const subs = ctx.subtitles.get(entryId)
-        let reqIds: Set<PlaylistEntryId> = new Set<PlaylistEntryId>()
-
-        if(entry instanceof PlaylistEntryVideo)
-            reqIds.add(entryId)
-
-        if(subs != null) {
-            for (const sub of subs)
-                reqIds.add(sub)
-        }
-
-        const jwtsTmp: Map<PlaylistEntryId, string> = new Map<PlaylistEntryId, string>()
-        let promises = []
-        for(const id of reqIds) {
-            promises.push(ctx.socket!.emitWithAck("req_playing_jwt", {playlist_entry_id: id})
-                .then((ack: SocketIoAck<string>) => {
-                    if(ack.status === SocketIoAckType.Err) {
+            const jwtsTmp: Map<PlaylistEntryId, string> = new Map<PlaylistEntryId, string>()
+            let promises = []
+            for(const id of reqIds) {
+                promises.push(ctx.socket!.emitWithAck("req_playing_jwt", {playlist_entry_id: id})
+                    .then((ack: SocketIoAck<string>) => {
+                        if(ack.status === SocketIoAckType.Err) {
+                            showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
+                            forceDisconnectFromRoom(ctx, t)
+                            return
+                        }
+                        const jwt = ack.payload as string
+                        jwtsTmp.set(entryId, jwt)
+                    })
+                    .catch(() => {
                         showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
                         forceDisconnectFromRoom(ctx, t)
                         return
-                    }
-                    const jwt = ack.payload as string
-                    jwtsTmp.set(entryId, jwt)
+                    }))
+            }
+            Promise.all(promises)
+                .then(() => {
+                    ctx.setJwts(jwtsTmp)
+                    ctx.setActiveVideoId(entryId)
                 })
-                .catch(() => {
-                    showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
-                    forceDisconnectFromRoom(ctx, t)
-                    return
-                }))
-        }
-        Promise.all(promises)
-            .then(() => {
-                ctx.setJwts(jwtsTmp)
-                ctx.setActiveVideoId(entryId)
-            })
+
+            return playlist
+        })
     }
 
     function orderChanged(e: OnChangeMeta) {
