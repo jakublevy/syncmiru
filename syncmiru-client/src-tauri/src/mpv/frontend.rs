@@ -5,7 +5,7 @@ use tauri::{Emitter};
 use crate::appstate::AppState;
 use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, utils, window};
 use crate::mpv::ipc::{get_aid, get_sid, Interface, IpcData};
-use crate::mpv::models::{LoadFromSource, UserLoadedInfo};
+use crate::mpv::models::{LoadFromSource, LoadFromUrl, UserLoadedInfo};
 use crate::mpv::window::HtmlElementRect;
 use tokio::time::sleep;
 use crate::result::Result;
@@ -104,7 +104,7 @@ pub async fn mpv_load_from_source(
 ) -> Result<()> {
     let data_obj: LoadFromSource = serde_json::from_str(&data)?;
 
-    utils::mpv_pause_if_not(&state, window).await?;
+    utils::mpv_before_file_load(&state, window, &data_obj.playback_speed).await?;
 
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
@@ -112,8 +112,6 @@ pub async fn mpv_load_from_source(
         source_url: data_obj.source_url,
         jwt: data_obj.jwt
     }).await?;
-
-    // TODO: set room default playback speed
     Ok(())
 }
 
@@ -121,16 +119,16 @@ pub async fn mpv_load_from_source(
 pub async fn mpv_load_from_url(
     state: tauri::State<'_, Arc<AppState>>,
     window: tauri::Window,
-    url: String
+    data: String
 ) -> Result<()> {
-    utils::mpv_pause_if_not(&state, window).await?;
+    let data_obj: LoadFromUrl = serde_json::from_str(&data)?;
+
+    utils::mpv_before_file_load(&state, window, &data_obj.playback_speed).await?;
 
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
 
-    mpv_ipc_tx.send(Interface::LoadFromUrl(url)).await?;
-
-    // TODO: set room default playback speed
+    mpv_ipc_tx.send(Interface::LoadFromUrl(data_obj.url)).await?;
     Ok(())
 }
 

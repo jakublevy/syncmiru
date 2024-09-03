@@ -1,8 +1,13 @@
+use std::fmt::Display;
 use interprocess::local_socket::{GenericFilePath, GenericNamespaced, ToFsName, ToNsName};
 use crate::mpv::get_pipe_ipc_path;
 
 pub(super) fn create_get_property_cmd(prop: &str, req_id: u32) -> String {
     format!("{{\"command\": [\"get_property\", \"{}\"], \"request_id\": {}}}\n", prop, req_id)
+}
+
+pub(super) fn create_set_property_cmd<T: Display>(prop: &str, value: &T) -> String {
+    format!("{{\"command\": [\"set_property\", \"{}\", {}]}}\n", prop, value)
 }
 
 pub(super) fn get_pipe_name(pipe_id: &str) -> crate::result::Result<interprocess::local_socket::Name> {

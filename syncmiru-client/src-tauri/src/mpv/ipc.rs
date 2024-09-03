@@ -10,6 +10,7 @@ use interprocess::local_socket::{
     tokio::{prelude::*, Stream},
 };
 use interprocess::local_socket::tokio::{RecvHalf, SendHalf};
+use rust_decimal::Decimal;
 use tauri::Emitter;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::sync::mpsc::{Receiver, Sender};
@@ -27,27 +28,27 @@ pub enum Interface {
     LoadFromUrl(String),
     SetPause(bool),
     Seek(f64),
-    ChangeAudio(u64),
-    ChangeSubs(u64),
+    SetAudio(u64),
+    SetSubs(u64),
     SetWindowSize { w: u32, h: u32 },
     SetFullscreen(bool),
+    SetPlaybackSpeed(Decimal),
     GetAid(u32),
     GetSid(u32),
     GetFullscreen(u32),
     GetTimePos(u32),
     GetPause(u32),
     PlaylistRemoveCurrent,
-    Exit,
-    Nop
+    Exit
 }
 
 #[derive(Debug, PartialEq)]
 enum Property {
-    Aid,
-    Sid,
-    TimePos,
-    Fullscreen,
-    Pause
+    GetAid,
+    GetSid,
+    GetTimePos,
+    GetFullscreen,
+    GetPause
 }
 
 pub struct IpcData {
@@ -78,14 +79,8 @@ pub async fn start(
     Ok(())
 }
 
-pub async fn send_cmd_wait(tx: &Sender<Interface>, cmd: Interface) -> Result<()> {
-    tx.send(cmd).await?;
-    tx.send(Interface::Nop).await?;
-    Ok(())
-}
-
 pub async fn get_aid(ipc_data: &IpcData) -> Result<Option<u64>> {
-    let mut rx = send_with_response(ipc_data, Property::Aid).await?;
+    let mut rx = send_with_response(ipc_data, Property::GetAid).await?;
     if let Some(json) = rx.recv().await {
         if let Some(data) = json.get("data") {
             if let Some(_) = data.as_bool() {
@@ -100,7 +95,7 @@ pub async fn get_aid(ipc_data: &IpcData) -> Result<Option<u64>> {
 }
 
 pub async fn get_sid(ipc_data: &IpcData) -> Result<Option<u64>> {
-    let mut rx = send_with_response(ipc_data, Property::Sid).await?;
+    let mut rx = send_with_response(ipc_data, Property::GetSid).await?;
     if let Some(json) = rx.recv().await {
         println!("{:?}", json);
         if let Some(data) = json.get("data") {
@@ -116,7 +111,7 @@ pub async fn get_sid(ipc_data: &IpcData) -> Result<Option<u64>> {
 }
 
 pub async fn get_timestamp(ipc_data: &IpcData) -> Result<f64> {
-    let mut rx = send_with_response(ipc_data, Property::TimePos).await?;
+    let mut rx = send_with_response(ipc_data, Property::GetTimePos).await?;
     if let Some(json) = rx.recv().await {
         if let Some(data) = json.get("data") {
             if let Some(timepos) = data.as_f64() {
@@ -128,7 +123,7 @@ pub async fn get_timestamp(ipc_data: &IpcData) -> Result<f64> {
 }
 
 pub async fn get_pause(ipc_data: &IpcData) -> Result<bool> {
-    let mut rx = send_with_response(ipc_data, Property::Pause).await?;
+    let mut rx = send_with_response(ipc_data, Property::GetPause).await?;
     if let Some(json) = rx.recv().await {
         if let Some(data) = json.get("data") {
             if let Some(pause) = data.as_bool() {
@@ -157,11 +152,11 @@ async fn send_with_response(ipc_data: &IpcData, property: Property) -> Result<Re
     mpv_response_senders_wl.insert(req_id, tx);
 
     match property {
-        Property::Aid => { mpv_ipc_tx.send(Interface::GetAid(req_id)).await? }
-        Property::Sid => { mpv_ipc_tx.send(Interface::GetSid(req_id)).await? }
-        Property::TimePos => { mpv_ipc_tx.send(Interface::GetTimePos(req_id)).await? }
-        Property::Fullscreen => { mpv_ipc_tx.send(Interface::GetFullscreen(req_id)).await? }
-        Property::Pause => { mpv_ipc_tx.send(Interface::GetPause(req_id)).await? }
+        Property::GetAid => { mpv_ipc_tx.send(Interface::GetAid(req_id)).await? }
+        Property::GetSid => { mpv_ipc_tx.send(Interface::GetSid(req_id)).await? }
+        Property::GetTimePos => { mpv_ipc_tx.send(Interface::GetTimePos(req_id)).await? }
+        Property::GetFullscreen => { mpv_ipc_tx.send(Interface::GetFullscreen(req_id)).await? }
+        Property::GetPause => { mpv_ipc_tx.send(Interface::GetPause(req_id)).await? },
     }
     Ok(rx)
 }
@@ -212,7 +207,7 @@ async fn write(
         let msg_opt = rx.recv().await;
         if let Some(msg) = msg_opt {
             match msg {
-                Interface::LoadFromSource {  ref source_url, ref jwt } => {
+                Interface::LoadFromSource {ref source_url, ref jwt } => {
                     let cmd = format!(
                         "{{\"command\":  [\"loadfile\", \"{}\", \"replace\", {{\"http-header-fields\": \"Authorization: Bearer {}\"}}]}}\n",
                         source_url,
@@ -227,15 +222,15 @@ async fn write(
                     sender.write_all(cmd.as_bytes()).await?;
                 }
                 Interface::SetPause(p) => {
-                    let cmd = format!("{{\"command\": [\"set_property\", \"pause\", {}]}}\n", p);
+                    let cmd = utils::create_set_property_cmd("pause", &p);
                     sender.write_all(cmd.as_bytes()).await?;
                 }
                 Interface::Seek(timestamp) => {
-                    let cmd = format!("{{\"command\": [\"set_property\", \"time-pos\", {}]}}\n", timestamp);
+                    let cmd = utils::create_set_property_cmd("time-pos", &timestamp);
                     sender.write_all(cmd.as_bytes()).await?;
                 }
-                Interface::ChangeAudio { .. } => {}
-                Interface::ChangeSubs { .. } => {}
+                Interface::SetAudio { .. } => {}
+                Interface::SetSubs { .. } => {}
                 Interface::SetWindowSize { .. } => {}
                 Interface::SetFullscreen(state) => {
                     let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
@@ -243,6 +238,10 @@ async fn write(
                     sender.write_all(cmd.as_bytes()).await?;
 
                     mpv::window::focus(&ipc_data.app_state, mpv_wid_rl.unwrap()).await?;
+                },
+                Interface::SetPlaybackSpeed(ref playback_speed) => {
+                    let cmd = utils::create_set_property_cmd("speed", playback_speed);
+                    sender.write_all(cmd.as_bytes()).await?;
                 }
                 Interface::GetAid(req_id) => {
                     let cmd = utils::create_get_property_cmd("aid", req_id);
@@ -283,8 +282,7 @@ async fn write(
                         .unwrap()
                         .send(())
                         .map_err(|e| anyhow!("killing interprocess mpv communication failed"))?;
-                },
-                Interface::Nop => {}
+                }
             }
             //println!("msg {:?}", msg);
         } else {
@@ -296,7 +294,7 @@ async fn write(
 }
 
 async fn init_observe_property(mut sender: &SendHalf) -> Result<()> {
-    let properties = vec!["aid", "sid", "pause", "fullscreen"];
+    let properties = vec!["aid", "sid", "pause", "fullscreen", "speed"];
     for (i, property) in properties.iter().enumerate() {
         observe_property(sender, i, property).await?;
     }

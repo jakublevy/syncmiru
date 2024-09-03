@@ -1,15 +1,22 @@
 use std::sync::Arc;
+use rust_decimal::Decimal;
 use tauri::Window;
 use crate::appstate::AppState;
 use crate::mpv::ipc;
 use crate::mpv::ipc::{Interface, IpcData};
 use crate::result::Result;
 
-pub async fn mpv_pause_if_not(state: &Arc<AppState>, window: Window) -> Result<()> {
+pub async fn mpv_before_file_load(
+    state: &Arc<AppState>,
+    window: Window,
+    playback_speed: &Decimal
+) -> Result<()> {
     let ipc_data = IpcData { app_state: state.clone(), window };
 
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+
+    mpv_ipc_tx.send(Interface::SetPlaybackSpeed(*playback_speed)).await?;
 
     let pause = ipc::get_pause(&ipc_data).await?;
     if !pause {

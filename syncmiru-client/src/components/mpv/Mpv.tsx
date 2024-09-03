@@ -16,6 +16,7 @@ import {
 import {UserAudioSubtitles, UserLoadedInfo, UserPause, UserPlayInfo, UserSeek} from "@models/mpv.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
+import {join} from "@tauri-apps/api/path";
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
@@ -26,6 +27,7 @@ export default function Mpv(p: Props): ReactElement {
     const jwtsRef = useRef(ctx.jwts);
     const source2urlRef = useRef(ctx.source2url);
     const playlistRef = useRef(ctx.playlist)
+    const joinedRoomSettingsRef = useRef(ctx.joinedRoomSettings)
 
     useEffect(() => {
         if (ctx.socket !== undefined) {
@@ -151,7 +153,8 @@ export default function Mpv(p: Props): ReactElement {
         jwtsRef.current = ctx.jwts;
         source2urlRef.current = ctx.source2url;
         playlistRef.current = ctx.playlist
-    }, [ctx.jwts, ctx.source2url, ctx.playlist]);
+        joinedRoomSettingsRef.current = ctx.joinedRoomSettings
+    }, [ctx.jwts, ctx.source2url, ctx.playlist, ctx.joinedRoomSettings]);
 
     useEffect(() => {
         if(ctx.mpvRunning && !ctx.mpvWinDetached && !ctx.mpvShowSmall)
@@ -169,6 +172,7 @@ export default function Mpv(p: Props): ReactElement {
             }
         }
     }, [ctx.modalShown, ctx.settingsShown, ctx.mpvRunning, ctx.mpvWinDetached]);
+    
 
     useEffect(() => {
         if(ctx.activeVideoId == null)
@@ -180,7 +184,11 @@ export default function Mpv(p: Props): ReactElement {
             const jwt = jwtsRef.current.get(id) as string
             const video = entry as PlaylistEntryVideo
             const source = source2urlRef.current.get(video.source) as string
-            const data = {source_url: source, jwt: jwt}
+            const data = {
+                source_url: source,
+                jwt: jwt,
+                playback_speed: joinedRoomSettingsRef.current.playback_speed
+            }
             invoke<UserLoadedInfo>('mpv_load_from_source', {data: JSON.stringify(data)})
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-load-error'))
@@ -189,7 +197,11 @@ export default function Mpv(p: Props): ReactElement {
         }
         else if(entry instanceof PlaylistEntryUrl) {
             const video = entry as PlaylistEntryUrl
-            invoke('mpv_load_from_url', {url: video.url})
+            const data = {
+                url: video.url,
+                playback_speed: joinedRoomSettingsRef.current.playback_speed
+            }
+            invoke('mpv_load_from_url', {data: JSON.stringify(data)})
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-load-error'))
                     disconnectFromRoom(ctx, t)

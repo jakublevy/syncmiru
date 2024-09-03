@@ -36,7 +36,7 @@ async fn main() -> Result<()> {
         mpv_stop_tx: None.into(),
         mpv_ipc_tx: None.into(),
         mpv_reattach_on_fullscreen_false: false.into(),
-        mpv_next_req_id: 1.into(),
+        mpv_next_req_id: constants::MPV_MIN_USER_REQ_ID.into(),
         mpv_response_senders: HashMap::new().into(),
         mpv_ignore_fullscreen_events_timestamp: Instant::now().into(),
         mpv_ignore_next_pause_true_event: false.into(),
