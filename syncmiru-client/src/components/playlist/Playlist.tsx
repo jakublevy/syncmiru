@@ -28,8 +28,6 @@ import {invoke} from "@tauri-apps/api/core";
 import {UserId} from "@models/user.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserAudioSubtitles} from "@models/mpv.ts";
-import {Simulate} from "react-dom/test-utils";
-import play = Simulate.play;
 
 export default function Playlist(): ReactElement {
     const ctx = useMainContext()
@@ -202,9 +200,9 @@ export default function Playlist(): ReactElement {
 
 
                 ctx.setPlaylistOrder((p) => {
-                    if(p.length > 1) {
-                        setAsActiveVideo(p[1])
-                    }
+                    const m = p.filter(x => x !== entryId)
+                    if(m.length > 0)
+                        setAsActiveVideo(m[0])
                     else {
                         ctx.setActiveVideoId(null)
                         ctx.setUid2ready((p) => {
@@ -215,7 +213,7 @@ export default function Playlist(): ReactElement {
                         })
                         ctx.setUid2audioSub(new Map<UserId, UserAudioSubtitles>())
                     }
-                    return p.filter(x => x !== entryId)
+                    return m
                 })
 
                 ctx.setSubtitles((p) => {
