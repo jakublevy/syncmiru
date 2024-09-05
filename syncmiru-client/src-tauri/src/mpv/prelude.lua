@@ -97,6 +97,15 @@ local function render_msgs()
     mp.set_osd_ass(osd_w, osd_h, ass.text)
 end
 
+local function table_remove_by_value(tbl, value)
+    for i,v in ipairs(tbl) do
+        if v == value then
+            table.remove(tbl, i)
+            break
+        end
+    end
+end
+
 
 mp.register_script_message('msg-add', function(text, id_str, duration_str, mood_str)
     local time = mp.get_time()
@@ -120,7 +129,7 @@ end)
 
 mp.register_script_message('msg-del', function(id_str) 
     local id = tonumber(id_str)
-    table.remove(order, id)
+    table_remove_by_value(order, id)
     msgs[id] = nil
     render_msgs()
 end)
