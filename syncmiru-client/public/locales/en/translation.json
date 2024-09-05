@@ -1,4 +1,6 @@
 {
+  "lang-code": "en-US",
+
   "welcome": "Welcome!",
   "welcome-msg": "We noticed that you are launching Syncmiru for the first time. Choose the language in which you want the application to be displayed.",
   "language": "Language",
@@ -377,5 +379,7 @@
   "mpv-file-load-retry-error": "An error occurred while trying to reload the chosen video",
   "mpv-play-error": "An error occurred while unpausing",
   "mpv-pause-error": "An error occurred while pausing",
-  "mpv-seek-error": "An error occurred while seeking the playback"
+  "mpv-seek-error": "An error occurred while seeking the playback",
+  "mpv-msg-file-loaded": "Loaded",
+  "mpv-msg-show-failed": "An error occurred while showing a message inside mpv"
 }

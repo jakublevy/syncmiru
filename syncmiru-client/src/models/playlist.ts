@@ -24,21 +24,33 @@ export enum PlaylistEntryType {
     Subtitles = "subtitles"
 }
 
-export class PlaylistEntry {
-
+export abstract class PlaylistEntry {
+    public abstract pretty(): string
 }
 
 export class PlaylistEntryVideo implements PlaylistEntry {
     public type: PlaylistEntryType = PlaylistEntryType.Video;
     constructor(public source: string, public path: string) {}
+
+    public pretty() {
+        return `${this.source}:${this.path}`
+    }
 }
 
 export class PlaylistEntryUrl implements PlaylistEntry {
     public type: PlaylistEntryType = PlaylistEntryType.Url;
     constructor(public url: string) {}
+
+    public pretty() {
+        return this.url
+    }
 }
 
 export class PlaylistEntrySubtitles implements PlaylistEntry {
     public type: PlaylistEntryType = PlaylistEntryType.Subtitles;
     constructor(public source: string, public path: string, public videoId: PlaylistEntryId) {}
+
+    public pretty() {
+        return `${this.source}:${this.path}`
+    }
 }

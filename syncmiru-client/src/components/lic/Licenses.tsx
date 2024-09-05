@@ -1,8 +1,10 @@
 import {ReactElement} from "react";
 import {useTranslation} from "react-i18next";
+import {createLocaleComparator} from "src/utils/sort.ts";
 
 export default function Licenses(): ReactElement {
     const {t} = useTranslation()
+    const localeComparator = createLocaleComparator(t)
 
     const licenses: Array<License> = [
         {
@@ -75,7 +77,7 @@ export default function Licenses(): ReactElement {
             </div>
             <div className="ml-8 mr-8 mb-4">
                 <pre className="border text-sm w-full h-[calc(100dvh-9rem)] text-wrap overflow-y-auto p-1.5">
-                    {licenses.sort((l1, l2) => l1.name.localeCompare(l2.name)).map((l, i) => {
+                    {licenses.sort((l1, l2) => localeComparator(l1.name, l2.name)).map((l, i) => {
                         return (
                             <p key={i}>
                                 <b>{l.name}</b>&#10;{l.text}

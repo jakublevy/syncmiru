@@ -1,4 +1,6 @@
 {
+  "lang-code": "cs-CZ",
+
   "welcome": "Vítejte!",
   "welcome-msg": "Všimli jsme si, že spouštíte aplikace Syncmiru poprvé. Zvolte si jazyk, ve kterém se má aplikace zobrazovat.",
   "language": "Jazyk",
@@ -377,5 +379,7 @@
   "mpv-file-load-retry-error": "Došlo k chybě při opětovném pokusu načtení vybraného videa",
   "mpv-play-error": "Došlo k chybě při spuštění přehrávání",
   "mpv-pause-error": "Došlo k chybě při pokusu o pozastavení přehrávání",
-  "mpv-seek-error": "Došlo k chybě při pokusu o přetočení přehrávání"
+  "mpv-seek-error": "Došlo k chybě při pokusu o přetočení přehrávání",
+  "mpv-msg-file-loaded": "Načteno",
+  "mpv-msg-show-failed": "Došlo k chybě při zobrazení zprávy uvnitř mpv"
 }

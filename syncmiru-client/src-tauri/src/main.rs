@@ -104,6 +104,7 @@ async fn main() -> Result<()> {
             mpv::frontend::mpv_get_timestamp,
             mpv::frontend::mpv_seek,
             mpv::frontend::mpv_show_ready_messages,
+            mpv::frontend::mpv_show_msg,
             frontend::kill_app_with_error_msg
         ])
         .on_window_event(move |window: &Window, event: &WindowEvent| {

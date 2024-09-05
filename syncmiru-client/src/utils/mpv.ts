@@ -2,10 +2,13 @@ import {UserId, UserValueClient} from "@models/user.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {invoke} from "@tauri-apps/api/core";
 import {showPersistentErrorAlert} from "./alert.ts";
+import {createLocaleComparator} from "./sort.ts";
+import {TFunction} from "i18next";
 
 export function showMpvReadyMessages(
     uid2ready: Map<UserId, UserReadyState>,
-    users: Map<UserId, UserValueClient>
+    users: Map<UserId, UserValueClient>,
+    t: TFunction<"translation", undefined>,
 ) {
     let loading: string[] = []
     let notReady: string[] = []
@@ -21,11 +24,20 @@ export function showMpvReadyMessages(
             notReady.push(userValue.displayname)
     }
 
-    loading.sort()
-    notReady.sort()
+    const localeComparator = createLocaleComparator(t)
+
+    loading.sort(localeComparator)
+    notReady.sort(localeComparator)
 
     invoke('mpv_show_ready_messages', {loading: loading, notReady: notReady})
         .catch(() => {
             showPersistentErrorAlert('todo')
         })
+}
+
+export enum MpvMsgMood {
+    Neutral = 0,
+    Bad = 1,
+    Good = 2,
+    Warning = 3
 }

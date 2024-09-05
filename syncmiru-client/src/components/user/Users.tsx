@@ -13,6 +13,7 @@ import UserInfoTooltip from "@components/widgets/UserInfoTooltip.tsx";
 import {UserRoomMap} from "@models/roomUser.ts";
 import {RoomId} from "@models/room.ts";
 import {arrayBufferToBase64} from "src/utils/encoding.ts";
+import {createLocaleComparator} from "../../utils/sort.ts";
 
 export default function Users(): ReactElement {
     const [_, navigate] = useLocation()
@@ -95,8 +96,9 @@ export default function Users(): ReactElement {
             else
                 off.push({id: uid, ...userValue});
         }
-        on = on.sort((a, b) => a.displayname.localeCompare(b.displayname))
-        off = off.sort((a, b) => a.displayname.localeCompare(b.displayname))
+        const localeComparator = createLocaleComparator(t)
+        on = on.sort((a, b) => localeComparator(a.displayname, b.displayname))
+        off = off.sort((a, b) => localeComparator(a.displayname, b.displayname))
         setOnlineUsers(on)
         setOfflineUsers(off)
     }, [users, onlineUids]);

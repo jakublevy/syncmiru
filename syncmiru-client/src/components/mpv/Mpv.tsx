@@ -11,7 +11,9 @@ import {PlaylistEntry, PlaylistEntryId, PlaylistEntryUrl, PlaylistEntryVideo} fr
 import {UserAudioSubtitles, UserLoadedInfo, UserPause, UserPlayInfo, UserSeek} from "@models/mpv.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
-import {showMpvReadyMessages} from "src/utils/mpv.ts";
+import {MpvMsgMood, showMpvReadyMessages} from "src/utils/mpv.ts";
+import {act, Simulate} from "react-dom/test-utils";
+import play = Simulate.play;
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
@@ -24,6 +26,7 @@ export default function Mpv(p: Props): ReactElement {
     const playlistRef = useRef(ctx.playlist)
     const joinedRoomSettingsRef = useRef(ctx.joinedRoomSettings)
     const usersRef = useRef(ctx.users)
+    const activeVideoIdRef = useRef(ctx.activeVideoId)
 
     useEffect(() => {
         if (ctx.socket !== undefined) {
@@ -76,6 +79,14 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<void>('mpv-file-loaded', (e: Event<void>) => {
+            const entry = playlistRef.current.get(activeVideoIdRef.current as PlaylistEntryId) as PlaylistEntry
+
+            const msgText = `${t('mpv-msg-file-loaded')} ${entry.pretty()}`
+            invoke('mpv_show_msg', {text: msgText, duration: 3, mood: MpvMsgMood.Neutral})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                })
+
             invoke<UserLoadedInfo>('mpv_get_loaded_info', {})
                 .then((payload: UserLoadedInfo) => {
                     ctx.socket?.emitWithAck('mpv_file_loaded', payload)
@@ -151,7 +162,8 @@ export default function Mpv(p: Props): ReactElement {
         playlistRef.current = ctx.playlist
         joinedRoomSettingsRef.current = ctx.joinedRoomSettings
         usersRef.current = ctx.users
-    }, [ctx.jwts, ctx.source2url, ctx.playlist, ctx.joinedRoomSettings, ctx.users]);
+        activeVideoIdRef.current = ctx.activeVideoId
+    }, [ctx.jwts, ctx.source2url, ctx.playlist, ctx.joinedRoomSettings, ctx.users, ctx.activeVideoId]);
 
     useEffect(() => {
         if(ctx.mpvRunning && !ctx.mpvWinDetached && !ctx.mpvShowSmall)
@@ -251,7 +263,7 @@ export default function Mpv(p: Props): ReactElement {
             }
             m.set(userPlayInfo.uid, userPlayInfo.status)
 
-            showMpvReadyMessages(m, usersRef.current)
+            showMpvReadyMessages(m, usersRef.current, t)
             return m
         })
     }

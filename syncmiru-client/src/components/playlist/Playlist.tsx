@@ -344,22 +344,6 @@ export default function Playlist(): ReactElement {
         return <VideoFile className="min-w-6 w-6"/>
     }
 
-    function entryPrettyText(entry: PlaylistEntry) {
-        if (entry instanceof PlaylistEntryVideo) {
-            const e = entry as PlaylistEntryVideo
-            return `${e.source}:${e.path}`
-        }
-        else if(entry instanceof PlaylistEntrySubtitles) {
-            const e = entry as PlaylistEntrySubtitles
-            return `${e.source}:${e.path}`
-        }
-        else if (entry instanceof PlaylistEntryUrl) {
-            const e = entry as PlaylistEntryUrl
-            return e.url
-        }
-        return ''
-    }
-
     function onPlaylistEntryMouseDown(e: MouseEvent<HTMLDivElement>, entryId: PlaylistEntryId) {
         setMousePos([e.clientX, e.clientY])
     }
@@ -409,7 +393,7 @@ export default function Playlist(): ReactElement {
                             )
                         }
 
-                        const renderTxt = entryPrettyText(entry)
+                        const renderTxt = entry.pretty();
                         let subs: Set<PlaylistEntryId> = new Set()
                         let s = ctx.subtitles.get(playlistEntryId)
                         if(s != null)
@@ -486,7 +470,7 @@ export default function Playlist(): ReactElement {
                                                     <SubFile
                                                         key={`${subId}_svg`}
                                                         className="min-w-4 w-4"/>
-                                                    <p key={`${subId}_p`} className="text-xs">{entryPrettyText(sub)}</p>
+                                                    <p key={`${subId}_p`} className="text-xs">{sub.pretty()}</p>
                                                     <div key={`${subId}_spacer`} className="flex-1"></div>
                                                     <div
                                                         key={`${subId}_del`}
@@ -520,7 +504,7 @@ export default function Playlist(): ReactElement {
                         return <div key={eid}></div>
 
                     const pic = entryPic(entry)
-                    const renderTxt = entryPrettyText(entry)
+                    const renderTxt = entry.pretty()
                     return (
                         <div key={eid} className="flex gap-x-2 items-center">
                             {pic}

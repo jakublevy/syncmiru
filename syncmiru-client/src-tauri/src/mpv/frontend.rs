@@ -206,3 +206,20 @@ pub async fn mpv_show_ready_messages(
     mpv_ipc_tx.send(Interface::ShowLoadingMsg(loading)).await?;
     Ok(())
 }
+
+#[tauri::command]
+pub async fn mpv_show_msg(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window,
+    text: String,
+    duration: f64,
+    mood: ipc::MsgMood
+) -> Result<u32> {
+    let msg_id = state.get_mpv_next_req_id().await;
+
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+    mpv_ipc_tx.send(Interface::ShowMsg { id: msg_id, text, duration, mood }).await?;
+
+    Ok(msg_id)
+}

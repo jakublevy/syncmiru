@@ -12,15 +12,15 @@ use interprocess::local_socket::{
 };
 use interprocess::local_socket::tokio::{RecvHalf, SendHalf};
 use rust_decimal::Decimal;
+use serde_repr::Deserialize_repr;
 use tauri::Emitter;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
-use tokio::sync::mpsc::{Receiver, Sender};
+use tokio::sync::mpsc::{Receiver};
 use tokio::sync::{mpsc, oneshot};
 use tokio::time::{sleep, Instant};
 use crate::appstate::AppState;
 use crate::{constants, mpv};
 use crate::error::SyncmiruError;
-use crate::mpv::ipc::Interface::SetFullscreen;
 use crate::result::Result;
 
 #[derive(Debug, PartialEq)]
@@ -41,6 +41,7 @@ pub enum Interface {
     GetPause(u32),
     ShowNotReadyMsg(Vec<String>),
     ShowLoadingMsg(Vec<String>),
+    ShowMsg { id: u32, text: String, duration: f64, mood: MsgMood },
     ClearMessages,
     PlaylistRemoveCurrent,
     Exit
@@ -55,8 +56,9 @@ enum Property {
     GetPause
 }
 
-#[derive(Debug, PartialEq)]
-enum MsgMood {
+#[derive(Debug, PartialEq, Deserialize_repr)]
+#[repr(u8)]
+pub enum MsgMood {
     Neutral = 0,
     Bad = 1,
     Good = 2,
@@ -361,6 +363,16 @@ async fn write(
                     *mpv_loading_msg_id_wl = None;
                     sender.write_all(b"{\"command\": [\"script-message-to\", \"prelude\", \"msgs-clear\"]}\n").await?;
 
+                },
+                Interface::ShowMsg { id, text, duration, mood } => {
+                    let cmd = format!(
+                        "{{\"command\": [\"script-message-to\", \"prelude\", \"msg-add\", \"{}\", \"{}\", \"{}\", \"{}\"]}}\n",
+                        text,
+                        id,
+                        duration,
+                        mood
+                    );
+                    sender.write_all(cmd.as_bytes()).await?;
                 },
                 Interface::PlaylistRemoveCurrent => {
                     sender.write_all(b"{\"command\": [\"playlist_remove\", \"current\"]}\n").await?;

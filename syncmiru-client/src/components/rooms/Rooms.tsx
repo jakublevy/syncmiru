@@ -339,7 +339,7 @@ export default function Rooms(): ReactElement {
             }
             m.set(userReadyStateChange.uid, userReadyStateChange.ready_state)
 
-            showMpvReadyMessages(m, usersRef.current)
+            showMpvReadyMessages(m, usersRef.current, t)
             return m
         })
     }
