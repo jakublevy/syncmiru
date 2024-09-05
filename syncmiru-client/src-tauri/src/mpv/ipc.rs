@@ -2,6 +2,7 @@
 pub mod win32;
 mod utils;
 
+use std::fmt::{Display, Formatter};
 use std::sync::Arc;
 use std::time::Duration;
 use anyhow::{anyhow, Context};
@@ -38,6 +39,9 @@ pub enum Interface {
     GetFullscreen(u32),
     GetTimePos(u32),
     GetPause(u32),
+    ShowNotReadyMsg(Vec<String>),
+    ShowLoadingMsg(Vec<String>),
+    ClearMessages,
     PlaylistRemoveCurrent,
     Exit
 }
@@ -49,6 +53,25 @@ enum Property {
     GetTimePos,
     GetFullscreen,
     GetPause
+}
+
+#[derive(Debug, PartialEq)]
+enum MsgMood {
+    Neutral = 0,
+    Bad = 1,
+    Good = 2,
+    Warning = 3
+}
+
+impl Display for MsgMood {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MsgMood::Neutral => write!(f, "{}", MsgMood::Neutral as u32),
+            MsgMood::Bad => write!(f, "{}", MsgMood::Bad as u32),
+            MsgMood::Good => write!(f, "{}", MsgMood::Good as u32),
+            MsgMood::Warning => write!(f, "{}", MsgMood::Warning as u32)
+        }
+    }
 }
 
 pub struct IpcData {
@@ -262,7 +285,83 @@ async fn write(
                 Interface::GetPause(req_id) => {
                     let cmd = utils::create_get_property_cmd("pause", req_id);
                     sender.write_all(cmd.as_bytes()).await?;
-                }
+                },
+                Interface::ShowNotReadyMsg(ref names) => {
+                    let mut mpv_not_ready_msg_id_wl = ipc_data.app_state.mpv_not_ready_msg_id.write().await;
+                    if names.is_empty() {
+                        if let Some(msg_id) = *mpv_not_ready_msg_id_wl {
+                            let cmd = format!(
+                                "{{\"command\": [\"script-message-to\", \"prelude\", \"msg-del\", \"{}\"]}}\n", msg_id);
+                            sender.write_all(cmd.as_bytes()).await?;
+                            *mpv_not_ready_msg_id_wl = None;
+                        }
+                    }
+                    else {
+                        let text = format!("{} {}", t!("mpv-not-ready-msg"), names.join(", "));
+                        if mpv_not_ready_msg_id_wl.is_none() {
+                            let msg_id = ipc_data.app_state.get_mpv_next_req_id().await;
+                            let cmd = format!(
+                                "{{\"command\": [\"script-message-to\", \"prelude\", \"msg-add\", \"{}\", \"{}\", \"0\", \"{}\"]}}\n",
+                                text,
+                                msg_id,
+                                MsgMood::Bad
+                            );
+                            sender.write_all(cmd.as_bytes()).await?;
+                            *mpv_not_ready_msg_id_wl = Some(msg_id);
+                        }
+                        else {
+                            let msg_id = mpv_not_ready_msg_id_wl.unwrap();
+                            let cmd = format!(
+                                "{{\"command\": [\"script-message-to\", \"prelude\", \"msg-edit\", \"{}\", \"{}\"]}}\n",
+                                msg_id,
+                                text,
+                            );
+                            sender.write_all(cmd.as_bytes()).await?;
+                        }
+                    }
+                },
+                Interface::ShowLoadingMsg(ref names) => {
+                    let mut mpv_loading_msg_id_wl = ipc_data.app_state.mpv_loading_msg_id.write().await;
+                    if names.is_empty() {
+                        if let Some(msg_id) = *mpv_loading_msg_id_wl {
+                            let cmd = format!(
+                                "{{\"command\": [\"script-message-to\", \"prelude\", \"msg-del\", \"{}\"]}}\n", msg_id);
+                            sender.write_all(cmd.as_bytes()).await?;
+                            *mpv_loading_msg_id_wl = None;
+                        }
+                    }
+                    else {
+                        let text = format!("{} {}", t!("mpv-loading-msg"), names.join(", "));
+                        if mpv_loading_msg_id_wl.is_none() {
+                            let msg_id = ipc_data.app_state.get_mpv_next_req_id().await;
+                            let cmd = format!(
+                                "{{\"command\": [\"script-message-to\", \"prelude\", \"msg-add\", \"{}\", \"{}\", \"0\", \"{}\"]}}\n",
+                                text,
+                                msg_id,
+                                MsgMood::Warning
+                            );
+                            sender.write_all(cmd.as_bytes()).await?;
+                            *mpv_loading_msg_id_wl = Some(msg_id);
+                        }
+                        else {
+                            let msg_id = mpv_loading_msg_id_wl.unwrap();
+                            let cmd = format!(
+                                "{{\"command\": [\"script-message-to\", \"prelude\", \"msg-edit\", \"{}\", \"{}\"]}}\n",
+                                msg_id,
+                                text,
+                            );
+                            sender.write_all(cmd.as_bytes()).await?;
+                        }
+                    }
+                },
+                Interface::ClearMessages => {
+                    let mut mpv_not_ready_msg_id_wl = ipc_data.app_state.mpv_not_ready_msg_id.write().await;
+                    let mut mpv_loading_msg_id_wl = ipc_data.app_state.mpv_loading_msg_id.write().await;
+                    *mpv_not_ready_msg_id_wl = None;
+                    *mpv_loading_msg_id_wl = None;
+                    sender.write_all(b"{\"command\": [\"script-message-to\", \"prelude\", \"msgs-clear\"]}\n").await?;
+
+                },
                 Interface::PlaylistRemoveCurrent => {
                     sender.write_all(b"{\"command\": [\"playlist_remove\", \"current\"]}\n").await?;
                     cfg_if! {

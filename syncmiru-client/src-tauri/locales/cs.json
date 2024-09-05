@@ -1,6 +1,7 @@
 {
   "tauri-app-error": "Došlo k chybě při běhu aplikace.",
   "license-window-title": "Licence",
-  "error-window-title": "Chyba"
-
+  "error-window-title": "Chyba",
+  "mpv-not-ready-msg": "Nepřipraven:",
+  "mpv-loading-msg": "Načítá:"
 }

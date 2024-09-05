@@ -2007,7 +2007,7 @@ pub async fn user_ready_state_change(
             *rs = payload.ready_state;
 
             s
-                .to(rid.to_string())
+                .within(rid.to_string())
                 .emit("user_ready_state_change", UserReadyStateChangeClient {
                     uid,
                     ready_state: payload.ready_state

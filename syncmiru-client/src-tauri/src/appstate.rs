@@ -22,6 +22,8 @@ pub struct AppState {
     pub mpv_ignore_fullscreen_events_timestamp: RwLock<tokio::time::Instant>,
     pub mpv_ignore_next_pause_true_event: RwLock<bool>,
     pub mpv_ignore_next_seek_event: RwLock<bool>,
+    pub mpv_not_ready_msg_id: RwLock<Option<u32>>,
+    pub mpv_loading_msg_id: RwLock<Option<u32>>,
 
     #[cfg(target_family = "unix")]
     pub x11_conn: RwLock<Option<RustConnection>>,

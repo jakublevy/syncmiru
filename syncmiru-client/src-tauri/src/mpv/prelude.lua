@@ -12,13 +12,6 @@ local COLOR_BAD = "0000FF"
 local COLOR_GOOD = "00FF00"
 
 local FONT_SIZE = 28
-local NEXT_ID = 1
-
-local function fetch_msg_id()
-    local id = NEXT_ID
-    NEXT_ID = NEXT_ID + 1
-    return id
-end
 
 local order = {}
 local msgs = {}
@@ -92,8 +85,8 @@ local function render_msgs()
 
     local osd_w, osd_h, osd_aspect = mp.get_osd_size()
     local ass = assdraw.ass_new()
-    local w = math.ceil(osd_w * 0.01)
-    local h = math.ceil(osd_h * 0.01)
+    local w = math.ceil(osd_w * 0.01) + 5
+    local h = math.ceil(osd_h * 0.01) + 5
     ass:pos(w,h)
 
     local render = ass_font_size()
@@ -105,11 +98,11 @@ local function render_msgs()
 end
 
 
-mp.register_script_message('msg-add', function(text, duration_str, mood_str) 
+mp.register_script_message('msg-add', function(text, id_str, duration_str, mood_str)
     local time = mp.get_time()
+    local id = tonumber(id_str)
     local duration = tonumber(duration_str)
     local mood = tonumber(mood_str)
-    local id = fetch_msg_id()
 
     local msg = Message:new{text = text, time = time, duration = duration, mood = mood}
     msgs[id] = msg
@@ -123,13 +116,18 @@ mp.register_script_message('msg-add', function(text, duration_str, mood_str)
         end)
     end
     render_msgs()
-    mp.command_native_async({"script-message", "msg-id", utils.to_string(id)}, function(success, result, error_msg) end)
 end)
 
 mp.register_script_message('msg-del', function(id_str) 
     local id = tonumber(id_str)
     table.remove(order, id)
     msgs[id] = nil
+    render_msgs()
+end)
+
+mp.register_script_message('msgs-clear', function()
+    order = {}
+    msgs = {}
     render_msgs()
 end)
 

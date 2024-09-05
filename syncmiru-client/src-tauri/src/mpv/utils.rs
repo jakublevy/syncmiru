@@ -16,6 +16,7 @@ pub async fn mpv_before_file_load(
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
 
+    mpv_ipc_tx.send(Interface::ClearMessages).await?;
     mpv_ipc_tx.send(Interface::SetPlaybackSpeed(*playback_speed)).await?;
 
     let pause = ipc::get_pause(&ipc_data).await?;

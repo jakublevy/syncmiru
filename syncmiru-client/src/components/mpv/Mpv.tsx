@@ -7,15 +7,11 @@ import {disconnectFromRoom, forceDisconnectFromRoom} from "src/utils/room.ts";
 import {RoomConnectionState} from "@models/context.ts";
 import {invoke} from "@tauri-apps/api/core";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
-import {
-    PlaylistEntry,
-    PlaylistEntryId,
-    PlaylistEntryUrl,
-    PlaylistEntryVideo
-} from "@models/playlist.ts";
+import {PlaylistEntry, PlaylistEntryId, PlaylistEntryUrl, PlaylistEntryVideo} from "@models/playlist.ts";
 import {UserAudioSubtitles, UserLoadedInfo, UserPause, UserPlayInfo, UserSeek} from "@models/mpv.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
+import {showMpvReadyMessages} from "src/utils/mpv.ts";
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
@@ -27,6 +23,7 @@ export default function Mpv(p: Props): ReactElement {
     const source2urlRef = useRef(ctx.source2url);
     const playlistRef = useRef(ctx.playlist)
     const joinedRoomSettingsRef = useRef(ctx.joinedRoomSettings)
+    const usersRef = useRef(ctx.users)
 
     useEffect(() => {
         if (ctx.socket !== undefined) {
@@ -153,7 +150,8 @@ export default function Mpv(p: Props): ReactElement {
         source2urlRef.current = ctx.source2url;
         playlistRef.current = ctx.playlist
         joinedRoomSettingsRef.current = ctx.joinedRoomSettings
-    }, [ctx.jwts, ctx.source2url, ctx.playlist, ctx.joinedRoomSettings]);
+        usersRef.current = ctx.users
+    }, [ctx.jwts, ctx.source2url, ctx.playlist, ctx.joinedRoomSettings, ctx.users]);
 
     useEffect(() => {
         if(ctx.mpvRunning && !ctx.mpvWinDetached && !ctx.mpvShowSmall)
@@ -208,7 +206,6 @@ export default function Mpv(p: Props): ReactElement {
         }
     }, [ctx.activeVideoId]);
 
-
     function mpvResize() {
         const mpvWrapper = mpvWrapperRef.current as HTMLDivElement
         const rect = mpvWrapper.getBoundingClientRect()
@@ -253,6 +250,8 @@ export default function Mpv(p: Props): ReactElement {
                 }
             }
             m.set(userPlayInfo.uid, userPlayInfo.status)
+
+            showMpvReadyMessages(m, usersRef.current)
             return m
         })
     }
@@ -320,7 +319,6 @@ export default function Mpv(p: Props): ReactElement {
     }
 
     function onMpvSeek(payload: UserSeek) {
-        console.log(`mpv seek ${payload}`)
         if(payload.uid != ctx.uid) {
             invoke('mpv_seek', {timestamp: payload.timestamp})
                 .catch(() => {

@@ -41,6 +41,8 @@ async fn main() -> Result<()> {
         mpv_ignore_fullscreen_events_timestamp: Instant::now().into(),
         mpv_ignore_next_pause_true_event: false.into(),
         mpv_ignore_next_seek_event: false.into(),
+        mpv_not_ready_msg_id: None.into(),
+        mpv_loading_msg_id: None.into(),
 
         #[cfg(target_family = "unix")]
         x11_conn: None.into(),
@@ -101,6 +103,7 @@ async fn main() -> Result<()> {
             mpv::frontend::mpv_set_pause,
             mpv::frontend::mpv_get_timestamp,
             mpv::frontend::mpv_seek,
+            mpv::frontend::mpv_show_ready_messages,
             frontend::kill_app_with_error_msg
         ])
         .on_window_event(move |window: &Window, event: &WindowEvent| {

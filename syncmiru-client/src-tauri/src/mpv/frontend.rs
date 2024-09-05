@@ -192,3 +192,17 @@ pub async fn mpv_seek(
     mpv_ipc_tx.send(Interface::Seek(timestamp)).await?;
     Ok(())
 }
+
+#[tauri::command]
+pub async fn mpv_show_ready_messages(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window,
+    loading: Vec<String>,
+    not_ready: Vec<String>
+) -> Result<()> {
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+    mpv_ipc_tx.send(Interface::ShowNotReadyMsg(not_ready)).await?;
+    mpv_ipc_tx.send(Interface::ShowLoadingMsg(loading)).await?;
+    Ok(())
+}

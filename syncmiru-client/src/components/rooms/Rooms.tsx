@@ -1,4 +1,4 @@
-import React, {MouseEvent, ReactElement, useEffect, useState} from "react";
+import React, {MouseEvent, ReactElement, useEffect, useRef, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {
@@ -54,6 +54,7 @@ import Bubble from "@components/svg/Bubble.tsx";
 import BubbleCrossed from "@components/svg/BubbleCrossed.tsx";
 import Subtitles from "@components/svg/Subtitles.tsx";
 import SubtitlesCrossed from "@components/svg/SubtitlesCrossed.tsx";
+import {showMpvReadyMessages} from "../../utils/mpv.ts";
 
 export default function Rooms(): ReactElement {
     const {
@@ -92,6 +93,8 @@ export default function Rooms(): ReactElement {
     const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
     const [roomsFetching, setRoomsFetching] = useState<boolean>(true)
     const [roomUsersFetching, setRoomUsersFetching] = useState<boolean>(true)
+
+    const usersRef = useRef(users)
 
     useEffect(() => {
         if (socket !== undefined) {
@@ -159,6 +162,10 @@ export default function Rooms(): ReactElement {
     useEffect(() => {
         setRoomsLoading(roomsFetching || roomUsersFetching)
     }, [roomsFetching, roomUsersFetching]);
+
+    useEffect(() => {
+        usersRef.current = users
+    }, [users]);
 
     function onRooms(rooms: Array<RoomSrv>) {
         addRoomsFromSrv(rooms)
@@ -331,6 +338,8 @@ export default function Rooms(): ReactElement {
                 }
             }
             m.set(userReadyStateChange.uid, userReadyStateChange.ready_state)
+
+            showMpvReadyMessages(m, usersRef.current)
             return m
         })
     }

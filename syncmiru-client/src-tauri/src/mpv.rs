@@ -62,8 +62,8 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
         .arg("--idle")
         .arg("--force-window")
         .arg("--drag-and-drop=no")
-        .arg("--osd-align-y=bottom")
-        .arg("--osd-margin-y=100")
+    //    .arg("--osd-align-y=bottom")
+        .arg("--osd-margin-y=500")
         .arg("--fullscreen=no")
         .arg("--window-minimized=no")
         .arg("--window-maximized=no")
@@ -80,6 +80,13 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
         if #[cfg(target_family = "unix")] {
             window::init_connection(state).await?;
         }
+    }
+
+    {
+        let mut mpv_not_ready_msg_id_wl = state.mpv_not_ready_msg_id.write().await;
+        let mut mpv_loading_msg_id_wl = state.mpv_loading_msg_id.write().await;
+        *mpv_not_ready_msg_id_wl = None;
+        *mpv_loading_msg_id_wl = None;
     }
 
     let mpv_wid_opt = window::pid2wid(state, pid).await?;

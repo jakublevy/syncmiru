@@ -5,7 +5,6 @@ import {useMainContext} from "@hooks/useMainContext.ts";
 import {useTranslation} from "react-i18next";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
-import {UserId} from "@models/user.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 
 export default function ReadyBtn(): ReactElement {
@@ -37,18 +36,6 @@ export default function ReadyBtn(): ReactElement {
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
                     showPersistentErrorAlert(t('ready-state-change-error'))
-                }
-                else {
-                    ctx.setUid2ready((p) => {
-                        const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
-                        for (const [id, value] of p) {
-                            if(ctx.uid !== id) {
-                                m.set(id, value)
-                            }
-                        }
-                        m.set(ctx.uid, newState)
-                        return m
-                    })
                 }
             })
             .catch(() => {

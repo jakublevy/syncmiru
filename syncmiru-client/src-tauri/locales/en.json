@@ -1,5 +1,7 @@
 {
   "tauri-app-error": "Error while running the application.",
   "license-window-title": "Licenses",
-  "error-window-title": "Error"
+  "error-window-title": "Error",
+  "mpv-not-ready-msg": "Not ready:",
+  "mpv-loading-msg": "Loading:"
 }
