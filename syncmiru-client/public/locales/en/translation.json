@@ -383,5 +383,8 @@
   "mpv-msg-file-loaded": "Loaded",
   "mpv-msg-show-failed": "An error occurred while showing a message inside mpv",
   "mpv-msg-user-leave": "has left",
-  "mpv-msg-user-join": "has joined"
+  "mpv-msg-user-join": "has joined",
+  "mpv-msg-user-pause": "paused",
+  "mpv-msg-user-unpause": "unpaused",
+  "mpv-msg-user-seek": "jumped to"
 }

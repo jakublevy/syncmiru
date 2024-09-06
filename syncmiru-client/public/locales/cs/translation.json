@@ -383,5 +383,8 @@
   "mpv-msg-file-loaded": "Načteno",
   "mpv-msg-show-failed": "Došlo k chybě při zobrazení zprávy uvnitř mpv",
   "mpv-msg-user-leave": "se odpojil(a)",
-  "mpv-msg-user-join": "se připojil(a)"
+  "mpv-msg-user-join": "se připojil(a)",
+  "mpv-msg-user-pause": "pozastavil(a) přehrávání",
+  "mpv-msg-user-unpause": "pozastavil(a) přehrávání",
+  "mpv-msg-user-seek": "přetočil přehrávání na"
 }

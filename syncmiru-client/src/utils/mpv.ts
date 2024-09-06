@@ -42,6 +42,19 @@ export function hideMpvReadyMessages(t: TFunction<"translation", undefined>) {
         })
 }
 
+export function timestampPretty(timestamp: number) {
+    const minutes = Math.floor(timestamp / 60)
+    const seconds = Math.round(timestamp % 60)
+    if(minutes < 60) {
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    }
+    else {
+        const hours = Math.floor(minutes / 60)
+        return `${hours.toString().padStart(2, '00')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    }
+
+}
+
 export enum MpvMsgMood {
     Neutral = 0,
     Bad = 1,

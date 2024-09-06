@@ -21,6 +21,7 @@ pub struct AppState {
     pub mpv_response_senders: RwLock<HashMap<u32, mpsc::Sender<serde_json::Value>>>,
     pub mpv_ignore_fullscreen_events_timestamp: RwLock<tokio::time::Instant>,
     pub mpv_ignore_next_pause_true_event: RwLock<bool>,
+    pub mpv_ignore_next_pause_false_event: RwLock<bool>,
     pub mpv_ignore_next_seek_event: RwLock<bool>,
     pub mpv_not_ready_msg_id: RwLock<Option<u32>>,
     pub mpv_loading_msg_id: RwLock<Option<u32>>,

@@ -40,6 +40,7 @@ async fn main() -> Result<()> {
         mpv_response_senders: HashMap::new().into(),
         mpv_ignore_fullscreen_events_timestamp: Instant::now().into(),
         mpv_ignore_next_pause_true_event: false.into(),
+        mpv_ignore_next_pause_false_event: false.into(),
         mpv_ignore_next_seek_event: false.into(),
         mpv_not_ready_msg_id: None.into(),
         mpv_loading_msg_id: None.into(),

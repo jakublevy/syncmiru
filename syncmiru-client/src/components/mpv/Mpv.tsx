@@ -11,7 +11,7 @@ import {PlaylistEntry, PlaylistEntryId, PlaylistEntryUrl, PlaylistEntryVideo} fr
 import {UserAudioSubtitles, UserLoadedInfo, UserPause, UserPlayInfo, UserSeek} from "@models/mpv.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
-import {MpvMsgMood, showMpvReadyMessages} from "src/utils/mpv.ts";
+import {MpvMsgMood, showMpvReadyMessages, timestampPretty} from "src/utils/mpv.ts";
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
@@ -125,6 +125,7 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<boolean>('mpv-pause-changed', (e: Event<boolean>) => {
+            console.log('pause changed')
             if(e.payload) {
                 invoke<number>('mpv_get_timestamp', {})
                     .then((time: number) => {
@@ -316,17 +317,25 @@ export default function Mpv(p: Props): ReactElement {
     }
 
     function onMpvPlay(uid: UserId) {
-        if(uid != ctx.uid) {
+        if (uid != ctx.uid) {
             invoke('mpv_set_pause', {pause: false})
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-play-error'))
                     disconnectFromRoom(ctx, t)
                 })
         }
+        const userValue = usersRef.current.get(uid)
+        if (userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-user-unpause')}`
+            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                })
+        }
     }
 
     function onMpvPause(payload: UserPause) {
-        if(payload.uid != ctx.uid) {
+        if (payload.uid != ctx.uid) {
             invoke('mpv_seek', {timestamp: payload.timestamp})
                 .then(() => {
                     invoke('mpv_set_pause', {pause: true})
@@ -340,6 +349,14 @@ export default function Mpv(p: Props): ReactElement {
                     disconnectFromRoom(ctx, t)
                 })
         }
+        const userValue = usersRef.current.get(payload.uid)
+        if (userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-user-pause')}`
+            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                })
+        }
     }
 
     function onMpvSeek(payload: UserSeek) {
@@ -348,6 +365,14 @@ export default function Mpv(p: Props): ReactElement {
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-seek-error'))
                     disconnectFromRoom(ctx, t)
+                })
+        }
+        const userValue = usersRef.current.get(payload.uid)
+        if (userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-user-seek')} ${timestampPretty(payload.timestamp)}`
+            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
                 })
         }
     }

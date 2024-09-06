@@ -20,6 +20,10 @@ pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Wi
     if !mpv_running {
         drop(mpv_running_rl);
 
+        {
+            let mut mpv_ignore_next_pause_false_event_wl = state.mpv_ignore_next_pause_false_event.write().await;
+            *mpv_ignore_next_pause_false_event_wl = true;
+        }
         let pipe_id = gen_pipe_id();
         start_process(&state, &pipe_id, window.clone()).await?;
         start_ipc(&state, &pipe_id, window.clone()).await?;

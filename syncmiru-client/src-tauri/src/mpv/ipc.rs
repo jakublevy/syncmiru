@@ -18,6 +18,7 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::sync::mpsc::{Receiver};
 use tokio::sync::{mpsc, oneshot};
 use tokio::time::{sleep, Instant};
+use crate::mpv::Interface::SetFullscreen;
 use crate::appstate::AppState;
 use crate::{constants, mpv};
 use crate::error::SyncmiruError;
@@ -163,6 +164,15 @@ pub async fn get_pause(ipc_data: &IpcData) -> Result<bool> {
 pub async fn set_pause(pause: bool, ipc_data: &IpcData) -> Result<()> {
     let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+
+    let mut pause_ignore = &ipc_data.app_state.mpv_ignore_next_pause_true_event;
+    if !pause {
+        pause_ignore = &ipc_data.app_state.mpv_ignore_next_pause_false_event;
+    }
+
+    let mut pause_ignore_lock = pause_ignore.write().await;
+    *pause_ignore_lock = true;
+
     mpv_ipc_tx.send(Interface::SetPause(pause)).await?;
     Ok(())
 }
@@ -467,6 +477,13 @@ async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -
                     let mut mpv_ignore_next_pause_true_event_wl =  ipc_data.app_state.mpv_ignore_next_pause_true_event.write().await;
                     if *mpv_ignore_next_pause_true_event_wl {
                         *mpv_ignore_next_pause_true_event_wl = false;
+                        return Ok(())
+                    }
+                }
+                else {
+                    let mut mpv_ignore_next_pause_false_event_wl = ipc_data.app_state.mpv_ignore_next_pause_false_event.write().await;
+                    if *mpv_ignore_next_pause_false_event_wl {
+                        *mpv_ignore_next_pause_false_event_wl = false;
                         return Ok(())
                     }
                 }
