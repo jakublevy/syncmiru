@@ -42,6 +42,11 @@ export default function DesyncTolerance(p: Props): ReactElement {
                     p.setLoading(false)
                 })
         }
+        return () => {
+            if(socket !== undefined) {
+                socket.off(onEventName, onDesyncTolerance)
+            }
+        }
     }, [socket]);
 
     function onDesyncTolerance(desyncTolerance: string | RoomDesyncTolerance) {

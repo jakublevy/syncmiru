@@ -130,6 +130,18 @@ export default function RegTknsTable(p: Props): ReactElement {
                     })
             }
         }
+        return () => {
+            if (socket !== undefined) {
+                if (p.regTknType === RegTknType.Active) {
+                    socket.off("active_reg_tkns", onRegTkns)
+                    socket.off("del_active_reg_tkns", onDeleteRegTkns)
+                }
+                else {
+                    socket.off("inactive_reg_tkns", onRegTkns)
+                    socket.off("del_inactive_reg_tkns", onDeleteRegTkns)
+                }
+            }
+        }
     }, [socket, users]);
 
     useEffect(() => {
@@ -138,6 +150,14 @@ export default function RegTknsTable(p: Props): ReactElement {
                 socket.on("del_active_reg_tkns", onDeleteRegTkns)
             else
                 socket.on("del_inactive_reg_tkns", onDeleteRegTkns)
+        }
+        return () => {
+            if(socket !== undefined) {
+                if (p.regTknType === RegTknType.Active)
+                    socket.off("del_active_reg_tkns", onDeleteRegTkns)
+                else
+                    socket.off("del_inactive_reg_tkns", onDeleteRegTkns)
+            }
         }
     }, [deletingRegTknId]);
 

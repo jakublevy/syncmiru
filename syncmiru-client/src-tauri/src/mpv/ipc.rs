@@ -42,6 +42,7 @@ pub enum Interface {
     ShowNotReadyMsg(Vec<String>),
     ShowLoadingMsg(Vec<String>),
     ShowMsg { id: u32, text: String, duration: f64, mood: MsgMood },
+    DeleteMsg(u32),
     ClearMessages,
     PlaylistRemoveCurrent,
     Exit
@@ -372,6 +373,10 @@ async fn write(
                         duration,
                         mood
                     );
+                    sender.write_all(cmd.as_bytes()).await?;
+                },
+                Interface::DeleteMsg(id) => {
+                    let cmd = format!("{{\"command\": [\"script-message-to\", \"prelude\", \"msg-del\", \"{}\"]}}\n", id);
                     sender.write_all(cmd.as_bytes()).await?;
                 },
                 Interface::PlaylistRemoveCurrent => {

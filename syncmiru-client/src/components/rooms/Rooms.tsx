@@ -54,39 +54,10 @@ import Bubble from "@components/svg/Bubble.tsx";
 import BubbleCrossed from "@components/svg/BubbleCrossed.tsx";
 import Subtitles from "@components/svg/Subtitles.tsx";
 import SubtitlesCrossed from "@components/svg/SubtitlesCrossed.tsx";
-import {showMpvReadyMessages} from "../../utils/mpv.ts";
+import {MpvMsgMood, showMpvReadyMessages} from "src/utils/mpv.ts";
 
 export default function Rooms(): ReactElement {
-    const {
-        socket,
-        currentRid,
-        setCurrentRid,
-        roomUsers,
-        setRoomUsers,
-        roomUidClicked,
-        setRoomUidClicked,
-        roomsLoading,
-        setRoomsLoading,
-        rooms,
-        setRooms,
-        roomPingTimerRef,
-        uidPing,
-        setUidPing,
-        uid,
-        roomConnection,
-        setRoomConnection,
-        users,
-        setJoinedRoomSettings,
-        setPlaylist,
-        setPlaylistOrder,
-        setPlaylistLoading,
-        setSubtitles,
-        uid2ready,
-        setUid2ready,
-        activeVideoId,
-        setActiveVideoId,
-        uid2audioSub
-    } = useMainContext()
+    const ctx = useMainContext()
     const {t} = useTranslation()
     const [_, navigate] = useLocation()
     const [roomsOrder, setRoomsOrder] = useState<Array<RoomId>>([])
@@ -94,22 +65,22 @@ export default function Rooms(): ReactElement {
     const [roomsFetching, setRoomsFetching] = useState<boolean>(true)
     const [roomUsersFetching, setRoomUsersFetching] = useState<boolean>(true)
 
-    const usersRef = useRef(users)
+    const usersRef = useRef(ctx.users)
 
     useEffect(() => {
-        if (socket !== undefined) {
+        if (ctx.socket !== undefined) {
             setRoomsFetching(true)
             setRoomUsersFetching(true)
 
-            socket.on('rooms', onRooms)
-            socket.on('room_name_change', onRoomNameChange)
-            socket.on('room_order', onRoomOrder)
-            socket.on('room_user_ping', onRoomUserPing)
-            socket.on('joined_room_playback_change', onJoinedRoomPlaybackChange)
-            socket.on('joined_room_minor_desync_playback_slow', onJoinedRoomMinorDesyncPlaybackSlow)
-            socket.on('user_ready_state_change', onUserReadyStateChange)
+            ctx.socket.on('rooms', onRooms)
+            ctx.socket.on('room_name_change', onRoomNameChange)
+            ctx.socket.on('room_order', onRoomOrder)
+            ctx.socket.on('room_user_ping', onRoomUserPing)
+            ctx.socket.on('joined_room_playback_change', onJoinedRoomPlaybackChange)
+            ctx.socket.on('joined_room_minor_desync_playback_slow', onJoinedRoomMinorDesyncPlaybackSlow)
+            ctx.socket.on('user_ready_state_change', onUserReadyStateChange)
 
-            socket.emitWithAck("get_rooms")
+            ctx.socket.emitWithAck("get_rooms")
                 .then((roomsWOrder: RoomsWOrder) => {
                     addRoomsFromSrv(roomsWOrder.rooms)
                     setRoomsOrder(roomsWOrder.room_order)
@@ -121,7 +92,7 @@ export default function Rooms(): ReactElement {
                     setRoomsFetching(false)
                 })
 
-            socket.emitWithAck("get_room_users")
+            ctx.socket.emitWithAck("get_room_users")
                 .then((roomUsers: UserRoomSrv) => {
                     const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
                     for (const ridStr in roomUsers) {
@@ -129,7 +100,7 @@ export default function Rooms(): ReactElement {
                         const uids = new Set(roomUsers[ridStr])
                         m.set(rid, uids)
                     }
-                    setRoomUsers(m)
+                    ctx.setRoomUsers(m)
                 })
                 .catch(() => {
                     navigateToLoginFormMain(navigate)
@@ -138,34 +109,61 @@ export default function Rooms(): ReactElement {
                     setRoomUsersFetching(false)
                 })
         }
-    }, [socket]);
-
-    useEffect(() => {
-        if(socket !== undefined) {
-            socket.on('del_rooms', onDeleteRooms)
+        return () => {
+            if (ctx.socket !== undefined) {
+                ctx.socket.off('rooms', onRooms)
+                ctx.socket.off('room_name_change', onRoomNameChange)
+                ctx.socket.off('room_order', onRoomOrder)
+                ctx.socket.off('room_user_ping', onRoomUserPing)
+                ctx.socket.off('joined_room_playback_change', onJoinedRoomPlaybackChange)
+                ctx.socket.off('joined_room_minor_desync_playback_slow', onJoinedRoomMinorDesyncPlaybackSlow)
+                ctx.socket.off('user_ready_state_change', onUserReadyStateChange)
+            }
         }
-    }, [socket, currentRid]);
+    }, [ctx.socket]);
 
     useEffect(() => {
-        if(socket !== undefined) {
-            socket.on('user_room_join', onUserRoomJoin)
-            socket.on('user_room_change', onUserRoomChange)
+        if(ctx.socket !== undefined) {
+            ctx.socket.on('del_rooms', onDeleteRooms)
         }
-    }, [socket, currentRid, roomConnection, uid]);
-
-    useEffect(() => {
-        if (socket !== undefined) {
-            socket.on('user_room_disconnect', onUserRoomDisconnect)
+        return () => {
+            if(ctx.socket !== undefined) {
+                ctx.socket.off('del_rooms', onDeleteRooms)
+            }
         }
-    }, [socket, roomUidClicked]);
+    }, [ctx.socket, ctx.currentRid]);
 
     useEffect(() => {
-        setRoomsLoading(roomsFetching || roomUsersFetching)
+        if(ctx.socket !== undefined) {
+            ctx.socket.on('user_room_join', onUserRoomJoin)
+            ctx.socket.on('user_room_change', onUserRoomChange)
+        }
+        return () => {
+            if(ctx.socket !== undefined) {
+                ctx.socket.off('user_room_join', onUserRoomJoin)
+                ctx.socket.off('user_room_change', onUserRoomChange)
+            }
+        }
+    }, [ctx.socket, ctx.currentRid, ctx.roomConnection, ctx.uid]);
+
+    useEffect(() => {
+        if (ctx.socket !== undefined) {
+            ctx.socket.on('user_room_disconnect', onUserRoomDisconnect)
+        }
+        return () => {
+            if(ctx.socket !== undefined) {
+                ctx.socket.off('user_room_disconnect', onUserRoomDisconnect)
+            }
+        }
+    }, [ctx.socket, ctx.currentRid, ctx.roomConnection, ctx.uid, ctx.roomUidClicked, ctx.activeVideoId]);
+
+    useEffect(() => {
+        ctx.setRoomsLoading(roomsFetching || roomUsersFetching)
     }, [roomsFetching, roomUsersFetching]);
 
     useEffect(() => {
-        usersRef.current = users
-    }, [users]);
+        usersRef.current = ctx.users
+    }, [ctx.users]);
 
     function onRooms(rooms: Array<RoomSrv>) {
         addRoomsFromSrv(rooms)
@@ -175,7 +173,7 @@ export default function Rooms(): ReactElement {
     }
 
     function onRoomNameChange(roomNameChanges: Array<RoomNameChange>) {
-        setRooms((p) => {
+        ctx.setRooms((p) => {
             const m: RoomMap = new Map<RoomId, RoomValue>([...p])
             for (const roomNameChange of roomNameChanges) {
                 const roomValue = m.get(roomNameChange.rid)
@@ -191,9 +189,9 @@ export default function Rooms(): ReactElement {
         showPersistentErrorAlert(t('room-join-failed'))
         invoke('mpv_quit', {})
             .then(() => {
-                socket!.emitWithAck("disconnect_room", {})
+                ctx.socket!.emitWithAck("disconnect_room", {})
                     .finally(() => {
-                        setRoomConnection(RoomConnectionState.Established)
+                        ctx.setRoomConnection(RoomConnectionState.Established)
                     })
             })
             .catch(() => {
@@ -202,19 +200,19 @@ export default function Rooms(): ReactElement {
     }
 
     function roomDisconnectChangeState() {
-        setRoomUidClicked(-1)
-        clearInterval(roomPingTimerRef?.current)
-        setRoomUsers(new Map<RoomId, Set<UserId>>())
-        setCurrentRid(null)
-        setUidPing(new Map<UserId, number>())
+        ctx.setRoomUidClicked(-1)
+        clearInterval(ctx.roomPingTimerRef?.current)
+        ctx.setRoomUsers(new Map<RoomId, Set<UserId>>())
+        ctx.setCurrentRid(null)
+        ctx.setUidPing(new Map<UserId, number>())
     }
 
     function onDeleteRooms(roomIdsToDelete: Array<RoomId>) {
-        if(currentRid != null && roomIdsToDelete.includes(currentRid)) {
+        if(ctx.currentRid != null && roomIdsToDelete.includes(ctx.currentRid)) {
             roomDisconnectChangeState()
         }
 
-        setRooms((p) => {
+        ctx.setRooms((p) => {
             const m: RoomMap = new Map<RoomId, RoomValue>()
             for (const [id, roomValue] of p) {
                 if (!roomIdsToDelete.includes(id))
@@ -232,7 +230,7 @@ export default function Rooms(): ReactElement {
     }
 
     function addRoomsFromSrv(rooms: Array<RoomSrv>) {
-        setRooms((p) => {
+        ctx.setRooms((p) => {
             const m: RoomMap = new Map<RoomId, RoomValue>()
             for (const room of rooms)
                 m.set(room.id, {name: room.name})
@@ -242,7 +240,7 @@ export default function Rooms(): ReactElement {
     }
 
     function onUserRoomJoin(userRoomJoin: UserRoomJoin) {
-        setRoomUsers((p) => {
+        ctx.setRoomUsers((p) => {
             const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
             for (const [rid, uids] of p) {
                 if (rid !== userRoomJoin.rid) {
@@ -258,20 +256,31 @@ export default function Rooms(): ReactElement {
             }
             m.set(userRoomJoin.rid, roomUids)
 
-            if(userRoomJoin.rid === currentRid
-                && (roomConnection === RoomConnectionState.Established || userRoomJoin.uid === uid)) {
-                addNewUserWithLoadingState(userRoomJoin.uid)
+            if(userRoomJoin.rid === ctx.currentRid) {
+                if(ctx.roomConnection === RoomConnectionState.Established || userRoomJoin.uid === ctx.uid) {
+                    addNewUserWithLoadingState(userRoomJoin.uid)
+                }
+                if(ctx.roomConnection === RoomConnectionState.Established && userRoomJoin.uid !== ctx.uid) {
+                    const userValue = usersRef.current.get(userRoomJoin.uid)
+                    if(userValue != null) {
+                        const msgText = `${userValue.displayname} ${t('mpv-msg-user-join')}`
+                        invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                            .catch(() => {
+                                showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                            })
+                    }
+                }
             }
 
             return m
         })
 
-        if (userRoomJoin.uid === uid)
-            setRoomConnection(RoomConnectionState.Established)
+        if (userRoomJoin.uid === ctx.uid)
+            ctx.setRoomConnection(RoomConnectionState.Established)
     }
 
     function onUserRoomChange(userRoomChange: UserRoomChange) {
-        setRoomUsers((p) => {
+        ctx.setRoomUsers((p) => {
             const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
             for (const [rid, uids] of p) {
                 if (rid !== userRoomChange.old_rid || rid !== userRoomChange.new_rid)
@@ -293,16 +302,16 @@ export default function Rooms(): ReactElement {
             }
             m.set(userRoomChange.new_rid, newRoomUids)
 
-            if(userRoomChange.new_rid === currentRid
-                && (roomConnection === RoomConnectionState.Established || userRoomChange.uid === uid)) {
+            if(userRoomChange.new_rid === ctx.currentRid
+                && (ctx.roomConnection === RoomConnectionState.Established || userRoomChange.uid === ctx.uid)) {
                 addNewUserWithLoadingState(userRoomChange.uid)
             }
 
             return m
         })
 
-        if (userRoomChange.uid === uid)
-            setRoomConnection(RoomConnectionState.Established)
+        if (userRoomChange.uid === ctx.uid)
+            ctx.setRoomConnection(RoomConnectionState.Established)
     }
 
     function onRoomUserPing(roomUserPingChange: RoomUserPingChange) {
@@ -310,7 +319,7 @@ export default function Rooms(): ReactElement {
     }
 
     function onJoinedRoomPlaybackChange(playback: string) {
-        setJoinedRoomSettings((p) => {
+        ctx.setJoinedRoomSettings((p) => {
             const {playback_speed, ...rest} = p
             return {
                 playback_speed: new Decimal(playback),
@@ -320,7 +329,7 @@ export default function Rooms(): ReactElement {
     }
 
     function onJoinedRoomMinorDesyncPlaybackSlow(minorDesyncPlaybackSlow: string) {
-        setJoinedRoomSettings((p) => {
+        ctx.setJoinedRoomSettings((p) => {
             const {minor_desync_playback_slow, ...rest} = p
             return {
                 minor_desync_playback_slow: new Decimal(minorDesyncPlaybackSlow),
@@ -330,7 +339,7 @@ export default function Rooms(): ReactElement {
     }
 
     function onUserReadyStateChange(userReadyStateChange: UserReadyStateChangeClient) {
-        setUid2ready((p) => {
+        ctx.setUid2ready((p) => {
             const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
             for (const [id, value] of p) {
                 if(userReadyStateChange.uid !== id) {
@@ -345,7 +354,7 @@ export default function Rooms(): ReactElement {
     }
 
     function addNewUserWithLoadingState(uid: UserId) {
-        setUid2ready((p) => {
+        ctx.setUid2ready((p) => {
             const r: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
             for(const [k,v] of p) {
                 r.set(k, v)
@@ -356,7 +365,7 @@ export default function Rooms(): ReactElement {
     }
 
     function changeRoomUserPing(roomUserPingChange: RoomUserPingChange) {
-        setUidPing((p) => {
+        ctx.setUidPing((p) => {
             const m: UserRoomPingsClient = new Map<UserId, number>()
             for (const [uid, ping] of p) {
                 if(uid !== roomUserPingChange.uid)
@@ -368,10 +377,39 @@ export default function Rooms(): ReactElement {
     }
 
     function onUserRoomDisconnect(userRoomDisconnect: UserRoomDisconnect) {
-        if (userRoomDisconnect.uid === roomUidClicked)
-            setRoomUidClicked(-1)
+        if (userRoomDisconnect.uid === ctx.roomUidClicked)
+            ctx.setRoomUidClicked(-1)
 
-        setRoomUsers((p) => {
+        ctx.setUid2ready((p) => {
+            const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+            for (const [id, value] of p) {
+                if(userRoomDisconnect.uid !== id) {
+                    m.set(id, value)
+                }
+            }
+
+            if(
+                ctx.roomConnection === RoomConnectionState.Established
+                && ctx.currentRid === userRoomDisconnect.rid
+                && ctx.uid !== userRoomDisconnect.uid
+            ) {
+                const userValue = usersRef.current.get(userRoomDisconnect.uid)
+                if(userValue != null) {
+                    const msgText = `${userValue.displayname} ${t('mpv-msg-user-leave')}`
+                    invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                        .catch(() => {
+                            showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                        })
+
+                    if(ctx.activeVideoId != null)
+                        showMpvReadyMessages(m, usersRef.current, t)
+                }
+            }
+
+            return m
+        })
+
+        ctx.setRoomUsers((p) => {
             const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
             for (const [rid, uids] of p) {
                 if (rid !== userRoomDisconnect.rid)
@@ -393,49 +431,49 @@ export default function Rooms(): ReactElement {
     }
 
     function startPingTimer() {
-        clearInterval(roomPingTimerRef?.current)
-        roomPingTimerRef!.current = setInterval(() => {
+        clearInterval(ctx.roomPingTimerRef?.current)
+        ctx.roomPingTimerRef!.current = setInterval(() => {
             const start = performance.now()
-            socket!.emitWithAck("ping", {})
+            ctx.socket!.emitWithAck("ping", {})
                 .then(() => {
                     const took = performance.now() - start
-                    socket!.emitWithAck("room_ping", {ping: took})
+                    ctx.socket!.emitWithAck("room_ping", {ping: took})
                         .then((ack: SocketIoAck<null>) => {
                             if (ack.status === SocketIoAckType.Err) {
-                                clearInterval(roomPingTimerRef?.current)
-                                setCurrentRid(null)
+                                clearInterval(ctx.roomPingTimerRef?.current)
+                                ctx.setCurrentRid(null)
                             }
                             else {
-                                changeRoomUserPing({uid: uid, ping: took})
+                                changeRoomUserPing({uid: ctx.uid, ping: took})
                             }
                         })
                         .catch(() => {
-                            clearInterval(roomPingTimerRef?.current)
-                            setCurrentRid(null)
+                            clearInterval(ctx.roomPingTimerRef?.current)
+                            ctx.setCurrentRid(null)
                         })
                 })
         }, 3000)
     }
 
     function roomClicked(rid: RoomId) {
-        if (currentRid === rid || [RoomConnectionState.Connecting, RoomConnectionState.Disconnecting].includes(roomConnection))
+        if (ctx.currentRid === rid || [RoomConnectionState.Connecting, RoomConnectionState.Disconnecting].includes(ctx.roomConnection))
             return
 
-        setCurrentRid(rid)
-        setRoomConnection(RoomConnectionState.Connecting)
+        ctx.setCurrentRid(rid)
+        ctx.setRoomConnection(RoomConnectionState.Connecting)
         const start = performance.now()
-        setPlaylistLoading(true)
-        setActiveVideoId(null)
-        setUid2ready(new Map<UserId, UserReadyState>())
-        socket!.emitWithAck("ping", {})
+        ctx.setPlaylistLoading(true)
+        ctx.setActiveVideoId(null)
+        ctx.setUid2ready(new Map<UserId, UserReadyState>())
+        ctx.socket!.emitWithAck("ping", {})
             .then(() => {
                 const took = performance.now() - start
 
                 const a = new Map<UserId, number>()
-                a.set(uid, took)
-                setUidPing(a)
+                a.set(ctx.uid, took)
+                ctx.setUidPing(a)
 
-                socket!.emitWithAck("join_room", {rid: rid, ping: took})
+                ctx.socket!.emitWithAck("join_room", {rid: rid, ping: took})
                     .then((ack: SocketIoAck<JoinedRoomInfoSrv>) => {
                         if (ack.status === SocketIoAckType.Err) {
                             forceDisconnectFromRoomOnFetchFailure()
@@ -455,13 +493,13 @@ export default function Rooms(): ReactElement {
                                         const uid = parseInt(uidStr)
                                         pings.set(uid, roomPingsSrv[uid])
                                     }
-                                    setUidPing(pings)
+                                    ctx.setUidPing(pings)
 
                                     const roomSettings: RoomSettingsClient = {
                                         playback_speed: new Decimal(roomSettingsSrv.playback_speed),
                                         minor_desync_playback_slow: new Decimal(roomSettingsSrv.minor_desync_playback_slow)
                                     }
-                                    setJoinedRoomSettings(roomSettings)
+                                    ctx.setJoinedRoomSettings(roomSettings)
                                     startPingTimer()
 
                                     const p: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
@@ -483,7 +521,7 @@ export default function Rooms(): ReactElement {
                                             p.set(id, new PlaylistEntryUrl(value.url))
                                         }
                                     }
-                                    setPlaylist(p)
+                                    ctx.setPlaylist(p)
 
                                     const s: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
                                     for(const vidStr in subsOrderSrv) {
@@ -491,8 +529,8 @@ export default function Rooms(): ReactElement {
                                         for(const sid of sids)
                                             s.set(parseInt(vidStr), sid)
                                     }
-                                    setSubtitles(s)
-                                    setPlaylistOrder(playlistOrder)
+                                    ctx.setSubtitles(s)
+                                    ctx.setPlaylistOrder(playlistOrder)
 
                                     const readyStates: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
                                     for(const uidStr in uid2ReadyStateSrv) {
@@ -500,7 +538,7 @@ export default function Rooms(): ReactElement {
                                         const readyState = uid2ReadyStateSrv[uid] as UserReadyState
                                         readyStates.set(uid, readyState)
                                     }
-                                    setUid2ready((p) => new Map<UserId, UserReadyState>([...p, ...readyStates]))
+                                    ctx.setUid2ready((p) => new Map<UserId, UserReadyState>([...p, ...readyStates]))
                                 })
                                 .catch(() => {
                                     forceDisconnectFromRoomOnFetchFailure()
@@ -511,15 +549,15 @@ export default function Rooms(): ReactElement {
                         forceDisconnectFromRoomOnFetchFailure()
                     })
                     .finally(() => {
-                        setRoomConnection(RoomConnectionState.Established)
-                        setPlaylistLoading(false)
+                        ctx.setRoomConnection(RoomConnectionState.Established)
+                        ctx.setPlaylistLoading(false)
                     })
             })
             .catch(() => {
                 showPersistentErrorAlert(t('room-join-ping-error'))
-                setCurrentRid(null)
-                setRoomConnection(RoomConnectionState.Established)
-                setPlaylistLoading(false)
+                ctx.setCurrentRid(null)
+                ctx.setRoomConnection(RoomConnectionState.Established)
+                ctx.setPlaylistLoading(false)
             })
     }
 
@@ -530,7 +568,7 @@ export default function Rooms(): ReactElement {
             oldOrder = p
             return newOrder
         })
-        socket!.emitWithAck("set_room_order", {room_order: newOrder})
+        ctx.socket!.emitWithAck("set_room_order", {room_order: newOrder})
             .then((ack: SocketIoAck<null>) => {
                 if (ack.status === SocketIoAckType.Err) {
                     setRoomsOrder(oldOrder)
@@ -559,12 +597,12 @@ export default function Rooms(): ReactElement {
 
     function userTooltipVisibilityChanged(visible: boolean, id: UserId) {
         if (visible)
-            setRoomUidClicked(id)
+            ctx.setRoomUidClicked(id)
         else
-            setRoomUidClicked(-1)
+            ctx.setRoomUidClicked(-1)
     }
 
-    if (roomsLoading)
+    if (ctx.roomsLoading)
         return (
             <div className="border-l flex-1 overflow-auto">
                 <div className="flex justify-center align-middle h-full">
@@ -575,7 +613,7 @@ export default function Rooms(): ReactElement {
 
     return (
         <>
-            {rooms.size === 0
+            {ctx.rooms.size === 0
                 && <div className="border-l flex-1 overflow-auto flex flex-col p-1">
                     <p className="self-center mt-4">{t('no-rooms-info')}</p>
                 </div>}
@@ -592,9 +630,9 @@ export default function Rooms(): ReactElement {
                 }}
                 renderItem={({value: rid, props}) => {
                     const {key, ...restProps} = props
-                    const roomUids = roomUsers.get(rid)
+                    const roomUids = ctx.roomUsers.get(rid)
                     const hasUsers = roomUids != null && roomUids.size > 0
-                    const roomValue = rooms.get(rid)
+                    const roomValue = ctx.rooms.get(rid)
                     if (roomValue == null)
                         return <></>
                     return (
@@ -631,11 +669,11 @@ export default function Rooms(): ReactElement {
                                 </div>
                                 {hasUsers && <div className="flex flex-col gap-y-0.5 mb-4">
                                     {Array.from(roomUids)?.map((uid) => {
-                                        const user = users.get(uid)
-                                        const showAdditional = rid === currentRid
-                                        const ping = uidPing.get(uid)
-                                        const readyState = uid2ready.get(uid)
-                                        const audioSub = uid2audioSub.get(uid)
+                                        const user = ctx.users.get(uid)
+                                        const showAdditional = rid === ctx.currentRid
+                                        const ping = ctx.uidPing.get(uid)
+                                        const readyState = ctx.uid2ready.get(uid)
+                                        const audioSub = ctx.uid2audioSub.get(uid)
                                         if (user == null)
                                             return <div key={uid}></div>
                                         return (
@@ -643,12 +681,12 @@ export default function Rooms(): ReactElement {
                                                 <UserInfoTooltip
                                                     key={uid}
                                                     id={uid}
-                                                    visible={uid === roomUidClicked}
+                                                    visible={uid === ctx.roomUidClicked}
                                                     content={
                                                         <Clickable
-                                                            className={`w-full py-1.5 ${uid === roomUidClicked ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
+                                                            className={`w-full py-1.5 ${uid === ctx.roomUidClicked ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
                                                             <div className="flex items-center ml-2 mr-1">
-                                                                {activeVideoId != null
+                                                                {ctx.activeVideoId != null
                                                                     ? <>
                                                                         {readyState != null
                                                                             ? <ReadyState

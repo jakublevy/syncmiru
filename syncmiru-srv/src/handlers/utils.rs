@@ -3,10 +3,12 @@ use std::sync::Arc;
 use std::time::Duration;
 use rand::Rng;
 use socketioxide::extract::SocketRef;
+use tokio::sync::RwLock;
 use crate::config::Rate;
 use crate::models::query::{EmailTknType, Id};
 use crate::models::socketio::{EmailChangeTkn, EmailChangeTknType};
 use crate::{crypto, query};
+use crate::models::playlist::UserReadyStatus;
 use crate::srvstate::{PlaylistEntryId, SrvState};
 use crate::result::Result;
 
@@ -141,9 +143,11 @@ pub(super) async fn disconnect_from_room(
 ) {
     let mut rid_uids_lock = state.rid_uids.write().await;
     let mut uid2_play_info_lock = state.uid2play_info.write().await;
+    let mut uid2ready_status_lock = state.uid2ready_status.write().await;
     s.leave_all().ok();
     rid_uids_lock.remove_by_right(&uid);
     uid2_play_info_lock.remove(&uid);
+    uid2ready_status_lock.remove(&uid);
 
     if rid_uids_lock.get_by_left(&rid).is_none() {
         // last user disconnect
@@ -221,6 +225,8 @@ pub(super) fn debug_print(state: &Arc<SrvState>) {
     println!("rid2runtime_state: {:?}", state.rid2runtime_state);
     println!("---------------------------------------");
     println!("rid2play_info: {:?}", state.rid2play_info);
+    println!("---------------------------------------");
+    println!("uid2ready_status: {:?}", state.uid2ready_status);
     println!("---------------------------------------");
     println!("uid2_play_info: {:?}", state.uid2play_info);
 }

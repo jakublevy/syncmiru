@@ -381,5 +381,7 @@
   "mpv-pause-error": "An error occurred while pausing",
   "mpv-seek-error": "An error occurred while seeking the playback",
   "mpv-msg-file-loaded": "Loaded",
-  "mpv-msg-show-failed": "An error occurred while showing a message inside mpv"
+  "mpv-msg-show-failed": "An error occurred while showing a message inside mpv",
+  "mpv-msg-user-leave": "has left",
+  "mpv-msg-user-join": "has joined"
 }

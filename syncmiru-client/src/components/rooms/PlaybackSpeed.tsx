@@ -42,6 +42,11 @@ export default function PlaybackSpeed(p: Props): ReactElement {
                     p.setLoading(false)
                 })
         }
+        return () => {
+            if(socket !== undefined) {
+                socket.off(onEventName, onPlaybackSpeed)
+            }
+        }
     }, [socket]);
 
     function onPlaybackSpeed(speed: string | RoomPlaybackSpeed) {

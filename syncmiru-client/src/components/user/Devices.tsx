@@ -31,6 +31,12 @@ export default function Devices(): ReactElement {
             socket.on('inactive_sessions', onInactiveSessions)
             socket.emit("get_user_sessions")
         }
+        return () => {
+            if(socket !== undefined) {
+                socket.off('active_session', onActiveSession)
+                socket.off('inactive_sessions', onInactiveSessions)
+            }
+        }
     }, [socket]);
 
     useEffect(() => {

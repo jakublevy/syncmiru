@@ -62,6 +62,11 @@ export default function Users(): ReactElement {
                     setUsersLoading(false)
                 })
         }
+        return () => {
+            if (socket !== undefined) {
+                socket.off('online', onOnline)
+            }
+        }
     }, [socket]);
 
     useEffect(() => {
@@ -69,17 +74,33 @@ export default function Users(): ReactElement {
             socket.on('displayname_change', onDisplaynameChange)
             socket.on('avatar_change', onAvatarChange)
         }
+        return () => {
+            if (socket !== undefined) {
+                socket.off('displayname_change', onDisplaynameChange)
+                socket.off('avatar_change', onAvatarChange)
+            }
+        }
     }, [socket, users]);
 
     useEffect(() => {
         if(socket !== undefined) {
             socket.on("del_users", onDelUsers);
         }
+        return () => {
+            if(socket !== undefined) {
+                socket.off("del_users", onDelUsers);
+            }
+        }
     }, [socket, usersClickedUid]);
 
     useEffect(() => {
         if (socket !== undefined) {
             socket.on('offline', onOffline)
+        }
+        return () => {
+            if (socket !== undefined) {
+                socket.off('offline', onOffline)
+            }
         }
     }, [socket, roomUidClicked]);
 

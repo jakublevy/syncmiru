@@ -4,7 +4,7 @@ use cfg_if::cfg_if;
 use tauri::{Emitter};
 use crate::appstate::AppState;
 use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, utils, window};
-use crate::mpv::ipc::{get_aid, get_sid, Interface, IpcData};
+use crate::mpv::ipc::{get_aid, get_sid, Interface, IpcData, MsgMood};
 use crate::mpv::models::{LoadFromSource, LoadFromUrl, UserLoadedInfo};
 use crate::mpv::window::HtmlElementRect;
 use tokio::time::sleep;
@@ -202,8 +202,43 @@ pub async fn mpv_show_ready_messages(
 ) -> Result<()> {
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+
+    let everyone_ready = loading.is_empty() && not_ready.is_empty();
+
     mpv_ipc_tx.send(Interface::ShowNotReadyMsg(not_ready)).await?;
     mpv_ipc_tx.send(Interface::ShowLoadingMsg(loading)).await?;
+
+    let mut mpv_everyone_ready_msg_id_wl = state.mpv_everyone_ready_msg_id.write().await;
+    if everyone_ready {
+        let msg_id = state.get_mpv_next_req_id().await;
+        mpv_ipc_tx.send(Interface::ShowMsg {
+            id: msg_id,
+            text: String::from(t!("mpv-everyone-ready")),
+            duration: 5f64,
+            mood: MsgMood::Good
+        }).await?;
+        *mpv_everyone_ready_msg_id_wl = Some(msg_id);
+    }
+    else {
+        if let Some(msg_id) = *mpv_everyone_ready_msg_id_wl {
+            mpv_ipc_tx.send(Interface::DeleteMsg(msg_id)).await?;
+            *mpv_everyone_ready_msg_id_wl = None;
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn mpv_hide_ready_messages(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window
+) -> Result<()> {
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+
+    mpv_ipc_tx.send(Interface::ShowNotReadyMsg(vec![])).await?;
+    mpv_ipc_tx.send(Interface::ShowLoadingMsg(vec![])).await?;
+
     Ok(())
 }
 

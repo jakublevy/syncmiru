@@ -31,7 +31,14 @@ export function showMpvReadyMessages(
 
     invoke('mpv_show_ready_messages', {loading: loading, notReady: notReady})
         .catch(() => {
-            showPersistentErrorAlert('todo')
+            showPersistentErrorAlert(t('mpv-msg-show-failed'))
+        })
+}
+
+export function hideMpvReadyMessages(t: TFunction<"translation", undefined>) {
+    invoke('mpv_hide_ready_messages', {})
+        .catch(() => {
+            showPersistentErrorAlert(t('mpv-msg-show-failed'))
         })
 }
 

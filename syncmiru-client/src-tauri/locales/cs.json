@@ -3,5 +3,6 @@
   "license-window-title": "Licence",
   "error-window-title": "Chyba",
   "mpv-not-ready-msg": "Nepřipraven:",
-  "mpv-loading-msg": "Načítá:"
+  "mpv-loading-msg": "Načítá:",
+  "mpv-everyone-ready": "Všichni jsou připraveni"
 }

@@ -44,6 +44,11 @@ export default function MinorDesyncPlaybackSlow(p: Props): ReactElement {
                     p.setLoading(false)
                 })
         }
+        return () => {
+            if(socket !== undefined) {
+                socket.off(onEventName, onMinorDesyncPlaybackSlow)
+            }
+        }
     }, [socket]);
 
     function onMinorDesyncPlaybackSlow(speed: string) {

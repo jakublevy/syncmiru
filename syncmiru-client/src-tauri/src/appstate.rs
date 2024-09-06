@@ -24,6 +24,7 @@ pub struct AppState {
     pub mpv_ignore_next_seek_event: RwLock<bool>,
     pub mpv_not_ready_msg_id: RwLock<Option<u32>>,
     pub mpv_loading_msg_id: RwLock<Option<u32>>,
+    pub mpv_everyone_ready_msg_id: RwLock<Option<u32>>,
 
     #[cfg(target_family = "unix")]
     pub x11_conn: RwLock<Option<RustConnection>>,

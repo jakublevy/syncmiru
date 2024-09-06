@@ -12,8 +12,6 @@ import {UserAudioSubtitles, UserLoadedInfo, UserPause, UserPlayInfo, UserSeek} f
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
 import {MpvMsgMood, showMpvReadyMessages} from "src/utils/mpv.ts";
-import {act, Simulate} from "react-dom/test-utils";
-import play = Simulate.play;
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
@@ -34,6 +32,13 @@ export default function Mpv(p: Props): ReactElement {
             ctx.socket.on('user_file_load_failed', onUserFileLoadFailed)
             ctx.socket.on('user_file_load_retry', onUserFileLoadRetry)
         }
+        return () => {
+            if(ctx.socket !== undefined) {
+                ctx.socket.off('user_play_info_changed', onUserPlayInfoChanged)
+                ctx.socket.off('user_file_load_failed', onUserFileLoadFailed)
+                ctx.socket.off('user_file_load_retry', onUserFileLoadRetry)
+            }
+        }
     }, [ctx.socket]);
 
     useEffect(() => {
@@ -41,6 +46,13 @@ export default function Mpv(p: Props): ReactElement {
             ctx.socket.on("mpv_play", onMpvPlay)
             ctx.socket.on('mpv_pause', onMpvPause)
             ctx.socket.on("mpv_seek", onMpvSeek)
+        }
+        return () => {
+            if(ctx.socket !== undefined) {
+                ctx.socket.off("mpv_play", onMpvPlay)
+                ctx.socket.off('mpv_pause', onMpvPause)
+                ctx.socket.off("mpv_seek", onMpvSeek)
+            }
         }
     }, [ctx.socket, ctx.uid]);
 
@@ -82,7 +94,7 @@ export default function Mpv(p: Props): ReactElement {
             const entry = playlistRef.current.get(activeVideoIdRef.current as PlaylistEntryId) as PlaylistEntry
 
             const msgText = `${t('mpv-msg-file-loaded')} ${entry.pretty()}`
-            invoke('mpv_show_msg', {text: msgText, duration: 3, mood: MpvMsgMood.Neutral})
+            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-msg-show-failed'))
                 })

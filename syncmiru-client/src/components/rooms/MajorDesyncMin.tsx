@@ -41,6 +41,11 @@ export default function MajorDesyncMin(p: Props): ReactElement {
                     p.setLoading(false)
                 })
         }
+        return () => {
+            if(socket !== undefined) {
+                socket.off(onEventName, onMajorDesyncMin)
+            }
+        }
     }, [socket]);
 
     function onMajorDesyncMin(majorDesyncMin: string) {

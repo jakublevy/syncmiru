@@ -28,6 +28,7 @@ import {invoke} from "@tauri-apps/api/core";
 import {UserId} from "@models/user.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserAudioSubtitles} from "@models/mpv.ts";
+import {hideMpvReadyMessages} from "../../utils/mpv.ts";
 
 export default function Playlist(): ReactElement {
     const ctx = useMainContext()
@@ -48,17 +49,35 @@ export default function Playlist(): ReactElement {
             ctx.socket.on('playlist_order', onPlaylistOrder)
             ctx.socket.on('del_playlist_entry', onDelPlaylistEntry)
         }
+        return () => {
+            if(ctx.socket !== undefined) {
+                ctx.socket.off('add_video_files', onAddVideoFiles)
+                ctx.socket.off('add_urls', onAddUrls)
+                ctx.socket.off('playlist_order', onPlaylistOrder)
+                ctx.socket.off('del_playlist_entry', onDelPlaylistEntry)
+            }
+        }
     }, [ctx.socket]);
 
     useEffect(() => {
         if(ctx.socket !== undefined) {
             ctx.socket.on('change_active_video', onChangeActiveVideo)
         }
+        return () => {
+            if(ctx.socket !== undefined) {
+                ctx.socket.off('change_active_video', onChangeActiveVideo)
+            }
+        }
     }, [ctx.socket, ctx.subtitles]);
 
     useEffect(() => {
         if(ctx.socket !== undefined) {
             ctx.socket.on('add_subtitles_files', onAddSubtitlesFiles)
+        }
+        return () => {
+            if(ctx.socket !== undefined) {
+                ctx.socket.off('add_subtitles_files', onAddSubtitlesFiles)
+            }
         }
     }, [ctx.socket, ctx.activeVideoId]);
 
@@ -204,6 +223,7 @@ export default function Playlist(): ReactElement {
                     if(m.length > 0)
                         setAsActiveVideo(m[0])
                     else {
+                        hideMpvReadyMessages(t)
                         ctx.setActiveVideoId(null)
                         ctx.setUid2ready((p) => {
                             const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()

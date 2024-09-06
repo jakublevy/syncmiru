@@ -381,5 +381,7 @@
   "mpv-pause-error": "Došlo k chybě při pokusu o pozastavení přehrávání",
   "mpv-seek-error": "Došlo k chybě při pokusu o přetočení přehrávání",
   "mpv-msg-file-loaded": "Načteno",
-  "mpv-msg-show-failed": "Došlo k chybě při zobrazení zprávy uvnitř mpv"
+  "mpv-msg-show-failed": "Došlo k chybě při zobrazení zprávy uvnitř mpv",
+  "mpv-msg-user-leave": "se odpojil(a)",
+  "mpv-msg-user-join": "se připojil(a)"
 }
