@@ -119,7 +119,7 @@ mp.register_script_message('msg-add', function(text, id_str, duration_str, mood_
 
     if duration > 0 then
         mp.add_timeout(duration, function()
-            table.remove(order, id)
+            table_remove_by_value(order, id)
             msgs[id] = nil
             render_msgs()
         end)
