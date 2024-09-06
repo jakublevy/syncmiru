@@ -370,7 +370,7 @@
   "select-no-options-msg": "No options available",
 
   "mpv-quit-error": "An error occurred while quitting mpv, the application will be closed",
-  "mpv-not-connected-to-room-msg": "Pro spuštění přehrávače mpv se připojte do místnosti",
+  "mpv-not-connected-to-room-msg": "Connect to a room to start the mpv player",
   "mpv-resize-error": "An error occurred while changing the size of mpv window",
   "mpv-remove-from-playlist-error": "An error occurred while removing the currently played video from the playlist",
   "mpv-load-error": "An error occurred while loading the video",
