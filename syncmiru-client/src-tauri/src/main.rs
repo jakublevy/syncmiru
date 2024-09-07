@@ -45,6 +45,7 @@ async fn main() -> Result<()> {
         mpv_not_ready_msg_id: None.into(),
         mpv_loading_msg_id: None.into(),
         mpv_everyone_ready_msg_id: None.into(),
+        mpv_neutral_msgs: Vec::new().into(),
 
         #[cfg(target_family = "unix")]
         x11_conn: None.into(),

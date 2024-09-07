@@ -2,12 +2,12 @@ use std::sync::Arc;
 use std::time::Duration;
 use cfg_if::cfg_if;
 use tauri::{Emitter};
-use crate::appstate::AppState;
+use crate::appstate::{AppState, MpvMsg};
 use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, utils, window};
 use crate::mpv::ipc::{get_aid, get_sid, Interface, IpcData, MsgMood};
 use crate::mpv::models::{LoadFromSource, LoadFromUrl, UserLoadedInfo};
 use crate::mpv::window::HtmlElementRect;
-use tokio::time::sleep;
+use tokio::time::{sleep, Instant};
 use crate::result::Result;
 use mpv::ipc;
 use crate::mpv;
@@ -252,12 +252,27 @@ pub async fn mpv_show_msg(
     window: tauri::Window,
     text: String,
     duration: f64,
-    mood: ipc::MsgMood
+    mood: MsgMood
 ) -> Result<u32> {
     let msg_id = state.get_mpv_next_req_id().await;
 
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+    if mood == MsgMood::Neutral {
+        let mut mpv_neutral_msgs_wl = state.mpv_neutral_msgs.write().await;
+        let mut shown_msgs = mpv_neutral_msgs_wl
+            .iter()
+            .filter(|&x| x.is_shown())
+            .map(|&x| x.clone())
+            .collect::<Vec<MpvMsg>>();
+
+        if shown_msgs.len() == 3 {
+            let msg_to_del = shown_msgs.remove(0);
+            mpv_ipc_tx.send(Interface::DeleteMsg(msg_to_del.id)).await?;
+        }
+        shown_msgs.push(MpvMsg { id: msg_id, duration, timestamp: Instant::now() });
+        *mpv_neutral_msgs_wl = shown_msgs;
+    }
     mpv_ipc_tx.send(Interface::ShowMsg { id: msg_id, text, duration, mood }).await?;
 
     Ok(msg_id)

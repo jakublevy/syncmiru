@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use tokio::sync::{RwLock};
 use tokio::sync::mpsc;
 use tokio::sync::oneshot;
+use tokio::time::Instant;
 use crate::config::appdata::AppData;
 use crate::mpv;
 use crate::result::Result;
@@ -26,6 +27,7 @@ pub struct AppState {
     pub mpv_not_ready_msg_id: RwLock<Option<u32>>,
     pub mpv_loading_msg_id: RwLock<Option<u32>>,
     pub mpv_everyone_ready_msg_id: RwLock<Option<u32>>,
+    pub mpv_neutral_msgs: RwLock<Vec<MpvMsg>>,
 
     #[cfg(target_family = "unix")]
     pub x11_conn: RwLock<Option<RustConnection>>,
@@ -46,5 +48,18 @@ impl AppState {
         let req_id = *mpv_next_req_id_wl;
         *mpv_next_req_id_wl = *mpv_next_req_id_wl + 1;
         req_id
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct MpvMsg {
+    pub id: u32,
+    pub timestamp: Instant,
+    pub duration: f64
+}
+
+impl MpvMsg {
+    pub fn is_shown(&self) -> bool {
+        Instant::now().duration_since(self.timestamp).as_secs_f64() < self.duration
     }
 }
