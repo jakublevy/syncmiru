@@ -4,7 +4,6 @@ import {UserId, UserValueClient} from "src/models/user.ts";
 import {RoomId, RoomValue} from "@models/room.ts";
 import Decimal from "decimal.js";
 import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
-import {MultiMap} from "mnemonist";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserAudioSubtitles} from "@models/mpv.ts";
 
@@ -53,8 +52,6 @@ export const MainContext = createContext<MainContextModel>(
         setPlaylist: (v) => {},
         playlistOrder: new Array<PlaylistEntryId>(),
         setPlaylistOrder: (v) => {},
-        subtitles: new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set),
-        setSubtitles: (v) => {},
         jwts: new Map<PlaylistEntryId, string>(),
         setJwts: (v) => {},
         mpvRunning: false,

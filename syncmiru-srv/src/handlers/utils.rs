@@ -153,24 +153,12 @@ pub(super) async fn disconnect_from_room(
         // last user disconnect
         let mut playlist_wl = state.playlist.write().await;
         let mut rid_video_id_wl = state.rid_video_id.write().await;
-        let mut video_id2subtitles_ids_wl  = state.video_id2subtitles_ids.write().await;
         let mut rid2play_info_wl = state.rid2play_info.write().await;
         let mut rid2runtime_state_wl = state.rid2runtime_state.write().await;
 
         let video_ids_opt = rid_video_id_wl.get_by_left(&rid);
         if let Some(video_ids) = video_ids_opt {
             for video_id in video_ids {
-
-                // remove subtitles from playlist
-                let subtitles_ids_opt = video_id2subtitles_ids_wl.get_by_left(video_id);
-                if let Some(subtitles_ids) = subtitles_ids_opt {
-                    for subtitles_id in subtitles_ids {
-                        playlist_wl.remove(subtitles_id);
-                    }
-                }
-                // remove subtitles from video association
-                video_id2subtitles_ids_wl.remove_by_left(video_id);
-
                 // remove video from playlist
                 playlist_wl.remove(video_id);
             }
@@ -199,28 +187,10 @@ pub(super) async fn video_id_in_room(
     rid_of_entry_opt.is_some() && *rid_of_entry_opt.unwrap() == rid
 }
 
-pub(super) async fn subtitles_id_in_room(
-    state: &Arc<SrvState>,
-    rid: Id,
-    playlist_entry_id: PlaylistEntryId
-) -> bool {
-    let video_id2subtitles_ids_rl = state.video_id2subtitles_ids.read().await;
-    let video_id_of_entry_opt = video_id2subtitles_ids_rl.get_by_right(&playlist_entry_id);
-    if video_id_of_entry_opt.is_none() {
-        return false
-    }
-
-    let video_id = video_id_of_entry_opt.unwrap();
-    video_id_in_room(state, rid, *video_id).await
-}
-
-
 pub(super) fn debug_print(state: &Arc<SrvState>) {
     println!("playlist: {:?}", state.playlist);
     println!("---------------------------------------");
     println!("rid_video_id: {:?}", state.rid_video_id);
-    println!("---------------------------------------");
-    println!("video_id2subtitles_ids: {:?}", state.video_id2subtitles_ids);
     println!("---------------------------------------");
     println!("rid2runtime_state: {:?}", state.rid2runtime_state);
     println!("---------------------------------------");

@@ -6,13 +6,6 @@ export interface PlaylistEntryVideoSrv {
     type: PlaylistEntryType
 }
 
-export interface PlaylistEntrySubtitlesSrv {
-    source: string,
-    path: string,
-    type: PlaylistEntryType,
-    video_id: PlaylistEntryId
-}
-
 export interface PlaylistEntryUrlSrv {
     url: string,
     type: PlaylistEntryType,
@@ -20,8 +13,7 @@ export interface PlaylistEntryUrlSrv {
 
 export enum PlaylistEntryType {
     Video = "video",
-    Url = "url",
-    Subtitles = "subtitles"
+    Url = "url"
 }
 
 export abstract class PlaylistEntry {
@@ -43,14 +35,5 @@ export class PlaylistEntryUrl implements PlaylistEntry {
 
     public pretty() {
         return this.url
-    }
-}
-
-export class PlaylistEntrySubtitles implements PlaylistEntry {
-    public type: PlaylistEntryType = PlaylistEntryType.Subtitles;
-    constructor(public source: string, public path: string, public videoId: PlaylistEntryId) {}
-
-    public pretty() {
-        return `${this.source}:${this.path}`
     }
 }

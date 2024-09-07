@@ -249,7 +249,6 @@ pub struct JoinedRoomInfo<'a> {
     pub room_settings: RoomSettings,
     pub playlist: HashMap<PlaylistEntryId, &'a PlaylistEntry>,
     pub playlist_order: IndexSet<PlaylistEntryId>,
-    pub subs_order: HashMap<PlaylistEntryId, IndexSet<PlaylistEntryId>>,
     pub ready_status: HashMap<Id, UserReadyStatus>,
 }
 
@@ -266,8 +265,7 @@ pub struct GetFilesInfo {
 #[derive(Debug, Clone, PartialEq, Deserialize_repr)]
 #[repr(u8)]
 pub enum FileKind {
-    Video = 0,
-    Subtitles = 1
+    Video = 0
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]
@@ -280,13 +278,6 @@ pub struct AddVideoFiles {
 pub struct AddUrls {
     #[validate(custom(function = "validators::check_urls"))]
     pub urls: Vec<String>
-}
-
-
-#[derive(Debug, Clone, Deserialize, Validate)]
-pub struct AddSubtitlesFiles {
-    pub video_id: PlaylistEntryId,
-    pub subs_full_paths: Vec<String>
 }
 
 #[derive(Debug, Clone, Validate, Deserialize)]

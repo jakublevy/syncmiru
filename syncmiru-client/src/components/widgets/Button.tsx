@@ -1,4 +1,4 @@
-import React, {ReactElement, ReactNode, MouseEvent} from "react";
+import React, {ReactElement, ReactNode} from "react";
 import Previous from "@components/svg/Previous.tsx";
 import Close from "@components/svg/Close.tsx";
 import Delete from "@components/svg/Delete.tsx";
@@ -7,7 +7,6 @@ import ZoomReset from "@components/svg/ZoomReset.tsx";
 import Copy from "@components/svg/Copy.tsx";
 import View from "@components/svg/View.tsx";
 import ParentFolder from "@components/svg/ParentFolder.tsx";
-import Subtitles from "@components/svg/Subtitles.tsx";
 
 export function Btn(p: BtnProps): ReactElement {
     const {children, ...restParams} = p
@@ -135,14 +134,6 @@ export function ParentFolderBtn(p: SvgBtn): ReactElement {
     return (
         <BtnSecondarySvg {...p}>
             <ParentFolder className="w-full"/>
-        </BtnSecondarySvg>
-    )
-}
-
-export function SubtitlesBtn(p: SvgBtn): ReactElement {
-    return (
-        <BtnSecondarySvg {...p}>
-            <Subtitles className="w-full"/>
         </BtnSecondarySvg>
     )
 }

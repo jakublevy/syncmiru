@@ -73,7 +73,6 @@ async fn main() -> Result<()> {
          playlist_entry_next_id: 1u64.into(),
          playlist: HashMap::new().into(),
          rid_video_id: BiMultiMap::new().into(),
-         video_id2subtitles_ids: BiMultiMap::new().into(),
          uid2ready_status: HashMap::new().into(),
          rid2play_info: HashMap::new().into(),
          uid2play_info: HashMap::new().into(),

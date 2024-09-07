@@ -7,11 +7,11 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlaylistEntryIdStruct, PlaylistOrder, AddSubtitlesFiles, AddUrls, UserReadyStateChangeReq, UserReadyStateChangeClient};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlaylistEntryIdStruct, PlaylistOrder, AddUrls, UserReadyStateChangeReq, UserReadyStateChangeClient};
 use crate::{crypto, email, file, query};
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
-use crate::handlers::utils::{disconnect_from_room, subtitles_id_in_room, video_id_in_room};
+use crate::handlers::utils::{disconnect_from_room, video_id_in_room};
 use crate::models::file::FileType;
 use crate::models::mpv::{UserLoadedInfo, UserPause, UserPlayInfoClient, UserSeek};
 use crate::models::playlist::{PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo, UserReadyStatus};
@@ -76,7 +76,6 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("get_files", get_files);
     s.on("add_video_files", add_video_files);
     s.on("add_urls", add_urls);
-    s.on("add_subtitles_files", add_subtitles_files);
     s.on("req_playing_jwt", req_playing_jwt);
     s.on("change_active_video", change_active_video);
     s.on("set_playlist_order", set_playlist_order);
@@ -1360,7 +1359,6 @@ pub async fn join_room(
 
     let playlist_rl = state.playlist.read().await;
     let rid_video_id_rl = state.rid_video_id.read().await;
-    let video_id2subtitles_ids_rl = state.video_id2subtitles_ids.read().await;
 
     let playlist_order = rid_video_id_rl
         .get_by_left(&payload.rid)
@@ -1371,26 +1369,6 @@ pub async fn join_room(
         .iter()
         .map(|&id| (id, playlist_rl.get(&id).unwrap()))
         .collect::<HashMap<PlaylistEntryId, &PlaylistEntry>>();
-
-    let mut subs_order = HashMap::<PlaylistEntryId, IndexSet<PlaylistEntryId>>::new();
-
-    let mut playlist_subs = HashMap::<PlaylistEntryId, &PlaylistEntry>::new();
-    for (video_entry_id, _) in &playlist {
-        let subs_ids_opt = video_id2subtitles_ids_rl.get_by_left(video_entry_id);
-        if subs_ids_opt.is_none() {
-            subs_order.insert(*video_entry_id, IndexSet::new());
-        }
-        else {
-            let subs_ids = subs_ids_opt.unwrap();
-            for sub_id in subs_ids {
-                let sub_entry = playlist_rl.get(sub_id).unwrap();
-                playlist_subs.insert(*sub_id, sub_entry);
-            }
-            subs_order.insert(*video_entry_id, subs_ids_opt.unwrap().clone());
-        }
-    }
-
-    playlist.extend(playlist_subs);
 
     let mut ready_status: HashMap<Id, UserReadyStatus> = HashMap::new();
 
@@ -1405,7 +1383,6 @@ pub async fn join_room(
         room_pings,
         playlist,
         playlist_order,
-        subs_order,
         ready_status
     }))).ok();
     transaction.commit().await.expect("db error");
@@ -1510,8 +1487,6 @@ pub async fn get_files(
     let mut allowed_extensions_opt: Option<&HashSet<String>> = None;
     if payload.file_kind == FileKind::Video && state.config.extensions.videos.is_some() {
         allowed_extensions_opt = Some(&state.config.extensions.videos.as_ref().unwrap())
-    } else if payload.file_kind == FileKind::Subtitles && state.config.extensions.subtitles.is_some() {
-        allowed_extensions_opt = Some(&state.config.extensions.subtitles.as_ref().unwrap())
     }
 
     if let Some(allowed_extensions) = allowed_extensions_opt {
@@ -1619,72 +1594,6 @@ pub async fn add_urls(
     utils::debug_print(state);
 }
 
-pub async fn add_subtitles_files(
-    State(state): State<Arc<SrvState>>,
-    s: SocketRef,
-    ack: AckSender,
-    Data(payload): Data<AddSubtitlesFiles>,
-) {
-    let rid_opt = state.socket_connected_room(&s).await;
-    if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
-        return;
-    }
-    let rid = rid_opt.unwrap();
-    if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
-        return;
-    }
-    if !video_id_in_room(state, rid, payload.video_id).await {
-        ack.send(SocketIoAck::<()>::err()).ok();
-        return;
-    }
-
-    let mut v = Vec::<(&str, &str)>::new();
-    for full_path in &payload.subs_full_paths {
-        let (source, path) = full_path.split_once(":").unwrap();
-        if !state.config.sources.contains_key(source) {
-            ack.send(SocketIoAck::<()>::err()).ok();
-            return;
-        }
-        let source_info = state.config.sources.get(source).unwrap();
-        let exists = file::f_exists(
-            &source_info.list_root_url,
-            &source_info.srv_jwt,
-            path,
-            &state.config.extensions.subtitles
-        )
-            .await
-            .expect("http error");
-        if !exists {
-            ack.send(SocketIoAck::<()>::err()).ok();
-            return;
-        }
-        v.push((source, path));
-    }
-
-    let mut playlist_wl = state.playlist.write().await;
-    let mut video_id2subtitles_ids_wl = state.video_id2subtitles_ids.write().await;
-    let mut send_entries: IndexMap<PlaylistEntryId, PlaylistEntry> = IndexMap::new();
-
-    for (source, path) in v {
-        let entry_id = state.next_playlist_entry_id().await;
-        let entry = PlaylistEntry::Subtitles { source: source.to_string(), path: path.to_string(), video_id: payload.video_id };
-        send_entries.insert(entry_id, entry.clone());
-        playlist_wl.insert(entry_id, entry);
-        video_id2subtitles_ids_wl.insert(payload.video_id, entry_id);
-    }
-
-    s.within(rid.to_string()).emit("add_subtitles_files", send_entries).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
-
-
-    drop(playlist_wl);
-    drop(video_id2subtitles_ids_wl);
-    println!("\n\n\nafter add_subtitles_files update");
-    utils::debug_print(state);
-}
-
 pub async fn req_playing_jwt(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
@@ -1702,8 +1611,7 @@ pub async fn req_playing_jwt(
     }
 
     let rid = rid_opt.unwrap();
-    if !video_id_in_room(state, rid, payload.playlist_entry_id).await
-        && !subtitles_id_in_room(state, rid, payload.playlist_entry_id).await {
+    if !video_id_in_room(state, rid, payload.playlist_entry_id).await {
         ack.send(SocketIoAck::<String>::err()).ok();
         return;
     }
@@ -1718,10 +1626,6 @@ pub async fn req_playing_jwt(
     let mut p: &str;
     match entry {
         PlaylistEntry::Video { source, path } => {
-            s = source;
-            p = path;
-        }
-        PlaylistEntry::Subtitles { source, path, .. } => {
             s = source;
             p = path;
         }
@@ -1869,34 +1773,23 @@ pub async fn delete_playlist_entry(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-    if let PlaylistEntry::Subtitles { .. } = entry_opt.unwrap() {
-        drop(playlist_rl);
 
-        if !subtitles_id_in_room(state, rid, payload.playlist_entry_id).await {
-            ack.send(SocketIoAck::<()>::err()).ok();
-            return;
-        }
+    drop(playlist_rl);
 
-        state.remove_subtitles_entry(payload.playlist_entry_id).await;
+    if !video_id_in_room(state, rid, payload.playlist_entry_id).await {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
     }
-    else {
-        drop(playlist_rl);
+    let mut rid2play_info_wl = state.rid2play_info.write().await;
 
-        if !video_id_in_room(state, rid, payload.playlist_entry_id).await {
-            ack.send(SocketIoAck::<()>::err()).ok();
-            return;
+    let room_play_info_opt = rid2play_info_wl.get(&rid);
+    if let Some(room_play_info) = room_play_info_opt {
+        if room_play_info.playing_entry_id == payload.playlist_entry_id {
+            rid2play_info_wl.remove(&rid);
+            state.clear_uid2play_info_by_rid(rid).await;
         }
-        let mut rid2play_info_wl = state.rid2play_info.write().await;
-
-        let room_play_info_opt = rid2play_info_wl.get(&rid);
-        if let Some(room_play_info) = room_play_info_opt {
-            if room_play_info.playing_entry_id == payload.playlist_entry_id {
-                rid2play_info_wl.remove(&rid);
-                state.clear_uid2play_info_by_rid(rid).await;
-            }
-        }
-        state.remove_video_entry(payload.playlist_entry_id).await;
     }
+    state.remove_video_entry(payload.playlist_entry_id).await;
 
     s.broadcast().emit("del_playlist_entry", payload.playlist_entry_id).ok();
     s.emit("del_playlist_entry", payload.playlist_entry_id).ok();

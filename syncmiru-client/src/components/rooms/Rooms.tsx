@@ -39,15 +39,12 @@ import Decimal from "decimal.js";
 import {
     PlaylistEntry,
     PlaylistEntryId,
-    PlaylistEntrySubtitles,
-    PlaylistEntrySubtitlesSrv,
     PlaylistEntryType,
     PlaylistEntryUrl,
     PlaylistEntryUrlSrv,
     PlaylistEntryVideo,
     PlaylistEntryVideoSrv
 } from "@models/playlist.ts";
-import {MultiMap} from "mnemonist";
 import {invoke} from "@tauri-apps/api/core";
 import ReadyState, {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import Bubble from "@components/svg/Bubble.tsx";
@@ -485,7 +482,6 @@ export default function Rooms(): ReactElement {
                                     const roomSettingsSrv = payload.room_settings
                                     const playlistSrv = payload.playlist
                                     const playlistOrder = payload.playlist_order
-                                    const subsOrderSrv = payload.subs_order
                                     const uid2ReadyStateSrv = payload.ready_status
 
                                     const pings: UserRoomPingsClient = new Map<UserId, number>()
@@ -510,26 +506,12 @@ export default function Rooms(): ReactElement {
                                             const valueSrv = playlistSrv[idStr] as PlaylistEntryVideoSrv
                                             p.set(id, new PlaylistEntryVideo(valueSrv.source, valueSrv.path))
                                         }
-
-                                        else if(type === PlaylistEntryType.Subtitles) {
-                                            const value = playlistSrv[idStr] as PlaylistEntrySubtitlesSrv
-                                            p.set(id, new PlaylistEntrySubtitles(value.source, value.path, value.video_id))
-                                        }
-
                                         else if(type === PlaylistEntryType.Url) {
                                             const value = playlistSrv[idStr] as PlaylistEntryUrlSrv
                                             p.set(id, new PlaylistEntryUrl(value.url))
                                         }
                                     }
                                     ctx.setPlaylist(p)
-
-                                    const s: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
-                                    for(const vidStr in subsOrderSrv) {
-                                        const sids = subsOrderSrv[vidStr]
-                                        for(const sid of sids)
-                                            s.set(parseInt(vidStr), sid)
-                                    }
-                                    ctx.setSubtitles(s)
                                     ctx.setPlaylistOrder(playlistOrder)
 
                                     const readyStates: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()

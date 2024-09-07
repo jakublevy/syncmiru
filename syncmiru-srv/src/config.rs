@@ -458,8 +458,7 @@ impl JwtSigner for Source {
 
 #[derive(Debug, Clone)]
 pub struct Extensions {
-    pub videos: Option<HashSet<String>>,
-    pub subtitles: Option<HashSet<String>>
+    pub videos: Option<HashSet<String>>
 }
 
 impl Extensions {
@@ -468,12 +467,7 @@ impl Extensions {
         if videos.is_none() {
             warn!("File extensions for video files not limited")
         }
-
-        let subtitles = Self::parse_yaml_opt_string_arr(&yaml["subtitles"])?;
-        if subtitles.is_none() {
-            warn!("File extensions for subtitle files not limited")
-        }
-        Ok(Self { videos, subtitles })
+        Ok(Self { videos })
     }
 
     fn parse_yaml_opt_string_arr(yaml: &Yaml) -> Result<Option<HashSet<String>>> {

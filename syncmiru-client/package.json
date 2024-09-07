@@ -42,8 +42,7 @@
     "@szhsin/react-menu": "^4.1.0",
     "react-data-table-component": "^7.6.2",
     "decimal.js": "^10.4.3",
-    "react-movable": "^3.2.0",
-    "mnemonist": "^0.39.8"
+    "react-movable": "^3.2.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": ">=2.0.0-beta.0",

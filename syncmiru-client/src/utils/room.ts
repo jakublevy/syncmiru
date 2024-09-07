@@ -5,9 +5,7 @@ import {invoke} from "@tauri-apps/api/core";
 import {showPersistentErrorAlert} from "./alert.ts";
 import {TFunction} from "i18next";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
-import {RoomId} from "@models/room.ts";
 import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
-import {MultiMap} from "mnemonist";
 
 export function forceDisconnectFromRoom(ctx: MainContextModel, t: TFunction<"translation", undefined>) {
     ctx.setRoomConnection(RoomConnectionState.Disconnecting)
@@ -60,7 +58,6 @@ function clearValuesAfterDisconnect(ctx: MainContextModel) {
     ctx.setUidPing(new Map<UserId, number>())
     ctx.setPlaylist(new Map<PlaylistEntryId, PlaylistEntry>())
     ctx.setPlaylistOrder([])
-    ctx.setSubtitles(new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set))
     ctx.setJwts(new Map<PlaylistEntryId, string>())
     ctx.setUid2ready(new Map<UserId, UserReadyState>())
     ctx.setActiveVideoId(null)

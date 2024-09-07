@@ -1,9 +1,7 @@
 import Decimal from "decimal.js";
-import {UserRoomPingsClient, UserRoomPingsSrv} from "@models/roomUser.ts";
+import {UserRoomPingsSrv} from "@models/roomUser.ts";
 import {
-    PlaylistEntry,
     PlaylistEntryId,
-    PlaylistEntrySubtitlesSrv,
     PlaylistEntryUrl,
     PlaylistEntryVideoSrv
 } from "@models/playlist.ts";
@@ -54,8 +52,7 @@ export interface RoomSettingsClient {
 export interface JoinedRoomInfoSrv {
     room_pings: UserRoomPingsSrv,
     room_settings: RoomSettingsSrv,
-    playlist: Record<string, PlaylistEntryVideoSrv | PlaylistEntrySubtitlesSrv | PlaylistEntryUrl>,
+    playlist: Record<string, PlaylistEntryVideoSrv | PlaylistEntryUrl>,
     playlist_order: Array<PlaylistEntryId>
-    subs_order: Record<PlaylistEntryId, Array<PlaylistEntryId>>
     ready_status: Record<UserId, string>
 }

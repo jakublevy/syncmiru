@@ -21,9 +21,7 @@ pub struct SrvState {
     pub uid_ping: RwLock<HashMap<Id, f64>>,
 
     pub playlist_entry_next_id: RwLock<PlaylistEntryId>,
-
     pub playlist: RwLock<HashMap<PlaylistEntryId, PlaylistEntry>>,
-    pub video_id2subtitles_ids: RwLock<BiMultiMap<PlaylistEntryId, PlaylistEntryId>>,
 
     pub rid_video_id: RwLock<BiMultiMap<Id, PlaylistEntryId>>,
     pub rid2runtime_state: RwLock<HashMap<Id, RoomRuntimeState>>,
@@ -72,25 +70,10 @@ impl SrvState {
     }
 
     pub async fn remove_video_entry(&self, entry_id: PlaylistEntryId) {
-        let mut video_id2subtitles_ids_wl = self.video_id2subtitles_ids.write().await;
         let mut playlist_wl = self.playlist.write().await;
         let mut rid_video_id_wl = self.rid_video_id.write().await;
 
-        let subtitles_ids_opt = video_id2subtitles_ids_wl.get_by_left(&entry_id);
-        if let Some(subtitles_ids) = subtitles_ids_opt {
-            for subtitles_id in subtitles_ids {
-                playlist_wl.remove(subtitles_id);
-            }
-        }
-        video_id2subtitles_ids_wl.remove_by_left(&entry_id);
         rid_video_id_wl.remove_by_right(&entry_id);
-        playlist_wl.remove(&entry_id);
-    }
-
-    pub async fn remove_subtitles_entry(&self, entry_id: PlaylistEntryId) {
-        let mut video_id2subtitles_ids_wl = self.video_id2subtitles_ids.write().await;
-        let mut playlist_wl = self.playlist.write().await;
-        video_id2subtitles_ids_wl.remove_by_right(&entry_id);
         playlist_wl.remove(&entry_id);
     }
 }

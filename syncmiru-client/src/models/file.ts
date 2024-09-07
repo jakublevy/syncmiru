@@ -18,6 +18,5 @@ export enum FileType {
 }
 
 export enum FileKind {
-    Video = 0,
-    Subtitles = 1
+    Video = 0
 }

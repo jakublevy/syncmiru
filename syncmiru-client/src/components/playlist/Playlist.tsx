@@ -1,11 +1,9 @@
-import React, {MouseEvent, ReactElement, useEffect, useRef, useState} from "react";
+import React, {MouseEvent, ReactElement, useEffect, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {
     PlaylistEntry,
     PlaylistEntryId,
-    PlaylistEntrySubtitles,
-    PlaylistEntrySubtitlesSrv,
     PlaylistEntryUrl,
     PlaylistEntryVideo,
     PlaylistEntryVideoSrv
@@ -16,19 +14,15 @@ import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {showPersistentErrorAlert, showTemporalSuccessAlertForModal} from "src/utils/alert.ts";
 import {useTranslation} from "react-i18next";
 import Delete from "@components/svg/Delete.tsx";
-import Subtitles from "@components/svg/Subtitles.tsx";
 import {ModalDelete} from "@components/widgets/Modal.tsx";
-import SubFile from "@components/svg/SubFile.tsx";
 import {RoomConnectionState} from "@models/context.ts";
-import AddSubtitlesFromFileSrv from "@components/playlist/AddSubtitlesFromFileSrv.tsx";
-import {MultiMap} from 'mnemonist'
 import Copy from "@components/svg/Copy.tsx";
 import {forceDisconnectFromRoom} from "src/utils/room.ts";
 import {invoke} from "@tauri-apps/api/core";
 import {UserId} from "@models/user.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserAudioSubtitles} from "@models/mpv.ts";
-import {hideMpvReadyMessages} from "../../utils/mpv.ts";
+import {hideMpvReadyMessages} from "src/utils/mpv.ts";
 
 export default function Playlist(): ReactElement {
     const ctx = useMainContext()
@@ -38,8 +32,6 @@ export default function Playlist(): ReactElement {
     const [showPlaylistEntryDeleteModal, setShowPlaylistEntryDeleteModal] = useState<boolean>(false)
     const connectedToRoom = ctx.currentRid != null && ctx.roomConnection === RoomConnectionState.Established
 
-    const [showSubtitlesModal, setShowSubtitlesModal] = useState<boolean>(false)
-    const [videoIdSelectedSubtitles, setVideoIdSelectedSubtitles] = useState<PlaylistEntryId>(0)
     const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
 
     useEffect(() => {
@@ -68,24 +60,12 @@ export default function Playlist(): ReactElement {
                 ctx.socket.off('change_active_video', onChangeActiveVideo)
             }
         }
-    }, [ctx.socket, ctx.subtitles]);
-
-    useEffect(() => {
-        if(ctx.socket !== undefined) {
-            ctx.socket.on('add_subtitles_files', onAddSubtitlesFiles)
-        }
-        return () => {
-            if(ctx.socket !== undefined) {
-                ctx.socket.off('add_subtitles_files', onAddSubtitlesFiles)
-            }
-        }
-    }, [ctx.socket, ctx.activeVideoId]);
+    }, [ctx.socket]);
 
     useEffect(() => {
         if(ctx.currentRid == null) {
             ctx.setPlaylist(new Map<PlaylistEntryId, PlaylistEntry>())
             ctx.setPlaylistOrder([])
-            ctx.setSubtitles(new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set))
         }
     }, [ctx.currentRid, ctx.roomConnection]);
 
@@ -118,55 +98,6 @@ export default function Playlist(): ReactElement {
         ctx.setPlaylistOrder((p) => [...new Set([...p, ...entryIds])])
     }
 
-    function onAddSubtitlesFiles(r: Record<string, PlaylistEntrySubtitlesSrv>) {
-        const m: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
-        for (const idStr in r) {
-            const value = r[idStr]
-            m.set(parseInt(idStr), new PlaylistEntrySubtitles(value.source, value.path, value.video_id))
-        }
-        ctx.setPlaylist((p) => new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m]))
-
-        const subs: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
-        let promises = []
-        const subJwtsTmp: Map<PlaylistEntryId, string> = new Map<PlaylistEntryId, string>()
-        for(const idStr in r) {
-            const value = r[idStr]
-            const subId = parseInt(idStr)
-
-            if(value.video_id === ctx.activeVideoId) {
-                promises.push(ctx.socket!.emitWithAck("req_playing_jwt", {playlist_entry_id: subId})
-                    .then((ack: SocketIoAck<string>) => {
-                        if(ack.status === SocketIoAckType.Err) {
-                            showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
-                            forceDisconnectFromRoom(ctx, t)
-                            return
-                        }
-                        const jwt = ack.payload as string
-                        subJwtsTmp.set(subId, jwt)
-                    })
-                    .catch(() => {
-                        showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
-                        forceDisconnectFromRoom(ctx, t)
-                        return
-                    }))
-            }
-            subs.set(value.video_id, subId)
-        }
-        Promise.all(promises)
-            .then(() => {
-                ctx.setJwts((p) => new Map<PlaylistEntryId, string>([...p, ...subJwtsTmp]))
-                ctx.setSubtitles((p) => {
-                    const newSubs: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
-                    for (const [videoId, subId] of p) {
-                        newSubs.set(videoId, subId)
-                    }
-                    for (const [videoId, subId] of subs) {
-                        newSubs.set(videoId, subId)
-                    }
-                    return newSubs
-                })
-            })
-    }
 
     function onAddUrls(r: Record<string, PlaylistEntryUrl>) {
         const m: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
@@ -196,67 +127,37 @@ export default function Playlist(): ReactElement {
             if(entry == null)
                 return playlist
 
-            if(entry instanceof PlaylistEntrySubtitles) {
-                ctx.setSubtitles((p) => {
-                    const subs: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
-                    for(const [vid, subId] of p) {
-                        if(subId !== entryId)
-                            subs.set(vid, subId)
-                    }
-                    return subs
-                })
-                for (const [k, v] of playlist) {
-                    if(k !== entryId)
-                        newPlaylist.set(k, v)
+            let playlistIdsToRemove = new Set<PlaylistEntryId>([entryId])
+
+            ctx.setPlaylistOrder((p) => {
+                const m = p.filter(x => x !== entryId)
+                if(m.length > 0)
+                    setAsActiveVideo(m[0])
+                else {
+                    hideMpvReadyMessages(t)
+                    ctx.setActiveVideoId(null)
+                    ctx.setUid2ready((p) => {
+                        const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+                        for (const [id, value] of p)
+                            m.set(id, UserReadyState.Loading)
+                        return m
+                    })
+                    ctx.setUid2audioSub(new Map<UserId, UserAudioSubtitles>())
                 }
-                return newPlaylist
+                return m
+            })
+
+            for (const [k, v] of playlist) {
+                if(!playlistIdsToRemove.has(k))
+                    newPlaylist.set(k, v)
             }
-            else {
-                let playlistIdsToRemove = new Set<PlaylistEntryId>([entryId])
-                const subIds = ctx.subtitles.get(entryId)
-                if(subIds != null)
-                    playlistIdsToRemove = new Set([...playlistIdsToRemove, ...subIds])
+            if(newPlaylist.size === 0)
+                invoke('mpv_remove_current_from_playlist', {})
+                    .catch(() => {
+                        showPersistentErrorAlert(t('mpv-remove-from-playlist-error'))
+                    })
 
-
-                ctx.setPlaylistOrder((p) => {
-                    const m = p.filter(x => x !== entryId)
-                    if(m.length > 0)
-                        setAsActiveVideo(m[0])
-                    else {
-                        hideMpvReadyMessages(t)
-                        ctx.setActiveVideoId(null)
-                        ctx.setUid2ready((p) => {
-                            const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
-                            for (const [id, value] of p)
-                                m.set(id, UserReadyState.Loading)
-                            return m
-                        })
-                        ctx.setUid2audioSub(new Map<UserId, UserAudioSubtitles>())
-                    }
-                    return m
-                })
-
-                ctx.setSubtitles((p) => {
-                    const subs: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>> = new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set)
-                    for(const [vid, subId] of p) {
-                        if(vid != entryId)
-                            subs.set(vid, subId)
-                    }
-                    return subs
-                })
-
-                for (const [k, v] of playlist) {
-                    if(!playlistIdsToRemove.has(k))
-                        newPlaylist.set(k, v)
-                }
-                if(newPlaylist.size === 0)
-                    invoke('mpv_remove_current_from_playlist', {})
-                        .catch(() => {
-                            showPersistentErrorAlert(t('mpv-remove-from-playlist-error'))
-                        })
-
-                return newPlaylist
-            }
+            return newPlaylist
         }))
     }
 
@@ -272,16 +173,10 @@ export default function Playlist(): ReactElement {
                 return m
             })
 
-            const subs = ctx.subtitles.get(entryId)
             let reqIds: Set<PlaylistEntryId> = new Set<PlaylistEntryId>()
 
             if(entry instanceof PlaylistEntryVideo)
                 reqIds.add(entryId)
-
-            if(subs != null) {
-                for (const sub of subs)
-                    reqIds.add(sub)
-            }
 
             const jwtsTmp: Map<PlaylistEntryId, string> = new Map<PlaylistEntryId, string>()
             let promises = []
@@ -348,20 +243,9 @@ export default function Playlist(): ReactElement {
             })
     }
 
-    function addSubtitlesToPlaylist(videoId: PlaylistEntryId) {
-        setVideoIdSelectedSubtitles(videoId)
-        setShowSubtitlesModal(true)
-    }
-
     async function copyVideoUrl(entry: PlaylistEntryUrl) {
         await navigator.clipboard.writeText(entry.url);
         showTemporalSuccessAlertForModal(t('video-url-copied'))
-    }
-
-    function entryPic(entry: PlaylistEntry) {
-        if(entry instanceof PlaylistEntrySubtitles)
-            return <SubFile className="min-w-6 w-6"/>
-        return <VideoFile className="min-w-6 w-6"/>
     }
 
     function onPlaylistEntryMouseDown(e: MouseEvent<HTMLDivElement>, entryId: PlaylistEntryId) {
@@ -413,12 +297,7 @@ export default function Playlist(): ReactElement {
                             )
                         }
 
-                        const renderTxt = entry.pretty();
-                        let subs: Set<PlaylistEntryId> = new Set()
-                        let s = ctx.subtitles.get(playlistEntryId)
-                        if(s != null)
-                            subs = s
-
+                        const renderTxt = entry.pretty()
                         return (
                             <li
                                 key={key}
@@ -456,19 +335,6 @@ export default function Playlist(): ReactElement {
                                             className='flex items-center rounded hover:bg-gray-300 p-1.5 dark:hover:bg-gray-500 invisible group-hover:visible min-h-8 h-8 min-w-8 w-8'
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                addSubtitlesToPlaylist(playlistEntryId)
-                                            }}
-                                            onMouseDown={(e) => e.stopPropagation()}
-                                            onMouseUp={(e) => e.stopPropagation()}
-                                        >
-                                            <Subtitles className="w-full h-full"/>
-                                        </div>
-
-                                        <div
-                                            role="button"
-                                            className='flex items-center rounded hover:bg-gray-300 p-1.5 dark:hover:bg-gray-500 invisible group-hover:visible min-h-8 h-8 min-w-8 w-8'
-                                            onClick={(e) => {
-                                                e.stopPropagation();
                                                 deleteFromPlaylist(playlistEntryId)
                                             }}
                                             onMouseDown={(e) => e.stopPropagation()}
@@ -477,36 +343,6 @@ export default function Playlist(): ReactElement {
                                             <Delete className="w-full h-full"/>
                                         </div>
                                     </div>
-                                    {subs.size > 0 && <div className="flex flex-col gap-y-0.5 mb-4">
-                                        {Array.from(subs).map(subId => {
-                                            const sub = ctx.playlist.get(subId)
-                                            if(sub == null)
-                                                return <></>
-
-                                            return (
-                                                <div
-                                                    key={subId}
-                                                    className="flex items-center gap-x-2 px-2 py-1.5 ml-8 hover:bg-gray-100 dark:hover:bg-gray-700 hover:cursor-pointer rounded group">
-                                                    <SubFile
-                                                        key={`${subId}_svg`}
-                                                        className="min-w-4 w-4"/>
-                                                    <p key={`${subId}_p`} className="text-xs">{sub.pretty()}</p>
-                                                    <div key={`${subId}_spacer`} className="flex-1"></div>
-                                                    <div
-                                                        key={`${subId}_del`}
-                                                        role="button"
-                                                        className='flex items-center rounded p-1 mr-1 hover:bg-gray-300 dark:hover:bg-gray-500 invisible group-hover:visible min-h-6 h-6 min-w-6 w-6'
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            deleteFromPlaylist(subId)
-                                                        }}
-                                                    >
-                                                        <Delete className="w-full h-full"/>
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>}
                                 </div>
                             </li>
                         )
@@ -523,21 +359,15 @@ export default function Playlist(): ReactElement {
                     if(entry == null)
                         return <div key={eid}></div>
 
-                    const pic = entryPic(entry)
                     const renderTxt = entry.pretty()
                     return (
                         <div key={eid} className="flex gap-x-2 items-center">
-                            {pic}
+                            <VideoFile className="min-w-6 w-6"/>
                             <p className={`text-sm ${ctx.activeVideoId === eid ? 'font-bold' : ''}`}>{renderTxt}</p>
                         </div>
                     )
                 }))
                 }
-            />
-            <AddSubtitlesFromFileSrv
-                videoId={videoIdSelectedSubtitles}
-                showModal={showSubtitlesModal}
-                setShowModal={setShowSubtitlesModal}
             />
         </>
     )

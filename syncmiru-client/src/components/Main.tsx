@@ -34,7 +34,6 @@ import {UserRoomMap, UserRoomPingsClient} from "@models/roomUser.ts";
 import Decimal from "decimal.js";
 import {useIsSupportedWindowSystem} from "@hooks/useIsSupportedWindowSystem.ts";
 import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
-import {MultiMap} from "mnemonist";
 import {invoke} from "@tauri-apps/api/core";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserAudioSubtitles} from "@models/mpv.ts";
@@ -77,7 +76,6 @@ export default function Main(): ReactElement {
     const [source2url, setSource2url] = useState<Map<string, string>>(new Map<string, string>())
     const [playlist, setPlaylist] = useState<Map<PlaylistEntryId, PlaylistEntry>>(new Map<PlaylistEntryId, PlaylistEntry>())
     const [playlistOrder, setPlaylistOrder] = useState<Array<PlaylistEntryId>>([])
-    const [subtitles, setSubtitles] = useState<MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>>>(new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set))
     const [jwts, setJwts] = useState<Map<PlaylistEntryId, string>>(new Map<PlaylistEntryId, string>())
     const [mpvRunning, setMpvRunning] = useState<boolean>(false)
     const [modalShown, setModalShown] = useState<boolean>(false)
@@ -148,7 +146,6 @@ export default function Main(): ReactElement {
         setSource2url(new Map<string, string>())
         setPlaylist(new Map<PlaylistEntryId, PlaylistEntry>())
         setPlaylistOrder([])
-        setSubtitles(new MultiMap<PlaylistEntryId, PlaylistEntryId>(Set))
         setJwts(new Map<PlaylistEntryId, string>())
         setUid2ready(new Map<UserId, UserReadyState>())
         setActiveVideoId(null)
@@ -302,8 +299,6 @@ export default function Main(): ReactElement {
                     setPlaylist: setPlaylist,
                     playlistOrder: playlistOrder,
                     setPlaylistOrder: setPlaylistOrder,
-                    subtitles: subtitles,
-                    setSubtitles: setSubtitles,
                     jwts: jwts,
                     setJwts: setJwts,
                     mpvRunning: mpvRunning,

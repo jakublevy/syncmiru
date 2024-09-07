@@ -4,7 +4,6 @@ import {RoomId, RoomMap, RoomSettingsClient} from "@models/room.ts";
 import {Dispatch, MutableRefObject, SetStateAction} from "react";
 import {UserRoomMap, UserRoomPingsClient} from "@models/roomUser.ts";
 import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
-import {MultiMap} from "mnemonist";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserAudioSubtitles} from "@models/mpv.ts";
 
@@ -49,8 +48,6 @@ export interface MainContextModel {
     setPlaylist: Dispatch<SetStateAction<Map<PlaylistEntryId, PlaylistEntry>>>
     playlistOrder: Array<PlaylistEntryId>
     setPlaylistOrder: Dispatch<SetStateAction<Array<PlaylistEntryId>>>
-    subtitles: MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>>
-    setSubtitles: Dispatch<SetStateAction<MultiMap<PlaylistEntryId, PlaylistEntryId, Set<PlaylistEntryId>>>>,
     jwts: Map<PlaylistEntryId, string>,
     setJwts: Dispatch<SetStateAction<Map<PlaylistEntryId, string>>>,
     mpvRunning: boolean,
