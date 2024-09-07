@@ -13,7 +13,7 @@ use crate::models::file::FileInfo;
 use crate::handlers::utils;
 use crate::handlers::utils::{disconnect_from_room, video_id_in_room};
 use crate::models::file::FileType;
-use crate::models::mpv::{UserLoadedInfo, UserPause, UserPlayInfoClient, UserSeek};
+use crate::models::mpv::{UserLoadedInfo, UserPause, UserPlayInfoClient, UserSeek, UserSpeedChange};
 use crate::models::playlist::{PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo, UserReadyStatus};
 use crate::srvstate::{PlaylistEntryId, SrvState};
 
@@ -87,6 +87,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("mpv_play", mpv_play);
     s.on("mpv_pause", mpv_pause);
     s.on("mpv_seek", mpv_seek);
+    s.on("mpv_speed_change", mpv_speed_change);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1826,7 +1827,9 @@ pub async fn mpv_file_loaded(
             sid: payload.sid,
             audio_sync: payload.audio_sync,
             sub_sync: payload.sub_sync,
-            timestamp: 0f64
+            timestamp: 0f64,
+            audio_delay: 0f64,
+            sub_delay: 0f64
         }
     );
     uid2ready_status_wl.insert(uid, UserReadyStatus::NotReady);
@@ -1957,6 +1960,9 @@ pub async fn mpv_play(
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
 
+    // TODO: set room to play state
+    // TODO rid2play_info
+
     s
         .within(rid.to_string())
         .emit("mpv_play", uid).ok();
@@ -1977,6 +1983,9 @@ pub async fn mpv_pause(
     }
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
+
+    // TODO: set room to play state
+    // TODO rid2play_info
 
     s
         .within(rid.to_string())
@@ -2002,6 +2011,29 @@ pub async fn mpv_seek(
     s
         .within(rid.to_string())
         .emit("mpv_seek", UserSeek { uid, timestamp: payload }).ok();
+
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn mpv_speed_change(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<Decimal>,
+) {
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    let uid = state.socket2uid(&s).await;
+
+    println!("received decimal {}", payload);
+
+    s
+        .within(rid.to_string())
+        .emit("mpv_speed_change", UserSpeedChange { uid, speed: payload }).ok();
 
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }

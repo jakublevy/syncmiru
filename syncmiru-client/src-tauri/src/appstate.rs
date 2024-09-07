@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use tokio::sync::{RwLock};
 use tokio::sync::mpsc;
-use tokio::sync::oneshot;
 use tokio::time::Instant;
 use crate::config::appdata::AppData;
 use crate::mpv;
@@ -28,6 +27,7 @@ pub struct AppState {
     pub mpv_loading_msg_id: RwLock<Option<u32>>,
     pub mpv_everyone_ready_msg_id: RwLock<Option<u32>>,
     pub mpv_neutral_msgs: RwLock<Vec<MpvMsg>>,
+    pub mpv_ignore_next_speed_event: RwLock<bool>,
 
     #[cfg(target_family = "unix")]
     pub x11_conn: RwLock<Option<RustConnection>>,

@@ -386,5 +386,6 @@
   "mpv-msg-user-join": "has joined",
   "mpv-msg-user-pause": "paused",
   "mpv-msg-user-unpause": "unpaused",
-  "mpv-msg-user-seek": "jumped to"
+  "mpv-msg-user-seek": "jumped to",
+  "mpv-speed-change-error": "An error occurred while changing the playback speed"
 }

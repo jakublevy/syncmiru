@@ -78,6 +78,9 @@ pub enum SyncmiruError {
     #[error("Void error")]
     VoidError(),
 
+    #[error("Rust Decimal error")]
+    RustDecimalError(#[from] rust_decimal::Error),
+
     #[error("Mpv obtaining property failed")]
     MpvObtainPropertyError,
 

@@ -3,6 +3,7 @@ pub mod win32;
 mod utils;
 
 use std::fmt::{Display, Formatter};
+use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 use anyhow::{anyhow, Context};
@@ -12,17 +13,20 @@ use interprocess::local_socket::{
 };
 use interprocess::local_socket::tokio::{RecvHalf, SendHalf};
 use rust_decimal::Decimal;
+use rust_decimal::prelude::FromPrimitive;
 use serde_repr::Deserialize_repr;
 use tauri::Emitter;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::sync::mpsc::{Receiver};
 use tokio::sync::{mpsc, oneshot};
 use tokio::time::{sleep, Instant};
-use crate::mpv::Interface::SetFullscreen;
 use crate::appstate::AppState;
 use crate::{constants, mpv};
 use crate::error::SyncmiruError;
 use crate::result::Result;
+
+#[cfg(target_family = "unix")]
+use crate::mpv::Interface::SetFullscreen;
 
 #[derive(Debug, PartialEq)]
 pub enum Interface {
@@ -40,6 +44,7 @@ pub enum Interface {
     GetFullscreen(u32),
     GetTimePos(u32),
     GetPause(u32),
+    GetSpeed(u32),
     ShowNotReadyMsg(Vec<String>),
     ShowLoadingMsg(Vec<String>),
     ShowMsg { id: u32, text: String, duration: f64, mood: MsgMood },
@@ -55,7 +60,8 @@ enum Property {
     GetSid,
     GetTimePos,
     GetFullscreen,
-    GetPause
+    GetPause,
+    GetSpeed
 }
 
 #[derive(Debug, PartialEq, Deserialize_repr)]
@@ -161,20 +167,18 @@ pub async fn get_pause(ipc_data: &IpcData) -> Result<bool> {
     Err(SyncmiruError::MpvObtainPropertyError)
 }
 
-pub async fn set_pause(pause: bool, ipc_data: &IpcData) -> Result<()> {
-    let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
-    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
-
-    let mut pause_ignore = &ipc_data.app_state.mpv_ignore_next_pause_true_event;
-    if !pause {
-        pause_ignore = &ipc_data.app_state.mpv_ignore_next_pause_false_event;
+pub async fn get_speed(ipc_data: &IpcData) -> Result<Decimal> {
+    let mut rx = send_with_response(ipc_data, Property::GetSpeed).await?;
+    if let Some(json) = rx.recv().await {
+        if let Some(data) = json.get("data") {
+            if let Some(speed_f64) = data.as_f64() {
+                if let Some(speed) = Decimal::from_f64(speed_f64) {
+                    return Ok(speed)
+                }
+            }
+        }
     }
-
-    let mut pause_ignore_lock = pause_ignore.write().await;
-    *pause_ignore_lock = true;
-
-    mpv_ipc_tx.send(Interface::SetPause(pause)).await?;
-    Ok(())
+    Err(SyncmiruError::MpvObtainPropertyError)
 }
 
 async fn send_with_response(ipc_data: &IpcData, property: Property) -> Result<Receiver<serde_json::Value>> {
@@ -193,6 +197,7 @@ async fn send_with_response(ipc_data: &IpcData, property: Property) -> Result<Re
         Property::GetTimePos => { mpv_ipc_tx.send(Interface::GetTimePos(req_id)).await? }
         Property::GetFullscreen => { mpv_ipc_tx.send(Interface::GetFullscreen(req_id)).await? }
         Property::GetPause => { mpv_ipc_tx.send(Interface::GetPause(req_id)).await? },
+        Property::GetSpeed => { mpv_ipc_tx.send(Interface::GetSpeed(req_id)).await? }
     }
     Ok(rx)
 }
@@ -297,6 +302,10 @@ async fn write(
                 },
                 Interface::GetPause(req_id) => {
                     let cmd = utils::create_get_property_cmd("pause", req_id);
+                    sender.write_all(cmd.as_bytes()).await?;
+                },
+                Interface::GetSpeed(req_id) => {
+                    let cmd = utils::create_get_property_cmd("speed", req_id);
                     sender.write_all(cmd.as_bytes()).await?;
                 },
                 Interface::ShowNotReadyMsg(ref names) => {
@@ -444,7 +453,7 @@ async fn process_mpv_msg(msg: &str, ipc_data: &IpcData) -> Result<()> {
             match event_msg {
                 "property-change" => { process_property_changed(&json, ipc_data).await? }
                 "client-message" => { process_client_msg(&json, ipc_data).await? }
-                "file-loaded" => { process_file_loaded(ipc_data).await?; }
+                "file-loaded" => { process_file_loaded(ipc_data); }
                 "playback-restart" => { process_playback_restart(ipc_data)?; }
                 "end-file" => { process_end_file(&json, ipc_data)?; }
                 "idle" => { process_idle_msg(ipc_data)?; },
@@ -487,7 +496,16 @@ async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -
                         return Ok(())
                     }
                 }
-                pause_changed(pause_state, ipc_data)?;
+                pause_changed(pause_state, ipc_data);
+            }
+            else if name == "speed" {
+                let speed = Decimal::from_f64(msg.get("data").unwrap().as_f64().unwrap()).unwrap();
+                let mut mpv_ignore_next_speed_event_wl = ipc_data.app_state.mpv_ignore_next_speed_event.write().await;
+                if *mpv_ignore_next_speed_event_wl {
+                    *mpv_ignore_next_speed_event_wl = false;
+                    return Ok(())
+                }
+                speed_changed(&speed, ipc_data);
             }
         }
     }
@@ -592,9 +610,8 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
     Ok(())
 }
 
-async fn process_file_loaded(ipc_data: &IpcData) -> Result<()> {
+fn process_file_loaded(ipc_data: &IpcData) {
     ipc_data.window.emit("mpv-file-loaded", {}).ok();
-    Ok(())
 }
 
 fn process_playback_restart(ipc_data: &IpcData) -> Result<()> {
@@ -625,9 +642,8 @@ fn process_idle_msg(ipc_data: &IpcData) -> Result<()> {
     Ok(())
 }
 
-fn pause_changed(pause_state: bool, ipc_data: &IpcData) -> Result<()> {
+fn pause_changed(pause_state: bool, ipc_data: &IpcData) {
     ipc_data.window.emit("mpv-pause-changed", pause_state).ok();
-    Ok(())
 }
 
 async fn process_seek_msg(ipc_data: &IpcData) -> Result<()> {
@@ -639,4 +655,8 @@ async fn process_seek_msg(ipc_data: &IpcData) -> Result<()> {
 
     ipc_data.window.emit("mpv-seek", {}).ok();
     Ok(())
+}
+
+fn speed_changed(speed: &Decimal, ipc_data: &IpcData) {
+    ipc_data.window.emit("mpv-speed-changed", speed).ok();
 }

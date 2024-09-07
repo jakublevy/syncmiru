@@ -1,3 +1,4 @@
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::models::playlist::UserReadyStatus;
@@ -36,4 +37,10 @@ pub struct UserPause {
 pub struct UserSeek {
     pub uid: Id,
     pub timestamp: f64
+}
+
+#[derive(Debug, Copy, Clone, Serialize)]
+pub struct UserSpeedChange {
+    pub uid: Id,
+    pub speed: Decimal
 }

@@ -8,10 +8,11 @@ import {RoomConnectionState} from "@models/context.ts";
 import {invoke} from "@tauri-apps/api/core";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {PlaylistEntry, PlaylistEntryId, PlaylistEntryUrl, PlaylistEntryVideo} from "@models/playlist.ts";
-import {UserAudioSubtitles, UserLoadedInfo, UserPause, UserPlayInfo, UserSeek} from "@models/mpv.ts";
-import {UserReadyState} from "@components/widgets/ReadyState.tsx";
+import {UserAudioSubtitles, UserLoadedInfo, UserPause, UserPlayInfo, UserSeek, UserSpeedChange} from "@models/mpv.ts";
+import ReadyState, {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
 import {MpvMsgMood, showMpvReadyMessages, timestampPretty} from "src/utils/mpv.ts";
+import Decimal from "decimal.js";
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
@@ -46,15 +47,17 @@ export default function Mpv(p: Props): ReactElement {
             ctx.socket.on("mpv_play", onMpvPlay)
             ctx.socket.on('mpv_pause', onMpvPause)
             ctx.socket.on("mpv_seek", onMpvSeek)
+            ctx.socket.on("mpv_speed_change", onMpvSpeedChange)
         }
         return () => {
             if(ctx.socket !== undefined) {
                 ctx.socket.off("mpv_play", onMpvPlay)
                 ctx.socket.off('mpv_pause', onMpvPause)
                 ctx.socket.off("mpv_seek", onMpvSeek)
+                ctx.socket.off("mpv_speed_change", onMpvSpeedChange)
             }
         }
-    }, [ctx.socket, ctx.uid]);
+    }, [ctx.socket, ctx.uid, ctx.uid2ready]);
 
     useEffect(() => {
         let unlisten: Array<Promise<UnlistenFn>> = []
@@ -125,7 +128,10 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<boolean>('mpv-pause-changed', (e: Event<boolean>) => {
-            console.log('pause changed')
+            const readyState = ctx.uid2ready.get(ctx.uid)
+            if(readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
+                return
+
             if(e.payload) {
                 invoke<number>('mpv_get_timestamp', {})
                     .then((time: number) => {
@@ -164,10 +170,24 @@ export default function Mpv(p: Props): ReactElement {
                 })
         }))
 
+        unlisten.push(listen<any>('mpv-speed-changed', (e: Event<string>) => {
+            const readyState = ctx.uid2ready.get(ctx.uid)
+            if(readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
+                return
+
+            const speed = new Decimal(e.payload)
+
+            ctx.socket!.emitWithAck('mpv_speed_change', speed)
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-speed-change-error'))
+                    disconnectFromRoom(ctx, t)
+                })
+        }))
+
         return () => {
             unlisten.forEach(x => x.then((unsub) => unsub()))
         }
-    }, [ctx.currentRid, ctx.roomConnection, ctx.mpvWinDetached, ctx.mpvShowSmall, ctx.mpvRunning]);
+    }, [ctx.currentRid, ctx.roomConnection, ctx.mpvWinDetached, ctx.mpvShowSmall, ctx.mpvRunning, ctx.uid, ctx.uid2ready]);
 
     useEffect(() => {
         jwtsRef.current = ctx.jwts;
@@ -317,6 +337,10 @@ export default function Mpv(p: Props): ReactElement {
     }
 
     function onMpvPlay(uid: UserId) {
+        const readyState = ctx.uid2ready.get(ctx.uid)
+        if(readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
+            return
+
         if (uid != ctx.uid) {
             invoke('mpv_set_pause', {pause: false})
                 .catch(() => {
@@ -335,6 +359,10 @@ export default function Mpv(p: Props): ReactElement {
     }
 
     function onMpvPause(payload: UserPause) {
+        const readyState = ctx.uid2ready.get(ctx.uid)
+        if(readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
+            return
+
         if (payload.uid != ctx.uid) {
             invoke('mpv_seek', {timestamp: payload.timestamp})
                 .then(() => {
@@ -360,6 +388,10 @@ export default function Mpv(p: Props): ReactElement {
     }
 
     function onMpvSeek(payload: UserSeek) {
+        const readyState = ctx.uid2ready.get(ctx.uid)
+        if(readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
+            return
+
         if(payload.uid != ctx.uid) {
             invoke('mpv_seek', {timestamp: payload.timestamp})
                 .catch(() => {
@@ -375,6 +407,10 @@ export default function Mpv(p: Props): ReactElement {
                     showPersistentErrorAlert(t('mpv-msg-show-failed'))
                 })
         }
+    }
+
+    function onMpvSpeedChange(payload: UserSpeedChange) {
+        // TODO:
     }
 
     return (

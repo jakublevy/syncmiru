@@ -33,3 +33,8 @@ export interface UserSeek {
     uid: UserId
     timestamp: number
 }
+
+export interface UserSpeedChange {
+    uid: UserId,
+    speed: string
+}

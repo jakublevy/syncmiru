@@ -46,6 +46,7 @@ async fn main() -> Result<()> {
         mpv_loading_msg_id: None.into(),
         mpv_everyone_ready_msg_id: None.into(),
         mpv_neutral_msgs: Vec::new().into(),
+        mpv_ignore_next_speed_event: false.into(),
 
         #[cfg(target_family = "unix")]
         x11_conn: None.into(),
@@ -109,6 +110,7 @@ async fn main() -> Result<()> {
             mpv::frontend::mpv_show_ready_messages,
             mpv::frontend::mpv_hide_ready_messages,
             mpv::frontend::mpv_show_msg,
+            mpv::frontend::mpv_set_speed,
             frontend::kill_app_with_error_msg
         ])
         .on_window_event(move |window: &Window, event: &WindowEvent| {

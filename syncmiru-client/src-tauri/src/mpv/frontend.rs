@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 use cfg_if::cfg_if;
+use rust_decimal::Decimal;
 use tauri::{Emitter};
 use crate::appstate::{AppState, MpvMsg};
 use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, utils, window};
@@ -24,6 +25,11 @@ pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Wi
             let mut mpv_ignore_next_pause_false_event_wl = state.mpv_ignore_next_pause_false_event.write().await;
             *mpv_ignore_next_pause_false_event_wl = true;
         }
+        {
+            let mut mpv_ignore_next_speed_event_wl = state.mpv_ignore_next_speed_event.write().await;
+            *mpv_ignore_next_speed_event_wl = true;
+        }
+
         let pipe_id = gen_pipe_id();
         start_process(&state, &pipe_id, window.clone()).await?;
         start_ipc(&state, &pipe_id, window.clone()).await?;
@@ -172,8 +178,18 @@ pub async fn mpv_set_pause(
     window: tauri::Window,
     pause: bool
 ) -> Result<()> {
-    let ipc_data = IpcData { app_state: state.inner().clone(), window };
-    ipc::set_pause(pause, &ipc_data).await?;
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+
+    let mut pause_ignore = &state.mpv_ignore_next_pause_true_event;
+    if !pause {
+        pause_ignore = &state.mpv_ignore_next_pause_false_event;
+    }
+
+    let mut pause_ignore_lock = pause_ignore.write().await;
+    *pause_ignore_lock = true;
+
+    mpv_ipc_tx.send(Interface::SetPause(pause)).await?;
     Ok(())
 }
 
@@ -276,4 +292,18 @@ pub async fn mpv_show_msg(
     mpv_ipc_tx.send(Interface::ShowMsg { id: msg_id, text, duration, mood }).await?;
 
     Ok(msg_id)
+}
+
+#[tauri::command]
+pub async fn mpv_set_speed(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window,
+    speed: Decimal,
+) -> Result<()> {
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+    let mut mpv_ignore_next_speed_event_wl = state.mpv_ignore_next_speed_event.write().await;
+    *mpv_ignore_next_speed_event_wl = true;
+    mpv_ipc_tx.send(Interface::SetPlaybackSpeed(speed)).await?;
+    Ok(())
 }
