@@ -8,7 +8,15 @@ import {RoomConnectionState} from "@models/context.ts";
 import {invoke} from "@tauri-apps/api/core";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {PlaylistEntry, PlaylistEntryId, PlaylistEntryUrl, PlaylistEntryVideo} from "@models/playlist.ts";
-import {UserAudioSubtitles, UserLoadedInfo, UserPause, UserPlayInfo, UserSeek, UserSpeedChange} from "@models/mpv.ts";
+import {
+    UserAudioSubtitles,
+    UserLoadedInfo,
+    UserPause,
+    UserPlayInfo,
+    UserSeek,
+    UserSpeedChangeClient,
+    UserSpeedChangeSrv
+} from "@models/mpv.ts";
 import ReadyState, {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
 import {MpvMsgMood, showMpvReadyMessages, timestampPretty} from "src/utils/mpv.ts";
@@ -409,8 +417,27 @@ export default function Mpv(p: Props): ReactElement {
         }
     }
 
-    function onMpvSpeedChange(payload: UserSpeedChange) {
-        // TODO:
+    function onMpvSpeedChange(payload: UserSpeedChangeSrv) {
+        const {speed, ...p} = payload
+        const clientPayload: UserSpeedChangeClient = {
+            ...p,
+            speed: new Decimal(speed)
+        }
+        if(payload.uid != ctx.uid) {
+            invoke('mpv_set_speed', {speed: clientPayload.speed})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-speed-change-error'))
+                    disconnectFromRoom(ctx, t)
+                })
+        }
+        const userValue = usersRef.current.get(payload.uid)
+        if(userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-speed-change')} ${clientPayload.speed.toFixed(2)}`
+            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                })
+        }
     }
 
     return (

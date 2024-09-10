@@ -171,8 +171,8 @@ pub async fn get_speed(ipc_data: &IpcData) -> Result<Decimal> {
     let mut rx = send_with_response(ipc_data, Property::GetSpeed).await?;
     if let Some(json) = rx.recv().await {
         if let Some(data) = json.get("data") {
-            if let Some(speed_f64) = data.as_f64() {
-                if let Some(speed) = Decimal::from_f64(speed_f64) {
+            if let Some(speed_num) = data.as_number() {
+                if let Ok(speed) = Decimal::from_str(&speed_num.to_string()) {
                     return Ok(speed)
                 }
             }

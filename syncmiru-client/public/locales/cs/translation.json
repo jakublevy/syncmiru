@@ -387,5 +387,6 @@
   "mpv-msg-user-pause": "pozastavil(a) přehrávání",
   "mpv-msg-user-unpause": "spustil(a) přehrávání",
   "mpv-msg-user-seek": "přetočil přehrávání na",
-  "mpv-speed-change-error": "Došlo k chybě při změně rychlosti přehrávání"
+  "mpv-speed-change-error": "Došlo k chybě při změně rychlosti přehrávání",
+  "mpv-msg-speed-change": "změnil(a) rychlost přehrávání na"
 }

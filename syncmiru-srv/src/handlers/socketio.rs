@@ -2029,8 +2029,6 @@ pub async fn mpv_speed_change(
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
 
-    println!("received decimal {}", payload);
-
     s
         .within(rid.to_string())
         .emit("mpv_speed_change", UserSpeedChange { uid, speed: payload }).ok();

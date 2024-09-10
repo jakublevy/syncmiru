@@ -1,5 +1,6 @@
 import {UserId} from "@models/user.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
+import Decimal from "decimal.js";
 
 export interface UserLoadedInfo {
     aid: number | null
@@ -34,7 +35,12 @@ export interface UserSeek {
     timestamp: number
 }
 
-export interface UserSpeedChange {
+export interface UserSpeedChangeSrv {
     uid: UserId,
     speed: string
+}
+
+export interface UserSpeedChangeClient {
+    uid: UserId,
+    speed: Decimal
 }
