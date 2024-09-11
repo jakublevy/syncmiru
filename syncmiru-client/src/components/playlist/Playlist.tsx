@@ -3,7 +3,7 @@ import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {
     AddUrlFilesRespSrv,
-    AddVideoFilesRespSrv, DeletePlaylistEntry,
+    AddVideoFilesRespSrv, ChangePlaylistOrder, DeletePlaylistEntry,
     PlaylistEntry,
     PlaylistEntryId,
     PlaylistEntryUrl,
@@ -52,7 +52,7 @@ export default function Playlist(): ReactElement {
                 ctx.socket.off('del_playlist_entry', onDelPlaylistEntry)
             }
         }
-    }, [ctx.socket, ctx.uid]);
+    }, [ctx.socket]);
 
     useEffect(() => {
         if(ctx.socket !== undefined) {
@@ -105,8 +105,8 @@ export default function Playlist(): ReactElement {
         ctx.setPlaylistOrder((p) => [...new Set([...p, ...entryIds])])
 
         const userValue = usersRef.current.get(r.uid)
-        if (r.uid !== ctx.uid && userValue != null) {
-            const msgText = `${userValue.displayname} ${t('mpv-msg-playlist-update')}`
+        if (userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-playlist-add')}`
             invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-msg-show-failed'))
@@ -131,8 +131,8 @@ export default function Playlist(): ReactElement {
         ctx.setPlaylistOrder((p) => [...new Set([...p, ...entryIds])])
 
         const userValue = usersRef.current.get(r.uid)
-        if (r.uid !== ctx.uid && userValue != null) {
-            const msgText = `${userValue.displayname} ${t('mpv-msg-playlist-update')}`
+        if (userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-playlist-add')}`
             invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-msg-show-failed'))
@@ -140,8 +140,17 @@ export default function Playlist(): ReactElement {
         }
     }
 
-    function onPlaylistOrder(playlistOrder: Array<PlaylistEntryId>) {
-        ctx.setPlaylistOrder(playlistOrder)
+    function onPlaylistOrder(changePlaylistOrder: ChangePlaylistOrder) {
+        ctx.setPlaylistOrder(changePlaylistOrder.order)
+
+        const userValue = usersRef.current.get(changePlaylistOrder.uid)
+        if (userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-playlist-order-change')}`
+            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                })
+        }
     }
 
     function onDelPlaylistEntry(deletePlaylistEntry: DeletePlaylistEntry) {
@@ -186,8 +195,8 @@ export default function Playlist(): ReactElement {
         }))
 
         const userValue = usersRef.current.get(deletePlaylistEntry.uid)
-        if (deletePlaylistEntry.uid !== ctx.uid && userValue != null) {
-            const msgText = `${userValue.displayname} ${t('mpv-msg-playlist-update')}`
+        if (userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-playlist-del')}`
             invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-msg-show-failed'))
@@ -253,6 +262,16 @@ export default function Playlist(): ReactElement {
                 if (ack.status === SocketIoAckType.Err) {
                     ctx.setPlaylistOrder(oldOrder)
                     showPersistentErrorAlert(t('playlist-order-change-error'))
+                }
+                else {
+                    const userValue = usersRef.current.get(ctx.uid)
+                    if (userValue != null) {
+                        const msgText = `${userValue.displayname} ${t('mpv-msg-playlist-order-change')}`
+                        invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                            .catch(() => {
+                                showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                            })
+                    }
                 }
             })
             .catch(() => {

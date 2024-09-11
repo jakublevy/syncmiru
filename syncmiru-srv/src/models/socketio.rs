@@ -316,6 +316,12 @@ pub struct DeletePlaylistEntry {
     pub entry_id: PlaylistEntryId
 }
 
+#[derive(Debug, Clone, Serialize)]
+pub struct ChangePlaylistOrder {
+    pub uid: Id,
+    pub order: Vec<PlaylistEntryId>
+}
+
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize)]

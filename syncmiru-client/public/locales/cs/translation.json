@@ -389,5 +389,7 @@
   "mpv-msg-user-seek": "přetočil přehrávání na",
   "mpv-speed-change-error": "Došlo k chybě při změně rychlosti přehrávání",
   "mpv-msg-speed-change": "změnil(a) rychlost přehrávání na",
-  "mpv-msg-playlist-update": "upravil playlist"
+  "mpv-msg-playlist-add": "přidal položku do playlistu",
+  "mpv-msg-playlist-del": "odebral položku z playlistu",
+  "mpv-msg-playlist-order-change": "změnil pořadí přehrávání"
 }

@@ -54,3 +54,8 @@ export interface DeletePlaylistEntry {
     uid: UserId,
     entry_id: PlaylistEntryId
 }
+
+export interface ChangePlaylistOrder {
+    uid: UserId,
+    order: Array<PlaylistEntryId>
+}

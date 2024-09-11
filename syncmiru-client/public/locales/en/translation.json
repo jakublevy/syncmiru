@@ -389,5 +389,7 @@
   "mpv-msg-user-seek": "jumped to",
   "mpv-speed-change-error": "An error occurred while changing the playback speed",
   "mpv-msg-speed-change": "changed the speed to",
-  "mpv-msg-playlist-update": "changed the playlist"
+  "mpv-msg-playlist-add": "added an item to the playlist",
+  "mpv-msg-playlist-del": "deleted an item from the playlist",
+  "mpv-msg-playlist-order-change": "changed the playback order"
 }

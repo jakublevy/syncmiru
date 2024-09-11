@@ -7,7 +7,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlaylistEntryIdStruct, PlaylistOrder, AddUrls, UserReadyStateChangeReq, UserReadyStateChangeClient, AddEntryFilesResp, DeletePlaylistEntry};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlaylistEntryIdStruct, PlaylistOrder, AddUrls, UserReadyStateChangeReq, UserReadyStateChangeClient, AddEntryFilesResp, DeletePlaylistEntry, ChangePlaylistOrder};
 use crate::{crypto, email, file, query};
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
@@ -1714,6 +1714,8 @@ pub async fn set_playlist_order(
         return;
     }
     let rid = rid_opt.unwrap();
+    let uid = state.socket2uid(&s).await;
+
     let rid_video_id_rl = state.rid_video_id.read().await;
     for entry_id in &payload.playlist_order {
         let rid_of_entry_opt = rid_video_id_rl.get_by_right(entry_id);
@@ -1732,7 +1734,7 @@ pub async fn set_playlist_order(
         order.insert(*id);
     }
 
-    s.to(rid.to_string()).emit("playlist_order", [payload.playlist_order]).ok();
+    s.to(rid.to_string()).emit("playlist_order", ChangePlaylistOrder { uid, order: payload.playlist_order }).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 
     drop(rid_video_id_wl);
@@ -1756,6 +1758,7 @@ pub async fn delete_playlist_entry(
         return;
     }
     let rid = rid_opt.unwrap();
+    let uid = state.socket2uid(&s).await;
 
     let playlist_rl = state.playlist.read().await;
     let entry_opt = playlist_rl.get(&payload.playlist_entry_id);
