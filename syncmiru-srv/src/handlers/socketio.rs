@@ -7,7 +7,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlaylistEntryIdStruct, PlaylistOrder, AddUrls, UserReadyStateChangeReq, UserReadyStateChangeClient};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlaylistEntryIdStruct, PlaylistOrder, AddUrls, UserReadyStateChangeReq, UserReadyStateChangeClient, AddEntryFilesResp, DeletePlaylistEntry};
 use crate::{crypto, email, file, query};
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
@@ -1518,6 +1518,8 @@ pub async fn add_video_files(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
+    let uid = state.socket2uid(&s).await;
+
     let mut v = Vec::<(&str, &str)>::new();
     for full_path in &payload.full_paths {
         let (source, path) = full_path.split_once(":").unwrap();
@@ -1551,7 +1553,7 @@ pub async fn add_video_files(
         rid_video_id_wl.insert(rid, entry_id);
     }
 
-    s.within(rid.to_string()).emit("add_video_files", send_entries).ok();
+    s.within(rid.to_string()).emit("add_video_files", AddEntryFilesResp { uid, entries: send_entries }).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 
     drop(rid_video_id_wl);
@@ -1576,6 +1578,8 @@ pub async fn add_urls(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
+    let uid = state.socket2uid(&s).await;
+
     let mut rid_video_id_wl = state.rid_video_id.write().await;
     let mut playlist_wl = state.playlist.write().await;
     let mut send_entries: IndexMap<PlaylistEntryId, PlaylistEntry> = IndexMap::new();
@@ -1586,7 +1590,7 @@ pub async fn add_urls(
         playlist_wl.insert(entry_id, entry);
         rid_video_id_wl.insert(rid, entry_id);
     }
-    s.within(rid.to_string()).emit("add_urls", send_entries).ok();
+    s.within(rid.to_string()).emit("add_urls", AddEntryFilesResp { uid, entries: send_entries }).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 
     drop(rid_video_id_wl);
@@ -1641,21 +1645,6 @@ pub async fn req_playing_jwt(
         .expect("jwt signer error");
 
     ack.send(SocketIoAck::<String>::ok(Some(jwt))).ok();
-
-
-
-
-    // TODO: check whether payload is currently playing video or subtitles of currently playing video
-
-    // bla bla
-    // TODO: check if JWT is required (not URL)
-        // TODO: check if playing video or playing subtitles
-
-    // TODO: change per room playing id
-    // TODO change user playing id
-    // TODO: respond to calling user with jwt / empty (url)
-    // TODO: set hourglass to all
-    // TODO: notify other users about the change, so that they call this function
 }
 
 pub async fn change_active_video(
@@ -1792,8 +1781,7 @@ pub async fn delete_playlist_entry(
     }
     state.remove_video_entry(payload.playlist_entry_id).await;
 
-    s.broadcast().emit("del_playlist_entry", payload.playlist_entry_id).ok();
-    s.emit("del_playlist_entry", payload.playlist_entry_id).ok();
+    s.within(rid.to_string()).emit("del_playlist_entry", DeletePlaylistEntry { uid, entry_id: payload.playlist_entry_id }).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 
     println!("after delete_playlist_entry");

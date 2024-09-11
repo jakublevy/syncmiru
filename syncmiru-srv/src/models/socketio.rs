@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use indexmap::IndexSet;
+use indexmap::{IndexMap, IndexSet};
 use rust_decimal::Decimal;
 use serde::{Serialize, Deserialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -302,6 +302,18 @@ pub struct UserReadyStateChangeReq {
 pub struct UserReadyStateChangeClient {
     pub uid: Id,
     pub ready_state: UserReadyStatus
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct AddEntryFilesResp {
+    pub entries: IndexMap<PlaylistEntryId, PlaylistEntry>,
+    pub uid: Id,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct DeletePlaylistEntry {
+    pub uid: Id,
+    pub entry_id: PlaylistEntryId
 }
 
 #[serde_with::serde_as]

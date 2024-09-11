@@ -1,3 +1,5 @@
+import {UserId} from "@models/user.ts";
+
 export type PlaylistEntryId = number
 
 export interface PlaylistEntryVideoSrv {
@@ -36,4 +38,19 @@ export class PlaylistEntryUrl implements PlaylistEntry {
     public pretty() {
         return this.url
     }
+}
+
+export interface AddVideoFilesRespSrv {
+    uid: UserId
+    entries: Record<string, PlaylistEntryVideoSrv>
+}
+
+export interface AddUrlFilesRespSrv {
+    uid: UserId
+    entries: Record<string, PlaylistEntryUrlSrv>
+}
+
+export interface DeletePlaylistEntry {
+    uid: UserId,
+    entry_id: PlaylistEntryId
 }

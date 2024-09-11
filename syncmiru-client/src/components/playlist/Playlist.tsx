@@ -1,12 +1,13 @@
-import React, {MouseEvent, ReactElement, useEffect, useState} from "react";
+import React, {MouseEvent, ReactElement, useEffect, useRef, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {
+    AddUrlFilesRespSrv,
+    AddVideoFilesRespSrv, DeletePlaylistEntry,
     PlaylistEntry,
     PlaylistEntryId,
     PlaylistEntryUrl,
     PlaylistEntryVideo,
-    PlaylistEntryVideoSrv
 } from "@models/playlist.ts";
 import {arrayMove, List, OnChangeMeta, RenderListParams} from "react-movable";
 import VideoFile from "@components/svg/VideoFile.tsx";
@@ -22,7 +23,7 @@ import {invoke} from "@tauri-apps/api/core";
 import {UserId} from "@models/user.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserAudioSubtitles} from "@models/mpv.ts";
-import {hideMpvReadyMessages} from "src/utils/mpv.ts";
+import {hideMpvReadyMessages, MpvMsgMood} from "src/utils/mpv.ts";
 
 export default function Playlist(): ReactElement {
     const ctx = useMainContext()
@@ -33,6 +34,8 @@ export default function Playlist(): ReactElement {
     const connectedToRoom = ctx.currentRid != null && ctx.roomConnection === RoomConnectionState.Established
 
     const [mousePos, setMousePos] = useState<[number, number]>([0, 0])
+
+    const usersRef = useRef(ctx.users)
 
     useEffect(() => {
         if (ctx.socket !== undefined) {
@@ -49,7 +52,7 @@ export default function Playlist(): ReactElement {
                 ctx.socket.off('del_playlist_entry', onDelPlaylistEntry)
             }
         }
-    }, [ctx.socket]);
+    }, [ctx.socket, ctx.uid]);
 
     useEffect(() => {
         if(ctx.socket !== undefined) {
@@ -69,6 +72,10 @@ export default function Playlist(): ReactElement {
         }
     }, [ctx.currentRid, ctx.roomConnection]);
 
+    useEffect(() => {
+        usersRef.current = ctx.users
+    }, [ctx.users]);
+
     function setAsActiveVideo(entryId: PlaylistEntryId) {
         ctx.socket!.emitWithAck("change_active_video", {playlist_entry_id: entryId})
             .then((ack: SocketIoAck<null>) => {
@@ -81,10 +88,10 @@ export default function Playlist(): ReactElement {
             })
     }
 
-    function onAddVideoFiles(r: Record<string, PlaylistEntryVideoSrv>) {
+    function onAddVideoFiles(r: AddVideoFilesRespSrv) {
         const m: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
-        for (const idStr in r) {
-            const value = r[idStr]
+        for (const idStr in r.entries) {
+            const value = r.entries[idStr]
             m.set(parseInt(idStr), new PlaylistEntryVideo(value.source, value.path))
         }
 
@@ -96,13 +103,22 @@ export default function Playlist(): ReactElement {
         })
         let entryIds = [...m.keys()]
         ctx.setPlaylistOrder((p) => [...new Set([...p, ...entryIds])])
+
+        const userValue = usersRef.current.get(r.uid)
+        if (r.uid !== ctx.uid && userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-playlist-update')}`
+            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                })
+        }
     }
 
 
-    function onAddUrls(r: Record<string, PlaylistEntryUrl>) {
+    function onAddUrls(r: AddUrlFilesRespSrv) {
         const m: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
         for (const idStr in r) {
-            const value = r[idStr]
+            const value = r.entries[idStr]
             m.set(parseInt(idStr), new PlaylistEntryUrl(value.url))
         }
 
@@ -113,24 +129,33 @@ export default function Playlist(): ReactElement {
         })
         let entryIds = [...m.keys()]
         ctx.setPlaylistOrder((p) => [...new Set([...p, ...entryIds])])
+
+        const userValue = usersRef.current.get(r.uid)
+        if (r.uid !== ctx.uid && userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-playlist-update')}`
+            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                })
+        }
     }
 
     function onPlaylistOrder(playlistOrder: Array<PlaylistEntryId>) {
         ctx.setPlaylistOrder(playlistOrder)
     }
 
-    function onDelPlaylistEntry(entryId: PlaylistEntryId) {
+    function onDelPlaylistEntry(deletePlaylistEntry: DeletePlaylistEntry) {
         ctx.setPlaylist((playlist => {
             const newPlaylist: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
 
-            const entry = playlist.get(entryId)
+            const entry = playlist.get(deletePlaylistEntry.entry_id)
             if(entry == null)
                 return playlist
 
-            let playlistIdsToRemove = new Set<PlaylistEntryId>([entryId])
+            let playlistIdsToRemove = new Set<PlaylistEntryId>([deletePlaylistEntry.entry_id])
 
             ctx.setPlaylistOrder((p) => {
-                const m = p.filter(x => x !== entryId)
+                const m = p.filter(x => x !== deletePlaylistEntry.entry_id)
                 if(m.length > 0)
                     setAsActiveVideo(m[0])
                 else {
@@ -159,6 +184,15 @@ export default function Playlist(): ReactElement {
 
             return newPlaylist
         }))
+
+        const userValue = usersRef.current.get(deletePlaylistEntry.uid)
+        if (deletePlaylistEntry.uid !== ctx.uid && userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-playlist-update')}`
+            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                })
+        }
     }
 
     function onChangeActiveVideo(entryId: PlaylistEntryId) {
