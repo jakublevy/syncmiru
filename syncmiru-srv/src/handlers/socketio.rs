@@ -127,6 +127,9 @@ pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
     }
     if let Some(rid) = rid_opt {
         disconnect_from_room(state, &s, uid, rid).await;
+
+        let urd = UserRoomDisconnect { rid, uid };
+        s.broadcast().emit("user_room_disconnect", &urd).ok();
     }
 
     s.broadcast().emit("offline", uid).ok();

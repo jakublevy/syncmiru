@@ -282,6 +282,38 @@ export default function Rooms(): ReactElement {
     }
 
     function onUserRoomChange(userRoomChange: UserRoomChange) {
+        if (userRoomChange.uid === ctx.roomUidClicked)
+            ctx.setRoomUidClicked(-1)
+
+        ctx.setUid2ready((p) => {
+            const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+            for (const [id, value] of p) {
+                if(userRoomChange.uid !== id) {
+                    m.set(id, value)
+                }
+            }
+
+            if(
+                ctx.roomConnection === RoomConnectionState.Established
+                && ctx.currentRid === userRoomChange.old_rid
+                && ctx.uid !== userRoomChange.uid
+            ) {
+                const userValue = usersRef.current.get(userRoomChange.uid)
+                if(userValue != null) {
+                    const msgText = `${userValue.displayname} ${t('mpv-msg-user-leave')}`
+                    invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                        .catch(() => {
+                            showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                        })
+
+                    if(ctx.activeVideoId != null)
+                        showMpvReadyMessages(m, usersRef.current, t)
+                }
+            }
+
+            return m
+        })
+
         ctx.setRoomUsers((p) => {
             const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
             for (const [rid, uids] of p) {
