@@ -1831,7 +1831,7 @@ pub async fn mpv_file_loaded(
     uid2ready_status_wl.insert(uid, UserReadyStatus::NotReady);
 
     s.within(rid.to_string()).emit(
-        "user_play_info_changed",
+        "user_file_loaded",
               UserPlayInfoClient {
                   aid: payload.aid,
                   sid: payload.sid,

@@ -34,16 +34,17 @@ export default function Mpv(p: Props): ReactElement {
     const joinedRoomSettingsRef = useRef(ctx.joinedRoomSettings)
     const usersRef = useRef(ctx.users)
     const activeVideoIdRef = useRef(ctx.activeVideoId)
+    const uid2readyRef = useRef(ctx.uid2ready)
 
     useEffect(() => {
         if (ctx.socket !== undefined) {
-            ctx.socket.on('user_play_info_changed', onUserPlayInfoChanged)
+            ctx.socket.on('user_file_loaded', onUserFileLoaded)
             ctx.socket.on('user_file_load_failed', onUserFileLoadFailed)
             ctx.socket.on('user_file_load_retry', onUserFileLoadRetry)
         }
         return () => {
             if(ctx.socket !== undefined) {
-                ctx.socket.off('user_play_info_changed', onUserPlayInfoChanged)
+                ctx.socket.off('user_file_loaded', onUserFileLoaded)
                 ctx.socket.off('user_file_load_failed', onUserFileLoadFailed)
                 ctx.socket.off('user_file_load_retry', onUserFileLoadRetry)
             }
@@ -204,7 +205,8 @@ export default function Mpv(p: Props): ReactElement {
         joinedRoomSettingsRef.current = ctx.joinedRoomSettings
         usersRef.current = ctx.users
         activeVideoIdRef.current = ctx.activeVideoId
-    }, [ctx.jwts, ctx.source2url, ctx.playlist, ctx.joinedRoomSettings, ctx.users, ctx.activeVideoId]);
+        uid2readyRef.current = ctx.uid2ready
+    }, [ctx.jwts, ctx.source2url, ctx.playlist, ctx.joinedRoomSettings, ctx.users, ctx.activeVideoId, ctx.uid2ready]);
 
     useEffect(() => {
         if(ctx.mpvRunning && !ctx.mpvWinDetached && !ctx.mpvShowSmall)
@@ -240,6 +242,9 @@ export default function Mpv(p: Props): ReactElement {
                 playback_speed: joinedRoomSettingsRef.current.playback_speed
             }
             invoke<UserLoadedInfo>('mpv_load_from_source', {data: JSON.stringify(data)})
+                .then(() => {
+                    showMpvReadyMessages(uid2readyRef.current, usersRef.current, t)
+                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-load-error'))
                     disconnectFromRoom(ctx, t)
@@ -278,7 +283,7 @@ export default function Mpv(p: Props): ReactElement {
             })
     }
 
-    function onUserPlayInfoChanged(userPlayInfo: UserPlayInfo) {
+    function onUserFileLoaded(userPlayInfo: UserPlayInfo) {
         ctx.setUid2audioSub((p) => {
             const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
             for (const [id, value] of p) {
