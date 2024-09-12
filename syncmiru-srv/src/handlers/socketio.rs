@@ -13,7 +13,7 @@ use crate::models::file::FileInfo;
 use crate::handlers::utils;
 use crate::handlers::utils::{disconnect_from_room, video_id_in_room};
 use crate::models::file::FileType;
-use crate::models::mpv::{UserLoadedInfo, UserPause, UserPlayInfoClient, UserSeek, UserSpeedChange};
+use crate::models::mpv::{UserChangeAudioSync, UserLoadedInfo, UserPause, UserPlayInfoClient, UserSeek, UserSpeedChange};
 use crate::models::playlist::{PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo, UserReadyStatus};
 use crate::srvstate::{PlaylistEntryId, SrvState};
 
@@ -88,6 +88,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("mpv_pause", mpv_pause);
     s.on("mpv_seek", mpv_seek);
     s.on("mpv_speed_change", mpv_speed_change);
+    s.on("change_audio_sync", change_audio_sync);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -2023,6 +2024,29 @@ pub async fn mpv_speed_change(
     s
         .within(rid.to_string())
         .emit("mpv_speed_change", UserSpeedChange { uid, speed: payload }).ok();
+
+    ack.send(SocketIoAck::<()>::ok(None)).ok();
+}
+
+pub async fn change_audio_sync(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<bool>
+) {
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    let uid = state.socket2uid(&s).await;
+
+    let mut uid2play_info_wl = state.uid2play_info.write().await;
+    if let Some(user_play_info) = uid2play_info_wl.get_mut(&uid) {
+        user_play_info.audio_sync = payload;
+        s.to(rid.to_string()).emit("change_audio_sync", UserChangeAudioSync { uid, audio_sync: payload }).ok();
+    }
 
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }

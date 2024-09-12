@@ -52,6 +52,7 @@ import BubbleCrossed from "@components/svg/BubbleCrossed.tsx";
 import Subtitles from "@components/svg/Subtitles.tsx";
 import SubtitlesCrossed from "@components/svg/SubtitlesCrossed.tsx";
 import {MpvMsgMood, showMpvReadyMessages} from "src/utils/mpv.ts";
+import {UserChangeAudioSync} from "@models/mpv.ts";
 
 export default function Rooms(): ReactElement {
     const ctx = useMainContext()
@@ -76,6 +77,7 @@ export default function Rooms(): ReactElement {
             ctx.socket.on('joined_room_playback_change', onJoinedRoomPlaybackChange)
             ctx.socket.on('joined_room_minor_desync_playback_slow', onJoinedRoomMinorDesyncPlaybackSlow)
             ctx.socket.on('user_ready_state_change', onUserReadyStateChange)
+            ctx.socket.on('change_audio_sync', onChangeAudioSync)
 
             ctx.socket.emitWithAck("get_rooms")
                 .then((roomsWOrder: RoomsWOrder) => {
@@ -115,6 +117,7 @@ export default function Rooms(): ReactElement {
                 ctx.socket.off('joined_room_playback_change', onJoinedRoomPlaybackChange)
                 ctx.socket.off('joined_room_minor_desync_playback_slow', onJoinedRoomMinorDesyncPlaybackSlow)
                 ctx.socket.off('user_ready_state_change', onUserReadyStateChange)
+                ctx.socket.off('change_audio_sync', onChangeAudioSync)
             }
         }
     }, [ctx.socket]);
@@ -348,6 +351,10 @@ export default function Rooms(): ReactElement {
             showMpvReadyMessages(m, usersRef.current, t)
             return m
         })
+    }
+
+    function onChangeAudioSync(userChangeAudioSync: UserChangeAudioSync) {
+        console.log(userChangeAudioSync)
     }
 
     function addNewUserWithLoadingState(uid: UserId) {

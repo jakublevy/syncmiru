@@ -44,3 +44,9 @@ pub struct UserSpeedChange {
     pub uid: Id,
     pub speed: Decimal
 }
+
+#[derive(Debug, Copy, Clone, Serialize)]
+pub struct UserChangeAudioSync {
+    pub uid: Id,
+    pub audio_sync: bool
+}

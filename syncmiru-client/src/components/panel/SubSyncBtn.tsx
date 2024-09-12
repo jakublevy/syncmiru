@@ -6,18 +6,18 @@ import {useChangeSubSync} from "@hooks/useSubSync.ts";
 import SubtitlesSync from "@components/svg/SubtitlesSync.tsx";
 
 export default function SubSyncBtn(): ReactElement {
-    const {subSync, setSubSync} = useMainContext()
+    const ctx = useMainContext()
     const changeSubSync = useChangeSubSync()
 
     function subSyncToggle() {
-        changeSubSync(!subSync).then(() => {
-            setSubSync(!subSync)
+        changeSubSync(!ctx.subSync).then(() => {
+            ctx.setSubSync(!ctx.subSync)
         })
     }
 
     return (
         <Clickable className="p-2" onClick={subSyncToggle}>
-            {subSync
+            {ctx.subSync
                 ? <SubtitlesSync className="h-7"/>
                 : <SubtitlesCrossed className="h-7"/>
             }

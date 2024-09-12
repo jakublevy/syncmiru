@@ -391,5 +391,7 @@
   "mpv-msg-speed-change": "changed the speed to",
   "mpv-msg-playlist-add": "added an item to the playlist",
   "mpv-msg-playlist-del": "deleted an item from the playlist",
-  "mpv-msg-playlist-order-change": "changed the playback order"
+  "mpv-msg-playlist-order-change": "changed the playback order",
+  "mpv-change-audio-sync-error": "An error occurred while changing the audio sync",
+  "mpv-change-sub-sync-error": "An error occurred while changing the subtitles sync"
 }

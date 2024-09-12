@@ -44,3 +44,8 @@ export interface UserSpeedChangeClient {
     uid: UserId,
     speed: Decimal
 }
+
+export interface UserChangeAudioSync {
+    uid: UserId,
+    audio_sync: boolean
+}
