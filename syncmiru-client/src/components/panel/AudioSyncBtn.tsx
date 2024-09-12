@@ -6,7 +6,7 @@ import BubbleCrossed from "@components/svg/BubbleCrossed.tsx";
 import {useChangeAudioSync} from "@hooks/useAudioSync.ts";
 import {RoomConnectionState} from "@models/context.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
-import {disconnectFromRoom, forceDisconnectFromRoom} from "src/utils/room.ts";
+import {forceDisconnectFromRoom} from "src/utils/room.ts";
 import {useTranslation} from "react-i18next";
 
 export default function AudioSyncBtn(): ReactElement {

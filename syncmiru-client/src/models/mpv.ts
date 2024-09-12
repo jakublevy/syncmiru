@@ -49,3 +49,8 @@ export interface UserChangeAudioSync {
     uid: UserId,
     audio_sync: boolean
 }
+
+export interface UserChangeSubSync {
+    uid: UserId,
+    sub_sync: boolean
+}

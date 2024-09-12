@@ -52,7 +52,7 @@ import BubbleCrossed from "@components/svg/BubbleCrossed.tsx";
 import Subtitles from "@components/svg/Subtitles.tsx";
 import SubtitlesCrossed from "@components/svg/SubtitlesCrossed.tsx";
 import {MpvMsgMood, showMpvReadyMessages} from "src/utils/mpv.ts";
-import {UserChangeAudioSync} from "@models/mpv.ts";
+import {UserAudioSubtitles, UserChangeAudioSync, UserChangeSubSync} from "@models/mpv.ts";
 
 export default function Rooms(): ReactElement {
     const ctx = useMainContext()
@@ -78,6 +78,7 @@ export default function Rooms(): ReactElement {
             ctx.socket.on('joined_room_minor_desync_playback_slow', onJoinedRoomMinorDesyncPlaybackSlow)
             ctx.socket.on('user_ready_state_change', onUserReadyStateChange)
             ctx.socket.on('change_audio_sync', onChangeAudioSync)
+            ctx.socket.on('change_sub_sync', onChangeSubSync)
 
             ctx.socket.emitWithAck("get_rooms")
                 .then((roomsWOrder: RoomsWOrder) => {
@@ -118,6 +119,7 @@ export default function Rooms(): ReactElement {
                 ctx.socket.off('joined_room_minor_desync_playback_slow', onJoinedRoomMinorDesyncPlaybackSlow)
                 ctx.socket.off('user_ready_state_change', onUserReadyStateChange)
                 ctx.socket.off('change_audio_sync', onChangeAudioSync)
+                ctx.socket.off('change_sub_sync', onChangeSubSync)
             }
         }
     }, [ctx.socket]);
@@ -354,7 +356,43 @@ export default function Rooms(): ReactElement {
     }
 
     function onChangeAudioSync(userChangeAudioSync: UserChangeAudioSync) {
-        console.log(userChangeAudioSync)
+        ctx.setUid2audioSub((p) => {
+            const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
+            for(const [id, value] of p) {
+                if(id !== userChangeAudioSync.uid)
+                    m.set(id, value)
+            }
+            const oldValue = p.get(userChangeAudioSync.uid)
+            if(oldValue != null) {
+                const {audioSync: oldAudioSync, ...rest} = oldValue
+                const newValue = {
+                    audioSync: userChangeAudioSync.audio_sync,
+                    ...rest
+                } as UserAudioSubtitles;
+                m.set(userChangeAudioSync.uid, newValue)
+            }
+            return m
+        })
+    }
+
+    function onChangeSubSync(userChangeSubSync: UserChangeSubSync) {
+        ctx.setUid2audioSub((p) => {
+            const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
+            for(const [id, value] of p) {
+                if(id !== userChangeSubSync.uid)
+                    m.set(id, value)
+            }
+            const oldValue = p.get(userChangeSubSync.uid)
+            if(oldValue != null) {
+                const {subSync: oldSubSync, ...rest} = oldValue
+                const newValue = {
+                    subSync: userChangeSubSync.sub_sync,
+                    ...rest
+                } as UserAudioSubtitles;
+                m.set(userChangeSubSync.uid, newValue)
+            }
+            return m
+        })
     }
 
     function addNewUserWithLoadingState(uid: UserId) {

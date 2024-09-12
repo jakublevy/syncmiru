@@ -50,3 +50,9 @@ pub struct UserChangeAudioSync {
     pub uid: Id,
     pub audio_sync: bool
 }
+
+#[derive(Debug, Copy, Clone, Serialize)]
+pub struct UserChangeSubSync {
+    pub uid: Id,
+    pub sub_sync: bool
+}
