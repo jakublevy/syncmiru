@@ -138,12 +138,10 @@ export default function Rooms(): ReactElement {
     useEffect(() => {
         if(ctx.socket !== undefined) {
             ctx.socket.on('user_room_join', onUserRoomJoin)
-            ctx.socket.on('user_room_change', onUserRoomChange)
         }
         return () => {
             if(ctx.socket !== undefined) {
                 ctx.socket.off('user_room_join', onUserRoomJoin)
-                ctx.socket.off('user_room_change', onUserRoomChange)
             }
         }
     }, [ctx.socket, ctx.currentRid, ctx.roomConnection, ctx.uid]);
@@ -151,10 +149,12 @@ export default function Rooms(): ReactElement {
     useEffect(() => {
         if (ctx.socket !== undefined) {
             ctx.socket.on('user_room_disconnect', onUserRoomDisconnect)
+            ctx.socket.on('user_room_change', onUserRoomChange)
         }
         return () => {
             if(ctx.socket !== undefined) {
                 ctx.socket.off('user_room_disconnect', onUserRoomDisconnect)
+                ctx.socket.off('user_room_change', onUserRoomChange)
             }
         }
     }, [ctx.socket, ctx.currentRid, ctx.roomConnection, ctx.uid, ctx.roomUidClicked, ctx.activeVideoId]);
@@ -311,6 +311,16 @@ export default function Rooms(): ReactElement {
                 }
             }
 
+            return m
+        })
+
+        ctx.setUid2audioSub((p) => {
+            const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
+            for (const [id, value] of p) {
+                if(userRoomChange.uid !== id) {
+                    m.set(id, value)
+                }
+            }
             return m
         })
 
@@ -480,6 +490,16 @@ export default function Rooms(): ReactElement {
                 }
             }
 
+            return m
+        })
+
+        ctx.setUid2audioSub((p) => {
+            const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
+            for (const [id, value] of p) {
+                if(userRoomDisconnect.uid !== id) {
+                    m.set(id, value)
+                }
+            }
             return m
         })
 
