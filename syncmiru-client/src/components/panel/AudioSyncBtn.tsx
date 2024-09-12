@@ -8,6 +8,8 @@ import {RoomConnectionState} from "@models/context.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {forceDisconnectFromRoom} from "src/utils/room.ts";
 import {useTranslation} from "react-i18next";
+import {UserId} from "@models/user.ts";
+import {UserAudioSubtitles} from "@models/mpv.ts";
 
 export default function AudioSyncBtn(): ReactElement {
     const ctx = useMainContext()
@@ -19,6 +21,25 @@ export default function AudioSyncBtn(): ReactElement {
     function audioSyncToggle() {
         changeAudioSync(!ctx.audioSync).then(() => {
             ctx.setAudioSync(!ctx.audioSync)
+
+            ctx.setUid2audioSub((p) => {
+                const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
+                for(const [id, value] of p) {
+                    if(id !== ctx.uid)
+                        m.set(id, value)
+                }
+                const oldValue = p.get(ctx.uid)
+                if(oldValue != null) {
+                    const {audioSync: oldAudioSync, ...rest} = oldValue
+                    const newValue = {
+                        audioSync: !ctx.audioSync,
+                        ...rest
+                    } as UserAudioSubtitles;
+                    m.set(ctx.uid, newValue)
+                }
+                return m
+            })
+
             if(connectedToRoom) {
                 ctx.socket!.emitWithAck('change_audio_sync', !ctx.audioSync)
                     .catch(() => {
