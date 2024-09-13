@@ -54,3 +54,13 @@ export interface UserChangeSubSync {
     uid: UserId,
     sub_sync: boolean
 }
+
+export interface UserChangeAudio {
+    uid: UserId,
+    aid: number | null
+}
+
+export interface UserChangeSub {
+    uid: UserId,
+    sid: number | null
+}

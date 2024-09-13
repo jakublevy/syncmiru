@@ -29,6 +29,15 @@ pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Wi
             let mut mpv_ignore_next_speed_event_wl = state.mpv_ignore_next_speed_event.write().await;
             *mpv_ignore_next_speed_event_wl = true;
         }
+        {
+            let mut mpv_ignore_next_audio_delay_event_wl = state.mpv_ignore_next_audio_delay_event.write().await;
+            *mpv_ignore_next_audio_delay_event_wl = true;
+
+        }
+        {
+            let mut mpv_ignore_next_sub_delay_event_wl = state.mpv_ignore_next_sub_delay_event.write().await;
+            *mpv_ignore_next_sub_delay_event_wl = true;
+        }
 
         let pipe_id = gen_pipe_id();
         start_process(&state, &pipe_id, window.clone()).await?;
@@ -305,5 +314,48 @@ pub async fn mpv_set_speed(
     let mut mpv_ignore_next_speed_event_wl = state.mpv_ignore_next_speed_event.write().await;
     *mpv_ignore_next_speed_event_wl = true;
     mpv_ipc_tx.send(Interface::SetPlaybackSpeed(speed)).await?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn mpv_set_audio(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window,
+    aid: u64
+) -> Result<()> {
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+
+    let mut mpv_ignore_next_audio_change_event_wl = state.mpv_ignore_next_audio_change_event.write().await;
+    *mpv_ignore_next_audio_change_event_wl = true;
+    mpv_ipc_tx.send(Interface::SetAudio(aid)).await?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn mpv_set_sub(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window,
+    sid: u64
+) -> Result<()> {
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn mpv_set_audio_delay(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window,
+    audio_delay: f64
+) -> Result<()> {
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn mpv_set_sub_delay(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window,
+    sub_delay: f64
+) -> Result<()> {
     Ok(())
 }

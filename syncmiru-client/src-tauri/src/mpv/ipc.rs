@@ -16,6 +16,7 @@ use rust_decimal::Decimal;
 use rust_decimal::prelude::FromPrimitive;
 use serde_repr::Deserialize_repr;
 use tauri::Emitter;
+use thiserror::__private::AsDisplay;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::sync::mpsc::{Receiver};
 use tokio::sync::{mpsc, oneshot};
@@ -39,12 +40,16 @@ pub enum Interface {
     SetWindowSize { w: u32, h: u32 },
     SetFullscreen(bool),
     SetPlaybackSpeed(Decimal),
+    SetAudioDelay(f64),
+    SetSubDelay(f64),
     GetAid(u32),
     GetSid(u32),
     GetFullscreen(u32),
     GetTimePos(u32),
     GetPause(u32),
     GetSpeed(u32),
+    GetAudioDelay(u32),
+    GetSubDelay(u32),
     ShowNotReadyMsg(Vec<String>),
     ShowLoadingMsg(Vec<String>),
     ShowMsg { id: u32, text: String, duration: f64, mood: MsgMood },
@@ -56,12 +61,14 @@ pub enum Interface {
 
 #[derive(Debug, PartialEq)]
 enum Property {
-    GetAid,
-    GetSid,
-    GetTimePos,
-    GetFullscreen,
-    GetPause,
-    GetSpeed
+    Aid,
+    Sid,
+    TimePos,
+    Fullscreen,
+    Pause,
+    Speed,
+    AudioDelay,
+    SubDelay
 }
 
 #[derive(Debug, PartialEq, Deserialize_repr)]
@@ -113,7 +120,7 @@ pub async fn start(
 }
 
 pub async fn get_aid(ipc_data: &IpcData) -> Result<Option<u64>> {
-    let mut rx = send_with_response(ipc_data, Property::GetAid).await?;
+    let mut rx = send_with_response(ipc_data, Property::Aid).await?;
     if let Some(json) = rx.recv().await {
         if let Some(data) = json.get("data") {
             if let Some(_) = data.as_bool() {
@@ -128,9 +135,8 @@ pub async fn get_aid(ipc_data: &IpcData) -> Result<Option<u64>> {
 }
 
 pub async fn get_sid(ipc_data: &IpcData) -> Result<Option<u64>> {
-    let mut rx = send_with_response(ipc_data, Property::GetSid).await?;
+    let mut rx = send_with_response(ipc_data, Property::Sid).await?;
     if let Some(json) = rx.recv().await {
-        println!("{:?}", json);
         if let Some(data) = json.get("data") {
             if let Some(_) = data.as_bool() {
                 return Ok(None)
@@ -143,8 +149,32 @@ pub async fn get_sid(ipc_data: &IpcData) -> Result<Option<u64>> {
     Err(SyncmiruError::MpvObtainPropertyError)
 }
 
+pub async fn get_audio_delay(ipc_data: &IpcData) -> Result<f64> {
+    let mut rx = send_with_response(ipc_data, Property::AudioDelay).await?;
+    if let Some(json) = rx.recv().await {
+        if let Some(data) = json.get("data") {
+            if let Some(audio_delay) = data.as_f64() {
+                return Ok(audio_delay)
+            }
+        }
+    }
+    Err(SyncmiruError::MpvObtainPropertyError)
+}
+
+pub async fn get_sub_delay(ipc_data: &IpcData) -> Result<f64> {
+    let mut rx = send_with_response(ipc_data, Property::SubDelay).await?;
+    if let Some(json) = rx.recv().await {
+        if let Some(data) = json.get("data") {
+            if let Some(sub_delay) = data.as_f64() {
+                return Ok(sub_delay)
+            }
+        }
+    }
+    Err(SyncmiruError::MpvObtainPropertyError)
+}
+
 pub async fn get_timestamp(ipc_data: &IpcData) -> Result<f64> {
-    let mut rx = send_with_response(ipc_data, Property::GetTimePos).await?;
+    let mut rx = send_with_response(ipc_data, Property::TimePos).await?;
     if let Some(json) = rx.recv().await {
         if let Some(data) = json.get("data") {
             if let Some(timepos) = data.as_f64() {
@@ -156,7 +186,7 @@ pub async fn get_timestamp(ipc_data: &IpcData) -> Result<f64> {
 }
 
 pub async fn get_pause(ipc_data: &IpcData) -> Result<bool> {
-    let mut rx = send_with_response(ipc_data, Property::GetPause).await?;
+    let mut rx = send_with_response(ipc_data, Property::Pause).await?;
     if let Some(json) = rx.recv().await {
         if let Some(data) = json.get("data") {
             if let Some(pause) = data.as_bool() {
@@ -168,7 +198,7 @@ pub async fn get_pause(ipc_data: &IpcData) -> Result<bool> {
 }
 
 pub async fn get_speed(ipc_data: &IpcData) -> Result<Decimal> {
-    let mut rx = send_with_response(ipc_data, Property::GetSpeed).await?;
+    let mut rx = send_with_response(ipc_data, Property::Speed).await?;
     if let Some(json) = rx.recv().await {
         if let Some(data) = json.get("data") {
             if let Some(speed_num) = data.as_number() {
@@ -192,12 +222,14 @@ async fn send_with_response(ipc_data: &IpcData, property: Property) -> Result<Re
     mpv_response_senders_wl.insert(req_id, tx);
 
     match property {
-        Property::GetAid => { mpv_ipc_tx.send(Interface::GetAid(req_id)).await? }
-        Property::GetSid => { mpv_ipc_tx.send(Interface::GetSid(req_id)).await? }
-        Property::GetTimePos => { mpv_ipc_tx.send(Interface::GetTimePos(req_id)).await? }
-        Property::GetFullscreen => { mpv_ipc_tx.send(Interface::GetFullscreen(req_id)).await? }
-        Property::GetPause => { mpv_ipc_tx.send(Interface::GetPause(req_id)).await? },
-        Property::GetSpeed => { mpv_ipc_tx.send(Interface::GetSpeed(req_id)).await? }
+        Property::Aid => { mpv_ipc_tx.send(Interface::GetAid(req_id)).await? }
+        Property::Sid => { mpv_ipc_tx.send(Interface::GetSid(req_id)).await? }
+        Property::TimePos => { mpv_ipc_tx.send(Interface::GetTimePos(req_id)).await? }
+        Property::Fullscreen => { mpv_ipc_tx.send(Interface::GetFullscreen(req_id)).await? }
+        Property::Pause => { mpv_ipc_tx.send(Interface::GetPause(req_id)).await? },
+        Property::Speed => { mpv_ipc_tx.send(Interface::GetSpeed(req_id)).await? },
+        Property::AudioDelay => { mpv_ipc_tx.send(Interface::GetAudioDelay(req_id)).await? },
+        Property::SubDelay => { mpv_ipc_tx.send(Interface::GetSubDelay(req_id)).await? }
     }
     Ok(rx)
 }
@@ -283,6 +315,14 @@ async fn write(
                 Interface::SetPlaybackSpeed(ref playback_speed) => {
                     let cmd = utils::create_set_property_cmd("speed", playback_speed);
                     sender.write_all(cmd.as_bytes()).await?;
+                },
+                Interface::SetAudioDelay(audio_delay) => {
+                    let cmd = utils::create_set_property_cmd("audio-delay", &audio_delay);
+                    sender.write_all(cmd.as_bytes()).await?;
+                },
+                Interface::SetSubDelay(sub_delay) => {
+                    let cmd = utils::create_set_property_cmd("sub-delay", &sub_delay);
+                    sender.write_all(cmd.as_bytes()).await?;
                 }
                 Interface::GetAid(req_id) => {
                     let cmd = utils::create_get_property_cmd("aid", req_id);
@@ -306,6 +346,14 @@ async fn write(
                 },
                 Interface::GetSpeed(req_id) => {
                     let cmd = utils::create_get_property_cmd("speed", req_id);
+                    sender.write_all(cmd.as_bytes()).await?;
+                },
+                Interface::GetAudioDelay(req_id) => {
+                    let cmd = utils::create_get_property_cmd("audio-delay", req_id);
+                    sender.write_all(cmd.as_bytes()).await?;
+                },
+                Interface::GetSubDelay(req_id) => {
+                    let cmd = utils::create_get_property_cmd("sub-delay", req_id);
                     sender.write_all(cmd.as_bytes()).await?;
                 },
                 Interface::ShowNotReadyMsg(ref names) => {
@@ -429,7 +477,7 @@ async fn write(
 }
 
 async fn init_observe_property(mut sender: &SendHalf) -> Result<()> {
-    let properties = vec!["aid", "sid", "pause", "fullscreen", "speed"];
+    let properties = vec!["aid", "sid", "pause", "fullscreen", "speed", "audio-delay", "sub-delay"];
     for (i, property) in properties.iter().enumerate() {
         observe_property(sender, i, property).await?;
     }
@@ -506,6 +554,62 @@ async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -
                     return Ok(())
                 }
                 speed_changed(&speed, ipc_data);
+            }
+            else if name == "aid" {
+                let data = msg.get("data").unwrap();
+                if data.as_str().is_some() {
+                   return Ok(())
+                }
+
+                let mut mpv_ignore_next_audio_change_event_wl = ipc_data.app_state.mpv_ignore_next_audio_change_event.write().await;
+                if *mpv_ignore_next_audio_change_event_wl {
+                    *mpv_ignore_next_audio_change_event_wl = false;
+                    return Ok(())
+                }
+
+                if let Some(aid) = data.as_u64() {
+                    audio_track_changed(Some(aid), ipc_data);
+                }
+                else {
+                    audio_track_changed(None, ipc_data);
+                }
+            }
+            else if name == "sid" {
+                let data = msg.get("data").unwrap();
+                if data.as_str().is_some() {
+                    return Ok(())
+                }
+
+                let mut mpv_ignore_next_sub_change_event_wl = ipc_data.app_state.mpv_ignore_next_sub_change_event.write().await;
+                if *mpv_ignore_next_sub_change_event_wl {
+                    *mpv_ignore_next_sub_change_event_wl = false;
+                    return Ok(())
+                }
+
+                if let Some(sid) = data.as_u64() {
+                    sub_track_changed(Some(sid), ipc_data);
+                }
+                else {
+                    sub_track_changed(None, ipc_data);
+                }
+            }
+            else if name == "sub-delay" {
+                let sub_delay = msg.get("data").unwrap().as_f64().unwrap();
+                let mut mpv_ignore_next_sub_delay_event_wl = ipc_data.app_state.mpv_ignore_next_sub_delay_event.write().await;
+                if *mpv_ignore_next_sub_delay_event_wl {
+                    *mpv_ignore_next_sub_delay_event_wl = false;
+                    return Ok(())
+                }
+                sub_delay_changed(sub_delay, ipc_data);
+            }
+            else if name == "audio-delay" {
+                let audio_delay = msg.get("data").unwrap().as_f64().unwrap();
+                let mut mpv_ignore_next_audio_delay_event_wl = ipc_data.app_state.mpv_ignore_next_audio_delay_event.write().await;
+                if *mpv_ignore_next_audio_delay_event_wl {
+                    *mpv_ignore_next_audio_delay_event_wl = false;
+                    return Ok(())
+                }
+                audio_delay_changed(audio_delay, ipc_data);
             }
         }
     }
@@ -659,4 +763,20 @@ async fn process_seek_msg(ipc_data: &IpcData) -> Result<()> {
 
 fn speed_changed(speed: &Decimal, ipc_data: &IpcData) {
     ipc_data.window.emit("mpv-speed-changed", speed).ok();
+}
+
+fn sub_delay_changed(sub_delay: f64, ipc_data: &IpcData) {
+    ipc_data.window.emit("mpv-sub-delay-changed", sub_delay).ok();
+}
+
+fn audio_delay_changed(audio_delay: f64, ipc_data: &IpcData) {
+    ipc_data.window.emit("mpv-audio-delay-changed", audio_delay).ok();
+}
+
+fn audio_track_changed(aid: Option<u64>, ipc_data: &IpcData) {
+    ipc_data.window.emit("mpv-audio-changed", aid).ok();
+}
+
+fn sub_track_changed(sid: Option<u64>, ipc_data: &IpcData) {
+    ipc_data.window.emit("mpv-sub-changed", sid).ok();
 }

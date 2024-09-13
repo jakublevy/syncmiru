@@ -9,7 +9,7 @@ import {invoke} from "@tauri-apps/api/core";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {PlaylistEntry, PlaylistEntryId, PlaylistEntryUrl, PlaylistEntryVideo} from "@models/playlist.ts";
 import {
-    UserAudioSubtitles,
+    UserAudioSubtitles, UserChangeAudio, UserChangeSub,
     UserLoadedInfo,
     UserPause,
     UserPlayInfo,
@@ -57,6 +57,7 @@ export default function Mpv(p: Props): ReactElement {
             ctx.socket.on('mpv_pause', onMpvPause)
             ctx.socket.on("mpv_seek", onMpvSeek)
             ctx.socket.on("mpv_speed_change", onMpvSpeedChange)
+
         }
         return () => {
             if(ctx.socket !== undefined) {
@@ -64,9 +65,32 @@ export default function Mpv(p: Props): ReactElement {
                 ctx.socket.off('mpv_pause', onMpvPause)
                 ctx.socket.off("mpv_seek", onMpvSeek)
                 ctx.socket.off("mpv_speed_change", onMpvSpeedChange)
+
             }
         }
     }, [ctx.socket, ctx.uid, ctx.uid2ready]);
+
+    useEffect(() => {
+        if(ctx.socket !== undefined) {
+            ctx.socket.on('mpv_audio_change', onMpvAudioChange)
+        }
+        return () => {
+            if(ctx.socket !== undefined) {
+                ctx.socket.off('mpv_audio_change', onMpvAudioChange)
+            }
+        }
+    }, [ctx.socket, ctx.uid, ctx.uid2ready, ctx.audioSync]);
+
+    useEffect(() => {
+        if(ctx.socket !== undefined) {
+            ctx.socket.on('mpv_sub_change', onMpvSubChange)
+        }
+        return () => {
+            if(ctx.socket !== undefined) {
+                ctx.socket.off('mpv_sub_change', onMpvSubChange)
+            }
+        }
+    }, [ctx.socket, ctx.uid, ctx.uid2ready, ctx.subSync]);
 
     useEffect(() => {
         let unlisten: Array<Promise<UnlistenFn>> = []
@@ -179,7 +203,7 @@ export default function Mpv(p: Props): ReactElement {
                 })
         }))
 
-        unlisten.push(listen<any>('mpv-speed-changed', (e: Event<string>) => {
+        unlisten.push(listen<string>('mpv-speed-changed', (e: Event<string>) => {
             const readyState = ctx.uid2ready.get(ctx.uid)
             if(readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
                 return
@@ -191,6 +215,22 @@ export default function Mpv(p: Props): ReactElement {
                     showPersistentErrorAlert(t('mpv-speed-change-error'))
                     disconnectFromRoom(ctx, t)
                 })
+        }))
+
+        unlisten.push(listen<number>('mpv-audio-changed', (e: Event<number>) => {
+            console.log(`mpv-audio-changed ${e.payload}`)
+        }))
+
+        unlisten.push(listen<number>('mpv-sub-changed', (e: Event<number>) => {
+            console.log(`mpv-sub-changed ${e.payload}`)
+        }))
+
+        unlisten.push(listen<number | null>('mpv-audio-delay-changed', (e: Event<number | null>) => {
+           console.log(`mpv-audio-delay-changed ${e.payload}`)
+        }))
+
+        unlisten.push(listen<number | null>('mpv-sub-delay-changed', (e: Event<number | null>) => {
+            console.log(`mpv-sub-delay-changed ${e.payload}`)
         }))
 
         return () => {
@@ -257,6 +297,9 @@ export default function Mpv(p: Props): ReactElement {
                 playback_speed: joinedRoomSettingsRef.current.playback_speed
             }
             invoke('mpv_load_from_url', {data: JSON.stringify(data)})
+                .then(() => {
+                    showMpvReadyMessages(uid2readyRef.current, usersRef.current, t)
+                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-load-error'))
                     disconnectFromRoom(ctx, t)
@@ -443,6 +486,14 @@ export default function Mpv(p: Props): ReactElement {
                     showPersistentErrorAlert(t('mpv-msg-show-failed'))
                 })
         }
+    }
+
+    function onMpvAudioChange(payload: UserChangeAudio) {
+        
+    }
+
+    function onMpvSubChange(payload: UserChangeSub) {
+
     }
 
     return (

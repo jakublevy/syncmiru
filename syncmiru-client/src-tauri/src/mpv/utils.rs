@@ -31,5 +31,28 @@ pub async fn mpv_before_file_load(
         *mpv_ignore_next_speed_event_wl = true;
         mpv_ipc_tx.send(Interface::SetPlaybackSpeed(*playback_speed)).await?;
     }
+
+    let audio_delay = ipc::get_audio_delay(&ipc_data).await?;
+    if audio_delay != 0f64 {
+        let mut mpv_ignore_next_audio_delay_event_wl = state.mpv_ignore_next_audio_delay_event.write().await;
+        *mpv_ignore_next_audio_delay_event_wl = true;
+        mpv_ipc_tx.send(Interface::SetAudioDelay(0f64)).await?;
+    }
+
+    let sub_delay = ipc::get_sub_delay(&ipc_data).await?;
+    if sub_delay != 0f64 {
+        let mut mpv_ignore_next_sub_delay_event_wl = state.mpv_ignore_next_sub_delay_event.write().await;
+        *mpv_ignore_next_sub_delay_event_wl = true;
+        mpv_ipc_tx.send(Interface::SetSubDelay(0f64)).await?;
+    }
+
+    {
+        let mut mpv_ignore_next_audio_change_event_wl = state.mpv_ignore_next_audio_change_event.write().await;
+        *mpv_ignore_next_audio_change_event_wl = true;
+    }
+    {
+        let mut mpv_ignore_next_sub_change_event_wl = state.mpv_ignore_next_sub_change_event.write().await;
+        *mpv_ignore_next_sub_change_event_wl = true;
+    }
     Ok(())
 }

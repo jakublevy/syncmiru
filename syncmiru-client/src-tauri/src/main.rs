@@ -47,6 +47,10 @@ async fn main() -> Result<()> {
         mpv_everyone_ready_msg_id: None.into(),
         mpv_neutral_msgs: Vec::new().into(),
         mpv_ignore_next_speed_event: false.into(),
+        mpv_ignore_next_audio_change_event: false.into(),
+        mpv_ignore_next_sub_change_event: false.into(),
+        mpv_ignore_next_audio_delay_event: false.into(),
+        mpv_ignore_next_sub_delay_event: false.into(),
 
         #[cfg(target_family = "unix")]
         x11_conn: None.into(),
@@ -111,6 +115,10 @@ async fn main() -> Result<()> {
             mpv::frontend::mpv_hide_ready_messages,
             mpv::frontend::mpv_show_msg,
             mpv::frontend::mpv_set_speed,
+            mpv::frontend::mpv_set_audio,
+            mpv::frontend::mpv_set_sub,
+            mpv::frontend::mpv_set_audio_delay,
+            mpv::frontend::mpv_set_sub_delay,
             frontend::kill_app_with_error_msg
         ])
         .on_window_event(move |window: &Window, event: &WindowEvent| {

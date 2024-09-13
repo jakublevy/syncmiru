@@ -4,7 +4,7 @@ use crate::mpv::ipc::Interface;
 use crate::result::Result;
 
 pub async fn make_fullscreen_false_if_not(ipc_data: &IpcData) -> Result<()> {
-    let mut rx = send_with_response(ipc_data, Property::GetFullscreen).await?;
+    let mut rx = send_with_response(ipc_data, Property::Fullscreen).await?;
     if let Some(json) = rx.recv().await {
         if let Some(data) = json.get("data") {
             if let Some(fullscreen) = data.as_bool() {
