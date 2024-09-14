@@ -322,6 +322,14 @@ pub struct ChangePlaylistOrder {
     pub order: Vec<PlaylistEntryId>
 }
 
+#[derive(Debug, Copy, Clone, Serialize)]
+pub struct UploadMpvState {
+    pub aid: Option<u64>,
+    pub sid: Option<u64>,
+    pub audio_delay: f64,
+    pub sub_delay: f64
+}
+
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize)]

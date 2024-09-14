@@ -7,13 +7,13 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlaylistEntryIdStruct, PlaylistOrder, AddUrls, UserReadyStateChangeReq, UserReadyStateChangeClient, AddEntryFilesResp, DeletePlaylistEntry, ChangePlaylistOrder};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlaylistEntryIdStruct, PlaylistOrder, AddUrls, UserReadyStateChangeReq, UserReadyStateChangeClient, AddEntryFilesResp, DeletePlaylistEntry, ChangePlaylistOrder, UploadMpvState};
 use crate::{crypto, email, file, query};
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
 use crate::handlers::utils::{disconnect_from_room, video_id_in_room};
 use crate::models::file::FileType;
-use crate::models::mpv::{UserChangeAudio, UserChangeAudioDelay, UserChangeAudioSync, UserChangeSub, UserChangeSubDelay, UserChangeSubSync, UserLoadedInfo, UserPause, UserPlayInfoClient, UserSeek, UserSpeedChange};
+use crate::models::mpv::{UserChangeAudio, UserChangeAudioDelay, UserChangeAudioSync, UserChangeSub, UserChangeSubDelay, UserChangeSubSync, UserLoadedInfo, UserPause, UserPlayInfoClient, UserSeek, UserSpeedChange, UserUploadMpvState};
 use crate::models::playlist::{PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo, UserReadyStatus};
 use crate::srvstate::{PlaylistEntryId, SrvState};
 
@@ -94,6 +94,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("mpv_sub_change", mpv_sub_change);
     s.on("mpv_audio_delay_change", mpv_audio_delay_change);
     s.on("mpv_sub_delay_change", mpv_sub_delay_change);
+    s.on("mpv_upload_state", mpv_upload_state);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1960,15 +1961,19 @@ pub async fn mpv_play(
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
 
-    let mut rid2play_info_wl = state.rid2play_info.write().await;
-    let play_info = rid2play_info_wl.get_mut(&rid).unwrap();
-    play_info.playing_state = PlayingState::Play;
+    if state.user_file_loaded(uid) {
+        let mut rid2play_info_wl = state.rid2play_info.write().await;
+        let play_info = rid2play_info_wl.get_mut(&rid).unwrap();
+        play_info.playing_state = PlayingState::Play;
 
-    s
-        .within(rid.to_string())
-        .emit("mpv_play", uid).ok();
+        s
+            .within(rid.to_string())
+            .emit("mpv_play", uid).ok();
 
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        return;
+    }
+    ack.send(SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn mpv_pause(
@@ -1985,15 +1990,19 @@ pub async fn mpv_pause(
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
 
-    let mut rid2play_info_wl = state.rid2play_info.write().await;
-    let play_info = rid2play_info_wl.get_mut(&rid).unwrap();
-    play_info.playing_state = PlayingState::Pause;
+    if state.user_file_loaded(uid) {
+        let mut rid2play_info_wl = state.rid2play_info.write().await;
+        let play_info = rid2play_info_wl.get_mut(&rid).unwrap();
+        play_info.playing_state = PlayingState::Pause;
 
-    s
-        .within(rid.to_string())
-        .emit("mpv_pause", UserPause { uid, timestamp: payload }).ok();
+        s
+            .within(rid.to_string())
+            .emit("mpv_pause", UserPause { uid, timestamp: payload }).ok();
 
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        return;
+    }
+    ack.send(SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn mpv_seek(
@@ -2010,11 +2019,15 @@ pub async fn mpv_seek(
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
 
-    s
-        .within(rid.to_string())
-        .emit("mpv_seek", UserSeek { uid, timestamp: payload }).ok();
+    if state.user_file_loaded(uid) {
+        s
+            .within(rid.to_string())
+            .emit("mpv_seek", UserSeek { uid, timestamp: payload }).ok();
 
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        return;
+    }
+    ack.send(SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn mpv_speed_change(
@@ -2031,11 +2044,15 @@ pub async fn mpv_speed_change(
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
 
-    s
-        .within(rid.to_string())
-        .emit("mpv_speed_change", UserSpeedChange { uid, speed: payload }).ok();
+    if state.user_file_loaded(uid) {
+        s
+            .within(rid.to_string())
+            .emit("mpv_speed_change", UserSpeedChange { uid, speed: payload }).ok();
 
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        return;
+    }
+    ack.send(SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn change_audio_sync(
@@ -2184,6 +2201,59 @@ pub async fn mpv_sub_delay_change(
             ack.send(SocketIoAck::<()>::ok(None)).ok();
             return;
         }
+    }
+    ack.send(SocketIoAck::<()>::err()).ok();
+}
+
+pub async fn mpv_upload_state(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<UploadMpvState>
+) {
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    let uid = state.socket2uid(&s).await;
+
+    if state.user_file_loaded(uid).await {
+        let rid_uids_rl = state.rid_uids.read().await;
+        let uid2ready_status_rl = state.uid2ready_status.read().await;
+        let mut uid2play_info_wl = state.uid2play_info.write().await;
+        if let Some(uids) = rid_uids_rl.get_by_left(&rid) {
+            for uid in uids {
+                let user_ready_status = uid2ready_status_rl.get(uid).unwrap();
+                if *user_ready_status == UserReadyStatus::NotReady
+                    || *user_ready_status == UserReadyStatus::Ready {
+                    let play_info = uid2play_info_wl.get_mut(uid).unwrap();
+                    if play_info.audio_sync {
+                        play_info.aid = payload.aid;
+                        play_info.audio_delay = payload.audio_delay;
+                    }
+                    if play_info.sub_sync {
+                        play_info.sid = payload.sid;
+                        play_info.sub_delay = payload.sub_delay;
+                    }
+                }
+            }
+        }
+        else {
+            ack.send(SocketIoAck::<()>::err()).ok();
+            return;
+        }
+
+        s.within(rid.to_string()).emit("mpv_upload_state", UserUploadMpvState {
+            uid,
+            aid: payload.aid,
+            sid: payload.sid,
+            audio_delay: payload.audio_delay,
+            sub_delay: payload.sub_delay
+        }).ok();
+        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        return;
     }
     ack.send(SocketIoAck::<()>::err()).ok();
 }

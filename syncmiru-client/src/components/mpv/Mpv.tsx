@@ -15,7 +15,7 @@ import {
     UserPlayInfo,
     UserSeek,
     UserSpeedChangeClient,
-    UserSpeedChangeSrv
+    UserSpeedChangeSrv, UserUploadMpvState
 } from "@models/mpv.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
@@ -95,6 +95,17 @@ export default function Mpv(p: Props): ReactElement {
             }
         }
     }, [ctx.socket, ctx.uid, ctx.subSync]);
+
+    useEffect(() => {
+        if(ctx.socket !== undefined) {
+            ctx.socket.on('mpv_upload_state', onMpvUploadState)
+        }
+        return () => {
+            if(ctx.socket !== undefined) {
+                ctx.socket.off('mpv_upload_state', onMpvUploadState)
+            }
+        }
+    }, [ctx.socket, ctx.uid, ctx.audioSync, ctx.subSync]);
 
     useEffect(() => {
         let unlisten: Array<Promise<UnlistenFn>> = []
@@ -193,6 +204,10 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<void>('mpv-seek', (e: Event<void>) => {
+            const readyState = ctx.uid2ready.get(ctx.uid)
+            if(readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
+                return
+
             invoke<number>('mpv_get_timestamp', {})
                 .then((time: number) => {
                     ctx.socket!.emitWithAck('mpv_seek', time)
@@ -230,6 +245,7 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<number | null>('mpv-sub-changed', (e: Event<number | null>) => {
+
             ctx.socket!.emitWithAck('mpv_sub_change', e.payload)
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-sub-change-error'))
@@ -700,6 +716,10 @@ export default function Mpv(p: Props): ReactElement {
         else {
             mpvShowSubDelayChangeMsg(payload)
         }
+    }
+
+    function onMpvUploadState(payload: UserUploadMpvState) {
+        // TODO:
     }
 
     return (

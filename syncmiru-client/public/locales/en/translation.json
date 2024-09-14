@@ -369,6 +369,8 @@
   "select-placeholder": "Search...",
   "select-no-options-msg": "No options available",
 
+  "upload-mpv-state-tooltip": "Video file not loaded",
+
   "mpv-quit-error": "An error occurred while quitting mpv, the application will be closed",
   "mpv-not-connected-to-room-msg": "Connect to a room to start the mpv player",
   "mpv-resize-error": "An error occurred while changing the size of mpv window",

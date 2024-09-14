@@ -74,3 +74,11 @@ export interface UserChangeSubDelay {
     uid: UserId,
     sub_delay: number
 }
+
+export interface UserUploadMpvState {
+    uid: UserId
+    aid: number | null,
+    sid: number | null,
+    audio_delay: number,
+    sub_delay: number
+}

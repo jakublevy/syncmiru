@@ -80,3 +80,12 @@ pub struct UserChangeSubSync {
     pub uid: Id,
     pub sub_sync: bool
 }
+
+#[derive(Debug, Copy, Clone, Serialize)]
+pub struct UserUploadMpvState {
+    pub uid: Id,
+    pub aid: Option<u64>,
+    pub sid: Option<u64>,
+    pub audio_delay: f64,
+    pub sub_delay: f64
+}

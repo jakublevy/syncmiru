@@ -5,7 +5,7 @@ import AudioSyncBtn from "@components/panel/AudioSyncBtn.tsx";
 import SubSyncBtn from "@components/panel/SubSyncBtn.tsx";
 import ReadyBtn from "@components/panel/ReadyBtn.tsx";
 import MpvWindowBtn from "@components/panel/MpvWindowBtn.tsx";
-import SyncToMasterBtn from "@components/panel/SyncToMasterBtn.tsx";
+import UploadMyMpvState from "@components/panel/UploadMyMpvState.tsx";
 import MpvReloadBtn from "@components/panel/MpvReloadBtn.tsx";
 import SpeedLabel from "@components/panel/SpeedLabel.tsx";
 
@@ -15,7 +15,7 @@ export default function ButtonPanel(): ReactElement {
             <AddToPlaylistBtn/>
             <AudioSyncBtn/>
             <SubSyncBtn/>
-            <SyncToMasterBtn/>
+            <UploadMyMpvState/>
             <MpvReloadBtn/>
             <div className="flex-1"></div>
             <SpeedLabel/>
