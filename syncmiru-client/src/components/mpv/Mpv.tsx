@@ -626,7 +626,7 @@ export default function Mpv(p: Props): ReactElement {
                   if(aid !== payload.aid) {
                       invoke('mpv_set_audio', {aid: payload.aid})
                           .then(() => {
-                                ctx.socket!.emitWithAck('user_change_aid', {aid: payload.aid})
+                                ctx.socket!.emitWithAck('user_change_aid', payload.aid)
                                     .catch(() => {
                                         showPersistentErrorAlert(t('mpv-audio-change-error'))
                                         disconnectFromRoom(ctx, t)
@@ -675,7 +675,7 @@ export default function Mpv(p: Props): ReactElement {
                     if(aid !== payload.sid) {
                         invoke('mpv_set_sub', {sid: payload.sid})
                             .then(() => {
-                                ctx.socket!.emitWithAck('user_change_sid', {sid: payload.sid})
+                                ctx.socket!.emitWithAck('user_change_sid', payload.sid)
                                     .catch(() => {
                                         showPersistentErrorAlert(t('mpv-sub-change-error'))
                                         disconnectFromRoom(ctx, t)
@@ -724,7 +724,7 @@ export default function Mpv(p: Props): ReactElement {
                     if(audio_delay !== payload.audio_delay) {
                         invoke('mpv_set_audio_delay', {audioDelay: payload.audio_delay})
                             .then(() => {
-                                ctx.socket!.emitWithAck('user_change_audio_delay', {audio_delay: payload.audio_delay})
+                                ctx.socket!.emitWithAck('user_change_audio_delay', payload.audio_delay)
                                     .catch(() => {
                                         showPersistentErrorAlert(t('mpv-audio-delay-change-error'))
                                         disconnectFromRoom(ctx, t)
@@ -784,7 +784,7 @@ export default function Mpv(p: Props): ReactElement {
                     if(sub_delay !== payload.sub_delay) {
                         invoke('mpv_set_sub_delay', {subDelay: payload.sub_delay})
                             .then(() => {
-                                ctx.socket!.emitWithAck('user_change_sub_delay', {sub_delay: payload.sub_delay})
+                                ctx.socket!.emitWithAck('user_change_sub_delay', payload.sub_delay)
                                     .catch(() => {
                                         showPersistentErrorAlert(t('mpv-sub-delay-change-error'))
                                         disconnectFromRoom(ctx, t)
