@@ -318,6 +318,18 @@ pub async fn mpv_set_speed(
 }
 
 #[tauri::command]
+pub async fn mpv_get_audio(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window
+) -> Result<Option<u64>> {
+    let ipc_data = IpcData { app_state: state.inner().clone(), window };
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+    let aid = ipc::get_aid(&ipc_data).await?;
+    Ok(aid)
+}
+
+#[tauri::command]
 pub async fn mpv_set_audio(
     state: tauri::State<'_, Arc<AppState>>,
     window: tauri::Window,
@@ -330,6 +342,18 @@ pub async fn mpv_set_audio(
     *mpv_ignore_next_audio_change_event_wl = true;
     mpv_ipc_tx.send(Interface::SetAudio(aid)).await?;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn mpv_get_sub(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window
+) -> Result<Option<u64>> {
+    let ipc_data = IpcData { app_state: state.inner().clone(), window };
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+    let sid = ipc::get_sid(&ipc_data).await?;
+    Ok(sid)
 }
 
 #[tauri::command]

@@ -21,6 +21,7 @@ import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
 import {MpvMsgMood, showMpvReadyMessages, timestampPretty} from "src/utils/mpv.ts";
 import Decimal from "decimal.js";
+import {show} from "@tauri-apps/api/app";
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
@@ -523,21 +524,36 @@ export default function Mpv(p: Props): ReactElement {
         if(!ctx.audioSync)
             return
 
+        let showMpvMsg = true
+
         if(payload.uid !== ctx.uid) {
-            invoke('mpv_set_audio', {aid: payload.aid})
+            invoke<number | null>('mpv_get_audio')
+                .then((aid: number | null) => {
+                  if(aid !== payload.aid) {
+                      invoke('mpv_set_audio', {aid: payload.aid})
+                          .catch(() => {
+                              showPersistentErrorAlert(t('mpv-audio-change-error'))
+                              disconnectFromRoom(ctx, t)
+                          })
+                  }
+                  else
+                      showMpvMsg = false
+                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-audio-change-error'))
                     disconnectFromRoom(ctx, t)
                 })
         }
 
-        const userValue = usersRef.current.get(payload.uid)
-        if(userValue != null) {
-            const msgText = `${userValue.displayname} ${t('mpv-msg-change-audio')} ${payload.aid != null ? payload.aid : '∅'}`
-            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
-                .catch(() => {
-                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
-                })
+        if(showMpvMsg) {
+            const userValue = usersRef.current.get(payload.uid)
+            if(userValue != null) {
+                const msgText = `${userValue.displayname} ${t('mpv-msg-change-audio')} ${payload.aid != null ? payload.aid : '∅'}`
+                invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                    .catch(() => {
+                        showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                    })
+            }
         }
     }
 
@@ -562,21 +578,36 @@ export default function Mpv(p: Props): ReactElement {
         if(!ctx.subSync)
             return
 
+        let showMpvMsg = true
+
         if(payload.uid !== ctx.uid) {
-            invoke('mpv_set_sub', {sid: payload.sid})
+            invoke<number | null>('mpv_get_sub')
+                .then((sid: number | null) => {
+                    if(sid !== payload.sid) {
+                        invoke('mpv_set_sub', {sid: payload.sid})
+                            .catch(() => {
+                                showPersistentErrorAlert(t('mpv-sub-change-error'))
+                                disconnectFromRoom(ctx, t)
+                            })
+                    }
+                    else
+                        showMpvMsg = false
+                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-sub-change-error'))
                     disconnectFromRoom(ctx, t)
                 })
         }
 
-        const userValue = usersRef.current.get(payload.uid)
-        if(userValue != null) {
-            const msgText = `${userValue.displayname} ${t('mpv-msg-change-sub')} ${payload.sid != null ? payload.sid : '∅'}`
-            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
-                .catch(() => {
-                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
-                })
+        if(showMpvMsg) {
+            const userValue = usersRef.current.get(payload.uid)
+            if(userValue != null) {
+                const msgText = `${userValue.displayname} ${t('mpv-msg-change-sub')} ${payload.sid != null ? payload.sid : '∅'}`
+                invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                    .catch(() => {
+                        showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                    })
+            }
         }
     }
 
