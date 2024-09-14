@@ -563,7 +563,7 @@ export default function Mpv(p: Props): ReactElement {
             return
 
         if(payload.uid !== ctx.uid) {
-            invoke('mpv_set_sub', {aid: payload.sid})
+            invoke('mpv_set_sub', {sid: payload.sid})
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-sub-change-error'))
                     disconnectFromRoom(ctx, t)
