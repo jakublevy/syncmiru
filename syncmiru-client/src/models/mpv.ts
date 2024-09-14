@@ -16,11 +16,15 @@ export interface UserPlayInfo {
     sid: number | null,
     audio_sync: boolean,
     sub_sync: boolean
+    audio_delay: number,
+    sub_delay: number
 }
 
 export interface UserAudioSubtitles {
     aid: number | null
     sid: number | null
+    audio_delay: number,
+    sub_delay: number,
     audioSync: boolean,
     subSync: boolean
 }

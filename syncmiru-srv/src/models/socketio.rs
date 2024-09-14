@@ -322,7 +322,7 @@ pub struct ChangePlaylistOrder {
     pub order: Vec<PlaylistEntryId>
 }
 
-#[derive(Debug, Copy, Clone, Serialize)]
+#[derive(Debug, Copy, Clone, Deserialize)]
 pub struct UploadMpvState {
     pub aid: Option<u64>,
     pub sid: Option<u64>,

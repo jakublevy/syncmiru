@@ -24,7 +24,9 @@ pub struct UserPlayInfoClient {
     pub aid: Option<u64>,
     pub sid: Option<u64>,
     pub audio_sync: bool,
-    pub sub_sync: bool
+    pub sub_sync: bool,
+    pub audio_delay: f64,
+    pub sub_delay: f64,
 }
 
 #[derive(Debug, Copy, Clone, Serialize)]
