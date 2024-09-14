@@ -76,4 +76,14 @@ impl SrvState {
         rid_video_id_wl.remove_by_right(&entry_id);
         playlist_wl.remove(&entry_id);
     }
+
+    pub async fn user_file_loaded(&self, uid: Id) -> bool {
+        let uid2ready_status_wl = self.uid2ready_status.write().await;
+        if let Some(ready_status) = uid2ready_status_wl.get(&uid) {
+            *ready_status == UserReadyStatus::Ready || *ready_status == UserReadyStatus::NotReady
+        }
+        else {
+            false
+        }
+    }
 }

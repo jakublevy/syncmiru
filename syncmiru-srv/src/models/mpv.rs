@@ -58,6 +58,18 @@ pub struct UserChangeSub {
 }
 
 #[derive(Debug, Copy, Clone, Serialize)]
+pub struct UserChangeAudioDelay {
+    pub uid: Id,
+    pub audio_delay: f64
+}
+
+#[derive(Debug, Copy, Clone, Serialize)]
+pub struct UserChangeSubDelay {
+    pub uid: Id,
+    pub sub_delay: f64
+}
+
+#[derive(Debug, Copy, Clone, Serialize)]
 pub struct UserChangeAudioSync {
     pub uid: Id,
     pub audio_sync: bool

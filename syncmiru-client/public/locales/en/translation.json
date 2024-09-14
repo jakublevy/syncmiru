@@ -393,5 +393,9 @@
   "mpv-msg-playlist-del": "deleted an item from the playlist",
   "mpv-msg-playlist-order-change": "changed the playback order",
   "mpv-change-audio-sync-error": "An error occurred while changing the audio sync",
-  "mpv-change-sub-sync-error": "An error occurred while changing the subtitles sync"
+  "mpv-change-sub-sync-error": "An error occurred while changing the subtitles sync",
+  "mpv-audio-change-error": "An error occurred shilw changing the audio track",
+  "mpv-sub-change-error": "An error occurred while changing the subtitles track",
+  "mpv-msg-change-audio": "changed the audio track to",
+  "mpv-msg-change-sub": "changed the sub track to"
 }

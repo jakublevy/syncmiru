@@ -64,3 +64,13 @@ export interface UserChangeSub {
     uid: UserId,
     sid: number | null
 }
+
+export interface UserChangeAudioDelay {
+    uid: UserId,
+    audio_delay: number
+}
+
+export interface UserChangeSubDelay {
+    uid: UserId,
+    sub_delay: number
+}

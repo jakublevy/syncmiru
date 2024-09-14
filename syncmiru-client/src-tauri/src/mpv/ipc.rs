@@ -26,18 +26,14 @@ use crate::{constants, mpv};
 use crate::error::SyncmiruError;
 use crate::result::Result;
 
-#[cfg(target_family = "unix")]
-use crate::mpv::Interface::SetFullscreen;
-
 #[derive(Debug, PartialEq)]
 pub enum Interface {
     LoadFromSource { source_url: String, jwt: String },
     LoadFromUrl(String),
     SetPause(bool),
     Seek(f64),
-    SetAudio(u64),
-    SetSubs(u64),
-    SetWindowSize { w: u32, h: u32 },
+    SetAudio(Option<u64>),
+    SetSub(Option<u64>),
     SetFullscreen(bool),
     SetPlaybackSpeed(Decimal),
     SetAudioDelay(f64),
@@ -287,24 +283,41 @@ async fn write(
                         jwt
                     );
                     sender.write_all(cmd.as_bytes()).await?;
-                }
+                },
                 Interface::LoadFromUrl(ref url) => {
                     let cmd = format!("{{\"command\":  [\"loadfile\", \"{}\", \"replace\"]}}\n",
                         url
                     );
                     sender.write_all(cmd.as_bytes()).await?;
-                }
+                },
                 Interface::SetPause(p) => {
                     let cmd = utils::create_set_property_cmd("pause", &p);
                     sender.write_all(cmd.as_bytes()).await?;
-                }
+                },
                 Interface::Seek(timestamp) => {
                     let cmd = utils::create_set_property_cmd("time-pos", &timestamp);
                     sender.write_all(cmd.as_bytes()).await?;
-                }
-                Interface::SetAudio { .. } => {}
-                Interface::SetSubs { .. } => {}
-                Interface::SetWindowSize { .. } => {}
+                },
+                Interface::SetAudio(aid_opt) => {
+                    if let Some(aid) = aid_opt {
+                        let cmd = utils::create_set_property_cmd("aid", &aid);
+                        sender.write_all(cmd.as_bytes()).await?;
+                    }
+                    else {
+                        let cmd = utils::create_set_property_cmd("aid", &false);
+                        sender.write_all(cmd.as_bytes()).await?;
+                    }
+                },
+                Interface::SetSub(sid_opt) => {
+                    if let Some(sid) = sid_opt {
+                        let cmd = utils::create_set_property_cmd("sid", &sid);
+                        sender.write_all(cmd.as_bytes()).await?;
+                    }
+                    else {
+                        let cmd = utils::create_set_property_cmd("sid", &false);
+                        sender.write_all(cmd.as_bytes()).await?;
+                    }
+                },
                 Interface::SetFullscreen(state) => {
                     let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
                     let cmd = format!("{{\"command\": [\"set\", \"fullscreen\", \"{}\"]}}\n", utils::bool2_yn(state));
@@ -323,19 +336,19 @@ async fn write(
                 Interface::SetSubDelay(sub_delay) => {
                     let cmd = utils::create_set_property_cmd("sub-delay", &sub_delay);
                     sender.write_all(cmd.as_bytes()).await?;
-                }
+                },
                 Interface::GetAid(req_id) => {
                     let cmd = utils::create_get_property_cmd("aid", req_id);
                     sender.write_all(cmd.as_bytes()).await?;
-                }
+                },
                 Interface::GetSid(req_id) => {
                     let cmd = utils::create_get_property_cmd("sid", req_id);
                     sender.write_all(cmd.as_bytes()).await?;
-                }
+                },
                 Interface::GetFullscreen(req_id) => {
                     let cmd = utils::create_get_property_cmd("fullscreen", req_id);
                     sender.write_all(cmd.as_bytes()).await?;
-                }
+                },
                 Interface::GetTimePos(req_id) => {
                     let cmd = utils::create_get_property_cmd("time-pos", req_id);
                     sender.write_all(cmd.as_bytes()).await?;
@@ -458,7 +471,7 @@ async fn write(
                             ipc_data.window.emit("mpv-resize", {})?;
                         }
                     }
-                }
+                },
                 Interface::Exit => {
                     exit_tx_opt
                         .take()
@@ -647,7 +660,7 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
                     sleep(Duration::from_millis(70)).await;
                     let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
                     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
-                    mpv_ipc_tx.send(SetFullscreen(true)).await?;
+                    mpv_ipc_tx.send(Interface::SetFullscreen(true)).await?;
                 }
             }
 

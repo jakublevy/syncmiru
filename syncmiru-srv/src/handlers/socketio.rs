@@ -13,7 +13,7 @@ use crate::models::file::FileInfo;
 use crate::handlers::utils;
 use crate::handlers::utils::{disconnect_from_room, video_id_in_room};
 use crate::models::file::FileType;
-use crate::models::mpv::{UserChangeAudio, UserChangeAudioSync, UserChangeSubSync, UserLoadedInfo, UserPause, UserPlayInfoClient, UserSeek, UserSpeedChange};
+use crate::models::mpv::{UserChangeAudio, UserChangeAudioDelay, UserChangeAudioSync, UserChangeSub, UserChangeSubDelay, UserChangeSubSync, UserLoadedInfo, UserPause, UserPlayInfoClient, UserSeek, UserSpeedChange};
 use crate::models::playlist::{PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo, UserReadyStatus};
 use crate::srvstate::{PlaylistEntryId, SrvState};
 
@@ -92,6 +92,8 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("change_sub_sync", change_sub_sync);
     s.on("mpv_audio_change", mpv_audio_change);
     s.on("mpv_sub_change", mpv_sub_change);
+    s.on("mpv_audio_delay_change", mpv_audio_delay_change);
+    s.on("mpv_sub_delay_change", mpv_sub_delay_change);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -2096,16 +2098,13 @@ pub async fn mpv_audio_change(
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
 
-    let uid2ready_status_wl = state.uid2ready_status.write().await;
-    if let Some(ready_status) = uid2ready_status_wl.get(&uid) {
-        if *ready_status == UserReadyStatus::Ready || *ready_status == UserReadyStatus::NotReady {
-            let mut uid2play_info_wl = state.uid2play_info.write().await;
-            if let Some(play_info) = uid2play_info_wl.get_mut(&uid) {
-                play_info.aid = payload;
-                s.to(rid.to_string()).emit("mpv_audio_change", UserChangeAudio { aid: payload, uid }).ok();
-                ack.send(SocketIoAck::<()>::ok(None)).ok();
-                return;
-            }
+    if state.user_file_loaded(uid).await {
+        let mut uid2play_info_wl = state.uid2play_info.write().await;
+        if let Some(play_info) = uid2play_info_wl.get_mut(&uid) {
+            play_info.aid = payload;
+            s.within(rid.to_string()).emit("mpv_audio_change", UserChangeAudio { aid: payload, uid }).ok();
+            ack.send(SocketIoAck::<()>::ok(None)).ok();
+            return;
         }
     }
     ack.send(SocketIoAck::<()>::err()).ok();
@@ -2124,4 +2123,67 @@ pub async fn mpv_sub_change(
     }
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
+
+    if state.user_file_loaded(uid).await {
+        let mut uid2play_info_wl = state.uid2play_info.write().await;
+        if let Some(play_info) = uid2play_info_wl.get_mut(&uid) {
+            play_info.sid = payload;
+            s.within(rid.to_string()).emit("mpv_sub_change", UserChangeSub { sid: payload, uid }).ok();
+            ack.send(SocketIoAck::<()>::ok(None)).ok();
+            return;
+        }
+    }
+    ack.send(SocketIoAck::<()>::err()).ok();
+}
+
+pub async fn mpv_audio_delay_change(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<f64>
+) {
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    let uid = state.socket2uid(&s).await;
+
+    if state.user_file_loaded(uid).await {
+        let mut uid2play_info_wl = state.uid2play_info.write().await;
+        if let Some(play_info) = uid2play_info_wl.get_mut(&uid) {
+            play_info.audio_delay = payload;
+            s.within(rid.to_string()).emit("mpv_audio_delay_change", UserChangeAudioDelay { audio_delay: payload, uid }).ok();
+            ack.send(SocketIoAck::<()>::ok(None)).ok();
+            return;
+        }
+    }
+    ack.send(SocketIoAck::<()>::err()).ok();
+}
+
+pub async fn mpv_sub_delay_change(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<f64>
+) {
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    let uid = state.socket2uid(&s).await;
+
+    if state.user_file_loaded(uid).await {
+        let mut uid2play_info_wl = state.uid2play_info.write().await;
+        if let Some(play_info) = uid2play_info_wl.get_mut(&uid) {
+            play_info.audio_delay = payload;
+            s.within(rid.to_string()).emit("mpv_sub_delay_change", UserChangeSubDelay { sub_delay: payload, uid }).ok();
+            ack.send(SocketIoAck::<()>::ok(None)).ok();
+            return;
+        }
+    }
+    ack.send(SocketIoAck::<()>::err()).ok();
 }

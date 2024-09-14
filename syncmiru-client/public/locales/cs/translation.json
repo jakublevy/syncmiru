@@ -393,5 +393,9 @@
   "mpv-msg-playlist-del": "odebral položku z playlistu",
   "mpv-msg-playlist-order-change": "změnil pořadí přehrávání",
   "mpv-change-audio-sync-error": "Došlo k chybě při změně synchronizace zvuku",
-  "mpv-change-sub-sync-error": "Došlo k chybě při změně synchronizace titulků"
+  "mpv-change-sub-sync-error": "Došlo k chybě při změně synchronizace titulků",
+  "mpv-audio-change-error": "Došlo k chybě při změně zvukové stopy",
+  "mpv-sub-change-error": "Došlo k chybě při změně stopy titulků",
+  "mpv-msg-change-audio": "změnil(a) audio stopu na",
+  "mpv-msg-change-sub": "změnil(a) stopu titulků na"
 }

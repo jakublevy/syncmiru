@@ -321,7 +321,7 @@ pub async fn mpv_set_speed(
 pub async fn mpv_set_audio(
     state: tauri::State<'_, Arc<AppState>>,
     window: tauri::Window,
-    aid: u64
+    aid: Option<u64>
 ) -> Result<()> {
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
@@ -336,9 +336,14 @@ pub async fn mpv_set_audio(
 pub async fn mpv_set_sub(
     state: tauri::State<'_, Arc<AppState>>,
     window: tauri::Window,
-    sid: u64
+    sid: Option<u64>
 ) -> Result<()> {
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
 
+    let mut mpv_ignore_next_sub_change_event_wl = state.mpv_ignore_next_sub_change_event.write().await;
+    *mpv_ignore_next_sub_change_event_wl = true;
+    mpv_ipc_tx.send(Interface::SetSub(sid)).await?;
     Ok(())
 }
 
@@ -348,6 +353,12 @@ pub async fn mpv_set_audio_delay(
     window: tauri::Window,
     audio_delay: f64
 ) -> Result<()> {
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+
+    let mut mpv_ignore_next_audio_delay_event_wl = state.mpv_ignore_next_audio_delay_event.write().await;
+    *mpv_ignore_next_audio_delay_event_wl = true;
+    mpv_ipc_tx.send(Interface::SetAudioDelay(audio_delay)).await?;
     Ok(())
 }
 
@@ -357,5 +368,11 @@ pub async fn mpv_set_sub_delay(
     window: tauri::Window,
     sub_delay: f64
 ) -> Result<()> {
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+
+    let mut mpv_ignore_next_sub_delay_event_wl = state.mpv_ignore_next_sub_delay_event.write().await;
+    *mpv_ignore_next_sub_delay_event_wl = true;
+    mpv_ipc_tx.send(Interface::SetSubDelay(sub_delay)).await?;
     Ok(())
 }
