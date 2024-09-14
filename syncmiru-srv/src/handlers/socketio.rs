@@ -2245,6 +2245,7 @@ pub async fn user_change_aid(
         let mut uid2play_info_wl = state.uid2play_info.write().await;
         let play_info = uid2play_info_wl.get_mut(&uid).unwrap();
         if play_info.aid != payload {
+            play_info.aid = payload;
             s.within(rid.to_string()).emit("user_change_aid", UserChangeAudio { uid, aid: payload }).ok();
         }
         ack.send(SocketIoAck::<()>::ok(None)).ok();
@@ -2271,6 +2272,7 @@ pub async fn user_change_sid(
         let mut uid2play_info_wl = state.uid2play_info.write().await;
         let play_info = uid2play_info_wl.get_mut(&uid).unwrap();
         if play_info.sid != payload {
+            play_info.sid = payload;
             s.within(rid.to_string()).emit("user_change_sid", UserChangeSub { uid, sid: payload }).ok();
         }
         ack.send(SocketIoAck::<()>::ok(None)).ok();
@@ -2297,6 +2299,7 @@ pub async fn user_change_audio_delay(
         let mut uid2play_info_wl = state.uid2play_info.write().await;
         let play_info = uid2play_info_wl.get_mut(&uid).unwrap();
         if play_info.audio_delay != payload {
+            play_info.audio_delay = payload;
             s.within(rid.to_string()).emit("user_change_audio_delay", UserChangeAudioDelay { uid, audio_delay: payload }).ok();
         }
         ack.send(SocketIoAck::<()>::ok(None)).ok();
@@ -2323,6 +2326,7 @@ pub async fn user_change_sub_delay(
         let mut uid2play_info_wl = state.uid2play_info.write().await;
         let play_info = uid2play_info_wl.get_mut(&uid).unwrap();
         if play_info.sub_delay != payload {
+            play_info.sub_delay = payload;
             s.within(rid.to_string()).emit("user_change_sub_delay", UserChangeSubDelay { uid, sub_delay: payload }).ok();
         }
         ack.send(SocketIoAck::<()>::ok(None)).ok();

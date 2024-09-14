@@ -546,7 +546,7 @@ export default function Mpv(p: Props): ReactElement {
                     aid: payload.aid,
                     ...rest
                 } as UserAudioSubtitles;
-                m.set(ctx.uid, newValue)
+                m.set(payload.uid, newValue)
             }
             return m
         })
@@ -566,7 +566,7 @@ export default function Mpv(p: Props): ReactElement {
                     sid: payload.sid,
                     ...rest
                 } as UserAudioSubtitles;
-                m.set(ctx.uid, newValue)
+                m.set(payload.uid, newValue)
             }
             return m
         })
@@ -586,7 +586,7 @@ export default function Mpv(p: Props): ReactElement {
                     audio_delay: payload.audio_delay,
                     ...rest
                 } as UserAudioSubtitles;
-                m.set(ctx.uid, newValue)
+                m.set(payload.uid, newValue)
             }
             return m
         })
@@ -606,7 +606,7 @@ export default function Mpv(p: Props): ReactElement {
                     sub_delay: payload.sub_delay,
                     ...rest
                 } as UserAudioSubtitles;
-                m.set(ctx.uid, newValue)
+                m.set(payload.uid, newValue)
             }
             return m
         })
