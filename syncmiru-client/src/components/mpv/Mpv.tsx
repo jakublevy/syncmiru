@@ -9,7 +9,7 @@ import {invoke} from "@tauri-apps/api/core";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {PlaylistEntry, PlaylistEntryId, PlaylistEntryUrl, PlaylistEntryVideo} from "@models/playlist.ts";
 import {
-    UserAudioSubtitles, UserChangeAudio, UserChangeAudioDelay, UserChangeSub, UserChangeSubDelay,
+    UserAudioSubtitles, UserChangeAudio, UserChangeAudioDelay, UserChangeAudioSync, UserChangeSub, UserChangeSubDelay,
     UserLoadedInfo,
     UserPause,
     UserPlayInfo,
@@ -614,11 +614,87 @@ export default function Mpv(p: Props): ReactElement {
     }
 
     function onMpvAudioDelayChange(payload: UserChangeAudioDelay) {
+        const myReadyStatus = uid2readyRef.current.get(ctx.uid)
+        if(myReadyStatus == null || ![UserReadyState.NotReady, UserReadyState.Ready].includes(myReadyStatus))
+            return
 
+        if(!ctx.audioSync)
+            return
+
+        if(payload.uid !== ctx.uid) {
+            invoke<number>('mpv_get_audio_delay')
+                .then((audio_delay: number) => {
+                    if(audio_delay !== payload.audio_delay) {
+                        invoke('mpv_set_audio_delay', {audio_delay: payload.audio_delay})
+                            .catch(() => {
+                                showPersistentErrorAlert(t('mpv-audio-delay-change-error'))
+                                disconnectFromRoom(ctx, t)
+                            })
+
+                        mpvShowAudioDelayChangeMsg(payload)
+                    }
+                })
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-audio-delay-change-error'))
+                    disconnectFromRoom(ctx, t)
+                })
+        }
+        else {
+            mpvShowAudioDelayChangeMsg(payload)
+        }
+    }
+
+    function mpvShowAudioDelayChangeMsg(payload: UserChangeAudioDelay) {
+        const userValue = usersRef.current.get(payload.uid)
+        if(userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-audio-delay')} ${payload.audio_delay * 1000} ms`
+            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                })
+        }
+    }
+
+    function mpvShowSubDelayChangeMsg(payload: UserChangeSubDelay) {
+        const userValue = usersRef.current.get(payload.uid)
+        if(userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-sub-delay')} ${payload.sub_delay * 1000} ms`
+            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                })
+        }
     }
 
     function onMpvSubDelayChange(payload: UserChangeSubDelay) {
+        const myReadyStatus = uid2readyRef.current.get(ctx.uid)
+        if(myReadyStatus == null || ![UserReadyState.NotReady, UserReadyState.Ready].includes(myReadyStatus))
+            return
 
+        if(!ctx.subSync)
+            return
+
+        if(payload.uid !== ctx.uid) {
+            invoke<number>('mpv_get_sub_delay')
+                .then((sub_delay: number) => {
+                    if(sub_delay !== payload.sub_delay) {
+                        invoke('mpv_get_sub_delay', {sub_delay: payload.sub_delay})
+                            .catch(() => {
+                                showPersistentErrorAlert(t('mpv-sub-delay-change-error'))
+                                disconnectFromRoom(ctx, t)
+                            })
+
+                        mpvShowSubDelayChangeMsg(payload)
+                    }
+                })
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-sub-delay-change-error'))
+                    disconnectFromRoom(ctx, t)
+                })
+        }
+        else {
+            mpvShowSubDelayChangeMsg(payload)
+        }
     }
 
     return (

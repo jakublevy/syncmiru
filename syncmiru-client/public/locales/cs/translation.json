@@ -396,6 +396,10 @@
   "mpv-change-sub-sync-error": "Došlo k chybě při změně synchronizace titulků",
   "mpv-audio-change-error": "Došlo k chybě při změně zvukové stopy",
   "mpv-sub-change-error": "Došlo k chybě při změně stopy titulků",
-  "mpv-msg-change-audio": "změnil(a) audio stopu na",
-  "mpv-msg-change-sub": "změnil(a) stopu titulků na"
+  "mpv-msg-change-audio": "změnil(a) zvukovou stopu na",
+  "mpv-msg-change-sub": "změnil(a) stopu titulků na",
+  "mpv-audio-delay-change-error": "Došlo k chybě při změně posunu zvukové stopy",
+  "mpv-sub-delay-change-error": "Došlo k chybě při změně posunu stopy titulků",
+  "mpv-msg-audio-delay": "změnil(a) posun zvukové stopy na",
+  "mpv-msg-sub-delay": "změnil(a) posun stopy titulků na"
 }

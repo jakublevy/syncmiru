@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 use cfg_if::cfg_if;
+use dirs::audio_dir;
 use rust_decimal::Decimal;
 use tauri::{Emitter};
 use crate::appstate::{AppState, MpvMsg};
@@ -368,6 +369,16 @@ pub async fn mpv_set_sub(
 }
 
 #[tauri::command]
+pub async fn mpv_get_audio_delay(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window
+) -> Result<f64> {
+    let ipc_data = IpcData { app_state: state.inner().clone(), window };
+    let audio_delay = ipc::get_audio_delay(&ipc_data).await?;
+    Ok(audio_delay)
+}
+
+#[tauri::command]
 pub async fn mpv_set_audio_delay(
     state: tauri::State<'_, Arc<AppState>>,
     window: tauri::Window,
@@ -380,6 +391,16 @@ pub async fn mpv_set_audio_delay(
     *mpv_ignore_next_audio_delay_event_wl = true;
     mpv_ipc_tx.send(Interface::SetAudioDelay(audio_delay)).await?;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn mpv_get_sub_delay(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window
+) -> Result<f64> {
+    let ipc_data = IpcData { app_state: state.inner().clone(), window };
+    let sub_delay = ipc::get_sub_delay(&ipc_data).await?;
+    Ok(sub_delay)
 }
 
 #[tauri::command]

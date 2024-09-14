@@ -397,5 +397,9 @@
   "mpv-audio-change-error": "An error occurred shilw changing the audio track",
   "mpv-sub-change-error": "An error occurred while changing the subtitles track",
   "mpv-msg-change-audio": "changed the audio track to",
-  "mpv-msg-change-sub": "changed the sub track to"
+  "mpv-msg-change-sub": "changed the sub track to",
+  "mpv-audio-delay-change-error": "An error occurred while changing the audio delay",
+  "mpv-sub-delay-change-error": "An error occurred while changing the subtitles delay",
+  "mpv-msg-audio-delay": "changed the audio delay to",
+  "mpv-msg-sub-delay": "changed the subtitles delay to"
 }
