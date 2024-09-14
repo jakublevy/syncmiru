@@ -524,8 +524,6 @@ export default function Mpv(p: Props): ReactElement {
         if(!ctx.audioSync)
             return
 
-        let showMpvMsg = true
-
         if(payload.uid !== ctx.uid) {
             invoke<number | null>('mpv_get_audio')
                 .then((aid: number | null) => {
@@ -535,25 +533,28 @@ export default function Mpv(p: Props): ReactElement {
                               showPersistentErrorAlert(t('mpv-audio-change-error'))
                               disconnectFromRoom(ctx, t)
                           })
+
+                      mpvShowAudioChangeMsg(payload)
                   }
-                  else
-                      showMpvMsg = false
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-audio-change-error'))
                     disconnectFromRoom(ctx, t)
                 })
         }
+        else {
+            mpvShowAudioChangeMsg(payload)
+        }
+    }
 
-        if(showMpvMsg) {
-            const userValue = usersRef.current.get(payload.uid)
-            if(userValue != null) {
-                const msgText = `${userValue.displayname} ${t('mpv-msg-change-audio')} ${payload.aid != null ? payload.aid : '∅'}`
-                invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
-                    .catch(() => {
-                        showPersistentErrorAlert(t('mpv-msg-show-failed'))
-                    })
-            }
+    function mpvShowAudioChangeMsg(payload: UserChangeAudio) {
+        const userValue = usersRef.current.get(payload.uid)
+        if(userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-change-audio')} ${payload.aid != null ? payload.aid : '∅'}`
+            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                })
         }
     }
 
@@ -578,8 +579,6 @@ export default function Mpv(p: Props): ReactElement {
         if(!ctx.subSync)
             return
 
-        let showMpvMsg = true
-
         if(payload.uid !== ctx.uid) {
             invoke<number | null>('mpv_get_sub')
                 .then((sid: number | null) => {
@@ -589,25 +588,28 @@ export default function Mpv(p: Props): ReactElement {
                                 showPersistentErrorAlert(t('mpv-sub-change-error'))
                                 disconnectFromRoom(ctx, t)
                             })
+
+                        mpvShowSubChangeMsg(payload)
                     }
-                    else
-                        showMpvMsg = false
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-sub-change-error'))
                     disconnectFromRoom(ctx, t)
                 })
         }
+        else {
+            mpvShowSubChangeMsg(payload)
+        }
+    }
 
-        if(showMpvMsg) {
-            const userValue = usersRef.current.get(payload.uid)
-            if(userValue != null) {
-                const msgText = `${userValue.displayname} ${t('mpv-msg-change-sub')} ${payload.sid != null ? payload.sid : '∅'}`
-                invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
-                    .catch(() => {
-                        showPersistentErrorAlert(t('mpv-msg-show-failed'))
-                    })
-            }
+    function mpvShowSubChangeMsg(payload: UserChangeSub) {
+        const userValue = usersRef.current.get(payload.uid)
+        if(userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-change-sub')} ${payload.sid != null ? payload.sid : '∅'}`
+            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                })
         }
     }
 
