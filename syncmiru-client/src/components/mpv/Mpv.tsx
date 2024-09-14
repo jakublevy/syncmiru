@@ -21,7 +21,6 @@ import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
 import {MpvMsgMood, showMpvReadyMessages, timestampPretty} from "src/utils/mpv.ts";
 import Decimal from "decimal.js";
-import {show} from "@tauri-apps/api/app";
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
@@ -223,7 +222,6 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<number | null>('mpv-audio-changed', (e: Event<number | null>) => {
-            console.log(`mpv-audio-changed ${e.payload}`)
             ctx.socket!.emitWithAck('mpv_audio_change', e.payload)
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-audio-change-error'))
@@ -232,7 +230,6 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<number | null>('mpv-sub-changed', (e: Event<number | null>) => {
-            console.log(`mpv-sub-changed ${e.payload}`)
             ctx.socket!.emitWithAck('mpv_sub_change', e.payload)
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-sub-change-error'))
@@ -241,11 +238,19 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<number>('mpv-audio-delay-changed', (e: Event<number>) => {
-           console.log(`mpv-audio-delay-changed ${e.payload}`)
+            ctx.socket!.emitWithAck('mpv_audio_delay_change', e.payload)
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-audio-delay-change-error'))
+                    disconnectFromRoom(ctx, t)
+                })
         }))
 
         unlisten.push(listen<number>('mpv-sub-delay-changed', (e: Event<number>) => {
-            console.log(`mpv-sub-delay-changed ${e.payload}`)
+            ctx.socket!.emitWithAck('mpv_sub_delay_change', e.payload)
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-sub-delay-change-error'))
+                    disconnectFromRoom(ctx, t)
+                })
         }))
 
         return () => {
@@ -625,7 +630,7 @@ export default function Mpv(p: Props): ReactElement {
             invoke<number>('mpv_get_audio_delay')
                 .then((audio_delay: number) => {
                     if(audio_delay !== payload.audio_delay) {
-                        invoke('mpv_set_audio_delay', {audio_delay: payload.audio_delay})
+                        invoke('mpv_set_audio_delay', {audioDelay: payload.audio_delay})
                             .catch(() => {
                                 showPersistentErrorAlert(t('mpv-audio-delay-change-error'))
                                 disconnectFromRoom(ctx, t)
@@ -678,7 +683,7 @@ export default function Mpv(p: Props): ReactElement {
             invoke<number>('mpv_get_sub_delay')
                 .then((sub_delay: number) => {
                     if(sub_delay !== payload.sub_delay) {
-                        invoke('mpv_get_sub_delay', {sub_delay: payload.sub_delay})
+                        invoke('mpv_set_sub_delay', {subDelay: payload.sub_delay})
                             .catch(() => {
                                 showPersistentErrorAlert(t('mpv-sub-delay-change-error'))
                                 disconnectFromRoom(ctx, t)
