@@ -646,6 +646,11 @@ export default function Mpv(p: Props): ReactElement {
                 })
         }
         else {
+            ctx.socket!.emitWithAck('user_change_aid', payload.aid)
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-audio-change-error'))
+                    disconnectFromRoom(ctx, t)
+                })
             mpvShowAudioChangeMsg(payload)
         }
     }
@@ -695,6 +700,11 @@ export default function Mpv(p: Props): ReactElement {
                 })
         }
         else {
+            ctx.socket!.emitWithAck('user_change_sid', payload.sid)
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-sub-change-error'))
+                    disconnectFromRoom(ctx, t)
+                })
             mpvShowSubChangeMsg(payload)
         }
     }
@@ -744,6 +754,11 @@ export default function Mpv(p: Props): ReactElement {
                 })
         }
         else {
+            ctx.socket!.emitWithAck('user_change_audio_delay', payload.audio_delay)
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-audio-delay-change-error'))
+                    disconnectFromRoom(ctx, t)
+                })
             mpvShowAudioDelayChangeMsg(payload)
         }
     }
@@ -804,6 +819,11 @@ export default function Mpv(p: Props): ReactElement {
                 })
         }
         else {
+            ctx.socket!.emitWithAck('user_change_sub_delay', payload.sub_delay)
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-sub-delay-change-error'))
+                    disconnectFromRoom(ctx, t)
+                })
             mpvShowSubDelayChangeMsg(payload)
         }
     }
