@@ -54,6 +54,7 @@ function clearValuesAfterDisconnect(ctx: MainContextModel) {
     ctx.setRoomUidClicked(-1)
     ctx.setUsersClickedUid(-1)
     clearInterval(ctx.roomPingTimerRef?.current)
+    clearInterval(ctx.timestampTimerRef?.current)
     ctx.setCurrentRid(null)
     ctx.setUidPing(new Map<UserId, number>())
     ctx.setPlaylist(new Map<PlaylistEntryId, PlaylistEntry>())

@@ -14,8 +14,7 @@ use crate::handlers::utils;
 use crate::handlers::utils::{disconnect_from_room, video_id_in_room};
 use crate::models::file::FileType;
 use crate::models::mpv::{UserChangeAudio, UserChangeAudioDelay, UserChangeAudioSync, UserChangeSub, UserChangeSubDelay, UserChangeSubSync, UserLoadedInfo, UserPause, UserPlayInfoClient, UserSeek, UserSpeedChange, UserUploadMpvState};
-use crate::models::playlist::{PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo, UserReadyStatus};
-use crate::srvstate::{PlaylistEntryId, SrvState};
+use crate::srvstate::{PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo, UserReadyStatus, PlaylistEntryId, SrvState};
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on_disconnect(disconnect);
@@ -99,6 +98,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("user_change_sid", user_change_sid);
     s.on("user_change_audio_delay", user_change_audio_delay);
     s.on("user_change_sub_delay", user_change_sub_delay);
+    s.on("timestamp_tick", timestamp_tick);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1826,7 +1826,6 @@ pub async fn mpv_file_loaded(
             sid: payload.sid,
             audio_sync: payload.audio_sync,
             sub_sync: payload.sub_sync,
-            timestamp: 0f64,
             audio_delay: 0f64,
             sub_delay: 0f64
         }
@@ -2323,6 +2322,27 @@ pub async fn user_change_sub_delay(
             play_info.sub_delay = payload;
             s.within(rid.to_string()).emit("user_change_sub_delay", UserChangeSubDelay { uid, sub_delay: payload }).ok();
         }
+        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        return;
+    }
+    ack.send(SocketIoAck::<()>::err()).ok();
+}
+
+pub async fn timestamp_tick(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender,
+    Data(payload): Data<f64>
+) {
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<()>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    let uid = state.socket2uid(&s).await;
+    if state.user_file_loaded(uid).await {
+        println!("timestamp_tick uid = {}, payload = {}", uid, payload);
         ack.send(SocketIoAck::<()>::ok(None)).ok();
         return;
     }

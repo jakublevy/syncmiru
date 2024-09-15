@@ -1,8 +1,8 @@
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
-use crate::models::playlist::UserReadyStatus;
 use crate::models::query::Id;
+use crate::srvstate::UserReadyStatus;
 use crate::validators;
 
 #[derive(Debug, Copy, Clone, Deserialize, Validate)]

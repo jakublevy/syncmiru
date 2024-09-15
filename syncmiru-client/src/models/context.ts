@@ -64,6 +64,7 @@ export interface MainContextModel {
     setActiveVideoId: Dispatch<SetStateAction<PlaylistEntryId | null>>,
     uid2audioSub: Map<UserId, UserAudioSubtitles>
     setUid2audioSub: Dispatch<SetStateAction<Map<UserId, UserAudioSubtitles>>>,
+    timestampTimerRef: MutableRefObject<number> | null
 }
 
 export enum RoomConnectionState {

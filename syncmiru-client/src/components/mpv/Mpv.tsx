@@ -21,7 +21,6 @@ import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
 import {MpvMsgMood, showMpvReadyMessages, timestampPretty} from "src/utils/mpv.ts";
 import Decimal from "decimal.js";
-import {join} from "@tauri-apps/api/path";
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
@@ -181,6 +180,8 @@ export default function Mpv(p: Props): ReactElement {
                     showPersistentErrorAlert(t('mpv-load-error'))
                     disconnectFromRoom(ctx, t)
                 })
+
+            startTimestampTimer()
         }))
 
         unlisten.push(listen<void>('mpv-file-load-failed', (e: Event<void>) => {
@@ -950,6 +951,17 @@ export default function Mpv(p: Props): ReactElement {
                     showPersistentErrorAlert(t('mpv-msg-show-failed'))
                 })
         }
+    }
+
+    function startTimestampTimer() {
+        clearInterval(ctx.timestampTimerRef?.current)
+        ctx.timestampTimerRef!.current = setInterval(() => {
+            invoke<number>('mpv_get_timestamp', {})
+                .then((time: number) => {
+                    ctx.socket!.emitWithAck('timestamp_tick', time)
+
+                })
+        }, 500)
     }
 
     return (

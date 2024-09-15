@@ -204,6 +204,7 @@ export default function Rooms(): ReactElement {
     function roomDisconnectChangeState() {
         ctx.setRoomUidClicked(-1)
         clearInterval(ctx.roomPingTimerRef?.current)
+        clearInterval(ctx.timestampTimerRef?.current)
         ctx.setRoomUsers(new Map<RoomId, Set<UserId>>())
         ctx.setCurrentRid(null)
         ctx.setUidPing(new Map<UserId, number>())

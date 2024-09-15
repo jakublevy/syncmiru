@@ -4,10 +4,9 @@ use rust_decimal::Decimal;
 use serde::{Serialize, Deserialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use validator::Validate;
-use crate::models::playlist::{PlaylistEntry, UserReadyStatus};
 use crate::validators;
 use crate::models::query::{Id, RoomSettings};
-use crate::srvstate::PlaylistEntryId;
+use crate::srvstate::{PlaylistEntry, PlaylistEntryId, UserReadyStatus};
 
 #[derive(Debug, Clone, Deserialize, Validate)]
 pub struct LoginTkns {

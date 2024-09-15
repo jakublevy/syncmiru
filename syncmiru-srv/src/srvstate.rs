@@ -1,12 +1,14 @@
 use std::collections::HashMap;
+use rust_decimal::Decimal;
+use serde::{Deserialize, Serialize};
 use socketioxide::extract::SocketRef;
 use socketioxide::SocketIo;
 use sqlx::{PgPool};
 use tokio::sync::RwLock;
+use tokio::time::Instant;
 use crate::bimultimap::BiMultiMap;
 use crate::config::Config;
-use crate::models::playlist::{PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo, UserReadyStatus};
-use crate::models::query::Id;
+use crate::models::query::{Id, RoomSettings};
 
 pub type PlaylistEntryId = u64;
 
@@ -28,7 +30,9 @@ pub struct SrvState {
     pub rid2play_info: RwLock<HashMap<Id, RoomPlayInfo>>,
 
     pub uid2ready_status: RwLock<HashMap<Id, UserReadyStatus>>,
-    pub uid2play_info: RwLock<HashMap<Id, UserPlayInfo>>
+    pub uid2play_info: RwLock<HashMap<Id, UserPlayInfo>>,
+
+    pub uid2timestamp: RwLock<HashMap<Id, TimestampInfo>>
 }
 
 impl SrvState {
@@ -86,4 +90,49 @@ impl SrvState {
             false
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(tag = "type", rename_all = "lowercase")]
+pub enum PlaylistEntry {
+    Video { source: String, path: String },
+    Url { url: String }
+}
+
+
+#[derive(Debug)]
+pub struct RoomPlayInfo {
+    pub playing_entry_id: PlaylistEntryId,
+    pub playing_state: PlayingState,
+}
+
+#[derive(Debug)]
+pub struct RoomRuntimeState {
+    pub playback_speed: Decimal,
+    pub runtime_config: RoomSettings,
+}
+
+#[derive(Debug)]
+pub enum PlayingState {
+    Play, Pause
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct UserPlayInfo {
+    pub aid: Option<u64>,
+    pub sid: Option<u64>,
+    pub audio_sync: bool,
+    pub sub_sync: bool,
+    pub audio_delay: f64,
+    pub sub_delay: f64,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
+pub enum UserReadyStatus {
+    Ready, NotReady, Loading, Error
+}
+
+pub struct TimestampInfo {
+    pub timestamp: f64,
+    pub recv: Instant
 }

@@ -67,7 +67,8 @@ export const MainContext = createContext<MainContextModel>(
         activeVideoId: null,
         setActiveVideoId: (v) => {},
         uid2audioSub: new Map<UserId, UserAudioSubtitles>(),
-        setUid2audioSub: (v) => {}
+        setUid2audioSub: (v) => {},
+        timestampTimerRef: null,
     })
 
 export const useMainContext = () => useContext(MainContext)

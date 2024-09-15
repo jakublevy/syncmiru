@@ -1,14 +1,11 @@
-use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 use rand::Rng;
 use socketioxide::extract::SocketRef;
-use tokio::sync::RwLock;
 use crate::config::Rate;
 use crate::models::query::{EmailTknType, Id};
 use crate::models::socketio::{EmailChangeTkn, EmailChangeTknType};
 use crate::{crypto, query};
-use crate::models::playlist::UserReadyStatus;
 use crate::srvstate::{PlaylistEntryId, SrvState};
 use crate::result::Result;
 

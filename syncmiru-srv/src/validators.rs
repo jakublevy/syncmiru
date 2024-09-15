@@ -4,10 +4,9 @@ use sqlx::PgPool;
 use url::Url;
 use validator::ValidationError;
 use crate::constants::SOCKETIO_ACK_TIMEOUT;
-use crate::models::playlist::UserReadyStatus;
 use crate::models::query::Id;
 use crate::query;
-use crate::srvstate::PlaylistEntryId;
+use crate::srvstate::{PlaylistEntryId, UserReadyStatus};
 
 pub fn check_username_format(username: &str) -> Result<(), ValidationError> {
     if username.chars().count() < 4 || username.chars().count() > 16 {

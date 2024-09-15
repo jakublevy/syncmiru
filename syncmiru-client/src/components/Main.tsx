@@ -84,6 +84,7 @@ export default function Main(): ReactElement {
     const [uid2ready, setUid2ready] = useState<Map<UserId, UserReadyState>>(new Map<UserId, UserReadyState>())
     const [activeVideoId, setActiveVideoId] = useState<PlaylistEntryId | null>(null)
     const [uid2audioSub, setUid2audioSub] = useState<Map<UserId, UserAudioSubtitles>>(new Map<UserId, UserAudioSubtitles>())
+    const timestampTimerRef = useRef<number>(-1)
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -138,7 +139,8 @@ export default function Main(): ReactElement {
     function ioDisconnect(reason: Socket.DisconnectReason) {
         setRoomUidClicked(-1)
         setUsersClickedUid(-1)
-        clearInterval(roomPingTimerRef?.current)
+        clearInterval(roomPingTimerRef.current)
+        clearInterval(timestampTimerRef.current)
         setRoomUsers(new Map<RoomId, Set<UserId>>())
         setCurrentRid(null)
         setUidPing(new Map<UserId, number>())
@@ -314,7 +316,8 @@ export default function Main(): ReactElement {
                     activeVideoId: activeVideoId,
                     setActiveVideoId: setActiveVideoId,
                     uid2audioSub: uid2audioSub,
-                    setUid2audioSub: setUid2audioSub
+                    setUid2audioSub: setUid2audioSub,
+                    timestampTimerRef: timestampTimerRef
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">

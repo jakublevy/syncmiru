@@ -77,6 +77,7 @@ async fn main() -> Result<()> {
          rid2play_info: HashMap::new().into(),
          uid2play_info: HashMap::new().into(),
          rid2runtime_state: HashMap::new().into(),
+         uid2timestamp: HashMap::new().into()
       });
 
    let socketio_srvstate = srvstate.clone();
