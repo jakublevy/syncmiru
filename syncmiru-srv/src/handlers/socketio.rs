@@ -142,9 +142,6 @@ pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
     }
 
     s.broadcast().emit("offline", uid).ok();
-
-    println!("after disconnect");
-    utils::debug_print(state);
 }
 
 pub async fn get_users(
@@ -1117,6 +1114,7 @@ pub async fn set_room_playback_speed(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
+    let mut rid2runtime_state_wl = state.rid2runtime_state.write().await;
     let updated = query::set_room_playback_speed(&state.db, payload.id, &payload.playback_speed)
         .await
         .expect("db error");
@@ -1124,6 +1122,10 @@ pub async fn set_room_playback_speed(
     if !updated {
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
+    }
+    let room_runtime_state_opt = rid2runtime_state_wl.get_mut(&payload.id);
+    if let Some(room_runtime_state) = room_runtime_state_opt {
+        room_runtime_state.runtime_config.playback_speed = payload.playback_speed;
     }
     s.within(payload.id.to_string()).emit("joined_room_playback_change", payload.playback_speed).ok();
     s.broadcast().emit("room_playback_speed", payload).ok();
@@ -1161,6 +1163,7 @@ pub async fn set_room_desync_tolerance(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
+    let mut rid2runtime_state_wl = state.rid2runtime_state.write().await;
     let updated = query::set_room_desync_tolerance(&state.db, payload.id, &payload.desync_tolerance)
         .await
         .expect("db error");
@@ -1168,6 +1171,10 @@ pub async fn set_room_desync_tolerance(
     if !updated {
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
+    }
+    let room_runtime_state_opt = rid2runtime_state_wl.get_mut(&payload.id);
+    if let Some(room_runtime_state) = room_runtime_state_opt {
+        room_runtime_state.runtime_config.desync_tolerance = payload.desync_tolerance;
     }
     s.broadcast().emit("room_desync_tolerance", payload).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
@@ -1204,6 +1211,7 @@ pub async fn set_room_minor_desync_playback_slow(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
+    let mut rid2runtime_state_wl = state.rid2runtime_state.write().await;
     let updated = query::set_room_minor_desync_playback_slow(&state.db, payload.id, &payload.minor_desync_playback_slow)
         .await
         .expect("db error");
@@ -1211,6 +1219,10 @@ pub async fn set_room_minor_desync_playback_slow(
     if !updated {
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
+    }
+    let room_runtime_state_opt = rid2runtime_state_wl.get_mut(&payload.id);
+    if let Some(room_runtime_state) = room_runtime_state_opt {
+        room_runtime_state.runtime_config.minor_desync_playback_slow = payload.minor_desync_playback_slow;
     }
     s.within(payload.id.to_string()).emit("joined_room_minor_desync_playback_slow", payload.minor_desync_playback_slow).ok();
     s.broadcast().emit("room_minor_desync_playback_slow", payload).ok();
@@ -1248,6 +1260,7 @@ pub async fn set_room_major_desync_min(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
+    let mut rid2runtime_state_wl = state.rid2runtime_state.write().await;
     let updated = query::set_room_major_desync_min(&state.db, payload.id, &payload.major_desync_min)
         .await
         .expect("db error");
@@ -1255,6 +1268,10 @@ pub async fn set_room_major_desync_min(
     if !updated {
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
+    }
+    let room_runtime_state_opt = rid2runtime_state_wl.get_mut(&payload.id);
+    if let Some(room_runtime_state) = room_runtime_state_opt {
+        room_runtime_state.runtime_config.major_desync_min = payload.major_desync_min;
     }
     s.broadcast().emit("room_major_desync_min", payload).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
@@ -1304,9 +1321,6 @@ pub async fn join_room(
     ack: AckSender,
     Data(payload): Data<JoinRoomReq>,
 ) {
-    println!("before room join");
-    utils::debug_print(state);
-
     if let Err(_) = payload.validate() {
         ack.send(SocketIoAck::<JoinedRoomInfo>::err()).ok();
         return;
@@ -1401,9 +1415,6 @@ pub async fn join_room(
         ready_status
     }))).ok();
     transaction.commit().await.expect("db error");
-
-    println!("after room join");
-    utils::debug_print(state);
 }
 
 pub async fn disconnect_room(
@@ -1411,9 +1422,6 @@ pub async fn disconnect_room(
     s: SocketRef,
     ack: AckSender,
 ) {
-    println!("before room disconnect");
-    utils::debug_print(state);
-
     let uid = state.socket2uid(&s).await;
     let connected_room_opt = state.socket_connected_room(&s).await;
     if connected_room_opt.is_none() {
@@ -1428,9 +1436,6 @@ pub async fn disconnect_room(
     s.broadcast().emit("user_room_disconnect", &urd).ok();
     s.emit("user_room_disconnect", urd).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
-
-    println!("after room disconnect");
-    utils::debug_print(state);
 }
 
 pub async fn get_room_users(
@@ -1572,8 +1577,6 @@ pub async fn add_video_files(
 
     drop(rid_video_id_wl);
     drop(playlist_wl);
-    println!("\n\n\nafter adding_video_files");
-    utils::debug_print(state);
 }
 
 pub async fn add_urls(
@@ -1609,8 +1612,6 @@ pub async fn add_urls(
 
     drop(rid_video_id_wl);
     drop(playlist_wl);
-    println!("\n\n\nafter adding_urls");
-    utils::debug_print(state);
 }
 
 pub async fn req_playing_jwt(
@@ -1708,8 +1709,6 @@ pub async fn change_active_video(
     s.within(rid.to_string()).emit("change_active_video", payload.playlist_entry_id).ok();
 
     drop(rid2play_info_wl);
-    println!("after change_active_video");
-    utils::debug_print(state);
 }
 
 pub async fn set_playlist_order(
@@ -1752,8 +1751,6 @@ pub async fn set_playlist_order(
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 
     drop(rid_video_id_wl);
-    println!("after playlist update");
-    utils::debug_print(state);
 }
 
 pub async fn delete_playlist_entry(
@@ -1800,9 +1797,6 @@ pub async fn delete_playlist_entry(
 
     s.within(rid.to_string()).emit("del_playlist_entry", DeletePlaylistEntry { uid, entry_id: payload.playlist_entry_id }).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
-
-    println!("after delete_playlist_entry");
-    utils::debug_print(state);
 }
 
 pub async fn mpv_file_loaded(

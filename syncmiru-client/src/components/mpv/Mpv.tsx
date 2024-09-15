@@ -21,6 +21,7 @@ import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
 import {MpvMsgMood, showMpvReadyMessages, timestampPretty} from "src/utils/mpv.ts";
 import Decimal from "decimal.js";
+import {join} from "@tauri-apps/api/path";
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
