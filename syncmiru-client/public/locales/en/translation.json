@@ -403,5 +403,8 @@
   "mpv-audio-delay-change-error": "An error occurred while changing the audio delay",
   "mpv-sub-delay-change-error": "An error occurred while changing the subtitles delay",
   "mpv-msg-audio-delay": "changed the audio delay to",
-  "mpv-msg-sub-delay": "changed the subtitles delay to"
+  "mpv-msg-sub-delay": "changed the subtitles delay to",
+  "mpv-upload-state-error": "An error occurred while uploading and syncing mpv state",
+  "mpv-sync-state-error": "An error occurred while syncing mpv state",
+  "mpv-msg-upload-state": "uploaded his/her own mpv state to synchronize"
 }

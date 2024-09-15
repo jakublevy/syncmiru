@@ -5,6 +5,7 @@ import {useMainContext} from "@hooks/useMainContext.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {Tooltip} from "react-tooltip";
 import {useTranslation} from "react-i18next";
+import {showPersistentErrorAlert} from "../../utils/alert.ts";
 
 export default function UploadMyMpvState(): ReactElement {
     const ctx = useMainContext()
@@ -13,7 +14,21 @@ export default function UploadMyMpvState(): ReactElement {
     const myReadyState = ctx.uid2ready.get(ctx.uid)
 
     function uploadMyMpvStateClicked() {
-
+        const myAudioSub = ctx.uid2audioSub.get(ctx.uid)
+        if(myAudioSub != null) {
+            ctx.socket!.emitWithAck('mpv_upload_state', {
+                aid: myAudioSub.aid,
+                sid: myAudioSub.sid,
+                audio_delay: myAudioSub.audio_delay,
+                sub_delay: myAudioSub.sub_delay
+            })
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-upload-state-error'))
+                })
+        }
+        else {
+            showPersistentErrorAlert(t('mpv-upload-state-error'))
+        }
     }
 
     if(myReadyState != null && [UserReadyState.NotReady, UserReadyState.Ready].includes(myReadyState)) {

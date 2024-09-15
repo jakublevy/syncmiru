@@ -35,6 +35,7 @@ export default function Mpv(p: Props): ReactElement {
     const usersRef = useRef(ctx.users)
     const activeVideoIdRef = useRef(ctx.activeVideoId)
     const uid2readyRef = useRef(ctx.uid2ready)
+    const uid2audioSubRef = useRef(ctx.uid2audioSub)
 
     useEffect(() => {
         if (ctx.socket !== undefined) {
@@ -298,7 +299,8 @@ export default function Mpv(p: Props): ReactElement {
         usersRef.current = ctx.users
         activeVideoIdRef.current = ctx.activeVideoId
         uid2readyRef.current = ctx.uid2ready
-    }, [ctx.jwts, ctx.source2url, ctx.playlist, ctx.joinedRoomSettings, ctx.users, ctx.activeVideoId, ctx.uid2ready]);
+        uid2audioSubRef.current = ctx.uid2audioSub
+    }, [ctx.jwts, ctx.source2url, ctx.playlist, ctx.joinedRoomSettings, ctx.users, ctx.activeVideoId, ctx.uid2ready, ctx.uid2audioSub]);
 
     useEffect(() => {
         if(ctx.mpvRunning && !ctx.mpvWinDetached && !ctx.mpvShowSmall)
@@ -845,7 +847,108 @@ export default function Mpv(p: Props): ReactElement {
     }
 
     function onMpvUploadState(payload: UserUploadMpvState) {
-        // TODO:
+        const myAudioSub = uid2audioSubRef.current.get(ctx.uid)
+        if(myAudioSub == null) {
+            showPersistentErrorAlert(t('mpv-sync-state-error'))
+            return;
+        }
+        let change = false
+        let changeAudioSub = {
+            aid: myAudioSub.aid,
+            sid: myAudioSub.sid,
+            audio_delay: myAudioSub.audio_delay,
+            sub_delay: myAudioSub.sub_delay,
+            audioSync: myAudioSub.audioSync,
+            subSync: myAudioSub.subSync,
+        } as UserAudioSubtitles
+
+        if(ctx.uid !== payload.uid) {
+            if(ctx.audioSync) {
+                if(myAudioSub.aid !== payload.aid) {
+                    invoke('mpv_set_audio', {aid: payload.aid})
+                        .then(() => {
+                            ctx.socket!.emitWithAck('user_change_aid', payload.aid)
+                                .catch(() => {
+                                    showPersistentErrorAlert(t('mpv-sync-state-error'))
+                                    disconnectFromRoom(ctx, t)
+                                })
+                        })
+                        .catch(() => {
+                            showPersistentErrorAlert(t('mpv-sync-state-error'))
+                            disconnectFromRoom(ctx, t)
+                        })
+                    changeAudioSub.aid = payload.aid
+                    change = true
+                }
+                if(myAudioSub.audio_delay !== payload.audio_delay) {
+                    invoke('mpv_set_audio_delay', {audioDelay: payload.audio_delay})
+                        .then(() => {
+                            ctx.socket!.emitWithAck('user_change_audio_delay', payload.audio_delay)
+                                .catch(() => {
+                                    showPersistentErrorAlert(t('mpv-sync-state-error'))
+                                    disconnectFromRoom(ctx, t)
+                                })
+                        })
+                        .catch(() => {
+                            showPersistentErrorAlert(t('mpv-sync-state-error'))
+                            disconnectFromRoom(ctx, t)
+                        })
+                    changeAudioSub.audio_delay = payload.audio_delay
+                    change = true
+                }
+            }
+            if(ctx.subSync) {
+                if(myAudioSub.sid !== payload.sid) {
+                    invoke('mpv_set_sub', {sid: payload.sid})
+                        .then(() => {
+                            ctx.socket!.emitWithAck('user_change_sid', payload.sid)
+                                .catch(() => {
+                                    showPersistentErrorAlert(t('mpv-sync-state-error'))
+                                    disconnectFromRoom(ctx, t)
+                                })
+                        })
+                        .catch(() => {
+                            showPersistentErrorAlert(t('mpv-sync-state-error'))
+                            disconnectFromRoom(ctx, t)
+                        })
+                    changeAudioSub.sid = payload.sid
+                    change = true
+                }
+                if(myAudioSub.sub_delay !== payload.sub_delay) {
+                    invoke('mpv_set_sub_delay', {subDelay: payload.sub_delay})
+                        .then(() => {
+                            ctx.socket!.emitWithAck('user_change_sub_delay', payload.sub_delay)
+                                .catch(() => {
+                                    showPersistentErrorAlert(t('mpv-sync-state-error'))
+                                    disconnectFromRoom(ctx, t)
+                                })
+                        })
+                        .catch(() => {
+                            showPersistentErrorAlert(t('mpv-sync-state-error'))
+                            disconnectFromRoom(ctx, t)
+                        })
+                    changeAudioSub.sub_delay = payload.sub_delay
+                    change = true
+                }
+            }
+        }
+        else {
+            mpvShowUploadStateMsg(payload)
+        }
+        if(change) {
+            mpvShowUploadStateMsg(payload)
+        }
+    }
+
+    function mpvShowUploadStateMsg(payload: UserUploadMpvState) {
+        const userValue = usersRef.current.get(payload.uid)
+        if(userValue != null) {
+            const msgText = `${userValue.displayname} ${t('mpv-msg-upload-state')}`
+            invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+                .catch(() => {
+                    showPersistentErrorAlert(t('mpv-msg-show-failed'))
+                })
+        }
     }
 
     return (

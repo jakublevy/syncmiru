@@ -27,7 +27,8 @@ export default function Users(): ReactElement {
         roomUidClicked,
         setRoomUidClicked,
         usersClickedUid,
-        setUsersClickedUid
+        setUsersClickedUid,
+        uid2audioSub
     } = useMainContext()
     const [usersLoading, setUsersLoading] = useState<boolean>(true)
     const [onlineUsers, setOnlineUsers]
@@ -222,6 +223,7 @@ export default function Users(): ReactElement {
                             </div>
                         }
                         user={u}
+                        audioSub={uid2audioSub.get(u.id)}
                         tooltipOnlineVisibilityChanged={tooltipVisibilityChanged}
                     />
                 )
@@ -246,6 +248,7 @@ export default function Users(): ReactElement {
                             </div>
                         }
                         user={u}
+                        audioSub={undefined}
                         tooltipOnlineVisibilityChanged={tooltipVisibilityChanged}
                     />
                 )

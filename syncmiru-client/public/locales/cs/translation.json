@@ -403,5 +403,8 @@
   "mpv-audio-delay-change-error": "Došlo k chybě při změně posunu zvukové stopy",
   "mpv-sub-delay-change-error": "Došlo k chybě při změně posunu stopy titulků",
   "mpv-msg-audio-delay": "změnil(a) posun zvukové stopy na",
-  "mpv-msg-sub-delay": "změnil(a) posun stopy titulků na"
+  "mpv-msg-sub-delay": "změnil(a) posun stopy titulků na",
+  "mpv-upload-state-error": "Došlo k chybě při nahrávání a synchronizaci stavu mpv",
+  "mpv-sync-state-error": "Došlo k chybě při synchronizaci stavu mpv",
+  "mpv-msg-upload-state": "nahrál(a) vlastní stav mpv k synchronizaci"
 }
