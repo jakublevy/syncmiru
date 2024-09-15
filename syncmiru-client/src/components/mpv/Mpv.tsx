@@ -39,24 +39,34 @@ export default function Mpv(p: Props): ReactElement {
     useEffect(() => {
         if (ctx.socket !== undefined) {
             ctx.socket.on('user_file_loaded', onUserFileLoaded)
-            ctx.socket.on('user_file_load_failed', onUserFileLoadFailed)
-            ctx.socket.on('user_file_load_retry', onUserFileLoadRetry)
             ctx.socket.on('user_change_aid', onUserChangeAid)
             ctx.socket.on('user_change_sid', onUserChangeSid)
             ctx.socket.on('user_change_audio_delay', onUserChangeAudioDelay)
             ctx.socket.on('user_change_sub_delay', onUserChangeSubDelay)
+            ctx.socket.on('user_file_load_failed', onUserFileLoadFailed)
+
         }
         return () => {
             if(ctx.socket !== undefined) {
                 ctx.socket.off('user_file_loaded', onUserFileLoaded)
-                ctx.socket.off('user_file_load_failed', onUserFileLoadFailed)
-                ctx.socket.off('user_file_load_retry', onUserFileLoadRetry)
                 ctx.socket.off('user_change_aid', onUserChangeAid)
                 ctx.socket.off('user_change_sid', onUserChangeSid)
                 ctx.socket.off('user_change_sub_delay', onUserChangeSubDelay)
+                ctx.socket.off('user_file_load_failed', onUserFileLoadFailed)
             }
         }
     }, [ctx.socket]);
+
+    useEffect(() => {
+        if(ctx.socket !== undefined) {
+            ctx.socket.on('user_file_load_retry', onUserFileLoadRetry)
+        }
+        return () => {
+            if(ctx.socket !== undefined) {
+                ctx.socket.off('user_file_load_retry', onUserFileLoadRetry)
+            }
+        }
+    }, [ctx.socket, ctx.uid]);
 
     useEffect(() => {
         if (ctx.socket !== undefined) {
@@ -402,6 +412,16 @@ export default function Mpv(p: Props): ReactElement {
     }
 
     function onUserFileLoadFailed(uid: UserId) {
+        ctx.setUid2audioSub((p) => {
+            const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
+            for (const [id, value] of p) {
+                if(uid !== id) {
+                    m.set(id, value)
+                }
+            }
+            return m
+        })
+
         ctx.setUid2ready((p) => {
             const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
             for (const [id, value] of p) {
@@ -410,15 +430,8 @@ export default function Mpv(p: Props): ReactElement {
                 }
             }
             m.set(uid, UserReadyState.Error)
-            return m
-        })
-        ctx.setUid2audioSub((p) => {
-            const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
-            for (const [id, value] of p) {
-                if(uid !== id) {
-                    m.set(id, value)
-                }
-            }
+
+            showMpvReadyMessages(m, usersRef.current, t)
             return m
         })
     }
@@ -432,6 +445,9 @@ export default function Mpv(p: Props): ReactElement {
                 }
             }
             m.set(uid, UserReadyState.Loading)
+
+            if(ctx.uid !== uid)
+                showMpvReadyMessages(m, usersRef.current, t)
             return m
         })
     }

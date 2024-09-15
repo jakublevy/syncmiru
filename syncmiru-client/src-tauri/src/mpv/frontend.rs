@@ -1,7 +1,6 @@
 use std::sync::Arc;
 use std::time::Duration;
 use cfg_if::cfg_if;
-use dirs::audio_dir;
 use rust_decimal::Decimal;
 use tauri::{Emitter};
 use crate::appstate::{AppState, MpvMsg};

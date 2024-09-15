@@ -9,6 +9,8 @@ import {UserLoadedInfo} from "@models/mpv.ts";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {disconnectFromRoom} from "src/utils/room.ts";
 import {useTranslation} from "react-i18next";
+import {showMpvReadyMessages} from "src/utils/mpv.ts";
+import {UserId} from "@models/user.ts";
 
 export default function MpvReloadBtn(): ReactElement {
     const ctx = useMainContext()
@@ -24,20 +26,49 @@ export default function MpvReloadBtn(): ReactElement {
                     const jwt = ctx.jwts.get(id) as string
                     const video = entry as PlaylistEntryVideo
                     const source = ctx.source2url.get(video.source) as string
-                    const data = {source_url: source, jwt: jwt}
-                    invoke<UserLoadedInfo>('mpv_load_from_source', {data: JSON.stringify(data)})
-                        .catch(() => {
-                            showPersistentErrorAlert(t('mpv-load-error'))
-                            disconnectFromRoom(ctx, t)
-                        })
+                    const data = {source_url: source, jwt: jwt, playback_speed: ctx.joinedRoomSettings.playback_speed}
+
+                    ctx.setUid2ready((p) => {
+                        const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+                        for (const [id, value] of p) {
+                            m.set(id, value)
+                        }
+                        m.set(ctx.uid, UserReadyState.Loading)
+
+                        invoke<UserLoadedInfo>('mpv_load_from_source', {data: JSON.stringify(data)})
+                            .then(() => {
+                                showMpvReadyMessages(m, ctx.users, t)
+                            })
+                            .catch(() => {
+                                showPersistentErrorAlert(t('mpv-load-error'))
+                                disconnectFromRoom(ctx, t)
+                            })
+
+                        return m
+                    })
                 }
                 else if(entry instanceof PlaylistEntryUrl) {
                     const video = entry as PlaylistEntryUrl
-                    invoke('mpv_load_from_url', {url: video.url})
-                        .catch(() => {
-                            showPersistentErrorAlert(t('mpv-load-error'))
-                            disconnectFromRoom(ctx, t)
-                        })
+                    const data = {url: video.url, playback_speed: ctx.joinedRoomSettings.playback_speed}
+
+                    ctx.setUid2ready((p) => {
+                        const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+                        for (const [id, value] of p) {
+                            m.set(id, value)
+                        }
+                        m.set(ctx.uid, UserReadyState.Loading)
+
+                        invoke('mpv_load_from_url', {data: JSON.stringify(data)})
+                            .then(() => {
+                                showMpvReadyMessages(m, ctx.users, t)
+                            })
+                            .catch(() => {
+                                showPersistentErrorAlert(t('mpv-load-error'))
+                                disconnectFromRoom(ctx, t)
+                            })
+
+                        return m
+                    })
                 }
             })
             .catch(() => {

@@ -117,7 +117,7 @@ export default function Playlist(): ReactElement {
 
     function onAddUrls(r: AddUrlFilesRespSrv) {
         const m: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
-        for (const idStr in r) {
+        for (const idStr in r.entries) {
             const value = r.entries[idStr]
             m.set(parseInt(idStr), new PlaylistEntryUrl(value.url))
         }
@@ -125,6 +125,7 @@ export default function Playlist(): ReactElement {
         ctx.setPlaylist((p) => {
             if(p.size === 0)
                 setAsActiveVideo(m.keys().next().value)
+
             return new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m])
         })
         let entryIds = [...m.keys()]
