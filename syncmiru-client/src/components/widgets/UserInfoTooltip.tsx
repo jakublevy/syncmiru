@@ -3,6 +3,7 @@ import Avatar from "@components/widgets/Avatar.tsx";
 import 'src/rc-tooltip.css'
 import Tooltip from "rc-tooltip";
 import {UserValueClient} from "@models/user.ts";
+import {UserAudioSubtitles} from "@models/mpv.ts";
 
 export default function UserInfoTooltip(p: Props): ReactElement {
     function onVisibleChanged(visible: boolean) {
@@ -16,12 +17,18 @@ export default function UserInfoTooltip(p: Props): ReactElement {
                  trigger={['click']}
                  visible={p.visible}
                  overlay={
-                     <div className="flex items-center w-[12.3rem]">
-                         <Avatar className="min-w-20 w-20 mr-3" picBase64={p.user.avatar}/>
-                         <div className="flex flex-col items-start justify-center">
-                             <p className="break-words max-w-[7.1rem] text-xl">{p.user.displayname}</p>
-                             <p className="text-sm -mt-1">{p.user.username}</p>
+                     <div className="flex flex-col">
+                         <div className="flex items-center w-[12.3rem]">
+                             <Avatar className="min-w-20 w-20 mr-3" picBase64={p.user.avatar}/>
+                             <div className="flex flex-col items-start justify-center">
+                                 <p className="break-words max-w-[7.1rem] text-xl">{p.user.displayname}</p>
+                                 <p className="text-sm -mt-1">{p.user.username}</p>
+                             </div>
                          </div>
+                         {p.audioSub !== undefined && <div className="mt-2 flex justify-around">
+                            <p>↔ A: {p.audioSub.audio_delay > 0  && '+'}{p.audioSub.audio_delay < 0 && '-'}{p.audioSub.audio_delay * 1000} ms</p>
+                            <p>↔ S: {p.audioSub.sub_delay > 0 && '+'}{p.audioSub.sub_delay < 0 && '-'}{p.audioSub.sub_delay * 1000} ms</p>
+                         </div>}
                      </div>
                  }>
             {p.content}
@@ -35,4 +42,5 @@ interface Props {
     user: UserValueClient
     tooltipOnlineVisibilityChanged?: (e: boolean, id: number) => void,
     visible?: boolean
+    audioSub: UserAudioSubtitles | undefined
 }

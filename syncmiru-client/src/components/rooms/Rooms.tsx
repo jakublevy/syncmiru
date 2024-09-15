@@ -800,6 +800,7 @@ export default function Rooms(): ReactElement {
                                                         </Clickable>
                                                     }
                                                     user={user}
+                                                    audioSub={audioSub}
                                                     tooltipOnlineVisibilityChanged={userTooltipVisibilityChanged}
                                                 />
                                             </div>
