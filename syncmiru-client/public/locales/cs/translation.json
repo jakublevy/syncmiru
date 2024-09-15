@@ -406,5 +406,5 @@
   "mpv-msg-sub-delay": "změnil(a) posun stopy titulků na",
   "mpv-upload-state-error": "Došlo k chybě při nahrávání a synchronizaci stavu mpv",
   "mpv-sync-state-error": "Došlo k chybě při synchronizaci stavu mpv",
-  "mpv-msg-upload-state": "nahrál(a) vlastní stav mpv k synchronizaci"
+  "mpv-msg-upload-state": "změnil(a) nastavení mpv dle vlastní konfigurace"
 }

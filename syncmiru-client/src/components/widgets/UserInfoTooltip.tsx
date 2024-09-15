@@ -30,12 +30,12 @@ export default function UserInfoTooltip(p: Props): ReactElement {
                              <div className="mt-2 flex justify-around">
                                  <div className="flex justify-center items-center gap-x-1">
                                      <LeftRightArrow className="w-4 min-w-4"/>
-                                     <p>A: {p.audioSub.audio_delay > 0 && '+'}{p.audioSub.audio_delay < 0 && '-'}{p.audioSub.audio_delay * 1000} ms</p>
+                                     <p>A: {p.audioSub.audio_delay > 0 && '+'}{p.audioSub.audio_delay * 1000} ms</p>
                                  </div>
                                  <div className="flex">
                                      <div className="flex justify-center items-center gap-x-1">
                                      <LeftRightArrow className="w-4 min-w-4"/>
-                                     <p>S: {p.audioSub.sub_delay > 0 && '+'}{p.audioSub.sub_delay < 0 && '-'}{p.audioSub.sub_delay * 1000} ms</p>
+                                     <p>S: {p.audioSub.sub_delay > 0 && '+'}{p.audioSub.sub_delay * 1000} ms</p>
                                      </div>
                                  </div>
                              </div>
