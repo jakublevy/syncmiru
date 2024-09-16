@@ -481,6 +481,7 @@ export default function Mpv(p: Props): ReactElement {
     }
 
     function onMajorDesyncSeek(timestamp: number) {
+        console.log(`onMajorDesyncSeek ${timestamp}`)
         invoke('mpv_seek', {timestamp: timestamp})
             .catch(() => {
                 showPersistentErrorAlert(t('mpv-load-error'))
@@ -1015,7 +1016,7 @@ export default function Mpv(p: Props): ReactElement {
                     ctx.socket!.emitWithAck('timestamp_tick', time)
 
                 })
-        }, 500)
+        }, 2000)
     }
 
     return (

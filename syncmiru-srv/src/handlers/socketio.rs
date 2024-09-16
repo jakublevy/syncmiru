@@ -2401,15 +2401,15 @@ pub async fn timestamp_tick(
             .collect::<Vec<f64>>();
 
         timestamps.sort_by(|a, b| a.partial_cmp(b).unwrap());
-        let medoid_timestamp = utils::medoid_of_sorted(&timestamps).unwrap_or(0f64);
-        println!("medoid_timestamp = {}", medoid_timestamp);
+        let smallest_timestamp = timestamps.first().unwrap();
 
         for uid in uids {
-            let timestamp_info_opt = uid2timestamp_wl.get(uid);
+            let timestamp_info_opt = uid2timestamp_wl.get_mut(uid);
             if let Some(timestamp_info) = timestamp_info_opt {
-                println!("uid = {} timestamp diff = {}", uid, timestamp_info.timestamp - medoid_timestamp);
-                if timestamp_info.timestamp - medoid_timestamp > room_runtime_state.runtime_config.major_desync_min.to_f64().unwrap() {
-                    s.emit("major_desync_seek", medoid_timestamp).ok();
+                if timestamp_info.timestamp - smallest_timestamp > room_runtime_state.runtime_config.major_desync_min.to_f64().unwrap() {
+                    println!("rewind uid = {} to {}", uid, smallest_timestamp);
+                    s.emit("major_desync_seek", smallest_timestamp).ok();
+                    timestamp_info.timestamp = *smallest_timestamp;
                 }
             }
         }
@@ -2472,10 +2472,10 @@ pub async fn get_mpv_state(
         }
 
         timestamps.sort_by(|a, b| a.partial_cmp(b).unwrap());
-        let medoid_timestamp = utils::medoid_of_sorted(&timestamps).unwrap_or(0f64);
+        let median_timestamp = utils::median_of_sorted(&timestamps).unwrap_or(0f64);
 
         let play_info = rid2play_info_rl.get(&rid).unwrap();
-        ack.send(SocketIoAck::<MpvState>::ok(Some(MpvState{ timestamp: medoid_timestamp, playing_state: play_info.playing_state }))).ok();
+        ack.send(SocketIoAck::<MpvState>::ok(Some(MpvState{ timestamp: median_timestamp, playing_state: play_info.playing_state }))).ok();
         return;
     }
     ack.send(SocketIoAck::<MpvState>::err()).ok();
