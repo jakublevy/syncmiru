@@ -249,6 +249,7 @@ pub struct JoinedRoomInfo<'a> {
     pub playlist: HashMap<PlaylistEntryId, &'a PlaylistEntry>,
     pub playlist_order: IndexSet<PlaylistEntryId>,
     pub ready_status: HashMap<Id, UserReadyStatus>,
+    pub active_video_id: Option<PlaylistEntryId>
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]

@@ -186,7 +186,7 @@ export default function Mpv(p: Props): ReactElement {
                                         disconnectFromRoom(ctx, t)
                                     }
                                     else {
-                                        console.log(`recv mpv state ${ack.payload}`)
+                                        console.log(`recv mpv state ${JSON.stringify(ack.payload)}`)
                                     }
                                 })
                                 .catch(() => {

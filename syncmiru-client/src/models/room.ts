@@ -55,4 +55,5 @@ export interface JoinedRoomInfoSrv {
     playlist: Record<string, PlaylistEntryVideoSrv | PlaylistEntryUrl>,
     playlist_order: Array<PlaylistEntryId>
     ready_status: Record<UserId, string>
+    active_video_id: number | null
 }

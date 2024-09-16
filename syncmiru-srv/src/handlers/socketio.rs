@@ -1409,12 +1409,19 @@ pub async fn join_room(
         ready_status.insert(*uid, *r);
     }
 
+    let rid2play_info_rl = state.rid2play_info.read().await;
+    let mut active_video_id: Option<PlaylistEntryId> = None;
+    if let Some(room_play_info) = rid2play_info_rl.get(&payload.rid) {
+        active_video_id = Some(room_play_info.playing_entry_id);
+    }
+
     ack.send(SocketIoAck::<JoinedRoomInfo>::ok(Some(JoinedRoomInfo {
         room_settings,
         room_pings,
         playlist,
         playlist_order,
-        ready_status
+        ready_status,
+        active_video_id
     }))).ok();
     transaction.commit().await.expect("db error");
 }

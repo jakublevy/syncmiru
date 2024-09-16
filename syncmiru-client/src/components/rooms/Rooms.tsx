@@ -619,6 +619,10 @@ export default function Rooms(): ReactElement {
                                         readyStates.set(uid, readyState)
                                     }
                                     ctx.setUid2ready((p) => new Map<UserId, UserReadyState>([...p, ...readyStates]))
+
+                                    if(payload.active_video_id != null)
+                                        ctx.setActiveVideoId(payload.active_video_id)
+                                    
                                 })
                                 .catch(() => {
                                     forceDisconnectFromRoomOnFetchFailure()
