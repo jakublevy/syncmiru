@@ -407,6 +407,6 @@
   "mpv-upload-state-error": "Došlo k chybě při nahrávání a synchronizaci stavu mpv",
   "mpv-sync-state-error": "Došlo k chybě při synchronizaci stavu mpv",
   "mpv-msg-upload-state": "změnil(a) nastavení mpv dle vlastní konfigurace",
-  "mpv-msg-desync-seek-1": "Přetočeno na",
+  "mpv-msg-desync-seek-1": "Přetočeno zpět na",
   "mpv-msg-desync-seek-2": "kvůli ztrátě synchronizace"
 }

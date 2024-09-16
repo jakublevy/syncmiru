@@ -185,17 +185,18 @@ pub(super) async fn video_id_in_room(
     rid_of_entry_opt.is_some() && *rid_of_entry_opt.unwrap() == rid
 }
 
-pub(super) fn median_of_sorted(arr: &[f64]) -> Option<f64> {
+pub(super) fn medoid_of_sorted(arr: &[f64]) -> Option<f64> {
     let len = arr.len();
     if len == 0 {
         return None;
     }
 
-    if len % 2 == 0 {
-        Some((arr[len / 2 - 1] + arr[len / 2]) / 2.0)
-    } else {
-        Some(arr[len / 2])
-    }
+    Some(arr[len / 2])
+    // if len % 2 == 0 {
+    //     Some((arr[len / 2 - 1] + arr[len / 2]) / 2.0)
+    // } else {
+    //     Some(arr[len / 2])
+    // }
 }
 
 pub(super) fn debug_print(state: &Arc<SrvState>) {
