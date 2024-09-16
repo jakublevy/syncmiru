@@ -406,5 +406,7 @@
   "mpv-msg-sub-delay": "changed the subtitles delay to",
   "mpv-upload-state-error": "An error occurred while uploading and syncing mpv state",
   "mpv-sync-state-error": "An error occurred while syncing mpv state",
-  "mpv-msg-upload-state": "changed the mpv settings according to his/her configuration"
+  "mpv-msg-upload-state": "changed the mpv settings according to his/her configuration",
+  "mpv-msg-desync-seek-1": "Seek to",
+  "mpv-msg-desync-seek-2": "due to major desync"
 }

@@ -2367,10 +2367,50 @@ pub async fn timestamp_tick(
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
     if state.user_file_loaded(uid).await {
+        let rid2play_info_rl = state.rid2play_info.read().await;
+        let uid_ping_rl = state.uid_ping.read().await;
+        let rid2runtime_state_rl = state.rid2runtime_state.read().await;
+
+        let room_runtime_state = rid2runtime_state_rl.get(&rid).unwrap();
+
         let mut uid2timestamp_wl = state.uid2timestamp.write().await;
         uid2timestamp_wl.insert(uid, TimestampInfo{ timestamp: payload, recv: Instant::now() });
 
+        let mut relevant_uids = Vec::<Id>::new();
+        let rid_uids_rl = state.rid_uids.read().await;
+        let uids = rid_uids_rl.get_by_left(&rid).unwrap();
+        for uid in uids {
+            if let Some(timestamp_info) = uid2timestamp_wl.get(uid) {
+                if Instant::now().duration_since(timestamp_info.recv).as_millis() < 2000 {
+                    relevant_uids.push(*uid);
+                }
+            }
+        }
 
+        let mut timestamps = relevant_uids
+            .iter()
+            .map(|uid| state.get_compensated_timestamp_of_uid(
+                *uid,
+                rid,
+                &uid2timestamp_wl,
+                &rid2play_info_rl,
+                &uid_ping_rl,
+                &rid2runtime_state_rl
+            ))
+            .filter_map(|x| x)
+            .collect::<Vec<f64>>();
+
+        timestamps.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let median_timestamp = utils::median_of_sorted(&timestamps).unwrap_or(0f64);
+
+        for uid in uids {
+            let timestamp_info_opt = uid2timestamp_wl.get(uid);
+            if let Some(timestamp_info) = timestamp_info_opt {
+                if timestamp_info.timestamp - median_timestamp > room_runtime_state.runtime_config.major_desync_min.to_f64().unwrap() {
+                    s.emit("major_desync_seek", median_timestamp).ok();
+                }
+            }
+        }
 
         ack.send(SocketIoAck::<()>::ok(None)).ok();
         return;

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::ops::Deref;
 use rust_decimal::Decimal;
 use rust_decimal::prelude::ToPrimitive;
 use serde::{Deserialize, Serialize};
@@ -93,15 +94,21 @@ impl SrvState {
         }
     }
 
-    pub fn get_compensated_timestamp_of_uid<'a>(
+    pub fn get_compensated_timestamp_of_uid<'a, A, B, C, D>(
         &self,
         uid: Id,
         rid: Id,
-        uid2timestamp_rl: &'a RwLockReadGuard<'_, HashMap<Id, TimestampInfo>>,
-        rid2play_info_rl: &'a RwLockReadGuard<'_, HashMap<Id, RoomPlayInfo>>,
-        uid_ping_rl: &'a RwLockReadGuard<'_, HashMap<Id, f64>>,
-        rid2runtime_state_rl: &'a RwLockReadGuard<'_, HashMap<Id, RoomRuntimeState>>
-    ) -> Option<f64> {
+        uid2timestamp_rl: &A,
+        rid2play_info_rl: &B,
+        uid_ping_rl: &C,
+        rid2runtime_state_rl: &D
+    ) -> Option<f64>
+    where
+        A: Deref<Target = HashMap<Id, TimestampInfo>>,
+        B: Deref<Target = HashMap<Id, RoomPlayInfo>>,
+        C: Deref<Target = HashMap<Id, f64>>,
+        D: Deref<Target = HashMap<Id, RoomRuntimeState>>
+    {
         let timestamp_info_opt = uid2timestamp_rl.get(&uid);
         if timestamp_info_opt.is_none() {
             return None

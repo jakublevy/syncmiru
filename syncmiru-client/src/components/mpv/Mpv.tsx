@@ -53,6 +53,7 @@ export default function Mpv(p: Props): ReactElement {
             ctx.socket.on('user_change_audio_delay', onUserChangeAudioDelay)
             ctx.socket.on('user_change_sub_delay', onUserChangeSubDelay)
             ctx.socket.on('user_file_load_failed', onUserFileLoadFailed)
+            ctx.socket.on('major_desync_seek', onMajorDesyncSeek)
 
         }
         return () => {
@@ -62,6 +63,7 @@ export default function Mpv(p: Props): ReactElement {
                 ctx.socket.off('user_change_sid', onUserChangeSid)
                 ctx.socket.off('user_change_sub_delay', onUserChangeSubDelay)
                 ctx.socket.off('user_file_load_failed', onUserFileLoadFailed)
+                ctx.socket.off('major_desync_seek', onMajorDesyncSeek)
             }
         }
     }, [ctx.socket]);
@@ -476,6 +478,20 @@ export default function Mpv(p: Props): ReactElement {
             showMpvReadyMessages(m, usersRef.current, t)
             return m
         })
+    }
+
+    function onMajorDesyncSeek(timestamp: number) {
+        invoke('mpv_seek', {timestamp: timestamp})
+            .catch(() => {
+                showPersistentErrorAlert(t('mpv-load-error'))
+                disconnectFromRoom(ctx, t)
+            })
+
+        const msgText = `${t('mpv-msg-desync-seek-1')} ${timestampPretty(timestamp)} ${t('mpv-msg-desync-seek-2')}`
+        invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
+            .catch(() => {
+                showPersistentErrorAlert(t('mpv-msg-show-failed'))
+            })
     }
 
     function onUserFileLoadRetry(uid: UserId) {
