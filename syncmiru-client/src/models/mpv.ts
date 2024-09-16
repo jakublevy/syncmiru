@@ -86,3 +86,13 @@ export interface UserUploadMpvState {
     audio_delay: number,
     sub_delay: number
 }
+
+export enum PlayingState {
+    Play = 0,
+    Pause = 1
+}
+
+export interface MpvState {
+    playing_state: PlayingState
+    timestamp: number
+}

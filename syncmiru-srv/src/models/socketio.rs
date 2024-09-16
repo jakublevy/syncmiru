@@ -6,7 +6,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use validator::Validate;
 use crate::validators;
 use crate::models::query::{Id, RoomSettings};
-use crate::srvstate::{PlaylistEntry, PlaylistEntryId, UserReadyStatus};
+use crate::srvstate::{PlayingState, PlaylistEntry, PlaylistEntryId, UserReadyStatus};
 
 #[derive(Debug, Clone, Deserialize, Validate)]
 pub struct LoginTkns {
@@ -327,6 +327,12 @@ pub struct UploadMpvState {
     pub sid: Option<u64>,
     pub audio_delay: f64,
     pub sub_delay: f64
+}
+
+#[derive(Debug, Copy, Clone, Serialize)]
+pub struct MpvState {
+    pub playing_state: PlayingState,
+    pub timestamp: f64,
 }
 
 #[serde_with::serde_as]

@@ -1,3 +1,4 @@
+use std::ops::{Add, Div};
 use std::sync::Arc;
 use std::time::Duration;
 use rand::Rng;
@@ -182,6 +183,19 @@ pub(super) async fn video_id_in_room(
     let rid2video_id_rl = state.rid_video_id.read().await;
     let rid_of_entry_opt = rid2video_id_rl.get_by_right(&playlist_entry_id);
     rid_of_entry_opt.is_some() && *rid_of_entry_opt.unwrap() == rid
+}
+
+pub(super) fn median_of_sorted(arr: &[f64]) -> Option<f64> {
+    let len = arr.len();
+    if len == 0 {
+        return None;
+    }
+
+    if len % 2 == 0 {
+        Some((arr[len / 2 - 1] + arr[len / 2]) / 2.0)
+    } else {
+        Some(arr[len / 2])
+    }
 }
 
 pub(super) fn debug_print(state: &Arc<SrvState>) {

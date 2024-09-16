@@ -7,7 +7,6 @@ pub mod http;
 pub mod query;
 pub mod socketio;
 pub mod file;
-pub mod playlist;
 pub mod mpv;
 
 #[derive(Debug, Clone, Serialize, sqlx::FromRow)]

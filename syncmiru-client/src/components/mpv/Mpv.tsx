@@ -9,18 +9,25 @@ import {invoke} from "@tauri-apps/api/core";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {PlaylistEntry, PlaylistEntryId, PlaylistEntryUrl, PlaylistEntryVideo} from "@models/playlist.ts";
 import {
-    UserAudioSubtitles, UserChangeAudio, UserChangeAudioDelay, UserChangeSub, UserChangeSubDelay,
+    MpvState,
+    UserAudioSubtitles,
+    UserChangeAudio,
+    UserChangeAudioDelay,
+    UserChangeSub,
+    UserChangeSubDelay,
     UserLoadedInfo,
     UserPause,
     UserPlayInfo,
     UserSeek,
     UserSpeedChangeClient,
-    UserSpeedChangeSrv, UserUploadMpvState
+    UserSpeedChangeSrv,
+    UserUploadMpvState
 } from "@models/mpv.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserId} from "@models/user.ts";
 import {MpvMsgMood, showMpvReadyMessages, timestampPretty} from "src/utils/mpv.ts";
 import Decimal from "decimal.js";
+import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
@@ -170,7 +177,23 @@ export default function Mpv(p: Props): ReactElement {
 
             invoke<UserLoadedInfo>('mpv_get_loaded_info', {})
                 .then((payload: UserLoadedInfo) => {
-                    ctx.socket?.emitWithAck('mpv_file_loaded', payload)
+                    ctx.socket!.emitWithAck('mpv_file_loaded', payload)
+                        .then(() => {
+                            ctx.socket!.emitWithAck('get_mpv_state', {})
+                                .then((ack: SocketIoAck<MpvState>) => {
+                                    if(ack.status === SocketIoAckType.Err) {
+                                        showPersistentErrorAlert(t('mpv-load-error'))
+                                        disconnectFromRoom(ctx, t)
+                                    }
+                                    else {
+                                        console.log(`recv mpv state ${ack.payload}`)
+                                    }
+                                })
+                                .catch(() => {
+                                    showPersistentErrorAlert(t('mpv-load-error'))
+                                    disconnectFromRoom(ctx, t)
+                                })
+                        })
                         .catch(() => {
                             showPersistentErrorAlert(t('mpv-load-error'))
                             disconnectFromRoom(ctx, t)

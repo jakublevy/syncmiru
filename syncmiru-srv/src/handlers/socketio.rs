@@ -4,17 +4,18 @@ use std::sync::Arc;
 use indexmap::{IndexMap, IndexSet};
 use rust_decimal::Decimal;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
+use tokio::time::Instant;
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
-use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlaylistEntryIdStruct, PlaylistOrder, AddUrls, UserReadyStateChangeReq, UserReadyStateChangeClient, AddEntryFilesResp, DeletePlaylistEntry, ChangePlaylistOrder, UploadMpvState};
+use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlaylistEntryIdStruct, PlaylistOrder, AddUrls, UserReadyStateChangeReq, UserReadyStateChangeClient, AddEntryFilesResp, DeletePlaylistEntry, ChangePlaylistOrder, UploadMpvState, MpvState};
 use crate::{crypto, email, file, query};
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
 use crate::handlers::utils::{disconnect_from_room, video_id_in_room};
 use crate::models::file::FileType;
 use crate::models::mpv::{UserChangeAudio, UserChangeAudioDelay, UserChangeAudioSync, UserChangeSub, UserChangeSubDelay, UserChangeSubSync, UserLoadedInfo, UserPause, UserPlayInfoClient, UserSeek, UserSpeedChange, UserUploadMpvState};
-use crate::srvstate::{PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo, UserReadyStatus, PlaylistEntryId, SrvState};
+use crate::srvstate::{PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo, UserReadyStatus, PlaylistEntryId, SrvState, TimestampInfo};
 
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on_disconnect(disconnect);
@@ -48,7 +49,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("set_default_playback_speed", set_default_playback_speed);
     s.on("get_default_desync_tolerance", get_default_desync_tolerance);
     s.on("set_default_desync_tolerance", set_default_desync_tolerance);
-    s.on("get_default_major_desync_min", get_default_major_desync_min);
+    s.on("get'_, '_, _default_major_desync_min", get_default_major_desync_min);
     s.on("set_default_major_desync_min", set_default_major_desync_min);
     s.on("get_default_minor_desync_playback_slow", get_default_minor_desync_playback_slow);
     s.on("set_default_minor_desync_playback_slow", set_default_minor_desync_playback_slow);
@@ -99,6 +100,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("user_change_audio_delay", user_change_audio_delay);
     s.on("user_change_sub_delay", user_change_sub_delay);
     s.on("timestamp_tick", timestamp_tick);
+    s.on("get_mpv_state", get_mpv_state);
 
     let uid = state.socket2uid(&s).await;
     let user = query::get_user(&state.db, uid)
@@ -1694,7 +1696,8 @@ pub async fn change_active_video(
         rid,
         RoomPlayInfo {
             playing_entry_id: payload.playlist_entry_id,
-            playing_state: PlayingState::Pause
+            playing_state: PlayingState::Pause,
+            last_change_at: Instant::now()
         }
     );
 
@@ -1964,6 +1967,7 @@ pub async fn mpv_play(
         let mut rid2play_info_wl = state.rid2play_info.write().await;
         let play_info = rid2play_info_wl.get_mut(&rid).unwrap();
         play_info.playing_state = PlayingState::Play;
+        play_info.last_change_at = Instant::now();
 
         s
             .within(rid.to_string())
@@ -1993,6 +1997,7 @@ pub async fn mpv_pause(
         let mut rid2play_info_wl = state.rid2play_info.write().await;
         let play_info = rid2play_info_wl.get_mut(&rid).unwrap();
         play_info.playing_state = PlayingState::Pause;
+        play_info.last_change_at = Instant::now();
 
         s
             .within(rid.to_string())
@@ -2342,9 +2347,64 @@ pub async fn timestamp_tick(
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
     if state.user_file_loaded(uid).await {
+        let mut uid2timestamp_wl = state.uid2timestamp.write().await;
+        uid2timestamp_wl.insert(uid, TimestampInfo{ timestamp: payload, recv: Instant::now() });
+
         println!("timestamp_tick uid = {}, payload = {}", uid, payload);
+
         ack.send(SocketIoAck::<()>::ok(None)).ok();
         return;
     }
     ack.send(SocketIoAck::<()>::err()).ok();
+}
+
+pub async fn get_mpv_state(
+    State(state): State<Arc<SrvState>>,
+    s: SocketRef,
+    ack: AckSender
+) {
+    let rid_opt = state.socket_connected_room(&s).await;
+    if rid_opt.is_none() {
+        ack.send(SocketIoAck::<MpvState>::err()).ok();
+        return;
+    }
+    let rid = rid_opt.unwrap();
+    let uid = state.socket2uid(&s).await;
+    if state.user_file_loaded(uid).await {
+        let uid2timestamp_rl = state.uid2timestamp.read().await;
+        let rid2play_info_rl = state.rid2play_info.read().await;
+        let uid_ping_rl = state.uid_ping.read().await;
+        let rid2runtime_state_rl = state.rid2runtime_state.read().await;
+
+        let mut timestamp_infos = Vec::<TimestampInfo>::new();
+        let rid_uids_rl = state.rid_uids.read().await;
+        let uids = rid_uids_rl.get_by_left(&rid).unwrap();
+        for uid in uids {
+            if let Some(timestamp_info) = uid2timestamp_rl.get(uid) {
+                if Instant::now().duration_since(timestamp_info.recv).as_millis() < 2000 {
+                    timestamp_infos.push(*timestamp_info);
+                }
+            }
+        }
+        let mut timestamps = timestamp_infos
+            .iter()
+            .map(|x| state.get_compensated_timestamp_of_uid(
+                uid,
+                rid,
+                &uid2timestamp_rl,
+                &rid2play_info_rl,
+                &uid_ping_rl,
+                &rid2runtime_state_rl
+        ))
+            .filter_map(|x| x)
+            .collect::<Vec<f64>>();
+
+        timestamps.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let median_timestamp = utils::median_of_sorted(&timestamps).unwrap_or(0f64);
+
+        let play_info = rid2play_info_rl.get(&rid).unwrap();
+        ack.send(SocketIoAck::<MpvState>::ok(Some(MpvState{ timestamp: median_timestamp, playing_state: play_info.playing_state }))).ok();
+        return;
+    }
+    ack.send(SocketIoAck::<MpvState>::err()).ok();
 }

@@ -1,10 +1,12 @@
 use std::collections::HashMap;
 use rust_decimal::Decimal;
+use rust_decimal::prelude::ToPrimitive;
 use serde::{Deserialize, Serialize};
+use serde_repr::Serialize_repr;
 use socketioxide::extract::SocketRef;
 use socketioxide::SocketIo;
 use sqlx::{PgPool};
-use tokio::sync::RwLock;
+use tokio::sync::{RwLock, RwLockReadGuard};
 use tokio::time::Instant;
 use crate::bimultimap::BiMultiMap;
 use crate::config::Config;
@@ -90,6 +92,38 @@ impl SrvState {
             false
         }
     }
+
+    pub fn get_compensated_timestamp_of_uid<'a>(
+        &self,
+        uid: Id,
+        rid: Id,
+        uid2timestamp_rl: &'a RwLockReadGuard<'_, HashMap<Id, TimestampInfo>>,
+        rid2play_info_rl: &'a RwLockReadGuard<'_, HashMap<Id, RoomPlayInfo>>,
+        uid_ping_rl: &'a RwLockReadGuard<'_, HashMap<Id, f64>>,
+        rid2runtime_state_rl: &'a RwLockReadGuard<'_, HashMap<Id, RoomRuntimeState>>
+    ) -> Option<f64> {
+        let timestamp_info_opt = uid2timestamp_rl.get(&uid);
+        if timestamp_info_opt.is_none() {
+            return None
+        }
+        let timestamp_info = timestamp_info_opt.unwrap();
+        let mut compensated_timestamp = timestamp_info.timestamp;
+        let play_info = rid2play_info_rl.get(&rid).unwrap();
+        if play_info.playing_state == PlayingState::Play {
+            let mut compensation_start = play_info.last_change_at;
+            if play_info.last_change_at < timestamp_info.recv {
+                compensation_start = timestamp_info.recv;
+            }
+            let duration = Instant::now().duration_since(compensation_start);
+            let room_runtime_state = rid2runtime_state_rl.get(&rid).unwrap();
+            let ping_ms = *uid_ping_rl.get(&uid).unwrap_or(&0f64);
+            compensated_timestamp += duration.as_secs_f64() * room_runtime_state.playback_speed.to_f64().unwrap() + (ping_ms / 2000f64);
+            Some(compensated_timestamp)
+        }
+        else {
+            Some(compensated_timestamp)
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -104,6 +138,7 @@ pub enum PlaylistEntry {
 pub struct RoomPlayInfo {
     pub playing_entry_id: PlaylistEntryId,
     pub playing_state: PlayingState,
+    pub last_change_at: Instant
 }
 
 #[derive(Debug)]
@@ -112,9 +147,11 @@ pub struct RoomRuntimeState {
     pub runtime_config: RoomSettings,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone, PartialEq, Serialize_repr)]
+#[repr(u8)]
 pub enum PlayingState {
-    Play, Pause
+    Play = 0,
+    Pause = 1
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -132,6 +169,7 @@ pub enum UserReadyStatus {
     Ready, NotReady, Loading, Error
 }
 
+#[derive(Debug, Copy, Clone)]
 pub struct TimestampInfo {
     pub timestamp: f64,
     pub recv: Instant
