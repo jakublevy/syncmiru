@@ -152,6 +152,7 @@ export default function Main(): ReactElement {
         setUid2ready(new Map<UserId, UserReadyState>())
         setActiveVideoId(null)
         setMpvRunning(false)
+        setUid2audioSub(new Map<UserId, UserAudioSubtitles>())
     }
 
     function ioConnError(e: Error) {

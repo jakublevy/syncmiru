@@ -25,8 +25,8 @@ export interface UserAudioSubtitles {
     sid: number | null
     audio_delay: number,
     sub_delay: number,
-    audioSync: boolean,
-    subSync: boolean
+    audio_sync: boolean,
+    sub_sync: boolean
 }
 
 export interface UserPause {

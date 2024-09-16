@@ -53,6 +53,7 @@ import Subtitles from "@components/svg/Subtitles.tsx";
 import SubtitlesCrossed from "@components/svg/SubtitlesCrossed.tsx";
 import {MpvMsgMood, showMpvReadyMessages} from "src/utils/mpv.ts";
 import {UserAudioSubtitles, UserChangeAudioSync, UserChangeSubSync} from "@models/mpv.ts";
+import {changeActiveVideo} from "../../utils/playlist.ts";
 
 export default function Rooms(): ReactElement {
     const ctx = useMainContext()
@@ -407,9 +408,9 @@ export default function Rooms(): ReactElement {
             }
             const oldValue = p.get(userChangeAudioSync.uid)
             if(oldValue != null) {
-                const {audioSync: oldAudioSync, ...rest} = oldValue
+                const {audio_sync: oldAudioSync, ...rest} = oldValue
                 const newValue = {
-                    audioSync: userChangeAudioSync.audio_sync,
+                    audio_sync: userChangeAudioSync.audio_sync,
                     ...rest
                 } as UserAudioSubtitles;
                 m.set(userChangeAudioSync.uid, newValue)
@@ -427,9 +428,9 @@ export default function Rooms(): ReactElement {
             }
             const oldValue = p.get(userChangeSubSync.uid)
             if(oldValue != null) {
-                const {subSync: oldSubSync, ...rest} = oldValue
+                const {sub_sync: oldSubSync, ...rest} = oldValue
                 const newValue = {
-                    subSync: userChangeSubSync.sub_sync,
+                    sub_sync: userChangeSubSync.sub_sync,
                     ...rest
                 } as UserAudioSubtitles;
                 m.set(userChangeSubSync.uid, newValue)
@@ -560,6 +561,7 @@ export default function Rooms(): ReactElement {
         ctx.setPlaylistLoading(true)
         ctx.setActiveVideoId(null)
         ctx.setUid2ready(new Map<UserId, UserReadyState>())
+        ctx.setUid2audioSub(new Map<UserId, UserAudioSubtitles>())
         ctx.socket!.emitWithAck("ping", {})
             .then(() => {
                 const took = performance.now() - start
@@ -581,6 +583,7 @@ export default function Rooms(): ReactElement {
                                     const playlistSrv = payload.playlist
                                     const playlistOrder = payload.playlist_order
                                     const uid2ReadyStateSrv = payload.ready_status
+                                    const usersAudioSub = payload.users_audio_sub
 
                                     const pings: UserRoomPingsClient = new Map<UserId, number>()
                                     for(const uidStr in roomPingsSrv) {
@@ -620,9 +623,18 @@ export default function Rooms(): ReactElement {
                                     }
                                     ctx.setUid2ready((p) => new Map<UserId, UserReadyState>([...p, ...readyStates]))
 
+                                    const audioSubs: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
+                                    for(const idStr in usersAudioSub) {
+                                        const id = parseInt(idStr)
+                                        const audioSub = usersAudioSub[id]
+                                        audioSubs.set(id, audioSub)
+                                    }
+                                    ctx.setUid2audioSub(audioSubs)
+
                                     if(payload.active_video_id != null)
-                                        ctx.setActiveVideoId(payload.active_video_id)
-                                    
+                                        changeActiveVideo(ctx, t, payload.active_video_id)
+
+
                                 })
                                 .catch(() => {
                                     forceDisconnectFromRoomOnFetchFailure()
@@ -791,11 +803,11 @@ export default function Rooms(): ReactElement {
                                                                 {readyState != null && ![UserReadyState.Loading, UserReadyState.Error].includes(readyState) && audioSub != null
                                                                 && <>
                                                                         <p className="text-xs">{`A:${audioSub.aid != null ? audioSub.aid : '∅'}/S:${audioSub.sid != null ? audioSub.sid : '∅'}`}</p>
-                                                                        {audioSub.audioSync
+                                                                        {audioSub.audio_sync
                                                                             ? <Bubble className="min-w-4 w-4 ml-1"/>
                                                                             : <BubbleCrossed className="min-w-4 w-4 ml-1"/>
                                                                         }
-                                                                        {audioSub.subSync
+                                                                        {audioSub.sub_sync
                                                                             ? <Subtitles className="min-w-4 w-4 ml-1"/>
                                                                             : <SubtitlesCrossed className="min-w-4 w-4 ml-1"/>
                                                                         }

@@ -6,7 +6,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use validator::Validate;
 use crate::validators;
 use crate::models::query::{Id, RoomSettings};
-use crate::srvstate::{PlayingState, PlaylistEntry, PlaylistEntryId, UserReadyStatus};
+use crate::srvstate::{PlayingState, PlaylistEntry, PlaylistEntryId, UserPlayInfo, UserReadyStatus};
 
 #[derive(Debug, Clone, Deserialize, Validate)]
 pub struct LoginTkns {
@@ -249,7 +249,8 @@ pub struct JoinedRoomInfo<'a> {
     pub playlist: HashMap<PlaylistEntryId, &'a PlaylistEntry>,
     pub playlist_order: IndexSet<PlaylistEntryId>,
     pub ready_status: HashMap<Id, UserReadyStatus>,
-    pub active_video_id: Option<PlaylistEntryId>
+    pub active_video_id: Option<PlaylistEntryId>,
+    pub users_audio_sub: HashMap<Id, UserPlayInfo>
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]

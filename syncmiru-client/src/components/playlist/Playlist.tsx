@@ -24,6 +24,7 @@ import {UserId} from "@models/user.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserAudioSubtitles} from "@models/mpv.ts";
 import {hideMpvReadyMessages, MpvMsgMood} from "src/utils/mpv.ts";
+import {changeActiveVideo} from "../../utils/playlist.ts";
 
 export default function Playlist(): ReactElement {
     const ctx = useMainContext()
@@ -206,49 +207,15 @@ export default function Playlist(): ReactElement {
     }
 
     function onChangeActiveVideo(entryId: PlaylistEntryId) {
-        ctx.setPlaylist((playlist) => {
-            const entry = playlist.get(entryId)
-
-            ctx.setUid2ready((p) => {
-                const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
-                for (const [id, value] of p) {
-                    m.set(id, UserReadyState.Loading)
-                }
-                return m
-            })
-
-            let reqIds: Set<PlaylistEntryId> = new Set<PlaylistEntryId>()
-
-            if(entry instanceof PlaylistEntryVideo)
-                reqIds.add(entryId)
-
-            const jwtsTmp: Map<PlaylistEntryId, string> = new Map<PlaylistEntryId, string>()
-            let promises = []
-            for(const id of reqIds) {
-                promises.push(ctx.socket!.emitWithAck("req_playing_jwt", {playlist_entry_id: id})
-                    .then((ack: SocketIoAck<string>) => {
-                        if(ack.status === SocketIoAckType.Err) {
-                            showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
-                            forceDisconnectFromRoom(ctx, t)
-                            return
-                        }
-                        const jwt = ack.payload as string
-                        jwtsTmp.set(entryId, jwt)
-                    })
-                    .catch(() => {
-                        showPersistentErrorAlert(t('playlist-entry-req-jwt-error'))
-                        forceDisconnectFromRoom(ctx, t)
-                        return
-                    }))
+        ctx.setUid2ready((p) => {
+            const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+            for (const [id, value] of p) {
+                m.set(id, UserReadyState.Loading)
             }
-            Promise.all(promises)
-                .then(() => {
-                    ctx.setJwts(jwtsTmp)
-                    ctx.setActiveVideoId(entryId)
-                })
-
-            return playlist
+            return m
         })
+
+        changeActiveVideo(ctx, t, entryId)
     }
 
     function orderChanged(e: OnChangeMeta) {

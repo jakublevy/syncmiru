@@ -3,6 +3,7 @@ use std::hash::Hash;
 use std::sync::Arc;
 use indexmap::{IndexMap, IndexSet};
 use rust_decimal::Decimal;
+use rust_decimal::prelude::ToPrimitive;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use tokio::time::Instant;
 use validator::Validate;
@@ -1361,6 +1362,17 @@ pub async fn join_room(
         });
     }
 
+    let uid2play_info_rl = state.uid2play_info.read().await;
+    let mut users_audio_sub = HashMap::<Id, UserPlayInfo>::new();
+    if let Some(uids) = uids_already_in_room {
+        for uid in uids {
+            let play_info_opt = uid2play_info_rl.get(uid);
+            if let Some(play_info) = play_info_opt {
+                users_audio_sub.insert(*uid, *play_info);
+            }
+        }
+    }
+
     rid_uids_wl.insert(payload.rid, uid);
     uid_ping_wl.insert(uid, payload.ping);
     uid2ready_status_wl.insert(uid, UserReadyStatus::Loading);
@@ -1421,7 +1433,8 @@ pub async fn join_room(
         playlist,
         playlist_order,
         ready_status,
-        active_video_id
+        active_video_id,
+        users_audio_sub
     }))).ok();
     transaction.commit().await.expect("db error");
 }
@@ -2357,7 +2370,7 @@ pub async fn timestamp_tick(
         let mut uid2timestamp_wl = state.uid2timestamp.write().await;
         uid2timestamp_wl.insert(uid, TimestampInfo{ timestamp: payload, recv: Instant::now() });
 
-        println!("timestamp_tick uid = {}, payload = {}", uid, payload);
+
 
         ack.send(SocketIoAck::<()>::ok(None)).ok();
         return;
@@ -2383,20 +2396,23 @@ pub async fn get_mpv_state(
         let uid_ping_rl = state.uid_ping.read().await;
         let rid2runtime_state_rl = state.rid2runtime_state.read().await;
 
-        let mut timestamp_infos = Vec::<TimestampInfo>::new();
+        let room_runtime_state = rid2runtime_state_rl.get(&rid).unwrap();
+        let play_info = rid2play_info_rl.get(&rid).unwrap();
+
+        let mut relevant_uids = Vec::<Id>::new();
         let rid_uids_rl = state.rid_uids.read().await;
         let uids = rid_uids_rl.get_by_left(&rid).unwrap();
         for uid in uids {
             if let Some(timestamp_info) = uid2timestamp_rl.get(uid) {
                 if Instant::now().duration_since(timestamp_info.recv).as_millis() < 2000 {
-                    timestamp_infos.push(*timestamp_info);
+                    relevant_uids.push(*uid);
                 }
             }
         }
-        let mut timestamps = timestamp_infos
+        let mut timestamps = relevant_uids
             .iter()
-            .map(|x| state.get_compensated_timestamp_of_uid(
-                uid,
+            .map(|uid| state.get_compensated_timestamp_of_uid(
+                *uid,
                 rid,
                 &uid2timestamp_rl,
                 &rid2play_info_rl,
@@ -2405,6 +2421,13 @@ pub async fn get_mpv_state(
         ))
             .filter_map(|x| x)
             .collect::<Vec<f64>>();
+
+        if play_info.playing_state == PlayingState::Play {
+            timestamps = timestamps
+                .iter()
+                .map(|x| x + room_runtime_state.runtime_config.desync_tolerance.to_f64().unwrap())
+                .collect::<Vec<f64>>()
+        }
 
         timestamps.sort_by(|a, b| a.partial_cmp(b).unwrap());
         let median_timestamp = utils::median_of_sorted(&timestamps).unwrap_or(0f64);

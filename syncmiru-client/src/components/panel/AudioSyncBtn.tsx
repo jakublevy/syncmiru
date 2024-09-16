@@ -30,9 +30,9 @@ export default function AudioSyncBtn(): ReactElement {
                 }
                 const oldValue = p.get(ctx.uid)
                 if(oldValue != null) {
-                    const {audioSync: oldAudioSync, ...rest} = oldValue
+                    const {audio_sync: oldAudioSync, ...rest} = oldValue
                     const newValue = {
-                        audioSync: !ctx.audioSync,
+                        audio_sync: !ctx.audioSync,
                         ...rest
                     } as UserAudioSubtitles;
                     m.set(ctx.uid, newValue)

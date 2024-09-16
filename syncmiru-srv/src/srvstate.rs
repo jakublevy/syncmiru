@@ -117,7 +117,11 @@ impl SrvState {
             let duration = Instant::now().duration_since(compensation_start);
             let room_runtime_state = rid2runtime_state_rl.get(&rid).unwrap();
             let ping_ms = *uid_ping_rl.get(&uid).unwrap_or(&0f64);
-            compensated_timestamp += duration.as_secs_f64() * room_runtime_state.playback_speed.to_f64().unwrap() + (ping_ms / 2000f64);
+
+            compensated_timestamp +=
+                duration.as_secs_f64() * room_runtime_state.playback_speed.to_f64().unwrap()
+                + (ping_ms / 1000f64);
+
             Some(compensated_timestamp)
         }
         else {
@@ -154,7 +158,7 @@ pub enum PlayingState {
     Pause = 1
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Serialize)]
 pub struct UserPlayInfo {
     pub aid: Option<u64>,
     pub sid: Option<u64>,

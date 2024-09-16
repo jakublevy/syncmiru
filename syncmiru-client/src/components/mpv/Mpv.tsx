@@ -10,6 +10,7 @@ import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {PlaylistEntry, PlaylistEntryId, PlaylistEntryUrl, PlaylistEntryVideo} from "@models/playlist.ts";
 import {
     MpvState,
+    PlayingState,
     UserAudioSubtitles,
     UserChangeAudio,
     UserChangeAudioDelay,
@@ -186,7 +187,23 @@ export default function Mpv(p: Props): ReactElement {
                                         disconnectFromRoom(ctx, t)
                                     }
                                     else {
-                                        console.log(`recv mpv state ${JSON.stringify(ack.payload)}`)
+                                        const payload = ack.payload as MpvState
+                                        invoke('mpv_seek', {timestamp: payload.timestamp})
+                                            .then(() => {
+                                                startTimestampTimer()
+
+                                                if(payload.playing_state === PlayingState.Play) {
+                                                   invoke('mpv_set_pause', {pause: false})
+                                                       .catch(() => {
+                                                           showPersistentErrorAlert(t('mpv-load-error'))
+                                                           disconnectFromRoom(ctx, t)
+                                                       })
+                                               }
+                                            })
+                                            .catch(() => {
+                                                showPersistentErrorAlert(t('mpv-load-error'))
+                                                disconnectFromRoom(ctx, t)
+                                            })
                                     }
                                 })
                                 .catch(() => {
@@ -203,8 +220,6 @@ export default function Mpv(p: Props): ReactElement {
                     showPersistentErrorAlert(t('mpv-load-error'))
                     disconnectFromRoom(ctx, t)
                 })
-
-            startTimestampTimer()
         }))
 
         unlisten.push(listen<void>('mpv-file-load-failed', (e: Event<void>) => {
@@ -416,8 +431,8 @@ export default function Mpv(p: Props): ReactElement {
             m.set(userPlayInfo.uid, {
                 aid: userPlayInfo.aid,
                 sid: userPlayInfo.sid,
-                audioSync: userPlayInfo.audio_sync,
-                subSync: userPlayInfo.sub_sync,
+                audio_sync: userPlayInfo.audio_sync,
+                sub_sync: userPlayInfo.sub_sync,
                 audio_delay: userPlayInfo.audio_delay,
                 sub_delay: userPlayInfo.sub_delay
             })
@@ -883,8 +898,8 @@ export default function Mpv(p: Props): ReactElement {
             sid: myAudioSub.sid,
             audio_delay: myAudioSub.audio_delay,
             sub_delay: myAudioSub.sub_delay,
-            audioSync: myAudioSub.audioSync,
-            subSync: myAudioSub.subSync,
+            audio_sync: myAudioSub.audio_sync,
+            sub_sync: myAudioSub.sub_sync,
         } as UserAudioSubtitles
 
         if(ctx.uid !== payload.uid) {

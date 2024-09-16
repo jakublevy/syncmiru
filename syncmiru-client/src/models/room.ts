@@ -6,6 +6,7 @@ import {
     PlaylistEntryVideoSrv
 } from "@models/playlist.ts";
 import {UserId} from "@models/user.ts";
+import {UserAudioSubtitles} from "@models/mpv.ts";
 
 export type RoomId = number
 
@@ -56,4 +57,5 @@ export interface JoinedRoomInfoSrv {
     playlist_order: Array<PlaylistEntryId>
     ready_status: Record<UserId, string>
     active_video_id: number | null
+    users_audio_sub: Record<string, UserAudioSubtitles>
 }

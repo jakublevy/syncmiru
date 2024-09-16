@@ -6,6 +6,7 @@ import {showPersistentErrorAlert} from "./alert.ts";
 import {TFunction} from "i18next";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
+import {UserAudioSubtitles} from "@models/mpv.ts";
 
 export function forceDisconnectFromRoom(ctx: MainContextModel, t: TFunction<"translation", undefined>) {
     ctx.setRoomConnection(RoomConnectionState.Disconnecting)
@@ -63,4 +64,5 @@ function clearValuesAfterDisconnect(ctx: MainContextModel) {
     ctx.setUid2ready(new Map<UserId, UserReadyState>())
     ctx.setActiveVideoId(null)
     ctx.setMpvRunning(false)
+    ctx.setUid2audioSub(new Map<UserId, UserAudioSubtitles>())
 }
