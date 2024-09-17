@@ -244,18 +244,21 @@ export default function Rooms(): ReactElement {
     }
 
     function onUserRoomJoin(userRoomJoin: UserRoomJoin) {
-        ctx.setUid2ready((p) => {
-            const r: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
-            for(const [k,v] of p) {
-                r.set(k, v)
-            }
-            r.set(userRoomJoin.uid, UserReadyState.Loading)
+        if(ctx.roomConnection === RoomConnectionState.Established && ctx.currentRid === userRoomJoin.rid) {
+            ctx.setUid2ready((p) => {
+                const r: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+                for(const [k,v] of p) {
+                    r.set(k, v)
+                }
 
-            if(ctx.activeVideoId != null)
-                showMpvReadyMessages(r, usersRef.current, t)
+                r.set(userRoomJoin.uid, UserReadyState.Loading)
 
-            return r
-        })
+                if(ctx.activeVideoId != null)
+                    showMpvReadyMessages(r, usersRef.current, t)
+
+                return r
+            })
+        }
 
         ctx.setRoomUsers((p) => {
             const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
