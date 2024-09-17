@@ -5,12 +5,16 @@ use rust_decimal::prelude::ToPrimitive;
 use serde::{Deserialize, Serialize};
 use serde_repr::Serialize_repr;
 use socketioxide::extract::SocketRef;
+use socketioxide::socket::Sid;
 use socketioxide::SocketIo;
 use sqlx::{PgPool};
 use tokio::sync::{RwLock, RwLockReadGuard};
+use tokio::sync::mpsc::Sender;
 use tokio::time::Instant;
 use crate::bimultimap::BiMultiMap;
 use crate::config::Config;
+use crate::handlers;
+use crate::handlers::timers::DesyncTimerInterface;
 use crate::models::query::{Id, RoomSettings};
 
 pub type PlaylistEntryId = u64;
@@ -18,6 +22,7 @@ pub type PlaylistEntryId = u64;
 pub struct SrvState {
     pub config: Config,
     pub db: PgPool,
+    pub desync_timer_tx: Sender<handlers::timers::DesyncTimerInterface>,
     pub socket_uid: RwLock<bimap::BiMap<socketioxide::socket::Sid, Id>>,
     pub socket_uid_disconnect: RwLock<HashMap<socketioxide::socket::Sid, Id>>,
     pub sid_hwid_hash: RwLock<HashMap<socketioxide::socket::Sid, String>>,
@@ -42,6 +47,11 @@ impl SrvState {
     pub async fn socket2uid(&self, s: &SocketRef) -> Id {
         let socket_uid_lock = self.socket_uid.read().await;
         *socket_uid_lock.get_by_left(&s.id).unwrap()
+    }
+
+    pub async fn uid2sid(&self, uid: Id) -> Option<Sid> {
+        let socket_uid_lock = self.socket_uid.read().await;
+        socket_uid_lock.get_by_right(&uid).map(|x|x.clone())
     }
 
     pub async fn socket2hwid_hash(&self, s: &SocketRef) -> String {
@@ -82,6 +92,10 @@ impl SrvState {
 
         rid_video_id_wl.remove_by_right(&entry_id);
         playlist_wl.remove(&entry_id);
+
+        if playlist_wl.is_empty() {
+            self.desync_timer_tx.send(DesyncTimerInterface::Sleep).await.ok();
+        }
     }
 
     pub async fn user_file_loaded(&self, uid: Id) -> bool {

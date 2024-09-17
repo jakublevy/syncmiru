@@ -7,6 +7,7 @@ use crate::config::Rate;
 use crate::models::query::{EmailTknType, Id};
 use crate::models::socketio::{EmailChangeTkn, EmailChangeTknType};
 use crate::{crypto, query};
+use crate::handlers::timers::DesyncTimerInterface;
 use crate::srvstate::{PlaylistEntryId, SrvState};
 use crate::result::Result;
 
@@ -161,6 +162,11 @@ pub(super) async fn disconnect_from_room(
                 playlist_wl.remove(video_id);
             }
         }
+
+        if playlist_wl.is_empty() {
+            state.desync_timer_tx.send(DesyncTimerInterface::Sleep).await.ok();
+        }
+
         rid_video_id_wl.remove_by_left(&rid);
         rid2play_info_wl.remove(&rid);
         rid2runtime_state_wl.remove(&rid);

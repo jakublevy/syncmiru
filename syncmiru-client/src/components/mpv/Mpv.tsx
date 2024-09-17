@@ -1016,7 +1016,7 @@ export default function Mpv(p: Props): ReactElement {
                     ctx.socket!.emitWithAck('timestamp_tick', time)
 
                 })
-        }, 2000)
+        }, 1000)
     }
 
     return (

@@ -11,6 +11,7 @@ use crate::models::{EmailWithLang, Tkn};
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
 use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlaylistEntryIdStruct, PlaylistOrder, AddUrls, UserReadyStateChangeReq, UserReadyStateChangeClient, AddEntryFilesResp, DeletePlaylistEntry, ChangePlaylistOrder, UploadMpvState, MpvState};
 use crate::{crypto, email, file, query};
+use crate::handlers::timers::DesyncTimerInterface;
 use crate::models::file::FileInfo;
 use crate::handlers::utils;
 use crate::handlers::utils::{disconnect_from_room, video_id_in_room};
@@ -1855,6 +1856,8 @@ pub async fn mpv_file_loaded(
     );
     uid2ready_status_wl.insert(uid, UserReadyStatus::NotReady);
 
+    state.desync_timer_tx.send(DesyncTimerInterface::Wake).await.ok();
+
     s.within(rid.to_string()).emit(
         "user_file_loaded",
         UserPlayInfoClient {
@@ -2364,55 +2367,10 @@ pub async fn timestamp_tick(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-    let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
     if state.user_file_loaded(uid).await {
-        let rid2play_info_rl = state.rid2play_info.read().await;
-        let uid_ping_rl = state.uid_ping.read().await;
-        let rid2runtime_state_rl = state.rid2runtime_state.read().await;
-
-        let room_runtime_state = rid2runtime_state_rl.get(&rid).unwrap();
-
         let mut uid2timestamp_wl = state.uid2timestamp.write().await;
         uid2timestamp_wl.insert(uid, TimestampInfo{ timestamp: payload, recv: Instant::now() });
-
-        let mut relevant_uids = Vec::<Id>::new();
-        let rid_uids_rl = state.rid_uids.read().await;
-        let uids = rid_uids_rl.get_by_left(&rid).unwrap();
-        for uid in uids {
-            if let Some(timestamp_info) = uid2timestamp_wl.get(uid) {
-                if Instant::now().duration_since(timestamp_info.recv).as_millis() < 2000 {
-                    relevant_uids.push(*uid);
-                }
-            }
-        }
-
-        let mut timestamps = relevant_uids
-            .iter()
-            .map(|uid| state.get_compensated_timestamp_of_uid(
-                *uid,
-                rid,
-                &uid2timestamp_wl,
-                &rid2play_info_rl,
-                &uid_ping_rl,
-                &rid2runtime_state_rl
-            ))
-            .filter_map(|x| x)
-            .collect::<Vec<f64>>();
-
-        timestamps.sort_by(|a, b| a.partial_cmp(b).unwrap());
-        let smallest_timestamp = timestamps.first().unwrap();
-
-        for uid in uids {
-            let timestamp_info_opt = uid2timestamp_wl.get_mut(uid);
-            if let Some(timestamp_info) = timestamp_info_opt {
-                if timestamp_info.timestamp - smallest_timestamp > room_runtime_state.runtime_config.major_desync_min.to_f64().unwrap() {
-                    println!("rewind uid = {} to {}", uid, smallest_timestamp);
-                    s.emit("major_desync_seek", smallest_timestamp).ok();
-                    timestamp_info.timestamp = *smallest_timestamp;
-                }
-            }
-        }
 
         ack.send(SocketIoAck::<()>::ok(None)).ok();
         return;
@@ -2438,8 +2396,8 @@ pub async fn get_mpv_state(
         let uid_ping_rl = state.uid_ping.read().await;
         let rid2runtime_state_rl = state.rid2runtime_state.read().await;
 
-        let room_runtime_state = rid2runtime_state_rl.get(&rid).unwrap();
-        let play_info = rid2play_info_rl.get(&rid).unwrap();
+        //let room_runtime_state = rid2runtime_state_rl.get(&rid).unwrap();
+        //let play_info = rid2play_info_rl.get(&rid).unwrap();
 
         let mut relevant_uids = Vec::<Id>::new();
         let rid_uids_rl = state.rid_uids.read().await;
@@ -2464,12 +2422,12 @@ pub async fn get_mpv_state(
             .filter_map(|x| x)
             .collect::<Vec<f64>>();
 
-        if play_info.playing_state == PlayingState::Play {
-            timestamps = timestamps
-                .iter()
-                .map(|x| x + room_runtime_state.runtime_config.desync_tolerance.to_f64().unwrap())
-                .collect::<Vec<f64>>()
-        }
+        // if play_info.playing_state == PlayingState::Play {
+        //     timestamps = timestamps
+        //         .iter()
+        //         .map(|x| x + room_runtime_state.runtime_config.desync_tolerance.to_f64().unwrap())
+        //         .collect::<Vec<f64>>()
+        // }
 
         timestamps.sort_by(|a, b| a.partial_cmp(b).unwrap());
         let median_timestamp = utils::median_of_sorted(&timestamps).unwrap_or(0f64);

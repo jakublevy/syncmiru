@@ -19,6 +19,8 @@ use socketioxide::extract::SocketRef;
 use socketioxide::handler::ConnectHandler;
 use socketioxide::SocketIo;
 use sqlx::Executor;
+use tokio::sync::mpsc;
+use tokio::sync::mpsc::{Receiver, Sender};
 use tower::{BoxError, ServiceBuilder};
 use tower_http::cors::CorsLayer;
 use crate::args::Args;
@@ -60,10 +62,14 @@ async fn main() -> Result<()> {
    let pool = db::create_connection_pool(&config.db).await?;
    db::run_migrations(&pool).await?;
 
+   let (desync_timer_tx, desync_timer_rx)
+       : (Sender<handlers::timers::DesyncTimerInterface>, Receiver<handlers::timers::DesyncTimerInterface>) = mpsc::channel(1);
+
    let srvstate = Arc::new(
       SrvState {
          config: config.clone(),
          db: pool.clone(),
+         desync_timer_tx,
          socket_uid: BiMap::new().into(),
          socket_uid_disconnect: HashMap::new().into(),
          io: None.into(),
@@ -89,6 +95,9 @@ async fn main() -> Result<()> {
       let mut io_lock = socketio_srvstate.io.write().await;
       *io_lock = Some(io.clone());
    }
+
+   tokio::spawn(handlers::timers::desync_timer_controller(srvstate.clone(), desync_timer_rx));
+
    io.ns("/", handlers::socketio::ns_callback.with(middleware::auth));
 
    let app = Router::new()
