@@ -106,6 +106,10 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
                Ok(_) => {
                    let mut mpv_tx_wl = state_for_process.mpv_stop_tx.write().await;
                    mpv_tx_wl.take();
+                   let mut mpv_ipc_tx_wl = state_for_process.mpv_ipc_tx.write().await;
+                   if let Some(mpv_ipc_tx) = mpv_ipc_tx_wl.take() {
+                       mpv_ipc_tx.send(Interface::Exit).await.ok();
+                   }
                    window.emit("mpv-running", false).expect("tauri error")
                },
                Err(_) => panic!("Error while waiting for process")

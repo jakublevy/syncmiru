@@ -467,9 +467,12 @@ async fn write(
                     sender.write_all(b"{\"command\": [\"playlist_remove\", \"current\"]}\n").await?;
                     cfg_if! {
                         if #[cfg(target_family = "windows")] {
-                            let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
-                            sleep(Duration::from_millis(50)).await;
-                            mpv::window::win32::hide_borders(&ipc_data.app_state, mpv_wid_rl.unwrap()).await?;
+                            let appdata = ipc_data.app_state.appdata.read().await;
+                            if !appdata.mpv_win_detached {
+                                let mpv_wid_rl = ipc_data.app_state.mpv_wid.read().await;
+                                sleep(Duration::from_millis(50)).await;
+                                mpv::window::win32::hide_borders(&ipc_data.app_state, mpv_wid_rl.unwrap()).await?;
+                            }
                         }
                         else {
                             ipc_data.window.emit("mpv-resize", {})?;

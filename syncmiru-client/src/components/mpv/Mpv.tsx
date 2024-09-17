@@ -541,7 +541,6 @@ export default function Mpv(p: Props): ReactElement {
     }
 
     function onMajorDesyncSeek(timestamp: number) {
-        console.log(`onMajorDesyncSeek ${timestamp}`)
         invoke('mpv_seek', {timestamp: timestamp})
             .catch(() => {
                 showPersistentErrorAlert(t('mpv-load-error'))
