@@ -145,7 +145,7 @@ export default function Rooms(): ReactElement {
                 ctx.socket.off('user_room_join', onUserRoomJoin)
             }
         }
-    }, [ctx.socket, ctx.currentRid, ctx.roomConnection, ctx.uid]);
+    }, [ctx.socket, ctx.currentRid, ctx.roomConnection, ctx.uid, ctx.activeVideoId]);
 
     useEffect(() => {
         if (ctx.socket !== undefined) {
@@ -244,6 +244,19 @@ export default function Rooms(): ReactElement {
     }
 
     function onUserRoomJoin(userRoomJoin: UserRoomJoin) {
+        ctx.setUid2ready((p) => {
+            const r: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+            for(const [k,v] of p) {
+                r.set(k, v)
+            }
+            r.set(userRoomJoin.uid, UserReadyState.Loading)
+
+            if(ctx.activeVideoId != null)
+                showMpvReadyMessages(r, usersRef.current, t)
+
+            return r
+        })
+
         ctx.setRoomUsers((p) => {
             const m: UserRoomMap = new Map<RoomId, Set<UserId>>()
             for (const [rid, uids] of p) {
@@ -261,9 +274,6 @@ export default function Rooms(): ReactElement {
             m.set(userRoomJoin.rid, roomUids)
 
             if(userRoomJoin.rid === ctx.currentRid) {
-                if(ctx.roomConnection === RoomConnectionState.Established || userRoomJoin.uid === ctx.uid) {
-                    addNewUserWithLoadingState(userRoomJoin.uid)
-                }
                 if(ctx.roomConnection === RoomConnectionState.Established && userRoomJoin.uid !== ctx.uid) {
                     const userValue = usersRef.current.get(userRoomJoin.uid)
                     if(userValue != null) {
@@ -295,6 +305,11 @@ export default function Rooms(): ReactElement {
                 }
             }
 
+            if(userRoomChange.new_rid === ctx.currentRid
+                && (ctx.roomConnection === RoomConnectionState.Established || userRoomChange.uid === ctx.uid)) {
+                m.set(userRoomChange.uid, UserReadyState.Loading)
+            }
+
             if(
                 ctx.roomConnection === RoomConnectionState.Established
                 && ctx.currentRid === userRoomChange.old_rid
@@ -308,9 +323,9 @@ export default function Rooms(): ReactElement {
                             showPersistentErrorAlert(t('mpv-msg-show-failed'))
                         })
 
-                    if(ctx.activeVideoId != null)
-                        showMpvReadyMessages(m, usersRef.current, t)
                 }
+                if(ctx.activeVideoId != null)
+                    showMpvReadyMessages(m, usersRef.current, t)
             }
 
             return m
@@ -347,12 +362,6 @@ export default function Rooms(): ReactElement {
                 newRoomUids.add(userRoomChange.uid)
             }
             m.set(userRoomChange.new_rid, newRoomUids)
-
-            if(userRoomChange.new_rid === ctx.currentRid
-                && (ctx.roomConnection === RoomConnectionState.Established || userRoomChange.uid === ctx.uid)) {
-                addNewUserWithLoadingState(userRoomChange.uid)
-            }
-
             return m
         })
 
@@ -436,17 +445,6 @@ export default function Rooms(): ReactElement {
                 m.set(userChangeSubSync.uid, newValue)
             }
             return m
-        })
-    }
-
-    function addNewUserWithLoadingState(uid: UserId) {
-        ctx.setUid2ready((p) => {
-            const r: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
-            for(const [k,v] of p) {
-                r.set(k, v)
-            }
-            r.set(uid, UserReadyState.Loading)
-            return r
         })
     }
 
@@ -577,64 +575,74 @@ export default function Rooms(): ReactElement {
                         } else {
                             invoke('mpv_start', {})
                                 .then(() => {
-                                    const payload = ack.payload as JoinedRoomInfoSrv
-                                    const roomPingsSrv = payload.room_pings
-                                    const roomSettingsSrv = payload.room_settings
-                                    const playlistSrv = payload.playlist
-                                    const playlistOrder = payload.playlist_order
-                                    const uid2ReadyStateSrv = payload.ready_status
-                                    const usersAudioSub = payload.users_audio_sub
+                                    invoke('mpv_remove_current_from_playlist', {})
+                                        .then(() => {
+                                            invoke('mpv_clear_msgs', {})
+                                                .then(() => {
+                                                    const payload = ack.payload as JoinedRoomInfoSrv
+                                                    const roomPingsSrv = payload.room_pings
+                                                    const roomSettingsSrv = payload.room_settings
+                                                    const playlistSrv = payload.playlist
+                                                    const playlistOrder = payload.playlist_order
+                                                    const uid2ReadyStateSrv = payload.ready_status
+                                                    const usersAudioSub = payload.users_audio_sub
 
-                                    const pings: UserRoomPingsClient = new Map<UserId, number>()
-                                    for(const uidStr in roomPingsSrv) {
-                                        const uid = parseInt(uidStr)
-                                        pings.set(uid, roomPingsSrv[uid])
-                                    }
-                                    ctx.setUidPing(pings)
+                                                    const pings: UserRoomPingsClient = new Map<UserId, number>()
+                                                    for(const uidStr in roomPingsSrv) {
+                                                        const uid = parseInt(uidStr)
+                                                        pings.set(uid, roomPingsSrv[uid])
+                                                    }
+                                                    ctx.setUidPing(pings)
 
-                                    const roomSettings: RoomSettingsClient = {
-                                        playback_speed: new Decimal(roomSettingsSrv.playback_speed),
-                                        minor_desync_playback_slow: new Decimal(roomSettingsSrv.minor_desync_playback_slow)
-                                    }
-                                    ctx.setJoinedRoomSettings(roomSettings)
-                                    startPingTimer()
+                                                    const roomSettings: RoomSettingsClient = {
+                                                        playback_speed: new Decimal(roomSettingsSrv.playback_speed),
+                                                        minor_desync_playback_slow: new Decimal(roomSettingsSrv.minor_desync_playback_slow)
+                                                    }
+                                                    ctx.setJoinedRoomSettings(roomSettings)
+                                                    startPingTimer()
 
-                                    const p: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
-                                    for(const idStr in playlistSrv) {
-                                        const id = parseInt(idStr)
-                                        const type = playlistSrv[idStr].type
-                                        if(type === PlaylistEntryType.Video) {
-                                            const valueSrv = playlistSrv[idStr] as PlaylistEntryVideoSrv
-                                            p.set(id, new PlaylistEntryVideo(valueSrv.source, valueSrv.path))
-                                        }
-                                        else if(type === PlaylistEntryType.Url) {
-                                            const value = playlistSrv[idStr] as PlaylistEntryUrlSrv
-                                            p.set(id, new PlaylistEntryUrl(value.url))
-                                        }
-                                    }
-                                    ctx.setPlaylist(p)
-                                    ctx.setPlaylistOrder(playlistOrder)
+                                                    const p: Map<PlaylistEntryId, PlaylistEntry> = new Map<PlaylistEntryId, PlaylistEntry>()
+                                                    for(const idStr in playlistSrv) {
+                                                        const id = parseInt(idStr)
+                                                        const type = playlistSrv[idStr].type
+                                                        if(type === PlaylistEntryType.Video) {
+                                                            const valueSrv = playlistSrv[idStr] as PlaylistEntryVideoSrv
+                                                            p.set(id, new PlaylistEntryVideo(valueSrv.source, valueSrv.path))
+                                                        }
+                                                        else if(type === PlaylistEntryType.Url) {
+                                                            const value = playlistSrv[idStr] as PlaylistEntryUrlSrv
+                                                            p.set(id, new PlaylistEntryUrl(value.url))
+                                                        }
+                                                    }
+                                                    ctx.setPlaylist(p)
+                                                    ctx.setPlaylistOrder(playlistOrder)
 
-                                    const readyStates: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
-                                    for(const uidStr in uid2ReadyStateSrv) {
-                                        const uid = parseInt(uidStr)
-                                        const readyState = uid2ReadyStateSrv[uid] as UserReadyState
-                                        readyStates.set(uid, readyState)
-                                    }
-                                    ctx.setUid2ready((p) => new Map<UserId, UserReadyState>([...p, ...readyStates]))
+                                                    const readyStates: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
+                                                    for(const uidStr in uid2ReadyStateSrv) {
+                                                        const uid = parseInt(uidStr)
+                                                        const readyState = uid2ReadyStateSrv[uid] as UserReadyState
+                                                        readyStates.set(uid, readyState)
+                                                    }
+                                                    ctx.setUid2ready((p) => new Map<UserId, UserReadyState>([...p, ...readyStates]))
 
-                                    const audioSubs: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
-                                    for(const idStr in usersAudioSub) {
-                                        const id = parseInt(idStr)
-                                        const audioSub = usersAudioSub[id]
-                                        audioSubs.set(id, audioSub)
-                                    }
-                                    ctx.setUid2audioSub(audioSubs)
+                                                    const audioSubs: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
+                                                    for(const idStr in usersAudioSub) {
+                                                        const id = parseInt(idStr)
+                                                        const audioSub = usersAudioSub[id]
+                                                        audioSubs.set(id, audioSub)
+                                                    }
+                                                    ctx.setUid2audioSub(audioSubs)
 
-                                    if(payload.active_video_id != null)
-                                        changeActiveVideo(ctx, t, payload.active_video_id)
-
-
+                                                    if(payload.active_video_id != null)
+                                                        changeActiveVideo(ctx, t, payload.active_video_id)
+                                                })
+                                                .catch(() => {
+                                                    forceDisconnectFromRoomOnFetchFailure()
+                                                })
+                                        })
+                                        .catch(() => {
+                                            forceDisconnectFromRoomOnFetchFailure()
+                                        })
                                 })
                                 .catch(() => {
                                     forceDisconnectFromRoomOnFetchFailure()

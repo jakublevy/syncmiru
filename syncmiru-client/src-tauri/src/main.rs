@@ -123,6 +123,7 @@ async fn main() -> Result<()> {
             mpv::frontend::mpv_set_audio_delay,
             mpv::frontend::mpv_get_sub_delay,
             mpv::frontend::mpv_set_sub_delay,
+            mpv::frontend::mpv_clear_msgs,
             frontend::kill_app_with_error_msg
         ])
         .on_window_event(move |window: &Window, event: &WindowEvent| {

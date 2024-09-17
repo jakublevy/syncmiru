@@ -416,3 +416,15 @@ pub async fn mpv_set_sub_delay(
     mpv_ipc_tx.send(Interface::SetSubDelay(sub_delay)).await?;
     Ok(())
 }
+
+#[tauri::command]
+pub async fn mpv_clear_msgs(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window
+) -> Result<()> {
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+
+    mpv_ipc_tx.send(Interface::ClearMessages).await?;
+    Ok(())
+}

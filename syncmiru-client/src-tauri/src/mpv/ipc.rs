@@ -440,8 +440,12 @@ async fn write(
                 Interface::ClearMessages => {
                     let mut mpv_not_ready_msg_id_wl = ipc_data.app_state.mpv_not_ready_msg_id.write().await;
                     let mut mpv_loading_msg_id_wl = ipc_data.app_state.mpv_loading_msg_id.write().await;
+                    let mut mpv_everyone_ready_msg_id_wl = ipc_data.app_state.mpv_everyone_ready_msg_id.write().await;
+                    let mut mpv_neutral_msgs_wl = ipc_data.app_state.mpv_neutral_msgs.write().await;
                     *mpv_not_ready_msg_id_wl = None;
                     *mpv_loading_msg_id_wl = None;
+                    *mpv_everyone_ready_msg_id_wl = None;
+                    *mpv_neutral_msgs_wl = Vec::new();
                     sender.write_all(b"{\"command\": [\"script-message-to\", \"prelude\", \"msgs-clear\"]}\n").await?;
 
                 },

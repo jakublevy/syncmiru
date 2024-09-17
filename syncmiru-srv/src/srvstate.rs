@@ -127,9 +127,13 @@ impl SrvState {
         if timestamp_info_opt.is_none() {
             return None
         }
+        let play_info_opt = rid2play_info_rl.get(&rid);
+        if play_info_opt.is_none() {
+            return None
+        }
+        let play_info = play_info_opt.unwrap();
         let timestamp_info = timestamp_info_opt.unwrap();
         let mut compensated_timestamp = timestamp_info.timestamp;
-        let play_info = rid2play_info_rl.get(&rid).unwrap();
         if play_info.playing_state == PlayingState::Play {
             let mut compensation_start = play_info.last_change_at;
             if play_info.last_change_at < timestamp_info.recv {
