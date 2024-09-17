@@ -181,37 +181,43 @@ export default function Mpv(p: Props): ReactElement {
             invoke<UserLoadedInfo>('mpv_get_loaded_info', {})
                 .then((payload: UserLoadedInfo) => {
                     ctx.socket!.emitWithAck('mpv_file_loaded', payload)
-                        .then(() => {
-                            ctx.socket!.emitWithAck('get_mpv_state', {})
-                                .then((ack: SocketIoAck<MpvState>) => {
-                                    if(ack.status === SocketIoAckType.Err) {
+                        .then((ack: SocketIoAck<null>) => {
+                            if(ack.status === SocketIoAckType.Err) {
+                                showPersistentErrorAlert(t('mpv-load-error'))
+                                disconnectFromRoom(ctx, t)
+                            }
+                            else {
+                                ctx.socket!.emitWithAck('get_mpv_state', {})
+                                    .then((ack: SocketIoAck<MpvState>) => {
+                                        if(ack.status === SocketIoAckType.Err) {
+                                            showPersistentErrorAlert(t('mpv-load-error'))
+                                            disconnectFromRoom(ctx, t)
+                                        }
+                                        else {
+                                            const payload = ack.payload as MpvState
+                                            invoke('mpv_seek', {timestamp: payload.timestamp})
+                                                .then(() => {
+                                                    startTimestampTimer()
+
+                                                    if(payload.playing_state === PlayingState.Play) {
+                                                        invoke('mpv_set_pause', {pause: false})
+                                                            .catch(() => {
+                                                                showPersistentErrorAlert(t('mpv-load-error'))
+                                                                disconnectFromRoom(ctx, t)
+                                                            })
+                                                    }
+                                                })
+                                                .catch(() => {
+                                                    showPersistentErrorAlert(t('mpv-load-error'))
+                                                    disconnectFromRoom(ctx, t)
+                                                })
+                                        }
+                                    })
+                                    .catch(() => {
                                         showPersistentErrorAlert(t('mpv-load-error'))
                                         disconnectFromRoom(ctx, t)
-                                    }
-                                    else {
-                                        const payload = ack.payload as MpvState
-                                        invoke('mpv_seek', {timestamp: payload.timestamp})
-                                            .then(() => {
-                                                startTimestampTimer()
-
-                                                if(payload.playing_state === PlayingState.Play) {
-                                                   invoke('mpv_set_pause', {pause: false})
-                                                       .catch(() => {
-                                                           showPersistentErrorAlert(t('mpv-load-error'))
-                                                           disconnectFromRoom(ctx, t)
-                                                       })
-                                               }
-                                            })
-                                            .catch(() => {
-                                                showPersistentErrorAlert(t('mpv-load-error'))
-                                                disconnectFromRoom(ctx, t)
-                                            })
-                                    }
-                                })
-                                .catch(() => {
-                                    showPersistentErrorAlert(t('mpv-load-error'))
-                                    disconnectFromRoom(ctx, t)
-                                })
+                                    })
+                            }
                         })
                         .catch(() => {
                             showPersistentErrorAlert(t('mpv-load-error'))
@@ -226,8 +232,14 @@ export default function Mpv(p: Props): ReactElement {
 
         unlisten.push(listen<void>('mpv-file-load-failed', (e: Event<void>) => {
             ctx.socket!.emitWithAck('mpv_file_load_failed', {})
-                .then(() => {
-                    showPersistentErrorAlert(t('mpv-invalid-file'))
+                .then((ack: SocketIoAck<null>) => {
+                    if(ack.status === SocketIoAckType.Err) {
+                        showPersistentErrorAlert(t('mpv-load-error'))
+                        disconnectFromRoom(ctx, t)
+                    }
+                    else {
+                        showPersistentErrorAlert(t('mpv-invalid-file'))
+                    }
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-load-error'))
@@ -244,6 +256,12 @@ export default function Mpv(p: Props): ReactElement {
                 invoke<number>('mpv_get_timestamp', {})
                     .then((time: number) => {
                         ctx.socket!.emitWithAck('mpv_pause', time)
+                            .then((ack: SocketIoAck<null>) => {
+                                if(ack.status === SocketIoAckType.Err) {
+                                    showPersistentErrorAlert(t('mpv-pause-error'))
+                                    disconnectFromRoom(ctx, t)
+                                }
+                            })
                             .catch(() => {
                                 showPersistentErrorAlert(t('mpv-pause-error'))
                                 disconnectFromRoom(ctx, t)
@@ -255,7 +273,13 @@ export default function Mpv(p: Props): ReactElement {
                     })
             }
             else {
-                ctx.socket?.emitWithAck('mpv_play', {})
+                ctx.socket!.emitWithAck('mpv_play', {})
+                    .then((ack: SocketIoAck<null>) => {
+                        if(ack.status === SocketIoAckType.Err) {
+                            showPersistentErrorAlert(t('mpv-play-error'))
+                            disconnectFromRoom(ctx, t)
+                        }
+                    })
                     .catch(() => {
                         showPersistentErrorAlert(t('mpv-play-error'))
                         disconnectFromRoom(ctx, t)
@@ -271,6 +295,12 @@ export default function Mpv(p: Props): ReactElement {
             invoke<number>('mpv_get_timestamp', {})
                 .then((time: number) => {
                     ctx.socket!.emitWithAck('mpv_seek', time)
+                        .then((ack: SocketIoAck<null>) => {
+                            if(ack.status === SocketIoAckType.Err) {
+                                showPersistentErrorAlert(t('mpv-seek-error'))
+                                disconnectFromRoom(ctx, t)
+                            }
+                        })
                         .catch(() => {
                             showPersistentErrorAlert(t('mpv-seek-error'))
                             disconnectFromRoom(ctx, t)
@@ -290,6 +320,12 @@ export default function Mpv(p: Props): ReactElement {
             const speed = new Decimal(e.payload)
 
             ctx.socket!.emitWithAck('mpv_speed_change', speed)
+                .then((ack: SocketIoAck<null>) => {
+                    if(ack.status === SocketIoAckType.Err) {
+                        showPersistentErrorAlert(t('mpv-speed-change-error'))
+                        disconnectFromRoom(ctx, t)
+                    }
+                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-speed-change-error'))
                     disconnectFromRoom(ctx, t)
@@ -298,6 +334,12 @@ export default function Mpv(p: Props): ReactElement {
 
         unlisten.push(listen<number | null>('mpv-audio-changed', (e: Event<number | null>) => {
             ctx.socket!.emitWithAck('mpv_audio_change', e.payload)
+                .then((ack: SocketIoAck<null>) => {
+                    if(ack.status === SocketIoAckType.Err) {
+                        showPersistentErrorAlert(t('mpv-audio-change-error'))
+                        disconnectFromRoom(ctx, t)
+                    }
+                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-audio-change-error'))
                     disconnectFromRoom(ctx, t)
@@ -306,6 +348,12 @@ export default function Mpv(p: Props): ReactElement {
 
         unlisten.push(listen<number | null>('mpv-sub-changed', (e: Event<number | null>) => {
             ctx.socket!.emitWithAck('mpv_sub_change', e.payload)
+                .then((ack: SocketIoAck<null>) => {
+                    if (ack.status === SocketIoAckType.Err) {
+                        showPersistentErrorAlert(t('mpv-sub-change-error'))
+                        disconnectFromRoom(ctx, t)
+                    }
+                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-sub-change-error'))
                     disconnectFromRoom(ctx, t)
@@ -314,6 +362,12 @@ export default function Mpv(p: Props): ReactElement {
 
         unlisten.push(listen<number>('mpv-audio-delay-changed', (e: Event<number>) => {
             ctx.socket!.emitWithAck('mpv_audio_delay_change', e.payload)
+                .then((ack: SocketIoAck<null>) => {
+                    if (ack.status === SocketIoAckType.Err) {
+                        showPersistentErrorAlert(t('mpv-audio-delay-change-error'))
+                        disconnectFromRoom(ctx, t)
+                    }
+                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-audio-delay-change-error'))
                     disconnectFromRoom(ctx, t)
@@ -322,6 +376,12 @@ export default function Mpv(p: Props): ReactElement {
 
         unlisten.push(listen<number>('mpv-sub-delay-changed', (e: Event<number>) => {
             ctx.socket!.emitWithAck('mpv_sub_delay_change', e.payload)
+                .then((ack: SocketIoAck<null>) => {
+                    if (ack.status === SocketIoAckType.Err) {
+                        showPersistentErrorAlert(t('mpv-sub-delay-change-error'))
+                        disconnectFromRoom(ctx, t)
+                    }
+                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-sub-delay-change-error'))
                     disconnectFromRoom(ctx, t)
@@ -702,6 +762,12 @@ export default function Mpv(p: Props): ReactElement {
                       invoke('mpv_set_audio', {aid: payload.aid})
                           .then(() => {
                                 ctx.socket!.emitWithAck('user_change_aid', payload.aid)
+                                    .then((ack: SocketIoAck<null>) => {
+                                        if (ack.status === SocketIoAckType.Err) {
+                                            showPersistentErrorAlert(t('mpv-audio-change-error'))
+                                            disconnectFromRoom(ctx, t)
+                                        }
+                                    })
                                     .catch(() => {
                                         showPersistentErrorAlert(t('mpv-audio-change-error'))
                                         disconnectFromRoom(ctx, t)
@@ -722,6 +788,12 @@ export default function Mpv(p: Props): ReactElement {
         }
         else {
             ctx.socket!.emitWithAck('user_change_aid', payload.aid)
+                .then((ack: SocketIoAck<null>) => {
+                    if (ack.status === SocketIoAckType.Err) {
+                        showPersistentErrorAlert(t('mpv-audio-change-error'))
+                        disconnectFromRoom(ctx, t)
+                    }
+                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-audio-change-error'))
                     disconnectFromRoom(ctx, t)
@@ -756,6 +828,12 @@ export default function Mpv(p: Props): ReactElement {
                         invoke('mpv_set_sub', {sid: payload.sid})
                             .then(() => {
                                 ctx.socket!.emitWithAck('user_change_sid', payload.sid)
+                                    .then((ack: SocketIoAck<null>) => {
+                                        if (ack.status === SocketIoAckType.Err) {
+                                            showPersistentErrorAlert(t('mpv-sub-change-error'))
+                                            disconnectFromRoom(ctx, t)
+                                        }
+                                    })
                                     .catch(() => {
                                         showPersistentErrorAlert(t('mpv-sub-change-error'))
                                         disconnectFromRoom(ctx, t)
@@ -776,6 +854,12 @@ export default function Mpv(p: Props): ReactElement {
         }
         else {
             ctx.socket!.emitWithAck('user_change_sid', payload.sid)
+                .then((ack: SocketIoAck<null>) => {
+                    if(ack.status === SocketIoAckType.Err) {
+                        showPersistentErrorAlert(t('mpv-sub-change-error'))
+                        disconnectFromRoom(ctx, t)
+                    }
+                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-sub-change-error'))
                     disconnectFromRoom(ctx, t)
@@ -810,6 +894,12 @@ export default function Mpv(p: Props): ReactElement {
                         invoke('mpv_set_audio_delay', {audioDelay: payload.audio_delay})
                             .then(() => {
                                 ctx.socket!.emitWithAck('user_change_audio_delay', payload.audio_delay)
+                                    .then((ack: SocketIoAck<null>) => {
+                                        if (ack.status === SocketIoAckType.Err) {
+                                            showPersistentErrorAlert(t('mpv-audio-delay-change-error'))
+                                            disconnectFromRoom(ctx, t)
+                                        }
+                                    })
                                     .catch(() => {
                                         showPersistentErrorAlert(t('mpv-audio-delay-change-error'))
                                         disconnectFromRoom(ctx, t)
@@ -830,6 +920,12 @@ export default function Mpv(p: Props): ReactElement {
         }
         else {
             ctx.socket!.emitWithAck('user_change_audio_delay', payload.audio_delay)
+                .then((ack: SocketIoAck<null>) => {
+                    if (ack.status === SocketIoAckType.Err) {
+                        showPersistentErrorAlert(t('mpv-audio-delay-change-error'))
+                        disconnectFromRoom(ctx, t)
+                    }
+                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-audio-delay-change-error'))
                     disconnectFromRoom(ctx, t)
@@ -875,6 +971,12 @@ export default function Mpv(p: Props): ReactElement {
                         invoke('mpv_set_sub_delay', {subDelay: payload.sub_delay})
                             .then(() => {
                                 ctx.socket!.emitWithAck('user_change_sub_delay', payload.sub_delay)
+                                    .then((ack: SocketIoAck<null>) => {
+                                        if (ack.status === SocketIoAckType.Err) {
+                                            showPersistentErrorAlert(t('mpv-sub-delay-change-error'))
+                                            disconnectFromRoom(ctx, t)
+                                        }
+                                    })
                                     .catch(() => {
                                         showPersistentErrorAlert(t('mpv-sub-delay-change-error'))
                                         disconnectFromRoom(ctx, t)
@@ -895,6 +997,12 @@ export default function Mpv(p: Props): ReactElement {
         }
         else {
             ctx.socket!.emitWithAck('user_change_sub_delay', payload.sub_delay)
+                .then((ack: SocketIoAck<null>) => {
+                    if (ack.status === SocketIoAckType.Err) {
+                        showPersistentErrorAlert(t('mpv-sub-delay-change-error'))
+                        disconnectFromRoom(ctx, t)
+                    }
+                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-sub-delay-change-error'))
                     disconnectFromRoom(ctx, t)
@@ -925,6 +1033,12 @@ export default function Mpv(p: Props): ReactElement {
                     invoke('mpv_set_audio', {aid: payload.aid})
                         .then(() => {
                             ctx.socket!.emitWithAck('user_change_aid', payload.aid)
+                                .then((ack: SocketIoAck<null>) => {
+                                    if (ack.status === SocketIoAckType.Err) {
+                                        showPersistentErrorAlert(t('mpv-sync-state-error'))
+                                        disconnectFromRoom(ctx, t)
+                                    }
+                                })
                                 .catch(() => {
                                     showPersistentErrorAlert(t('mpv-sync-state-error'))
                                     disconnectFromRoom(ctx, t)
@@ -941,6 +1055,12 @@ export default function Mpv(p: Props): ReactElement {
                     invoke('mpv_set_audio_delay', {audioDelay: payload.audio_delay})
                         .then(() => {
                             ctx.socket!.emitWithAck('user_change_audio_delay', payload.audio_delay)
+                                .then((ack: SocketIoAck<null>) => {
+                                    if (ack.status === SocketIoAckType.Err) {
+                                        showPersistentErrorAlert(t('mpv-sync-state-error'))
+                                        disconnectFromRoom(ctx, t)
+                                    }
+                                })
                                 .catch(() => {
                                     showPersistentErrorAlert(t('mpv-sync-state-error'))
                                     disconnectFromRoom(ctx, t)
@@ -959,6 +1079,12 @@ export default function Mpv(p: Props): ReactElement {
                     invoke('mpv_set_sub', {sid: payload.sid})
                         .then(() => {
                             ctx.socket!.emitWithAck('user_change_sid', payload.sid)
+                                .then((ack: SocketIoAck<null>) => {
+                                    if (ack.status === SocketIoAckType.Err) {
+                                        showPersistentErrorAlert(t('mpv-sync-state-error'))
+                                        disconnectFromRoom(ctx, t)
+                                    }
+                                })
                                 .catch(() => {
                                     showPersistentErrorAlert(t('mpv-sync-state-error'))
                                     disconnectFromRoom(ctx, t)
@@ -975,6 +1101,12 @@ export default function Mpv(p: Props): ReactElement {
                     invoke('mpv_set_sub_delay', {subDelay: payload.sub_delay})
                         .then(() => {
                             ctx.socket!.emitWithAck('user_change_sub_delay', payload.sub_delay)
+                                .then((ack: SocketIoAck<null>) => {
+                                    if (ack.status === SocketIoAckType.Err) {
+                                        showPersistentErrorAlert(t('mpv-sync-state-error'))
+                                        disconnectFromRoom(ctx, t)
+                                    }
+                                })
                                 .catch(() => {
                                     showPersistentErrorAlert(t('mpv-sync-state-error'))
                                     disconnectFromRoom(ctx, t)

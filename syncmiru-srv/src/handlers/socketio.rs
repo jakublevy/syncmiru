@@ -3,7 +3,6 @@ use std::hash::Hash;
 use std::sync::Arc;
 use indexmap::{IndexMap, IndexSet};
 use rust_decimal::Decimal;
-use rust_decimal::prelude::ToPrimitive;
 use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use tokio::time::Instant;
 use validator::Validate;
@@ -51,7 +50,7 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
     s.on("set_default_playback_speed", set_default_playback_speed);
     s.on("get_default_desync_tolerance", get_default_desync_tolerance);
     s.on("set_default_desync_tolerance", set_default_desync_tolerance);
-    s.on("get'_, '_, _default_major_desync_min", get_default_major_desync_min);
+    s.on("get_default_major_desync_min", get_default_major_desync_min);
     s.on("set_default_major_desync_min", set_default_major_desync_min);
     s.on("get_default_minor_desync_playback_slow", get_default_minor_desync_playback_slow);
     s.on("set_default_minor_desync_playback_slow", set_default_minor_desync_playback_slow);

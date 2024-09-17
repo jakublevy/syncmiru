@@ -10,6 +10,7 @@ import {forceDisconnectFromRoom} from "src/utils/room.ts";
 import {useTranslation} from "react-i18next";
 import {UserId} from "@models/user.ts";
 import {UserAudioSubtitles} from "@models/mpv.ts";
+import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 
 export default function AudioSyncBtn(): ReactElement {
     const ctx = useMainContext()
@@ -42,6 +43,12 @@ export default function AudioSyncBtn(): ReactElement {
 
             if(connectedToRoom) {
                 ctx.socket!.emitWithAck('change_audio_sync', !ctx.audioSync)
+                    .then((ack: SocketIoAck<null>) => {
+                        if (ack.status === SocketIoAckType.Err) {
+                            showPersistentErrorAlert(t('mpv-change-audio-sync-error'))
+                            forceDisconnectFromRoom(ctx, t)
+                        }
+                    })
                     .catch(() => {
                         showPersistentErrorAlert(t('mpv-change-audio-sync-error'))
                         forceDisconnectFromRoom(ctx, t)

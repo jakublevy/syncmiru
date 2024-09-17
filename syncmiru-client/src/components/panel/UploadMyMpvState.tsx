@@ -6,6 +6,7 @@ import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {Tooltip} from "react-tooltip";
 import {useTranslation} from "react-i18next";
 import {showPersistentErrorAlert} from "../../utils/alert.ts";
+import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 
 export default function UploadMyMpvState(): ReactElement {
     const ctx = useMainContext()
@@ -22,6 +23,10 @@ export default function UploadMyMpvState(): ReactElement {
                 audio_delay: myAudioSub.audio_delay,
                 sub_delay: myAudioSub.sub_delay
             })
+                .then((ack: SocketIoAck<null>) => {
+                    if(ack.status === SocketIoAckType.Err)
+                        showPersistentErrorAlert(t('mpv-upload-state-error'))
+                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-upload-state-error'))
                 })
