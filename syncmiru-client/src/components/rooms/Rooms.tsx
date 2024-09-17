@@ -308,27 +308,37 @@ export default function Rooms(): ReactElement {
                 }
             }
 
-            if(userRoomChange.new_rid === ctx.currentRid
-                && (ctx.roomConnection === RoomConnectionState.Established || userRoomChange.uid === ctx.uid)) {
-                m.set(userRoomChange.uid, UserReadyState.Loading)
+            const userValue = usersRef.current.get(userRoomChange.uid);
+
+            const isConnectingToMyRoom = userRoomChange.new_rid === ctx.currentRid;
+            const isEstablishedConnection = ctx.roomConnection === RoomConnectionState.Established;
+            const isCurrentUser = userRoomChange.uid === ctx.uid;
+
+            if (isConnectingToMyRoom) {
+                if (isEstablishedConnection && !isCurrentUser && userValue != null) {
+                    const msgText = `${userValue.displayname} ${t('mpv-msg-user-join')}`
+                    invoke('mpv_show_msg', { text: msgText, duration: 5, mood: MpvMsgMood.Neutral })
+                        .catch(() => {
+                            showPersistentErrorAlert(t('mpv-msg-show-failed'));
+                        });
+                }
+
+                if (isEstablishedConnection || isCurrentUser) {
+                    m.set(userRoomChange.uid, UserReadyState.Loading);
+
+                    if (ctx.activeVideoId != null) {
+                        showMpvReadyMessages(m, usersRef.current, t);
+                    }
+                }
             }
 
-            if(
-                ctx.roomConnection === RoomConnectionState.Established
-                && ctx.currentRid === userRoomChange.old_rid
-                && ctx.uid !== userRoomChange.uid
-            ) {
-                const userValue = usersRef.current.get(userRoomChange.uid)
-                if(userValue != null) {
-                    const msgText = `${userValue.displayname} ${t('mpv-msg-user-leave')}`
-                    invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
-                        .catch(() => {
-                            showPersistentErrorAlert(t('mpv-msg-show-failed'))
-                        })
-
-                }
-                if(ctx.activeVideoId != null)
-                    showMpvReadyMessages(m, usersRef.current, t)
+            const isLeavingRoom = userRoomChange.old_rid === ctx.currentRid && !isCurrentUser
+            if (isEstablishedConnection && isLeavingRoom && userValue != null) {
+                const msgText = `${userValue.displayname} ${t('mpv-msg-user-leave')}`
+                invoke('mpv_show_msg', { text: msgText, duration: 5, mood: MpvMsgMood.Neutral })
+                    .catch(() => {
+                        showPersistentErrorAlert(t('mpv-msg-show-failed'));
+                    });
             }
 
             return m
