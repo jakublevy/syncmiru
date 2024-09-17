@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use rust_decimal::Decimal;
-use tauri::Window;
+use tauri::{Emitter, Window};
 use crate::appstate::AppState;
 use crate::mpv::ipc;
 use crate::mpv::ipc::{Interface, IpcData};
@@ -30,6 +30,7 @@ pub async fn mpv_before_file_load(
         let mut mpv_ignore_next_speed_event_wl = state.mpv_ignore_next_speed_event.write().await;
         *mpv_ignore_next_speed_event_wl = true;
         mpv_ipc_tx.send(Interface::SetPlaybackSpeed(*playback_speed)).await?;
+        ipc_data.window.emit("mpv-reported-speed-change", playback_speed)?;
     }
 
     let audio_delay = ipc::get_audio_delay(&ipc_data).await?;

@@ -2395,7 +2395,7 @@ pub async fn get_mpv_state(
         let uid_ping_rl = state.uid_ping.read().await;
         let rid2runtime_state_rl = state.rid2runtime_state.read().await;
 
-        //let room_runtime_state = rid2runtime_state_rl.get(&rid).unwrap();
+        let room_runtime_state = rid2runtime_state_rl.get(&rid).unwrap();
         //let play_info = rid2play_info_rl.get(&rid).unwrap();
 
         let mut relevant_uids = Vec::<Id>::new();
@@ -2432,7 +2432,11 @@ pub async fn get_mpv_state(
         let median_timestamp = utils::median_of_sorted(&timestamps).unwrap_or(0f64);
 
         let play_info = rid2play_info_rl.get(&rid).unwrap();
-        ack.send(SocketIoAck::<MpvState>::ok(Some(MpvState{ timestamp: median_timestamp, playing_state: play_info.playing_state }))).ok();
+        ack.send(SocketIoAck::<MpvState>::ok(Some(MpvState{
+            timestamp: median_timestamp,
+            playing_state: play_info.playing_state,
+            playback_speed: room_runtime_state.playback_speed
+        }))).ok();
         return;
     }
     ack.send(SocketIoAck::<MpvState>::err()).ok();

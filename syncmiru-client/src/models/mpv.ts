@@ -94,5 +94,6 @@ export enum PlayingState {
 
 export interface MpvState {
     playing_state: PlayingState
+    playback_speed: string
     timestamp: number
 }

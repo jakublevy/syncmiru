@@ -103,7 +103,6 @@ async fn desync_timer(state: Arc<SrvState>) {
                 }
             }
         }
-        println!("desync_timer tick");
         sleep(Duration::from_millis(1000)).await;
     }
 }

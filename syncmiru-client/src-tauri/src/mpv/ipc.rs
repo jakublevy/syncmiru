@@ -127,7 +127,7 @@ pub async fn get_aid(ipc_data: &IpcData) -> Result<Option<u64>> {
             }
         }
     }
-    Err(SyncmiruError::MpvObtainPropertyError)
+    Err(SyncmiruError::MpvReceiveResponseError)
 }
 
 pub async fn get_sid(ipc_data: &IpcData) -> Result<Option<u64>> {
@@ -142,7 +142,7 @@ pub async fn get_sid(ipc_data: &IpcData) -> Result<Option<u64>> {
             }
         }
     }
-    Err(SyncmiruError::MpvObtainPropertyError)
+    Err(SyncmiruError::MpvReceiveResponseError)
 }
 
 pub async fn get_audio_delay(ipc_data: &IpcData) -> Result<f64> {
@@ -154,7 +154,7 @@ pub async fn get_audio_delay(ipc_data: &IpcData) -> Result<f64> {
             }
         }
     }
-    Err(SyncmiruError::MpvObtainPropertyError)
+    Err(SyncmiruError::MpvReceiveResponseError)
 }
 
 pub async fn get_sub_delay(ipc_data: &IpcData) -> Result<f64> {
@@ -166,7 +166,7 @@ pub async fn get_sub_delay(ipc_data: &IpcData) -> Result<f64> {
             }
         }
     }
-    Err(SyncmiruError::MpvObtainPropertyError)
+    Err(SyncmiruError::MpvReceiveResponseError)
 }
 
 pub async fn get_timestamp(ipc_data: &IpcData) -> Result<f64> {
@@ -178,7 +178,7 @@ pub async fn get_timestamp(ipc_data: &IpcData) -> Result<f64> {
             }
         }
     }
-    Err(SyncmiruError::MpvObtainPropertyError)
+    Err(SyncmiruError::MpvReceiveResponseError)
 }
 
 pub async fn get_pause(ipc_data: &IpcData) -> Result<bool> {
@@ -190,7 +190,7 @@ pub async fn get_pause(ipc_data: &IpcData) -> Result<bool> {
             }
         }
     }
-    Err(SyncmiruError::MpvObtainPropertyError)
+    Err(SyncmiruError::MpvReceiveResponseError)
 }
 
 pub async fn get_speed(ipc_data: &IpcData) -> Result<Decimal> {
@@ -204,30 +204,33 @@ pub async fn get_speed(ipc_data: &IpcData) -> Result<Decimal> {
             }
         }
     }
-    Err(SyncmiruError::MpvObtainPropertyError)
+    Err(SyncmiruError::MpvReceiveResponseError)
 }
 
 async fn send_with_response(ipc_data: &IpcData, property: Property) -> Result<Receiver<serde_json::Value>> {
     let req_id = ipc_data.app_state.get_mpv_next_req_id().await;
 
     let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
-    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+    if let Some(mpv_ipc_tx) = mpv_ipc_tx_rl.as_ref() {
+        let mut mpv_response_senders_wl = ipc_data.app_state.mpv_response_senders.write().await;
+        let (tx, rx) = mpsc::channel::<serde_json::Value>(1);
+        mpv_response_senders_wl.insert(req_id, tx);
 
-    let mut mpv_response_senders_wl = ipc_data.app_state.mpv_response_senders.write().await;
-    let (tx, rx) = mpsc::channel::<serde_json::Value>(1);
-    mpv_response_senders_wl.insert(req_id, tx);
-
-    match property {
-        Property::Aid => { mpv_ipc_tx.send(Interface::GetAid(req_id)).await? }
-        Property::Sid => { mpv_ipc_tx.send(Interface::GetSid(req_id)).await? }
-        Property::TimePos => { mpv_ipc_tx.send(Interface::GetTimePos(req_id)).await? }
-        Property::Fullscreen => { mpv_ipc_tx.send(Interface::GetFullscreen(req_id)).await? }
-        Property::Pause => { mpv_ipc_tx.send(Interface::GetPause(req_id)).await? },
-        Property::Speed => { mpv_ipc_tx.send(Interface::GetSpeed(req_id)).await? },
-        Property::AudioDelay => { mpv_ipc_tx.send(Interface::GetAudioDelay(req_id)).await? },
-        Property::SubDelay => { mpv_ipc_tx.send(Interface::GetSubDelay(req_id)).await? }
+        match property {
+            Property::Aid => { mpv_ipc_tx.send(Interface::GetAid(req_id)).await? }
+            Property::Sid => { mpv_ipc_tx.send(Interface::GetSid(req_id)).await? }
+            Property::TimePos => { mpv_ipc_tx.send(Interface::GetTimePos(req_id)).await? }
+            Property::Fullscreen => { mpv_ipc_tx.send(Interface::GetFullscreen(req_id)).await? }
+            Property::Pause => { mpv_ipc_tx.send(Interface::GetPause(req_id)).await? },
+            Property::Speed => { mpv_ipc_tx.send(Interface::GetSpeed(req_id)).await? },
+            Property::AudioDelay => { mpv_ipc_tx.send(Interface::GetAudioDelay(req_id)).await? },
+            Property::SubDelay => { mpv_ipc_tx.send(Interface::GetSubDelay(req_id)).await? }
+        }
+        Ok(rx)
     }
-    Ok(rx)
+    else {
+        Err(SyncmiruError::MpvReceiveResponseError)
+    }
 }
 
 async fn listen(

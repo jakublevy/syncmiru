@@ -195,17 +195,26 @@ export default function Mpv(p: Props): ReactElement {
                                         }
                                         else {
                                             const payload = ack.payload as MpvState
-                                            invoke('mpv_seek', {timestamp: payload.timestamp})
+                                            const speed = new Decimal(payload.playback_speed)
+                                            invoke('mpv_set_speed', {speed: speed})
                                                 .then(() => {
-                                                    startTimestampTimer()
+                                                    ctx.setReportedPlaybackSpeed(speed)
+                                                    invoke('mpv_seek', {timestamp: payload.timestamp})
+                                                        .then(() => {
+                                                            startTimestampTimer()
 
-                                                    if(payload.playing_state === PlayingState.Play) {
-                                                        invoke('mpv_set_pause', {pause: false})
-                                                            .catch(() => {
-                                                                showPersistentErrorAlert(t('mpv-load-error'))
-                                                                disconnectFromRoom(ctx, t)
-                                                            })
-                                                    }
+                                                            if(payload.playing_state === PlayingState.Play) {
+                                                                invoke('mpv_set_pause', {pause: false})
+                                                                    .catch(() => {
+                                                                        showPersistentErrorAlert(t('mpv-load-error'))
+                                                                        disconnectFromRoom(ctx, t)
+                                                                    })
+                                                            }
+                                                        })
+                                                        .catch(() => {
+                                                            showPersistentErrorAlert(t('mpv-load-error'))
+                                                            disconnectFromRoom(ctx, t)
+                                                        })
                                                 })
                                                 .catch(() => {
                                                     showPersistentErrorAlert(t('mpv-load-error'))
@@ -318,6 +327,7 @@ export default function Mpv(p: Props): ReactElement {
                 return
 
             const speed = new Decimal(e.payload)
+            ctx.setReportedPlaybackSpeed(speed)
 
             ctx.socket!.emitWithAck('mpv_speed_change', speed)
                 .then((ack: SocketIoAck<null>) => {
@@ -386,6 +396,15 @@ export default function Mpv(p: Props): ReactElement {
                     showPersistentErrorAlert(t('mpv-sub-delay-change-error'))
                     disconnectFromRoom(ctx, t)
                 })
+        }))
+
+        unlisten.push(listen<string | null>('mpv-reported-speed-change', (e: Event<string | null>) => {
+            if(e.payload != null) {
+                ctx.setReportedPlaybackSpeed(new Decimal(e.payload))
+            }
+            else {
+                ctx.setReportedPlaybackSpeed(null)
+            }
         }))
 
         return () => {

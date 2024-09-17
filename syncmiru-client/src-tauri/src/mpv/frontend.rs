@@ -65,6 +65,7 @@ pub async fn mpv_quit(state: tauri::State<'_, Arc<AppState>>, window: tauri::Win
     stop_ipc(&state).await?;
     stop_process(&state).await?;
 
+    window.emit("mpv-reported-speed-change", None::<Decimal>)?;
     let mut mpv_reattach_on_fullscreen_false_wl = state.mpv_reattach_on_fullscreen_false.write().await;
     if *mpv_reattach_on_fullscreen_false_wl {
         *mpv_reattach_on_fullscreen_false_wl = false;
@@ -156,6 +157,7 @@ pub async fn mpv_remove_current_from_playlist(state: tauri::State<'_, Arc<AppSta
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
     mpv_ipc_tx.send(Interface::PlaylistRemoveCurrent).await?;
+    window.emit("mpv-reported-speed-change", None::<Decimal>)?;
     Ok(())
 }
 

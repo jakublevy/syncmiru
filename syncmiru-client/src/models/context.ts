@@ -6,6 +6,7 @@ import {UserRoomMap, UserRoomPingsClient} from "@models/roomUser.ts";
 import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserAudioSubtitles} from "@models/mpv.ts";
+import Decimal from "decimal.js";
 
 export interface MainContextModel {
     uid: number
@@ -64,7 +65,9 @@ export interface MainContextModel {
     setActiveVideoId: Dispatch<SetStateAction<PlaylistEntryId | null>>,
     uid2audioSub: Map<UserId, UserAudioSubtitles>
     setUid2audioSub: Dispatch<SetStateAction<Map<UserId, UserAudioSubtitles>>>,
-    timestampTimerRef: MutableRefObject<number> | null
+    timestampTimerRef: MutableRefObject<number> | null,
+    reportedPlaybackSpeed: Decimal | null,
+    setReportedPlaybackSpeed: Dispatch<SetStateAction<Decimal | null>>
 }
 
 export enum RoomConnectionState {

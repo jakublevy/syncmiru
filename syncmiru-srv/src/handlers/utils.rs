@@ -143,10 +143,13 @@ pub(super) async fn disconnect_from_room(
     let mut rid_uids_lock = state.rid_uids.write().await;
     let mut uid2_play_info_lock = state.uid2play_info.write().await;
     let mut uid2ready_status_lock = state.uid2ready_status.write().await;
+    let mut uid2timestamp_lock = state.uid2timestamp.write().await;
     s.leave_all().ok();
     rid_uids_lock.remove_by_right(&uid);
     uid2_play_info_lock.remove(&uid);
     uid2ready_status_lock.remove(&uid);
+    uid2timestamp_lock.remove(&uid);
+
 
     if rid_uids_lock.get_by_left(&rid).is_none() {
         // last user disconnect

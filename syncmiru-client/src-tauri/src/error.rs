@@ -82,7 +82,7 @@ pub enum SyncmiruError {
     RustDecimalError(#[from] rust_decimal::Error),
 
     #[error("Mpv obtaining property failed")]
-    MpvObtainPropertyError,
+    MpvReceiveResponseError,
 
     #[error("URL missing version error")]
     LatestVersionMissingError,

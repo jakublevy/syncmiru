@@ -334,6 +334,7 @@ pub struct UploadMpvState {
 #[derive(Debug, Copy, Clone, Serialize)]
 pub struct MpvState {
     pub playing_state: PlayingState,
+    pub playback_speed: Decimal,
     pub timestamp: f64,
 }
 

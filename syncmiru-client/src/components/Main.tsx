@@ -85,6 +85,7 @@ export default function Main(): ReactElement {
     const [activeVideoId, setActiveVideoId] = useState<PlaylistEntryId | null>(null)
     const [uid2audioSub, setUid2audioSub] = useState<Map<UserId, UserAudioSubtitles>>(new Map<UserId, UserAudioSubtitles>())
     const timestampTimerRef = useRef<number>(-1)
+    const [reportedPlaybackSpeed, setReportedPlaybackSpeed] = useState<Decimal | null>(null)
 
     useEffect(() => {
         const s = io(homeSrv, {
@@ -318,7 +319,9 @@ export default function Main(): ReactElement {
                     setActiveVideoId: setActiveVideoId,
                     uid2audioSub: uid2audioSub,
                     setUid2audioSub: setUid2audioSub,
-                    timestampTimerRef: timestampTimerRef
+                    timestampTimerRef: timestampTimerRef,
+                    reportedPlaybackSpeed: reportedPlaybackSpeed,
+                    setReportedPlaybackSpeed: setReportedPlaybackSpeed
                 }}>
                 <div className={`flex w-dvw ${showMainContent() ? '' : 'hidden'}`}>
                     <div className="flex flex-col min-w-60 w-60 h-dvh">
