@@ -752,10 +752,10 @@ export default function Mpv(p: Props): ReactElement {
         if(myReadyStatus == null || ![UserReadyState.NotReady, UserReadyState.Ready].includes(myReadyStatus))
             return
 
-        if(!ctx.audioSync)
-            return
-
         if(payload.uid !== ctx.uid) {
+            if(!ctx.audioSync)
+                return
+
             invoke<number | null>('mpv_get_audio')
                 .then((aid: number | null) => {
                   if(aid !== payload.aid) {
@@ -818,10 +818,11 @@ export default function Mpv(p: Props): ReactElement {
         if(myReadyStatus == null || ![UserReadyState.NotReady, UserReadyState.Ready].includes(myReadyStatus))
             return
 
-        if(!ctx.subSync)
-            return
 
         if(payload.uid !== ctx.uid) {
+            if(!ctx.subSync)
+                return
+
             invoke<number | null>('mpv_get_sub')
                 .then((aid: number | null) => {
                     if(aid !== payload.sid) {
@@ -884,10 +885,10 @@ export default function Mpv(p: Props): ReactElement {
         if(myReadyStatus == null || ![UserReadyState.NotReady, UserReadyState.Ready].includes(myReadyStatus))
             return
 
-        if(!ctx.audioSync)
-            return
-
         if(payload.uid !== ctx.uid) {
+            if(!ctx.audioSync)
+                return
+
             invoke<number>('mpv_get_audio_delay')
                 .then((audio_delay: number) => {
                     if(audio_delay !== payload.audio_delay) {
@@ -961,10 +962,10 @@ export default function Mpv(p: Props): ReactElement {
         if(myReadyStatus == null || ![UserReadyState.NotReady, UserReadyState.Ready].includes(myReadyStatus))
             return
 
-        if(!ctx.subSync)
-            return
-
         if(payload.uid !== ctx.uid) {
+            if(!ctx.subSync)
+                return
+
             invoke<number>('mpv_get_sub_delay')
                 .then((sub_delay: number) => {
                     if(sub_delay !== payload.sub_delay) {
