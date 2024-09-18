@@ -189,6 +189,7 @@ pub async fn mpv_set_pause(
     window: tauri::Window,
     pause: bool
 ) -> Result<()> {
+    let ipc_data = IpcData { app_state: state.inner().clone(), window };
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
 
@@ -197,10 +198,13 @@ pub async fn mpv_set_pause(
         pause_ignore = &state.mpv_ignore_next_pause_false_event;
     }
 
-    let mut pause_ignore_lock = pause_ignore.write().await;
-    *pause_ignore_lock = true;
+    let mpv_pause = ipc::get_pause(&ipc_data).await?;
+    if mpv_pause != pause {
+        let mut pause_ignore_lock = pause_ignore.write().await;
+        *pause_ignore_lock = true;
 
-    mpv_ipc_tx.send(Interface::SetPause(pause)).await?;
+        mpv_ipc_tx.send(Interface::SetPause(pause)).await?;
+    }
     Ok(())
 }
 
@@ -311,11 +315,16 @@ pub async fn mpv_set_speed(
     window: tauri::Window,
     speed: Decimal,
 ) -> Result<()> {
+    let ipc_data = IpcData { app_state: state.inner().clone(), window };
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
-    let mut mpv_ignore_next_speed_event_wl = state.mpv_ignore_next_speed_event.write().await;
-    *mpv_ignore_next_speed_event_wl = true;
-    mpv_ipc_tx.send(Interface::SetPlaybackSpeed(speed)).await?;
+
+    let mpv_speed = ipc::get_speed(&ipc_data).await?;
+    if speed != mpv_speed {
+        let mut mpv_ignore_next_speed_event_wl = state.mpv_ignore_next_speed_event.write().await;
+        *mpv_ignore_next_speed_event_wl = true;
+        mpv_ipc_tx.send(Interface::SetPlaybackSpeed(speed)).await?;
+    }
     Ok(())
 }
 

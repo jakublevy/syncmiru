@@ -1,4 +1,4 @@
-import {ReactElement, useState} from "react";
+import React, {ReactElement, useState} from "react";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {CloseBtn} from "@components/widgets/Button.tsx";
@@ -11,6 +11,7 @@ import {RoomSettingsHistoryState} from "@models/historyState.ts";
 import DesyncTolerance from "@components/rooms/DesyncTolerance.tsx";
 import MinorDesyncPlaybackSlow from "@components/rooms/MinorDesyncPlaybackSlow.tsx";
 import MajorDesyncMin from "@components/rooms/MajorDesyncMin.tsx";
+import {InfoBanner, WarningBanner} from "@components/widgets/Banner.tsx";
 
 export default function RoomSyncSettings(): ReactElement {
     const [_, navigate] = useLocation()
@@ -39,7 +40,13 @@ export default function RoomSyncSettings(): ReactElement {
                     <div className="flex-1"></div>
                     <CloseBtn onClick={() => navigateToMain(navigate)}></CloseBtn>
                 </div>
-                <div className="m-8">
+                <div className="ml-8 mr-8">
+                    <InfoBanner
+                        title={t('room-sync-settings-banner-title')}
+                        content={t('room-sync-settings-banner-text')}
+                    />
+                </div>
+                <div className="mx-8 mb-8 mt-4">
                     <h2 className="text-xl font-semibold">{t('room-settings-player-title')}</h2>
                     <div className="flex flex-col mt-4 gap-y-6">
                         <PlaybackSpeed

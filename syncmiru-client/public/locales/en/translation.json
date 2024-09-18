@@ -263,6 +263,8 @@
   "default-room-title": "Default room settings",
   "room-settings-player-title": "Player settings",
   "room-settings-sync-title": "Sync settings",
+  "room-sync-settings-banner-title": "Changes to the settings do not take effect immediately",
+  "room-sync-settings-banner-text": "Changes to settings only take effect when the room is empty",
   "playback-title": "Playback speed",
   "default-room-desync-tolerance-title": "Desync tolerance",
   "default-room-desync-tolerance-help": "The maximum possible deviation of the players, which is not addressed.",

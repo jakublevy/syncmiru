@@ -249,7 +249,7 @@ async fn listen(
                         break;
                      },
                      Ok(_) => {
-                        println!("recv {}", buffer);
+                        //println!("recv {}", buffer);
                         process_mpv_msg(&buffer, ipc_data).await?;
                         buffer.clear();
                      },
@@ -707,9 +707,6 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
             ipc_data.window.emit("mpv-win-detached-changed", false).ok();
         }
     }
-    let end = Instant::now();
-    let elapsed = end.duration_since(start);
-    println!("elapsed {}", elapsed.as_millis());
     Ok(())
 }
 

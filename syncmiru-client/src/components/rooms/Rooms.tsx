@@ -75,8 +75,6 @@ export default function Rooms(): ReactElement {
             ctx.socket.on('room_name_change', onRoomNameChange)
             ctx.socket.on('room_order', onRoomOrder)
             ctx.socket.on('room_user_ping', onRoomUserPing)
-            ctx.socket.on('joined_room_playback_change', onJoinedRoomPlaybackChange)
-            ctx.socket.on('joined_room_minor_desync_playback_slow', onJoinedRoomMinorDesyncPlaybackSlow)
             ctx.socket.on('user_ready_state_change', onUserReadyStateChange)
             ctx.socket.on('change_audio_sync', onChangeAudioSync)
             ctx.socket.on('change_sub_sync', onChangeSubSync)
@@ -116,8 +114,6 @@ export default function Rooms(): ReactElement {
                 ctx.socket.off('room_name_change', onRoomNameChange)
                 ctx.socket.off('room_order', onRoomOrder)
                 ctx.socket.off('room_user_ping', onRoomUserPing)
-                ctx.socket.off('joined_room_playback_change', onJoinedRoomPlaybackChange)
-                ctx.socket.off('joined_room_minor_desync_playback_slow', onJoinedRoomMinorDesyncPlaybackSlow)
                 ctx.socket.off('user_ready_state_change', onUserReadyStateChange)
                 ctx.socket.off('change_audio_sync', onChangeAudioSync)
                 ctx.socket.off('change_sub_sync', onChangeSubSync)
@@ -384,26 +380,6 @@ export default function Rooms(): ReactElement {
 
     function onRoomUserPing(roomUserPingChange: RoomUserPingChange) {
         changeRoomUserPing(roomUserPingChange)
-    }
-
-    function onJoinedRoomPlaybackChange(playback: string) {
-        ctx.setJoinedRoomSettings((p) => {
-            const {playback_speed, ...rest} = p
-            return {
-                playback_speed: new Decimal(playback),
-                ...rest
-            }
-        })
-    }
-
-    function onJoinedRoomMinorDesyncPlaybackSlow(minorDesyncPlaybackSlow: string) {
-        ctx.setJoinedRoomSettings((p) => {
-            const {minor_desync_playback_slow, ...rest} = p
-            return {
-                minor_desync_playback_slow: new Decimal(minorDesyncPlaybackSlow),
-                ...rest
-            }
-        })
     }
 
     function onUserReadyStateChange(userReadyStateChange: UserReadyStateChangeClient) {

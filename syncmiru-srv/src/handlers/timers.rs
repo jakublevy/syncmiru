@@ -102,7 +102,7 @@ async fn desync_timer(state: Arc<SrvState>) {
                         }
                     }
                     // minor desync
-                    
+
                 }
             }
         }

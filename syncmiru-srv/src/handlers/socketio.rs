@@ -8,7 +8,7 @@ use socketioxide::extract::{AckSender, Data, SocketRef, State};
 use tokio::time::Instant;
 use validator::Validate;
 use crate::models::{EmailWithLang, Tkn};
-use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomsClientWOrder};
+use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomSettings, RoomsClientWOrder};
 use crate::models::socketio::{IdStruct, Displayname, DisplaynameChange, SocketIoAck, EmailChangeTknType, EmailChangeTkn, ChangeEmail, AvatarBin, AvatarChange, Password, ChangePassword, Language, TknWithLang, RegTknCreate, RegTknName, PlaybackSpeed, DesyncTolerance, MajorDesyncMin, MinorDesyncPlaybackSlow, RoomName, RoomNameChange, RoomPlaybackSpeed, RoomDesyncTolerance, RoomMinorDesyncPlaybackSlow, RoomMajorDesyncMin, RoomOrder, JoinRoomReq, UserRoomChange, UserRoomJoin, UserRoomDisconnect, RoomPing, RoomUserPingChange, JoinedRoomInfo, GetFilesInfo, FileKind, AddVideoFiles, PlaylistEntryIdStruct, PlaylistOrder, AddUrls, UserReadyStateChangeReq, UserReadyStateChangeClient, AddEntryFilesResp, DeletePlaylistEntry, ChangePlaylistOrder, UploadMpvState, MpvState};
 use crate::{crypto, email, file, query};
 use crate::handlers::timers::DesyncTimerInterface;
@@ -1118,7 +1118,6 @@ pub async fn set_room_playback_speed(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-    let mut rid2runtime_state_wl = state.rid2runtime_state.write().await;
     let updated = query::set_room_playback_speed(&state.db, payload.id, &payload.playback_speed)
         .await
         .expect("db error");
@@ -1127,11 +1126,6 @@ pub async fn set_room_playback_speed(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-    let room_runtime_state_opt = rid2runtime_state_wl.get_mut(&payload.id);
-    if let Some(room_runtime_state) = room_runtime_state_opt {
-        room_runtime_state.runtime_config.playback_speed = payload.playback_speed;
-    }
-    s.within(payload.id.to_string()).emit("joined_room_playback_change", payload.playback_speed).ok();
     s.broadcast().emit("room_playback_speed", payload).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
@@ -1167,7 +1161,6 @@ pub async fn set_room_desync_tolerance(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-    let mut rid2runtime_state_wl = state.rid2runtime_state.write().await;
     let updated = query::set_room_desync_tolerance(&state.db, payload.id, &payload.desync_tolerance)
         .await
         .expect("db error");
@@ -1175,10 +1168,6 @@ pub async fn set_room_desync_tolerance(
     if !updated {
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
-    }
-    let room_runtime_state_opt = rid2runtime_state_wl.get_mut(&payload.id);
-    if let Some(room_runtime_state) = room_runtime_state_opt {
-        room_runtime_state.runtime_config.desync_tolerance = payload.desync_tolerance;
     }
     s.broadcast().emit("room_desync_tolerance", payload).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
@@ -1215,7 +1204,6 @@ pub async fn set_room_minor_desync_playback_slow(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-    let mut rid2runtime_state_wl = state.rid2runtime_state.write().await;
     let updated = query::set_room_minor_desync_playback_slow(&state.db, payload.id, &payload.minor_desync_playback_slow)
         .await
         .expect("db error");
@@ -1224,11 +1212,6 @@ pub async fn set_room_minor_desync_playback_slow(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-    let room_runtime_state_opt = rid2runtime_state_wl.get_mut(&payload.id);
-    if let Some(room_runtime_state) = room_runtime_state_opt {
-        room_runtime_state.runtime_config.minor_desync_playback_slow = payload.minor_desync_playback_slow;
-    }
-    s.within(payload.id.to_string()).emit("joined_room_minor_desync_playback_slow", payload.minor_desync_playback_slow).ok();
     s.broadcast().emit("room_minor_desync_playback_slow", payload).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
 }
@@ -1264,7 +1247,6 @@ pub async fn set_room_major_desync_min(
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
-    let mut rid2runtime_state_wl = state.rid2runtime_state.write().await;
     let updated = query::set_room_major_desync_min(&state.db, payload.id, &payload.major_desync_min)
         .await
         .expect("db error");
@@ -1272,10 +1254,6 @@ pub async fn set_room_major_desync_min(
     if !updated {
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
-    }
-    let room_runtime_state_opt = rid2runtime_state_wl.get_mut(&payload.id);
-    if let Some(room_runtime_state) = room_runtime_state_opt {
-        room_runtime_state.runtime_config.major_desync_min = payload.major_desync_min;
     }
     s.broadcast().emit("room_major_desync_min", payload).ok();
     ack.send(SocketIoAck::<()>::ok(None)).ok();
@@ -1350,17 +1328,29 @@ pub async fn join_room(
     let new_room_name = payload.rid.to_string();
     let mut room_pings = HashMap::<Id, f64>::new();
 
-    let room_settings = query::get_room_settings(&mut transaction, payload.rid)
+    let room_settings_db = query::get_room_settings(&mut transaction, payload.rid)
         .await
         .expect("db error");
+
+    let mut room_settings = room_settings_db.clone();
 
     let uids_already_in_room = rid_uids_wl.get_by_left(&payload.rid);
     if uids_already_in_room.is_none() {
         let mut rid2runtime_state_lock = state.rid2runtime_state.write().await;
         rid2runtime_state_lock.insert(payload.rid, RoomRuntimeState {
-            playback_speed: room_settings.playback_speed,
-            runtime_config: room_settings.clone()
+            playback_speed: room_settings_db.playback_speed,
+            runtime_config: room_settings_db.clone()
         });
+    }
+    else {
+        let mut rid2runtime_state_rl = state.rid2runtime_state.read().await;
+        let room_runtime_settings = rid2runtime_state_rl.get(&payload.rid).unwrap();
+        room_settings = RoomSettings {
+            playback_speed: room_runtime_settings.playback_speed,
+            major_desync_min: room_runtime_settings.runtime_config.major_desync_min,
+            minor_desync_playback_slow: room_runtime_settings.runtime_config.minor_desync_playback_slow,
+            desync_tolerance: room_runtime_settings.runtime_config.desync_tolerance
+        }
     }
 
     let uid2play_info_rl = state.uid2play_info.read().await;
@@ -1429,7 +1419,7 @@ pub async fn join_room(
     }
 
     ack.send(SocketIoAck::<JoinedRoomInfo>::ok(Some(JoinedRoomInfo {
-        room_settings,
+        room_settings: room_settings_db,
         room_pings,
         playlist,
         playlist_order,

@@ -263,6 +263,8 @@
   "default-room-title": "Výchozí nastavení místnosti",
   "room-settings-player-title": "Nastavení přehrávače",
   "room-settings-sync-title": "Nastavení synchronizace",
+  "room-sync-settings-banner-title": "Změny nastavení se neprojeví okamžitě",
+  "room-sync-settings-banner-text": "Změny nastavení se projeví až když je místnost prázdná",
   "playback-title": "Rychlost přehrávání",
   "default-room-desync-tolerance-title": "Tolerance desynchronizace",
   "default-room-desync-tolerance-help": "Maximální možná odchylka přehrávačů, která se neřeší.",
