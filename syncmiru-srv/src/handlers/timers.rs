@@ -83,6 +83,8 @@ async fn desync_timer(state: Arc<SrvState>) {
                 timestamps.sort_by(|a, b| a.partial_cmp(b).unwrap());
                 if !timestamps.is_empty() {
                     let smallest_timestamp = timestamps.first().unwrap();
+
+                    // major desync
                     for uid in uids {
                         let timestamp_info_opt = uid2timestamp_wl.get_mut(uid);
                         if let Some(timestamp_info) = timestamp_info_opt {
@@ -93,13 +95,14 @@ async fn desync_timer(state: Arc<SrvState>) {
                                     if let Some(s) = io.get_socket(sid) {
                                         s.emit("major_desync_seek", smallest_timestamp).ok();
                                         timestamp_info.timestamp = *smallest_timestamp;
-                                        println!("rewind uid = {} to {}", uid, smallest_timestamp);
                                     }
                                 }
 
                             }
                         }
                     }
+                    // minor desync
+                    
                 }
             }
         }

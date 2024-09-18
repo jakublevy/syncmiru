@@ -100,7 +100,6 @@ mod tests {
             "/anime/Initial D"
         ).await;
         if let Ok(files) = files_opt {
-            println!("{files:?}");
             assert_eq!(1,1);
         }
         else {
