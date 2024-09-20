@@ -670,6 +670,9 @@ export default function Mpv(p: Props): ReactElement {
         }
         if(payload.uid !== ctx.uid) {
             invoke('mpv_set_speed', {speed: clientPayload.speed})
+                .then(() => {
+                    ctx.setReportedPlaybackSpeed(clientPayload.speed)
+                })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-speed-change-error'))
                     disconnectFromRoom(ctx, t)

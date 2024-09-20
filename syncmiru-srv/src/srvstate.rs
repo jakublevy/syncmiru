@@ -8,7 +8,7 @@ use socketioxide::extract::SocketRef;
 use socketioxide::socket::Sid;
 use socketioxide::SocketIo;
 use sqlx::{PgPool};
-use tokio::sync::{RwLock, RwLockReadGuard};
+use tokio::sync::{RwLock};
 use tokio::sync::mpsc::Sender;
 use tokio::time::Instant;
 use crate::bimultimap::BiMultiMap;
