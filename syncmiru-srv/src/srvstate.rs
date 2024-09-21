@@ -154,6 +154,16 @@ impl SrvState {
             Some(compensated_timestamp)
         }
     }
+
+    pub async fn clear_minor_desync_uids_for_rid(&self, rid: Id) {
+        let mut uid2minor_desync_wl = self.uid2minor_desync.write().await;
+        let rid_uids_rl = self.rid_uids.read().await;
+        if let Some(uids) = rid_uids_rl.get_by_left(&rid) {
+            for uid in uids {
+                uid2minor_desync_wl.remove(uid);
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]

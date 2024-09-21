@@ -2011,6 +2011,7 @@ pub async fn mpv_pause(
         let play_info = rid2play_info_wl.get_mut(&rid).unwrap();
         play_info.playing_state = PlayingState::Pause;
         play_info.last_change_at = Instant::now();
+        state.clear_minor_desync_uids_for_rid(rid).await;
 
         s
             .within(rid.to_string())
@@ -2037,6 +2038,7 @@ pub async fn mpv_seek(
     let uid = state.socket2uid(&s).await;
 
     if state.user_file_loaded(uid).await {
+        state.clear_minor_desync_uids_for_rid(rid).await;
         s
             .within(rid.to_string())
             .emit("mpv_seek", UserSeek { uid, timestamp: payload }).ok();
@@ -2065,6 +2067,7 @@ pub async fn mpv_speed_change(
         let mut rid2runtime_state_wl = state.rid2runtime_state.write().await;
         let runtime_state = rid2runtime_state_wl.get_mut(&rid).unwrap();
         runtime_state.playback_speed = payload;
+        state.clear_minor_desync_uids_for_rid(rid).await;
 
         s
             .within(rid.to_string())

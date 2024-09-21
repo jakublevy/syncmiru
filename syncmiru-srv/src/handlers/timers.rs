@@ -97,6 +97,8 @@ async fn desync_timer(state: Arc<SrvState>) {
                                 let io = io_rl.as_ref().unwrap();
                                 if let Some(sid) = state.uid2sid(*uid).await {
                                     if let Some(s) = io.get_socket(sid) {
+                                        uid2minor_desync_wl.remove(uid);
+
                                         s.emit("major_desync_seek", smallest_timestamp).ok();
                                         timestamp_info.timestamp = *smallest_timestamp;
                                     }
