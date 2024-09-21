@@ -55,6 +55,7 @@ async fn desync_timer(state: Arc<SrvState>) {
                 let room_runtime_state = room_runtime_state_opt.unwrap();
 
                 let playback_speed_f64 = room_runtime_state.playback_speed.to_f64().unwrap();
+                let desync_tolerance_f64 = room_runtime_state.runtime_config.desync_tolerance.to_f64().unwrap();
                 let minor_desync_playback_slow_f64 = room_runtime_state.runtime_config.minor_desync_playback_slow.to_f64().unwrap();
                 let major_desync_min_f64 = room_runtime_state.runtime_config.major_desync_min.to_f64().unwrap();
 
@@ -137,7 +138,13 @@ async fn desync_timer(state: Arc<SrvState>) {
                                 }
                             }
                             else {
-                                if timestamp_info.timestamp - smallest_timestamp >= minor_desync_playback_slow_f64 {
+                                // println!("my timestamp = {}", timestamp_info.timestamp);
+                                // println!("smallest_timestamp = {}", smallest_timestamp);
+                                // println!("diff = {}", timestamp_info.timestamp - smallest_timestamp);
+                                // println!("desync_tolerance = {}", desync_tolerance_f64);
+                                // println!("");
+                                if timestamp_info.timestamp - smallest_timestamp >= desync_tolerance_f64 {
+                                    println!("minor_desync_start");
                                     let io_rl = state.io.read().await;
                                     let io = io_rl.as_ref().unwrap();
                                     if let Some(sid) = state.uid2sid(*uid).await {

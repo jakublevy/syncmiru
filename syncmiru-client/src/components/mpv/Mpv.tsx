@@ -579,10 +579,20 @@ export default function Mpv(p: Props): ReactElement {
     
     function onMinorDesyncStart() {
         console.log('onMinorDesyncStart')
+        invoke('mpv_decrease_playback_speed', {playbackSpeedMinus: joinedRoomSettingsRef.current.minor_desync_playback_slow})
+            .catch(() => {
+                showPersistentErrorAlert(t('mpv-minor-desync-error'))
+                disconnectFromRoom(ctx, t)
+            })
     }
 
     function onMinorDesyncStop() {
         console.log('onMinorDesyncStop')
+        invoke('mpv_increase_playback_speed', {playbackSpeedPlus: joinedRoomSettingsRef.current.minor_desync_playback_slow})
+            .catch(() => {
+                showPersistentErrorAlert(t('mpv-minor-desync-error'))
+                disconnectFromRoom(ctx, t)
+            })
     }
 
     function onUserFileLoadRetry(uid: UserId) {

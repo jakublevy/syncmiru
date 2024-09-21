@@ -43,7 +43,7 @@ pub enum Interface {
     GetFullscreen(u32),
     GetTimePos(u32),
     GetPause(u32),
-    GetSpeed(u32),
+    GetPlaybackSpeed(u32),
     GetAudioDelay(u32),
     GetSubDelay(u32),
     ShowNotReadyMsg(Vec<String>),
@@ -62,7 +62,7 @@ enum Property {
     TimePos,
     Fullscreen,
     Pause,
-    Speed,
+    PlaybackSpeed,
     AudioDelay,
     SubDelay
 }
@@ -194,7 +194,7 @@ pub async fn get_pause(ipc_data: &IpcData) -> Result<bool> {
 }
 
 pub async fn get_speed(ipc_data: &IpcData) -> Result<Decimal> {
-    let mut rx = send_with_response(ipc_data, Property::Speed).await?;
+    let mut rx = send_with_response(ipc_data, Property::PlaybackSpeed).await?;
     if let Some(json) = rx.recv().await {
         if let Some(data) = json.get("data") {
             if let Some(speed_num) = data.as_number() {
@@ -222,7 +222,7 @@ async fn send_with_response(ipc_data: &IpcData, property: Property) -> Result<Re
             Property::TimePos => { mpv_ipc_tx.send(Interface::GetTimePos(req_id)).await? }
             Property::Fullscreen => { mpv_ipc_tx.send(Interface::GetFullscreen(req_id)).await? }
             Property::Pause => { mpv_ipc_tx.send(Interface::GetPause(req_id)).await? },
-            Property::Speed => { mpv_ipc_tx.send(Interface::GetSpeed(req_id)).await? },
+            Property::PlaybackSpeed => { mpv_ipc_tx.send(Interface::GetPlaybackSpeed(req_id)).await? },
             Property::AudioDelay => { mpv_ipc_tx.send(Interface::GetAudioDelay(req_id)).await? },
             Property::SubDelay => { mpv_ipc_tx.send(Interface::GetSubDelay(req_id)).await? }
         }
@@ -360,7 +360,7 @@ async fn write(
                     let cmd = utils::create_get_property_cmd("pause", req_id);
                     sender.write_all(cmd.as_bytes()).await?;
                 },
-                Interface::GetSpeed(req_id) => {
+                Interface::GetPlaybackSpeed(req_id) => {
                     let cmd = utils::create_get_property_cmd("speed", req_id);
                     sender.write_all(cmd.as_bytes()).await?;
                 },

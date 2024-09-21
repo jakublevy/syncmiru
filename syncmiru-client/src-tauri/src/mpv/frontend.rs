@@ -439,3 +439,33 @@ pub async fn mpv_clear_msgs(
     mpv_ipc_tx.send(Interface::ClearMessages).await?;
     Ok(())
 }
+
+#[tauri::command]
+pub async fn mpv_increase_playback_speed(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window,
+    playback_speed_plus: Decimal
+) -> Result<()> {
+    let ipc_data = IpcData { app_state: state.inner().clone(), window };
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+
+    let speed = ipc::get_speed(&ipc_data).await?;
+    mpv_ipc_tx.send(Interface::SetPlaybackSpeed(speed + playback_speed_plus)).await?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn mpv_decrease_playback_speed(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window,
+    playback_speed_minus: Decimal
+) -> Result<()> {
+    let ipc_data = IpcData { app_state: state.inner().clone(), window };
+    let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
+    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+
+    let speed = ipc::get_speed(&ipc_data).await?;
+    mpv_ipc_tx.send(Interface::SetPlaybackSpeed(speed - playback_speed_minus)).await?;
+    Ok(())
+}
