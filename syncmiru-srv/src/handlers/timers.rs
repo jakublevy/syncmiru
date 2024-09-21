@@ -54,9 +54,7 @@ async fn desync_timer(state: Arc<SrvState>) {
                 }
                 let room_runtime_state = room_runtime_state_opt.unwrap();
 
-                let playback_speed_f64 = room_runtime_state.playback_speed.to_f64().unwrap();
                 let desync_tolerance_f64 = room_runtime_state.runtime_config.desync_tolerance.to_f64().unwrap();
-                let minor_desync_playback_slow_f64 = room_runtime_state.runtime_config.minor_desync_playback_slow.to_f64().unwrap();
                 let major_desync_min_f64 = room_runtime_state.runtime_config.major_desync_min.to_f64().unwrap();
 
                 let play_info_opt = rid2play_info_rl.get(&rid);
@@ -90,9 +88,21 @@ async fn desync_timer(state: Arc<SrvState>) {
                     let smallest_timestamp = timestamps.first().unwrap();
 
                     for uid in uids {
+                        let compensated_timestamp_opt = state.get_compensated_timestamp_of_uid(
+                            *uid,
+                            *rid,
+                            &uid2timestamp_wl,
+                            &rid2play_info_rl,
+                            &uid_ping_rl,
+                            &rid2runtime_state_rl
+                        );
+                        if compensated_timestamp_opt.is_none() {
+                            continue;
+                        }
+                        let compensated_timestamp = compensated_timestamp_opt.unwrap();
                         let timestamp_info_opt = uid2timestamp_wl.get_mut(uid);
                         if let Some(timestamp_info) = timestamp_info_opt {
-                            if timestamp_info.timestamp - smallest_timestamp >= major_desync_min_f64 {
+                            if compensated_timestamp - smallest_timestamp >= major_desync_min_f64 {
                                 let io_rl = state.io.read().await;
                                 let io = io_rl.as_ref().unwrap();
                                 if let Some(sid) = state.uid2sid(*uid).await {
@@ -105,47 +115,25 @@ async fn desync_timer(state: Arc<SrvState>) {
                                 }
                             }
                             else if uid2minor_desync_wl.contains(&uid) {
-                                let diff = timestamp_info.timestamp - smallest_timestamp;
-                                if diff <= 0f64 {
+                                let curr_diff = compensated_timestamp - smallest_timestamp;
+                                let next_tick_in = constants::DESYNC_TIMER_TICK_MS as f64 / 1000f64;
+
+                                println!("curr_diff = {}", curr_diff);
+                                println!("next_tick_in = {}", next_tick_in);
+                                if curr_diff < next_tick_in {
                                     let io_rl = state.io.read().await;
                                     let io = io_rl.as_ref().unwrap();
                                     if let Some(sid) = state.uid2sid(*uid).await {
                                         if let Some(s) = io.get_socket(sid) {
+                                            println!("minor_desync_stop next worse");
                                             s.emit("minor_desync_stop", {}).ok();
                                             uid2minor_desync_wl.remove(uid);
                                         }
                                     }
                                 }
-                                else {
-                                    let next_tick_in = (constants::DESYNC_TIMER_TICK_MS / 1000) as f64;
-
-                                    let next_expected_timestamp =
-                                        timestamp_info.timestamp
-                                            + next_tick_in
-                                            * (playback_speed_f64 - minor_desync_playback_slow_f64);
-
-                                    let next_smallest_timestamp = smallest_timestamp + next_tick_in * playback_speed_f64;
-
-                                    let next_diff = next_expected_timestamp - next_smallest_timestamp;
-                                    if next_diff < next_tick_in {
-                                        let io_rl = state.io.read().await;
-                                        let io = io_rl.as_ref().unwrap();
-                                        if let Some(sid) = state.uid2sid(*uid).await {
-                                            if let Some(s) = io.get_socket(sid) {
-                                                s.emit("minor_desync_stop", {}).ok();
-                                                uid2minor_desync_wl.remove(uid);
-                                            }
-                                        }
-                                    }
-                                }
                             }
                             else {
-                                // println!("my timestamp = {}", timestamp_info.timestamp);
-                                // println!("smallest_timestamp = {}", smallest_timestamp);
-                                // println!("diff = {}", timestamp_info.timestamp - smallest_timestamp);
-                                // println!("desync_tolerance = {}", desync_tolerance_f64);
-                                // println!("");
-                                if timestamp_info.timestamp - smallest_timestamp >= desync_tolerance_f64 {
+                                if compensated_timestamp - smallest_timestamp >= desync_tolerance_f64 {
                                     println!("minor_desync_start");
                                     let io_rl = state.io.read().await;
                                     let io = io_rl.as_ref().unwrap();
@@ -157,6 +145,7 @@ async fn desync_timer(state: Arc<SrvState>) {
                                     }
                                 }
                             }
+
                         }
                     }
                 }

@@ -2007,11 +2007,22 @@ pub async fn mpv_pause(
     let uid = state.socket2uid(&s).await;
 
     if state.user_file_loaded(uid).await {
+        let mut uid2timestamp_wl = state.uid2timestamp.write().await;
+        let mut uid2minor_desync_wl = state.uid2minor_desync.write().await;
+        let rid_uids_rl = state.rid_uids.read().await;
         let mut rid2play_info_wl = state.rid2play_info.write().await;
+        let now = Instant::now();
         let play_info = rid2play_info_wl.get_mut(&rid).unwrap();
         play_info.playing_state = PlayingState::Pause;
         play_info.last_change_at = Instant::now();
-        state.clear_minor_desync_uids_for_rid(rid).await;
+
+        let uids = rid_uids_rl.get_by_left(&rid).unwrap();
+        for uid in uids {
+            if uid2minor_desync_wl.remove(uid) {
+                s.emit("minor_desync_stop", {}).ok();
+            }
+            uid2timestamp_wl.insert(*uid, TimestampInfo { timestamp: payload, recv: now });
+        }
 
         s
             .within(rid.to_string())
@@ -2038,7 +2049,18 @@ pub async fn mpv_seek(
     let uid = state.socket2uid(&s).await;
 
     if state.user_file_loaded(uid).await {
-        state.clear_minor_desync_uids_for_rid(rid).await;
+        let mut uid2timestamp_wl = state.uid2timestamp.write().await;
+        let mut uid2minor_desync_wl = state.uid2minor_desync.write().await;
+        let rid_uids_rl = state.rid_uids.read().await;
+        let now = Instant::now();
+        let uids = rid_uids_rl.get_by_left(&rid).unwrap();
+        for uid in uids {
+            if uid2minor_desync_wl.remove(uid) {
+                s.emit("minor_desync_stop", {}).ok();
+            }
+            uid2timestamp_wl.insert(*uid, TimestampInfo { timestamp: payload, recv: now });
+        }
+
         s
             .within(rid.to_string())
             .emit("mpv_seek", UserSeek { uid, timestamp: payload }).ok();
