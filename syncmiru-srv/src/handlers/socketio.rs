@@ -2019,7 +2019,13 @@ pub async fn mpv_pause(
         let uids = rid_uids_rl.get_by_left(&rid).unwrap();
         for uid in uids {
             if uid2minor_desync_wl.remove(uid) {
-                s.emit("minor_desync_stop", {}).ok();
+                let io_rl = state.io.read().await;
+                let io = io_rl.as_ref().unwrap();
+                if let Some(sid) = state.uid2sid(*uid).await {
+                    if let Some(target_socket) = io.get_socket(sid) {
+                        target_socket.emit("minor_desync_stop", {}).ok();
+                    }
+                }
             }
             uid2timestamp_wl.insert(*uid, TimestampInfo { timestamp: payload, recv: now });
         }
@@ -2056,7 +2062,13 @@ pub async fn mpv_seek(
         let uids = rid_uids_rl.get_by_left(&rid).unwrap();
         for uid in uids {
             if uid2minor_desync_wl.remove(uid) {
-                s.emit("minor_desync_stop", {}).ok();
+                let io_rl = state.io.read().await;
+                let io = io_rl.as_ref().unwrap();
+                if let Some(sid) = state.uid2sid(*uid).await {
+                    if let Some(target_socket) = io.get_socket(sid) {
+                        target_socket.emit("minor_desync_stop", {}).ok();
+                    }
+                }
             }
             uid2timestamp_wl.insert(*uid, TimestampInfo { timestamp: payload, recv: now });
         }
