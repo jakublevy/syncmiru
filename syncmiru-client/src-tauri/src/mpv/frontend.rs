@@ -451,6 +451,8 @@ pub async fn mpv_increase_playback_speed(
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
 
     let speed = ipc::get_speed(&ipc_data).await?;
+    let mut mpv_ignore_next_speed_event_wl = state.mpv_ignore_next_speed_event.write().await;
+    *mpv_ignore_next_speed_event_wl = true;
     mpv_ipc_tx.send(Interface::SetPlaybackSpeed(speed + playback_speed_plus)).await?;
     Ok(())
 }
@@ -466,6 +468,8 @@ pub async fn mpv_decrease_playback_speed(
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
 
     let speed = ipc::get_speed(&ipc_data).await?;
+    let mut mpv_ignore_next_speed_event_wl = state.mpv_ignore_next_speed_event.write().await;
+    *mpv_ignore_next_speed_event_wl = true;
     mpv_ipc_tx.send(Interface::SetPlaybackSpeed(speed - playback_speed_minus)).await?;
     Ok(())
 }
