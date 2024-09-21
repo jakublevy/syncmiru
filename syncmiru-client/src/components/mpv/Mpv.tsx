@@ -54,6 +54,8 @@ export default function Mpv(p: Props): ReactElement {
             ctx.socket.on('user_change_sub_delay', onUserChangeSubDelay)
             ctx.socket.on('user_file_load_failed', onUserFileLoadFailed)
             ctx.socket.on('major_desync_seek', onMajorDesyncSeek)
+            ctx.socket.on('minor_desync_start', onMinorDesyncStart)
+            ctx.socket.on('minor_desync_stop', onMinorDesyncStop)
 
         }
         return () => {
@@ -64,6 +66,8 @@ export default function Mpv(p: Props): ReactElement {
                 ctx.socket.off('user_change_sub_delay', onUserChangeSubDelay)
                 ctx.socket.off('user_file_load_failed', onUserFileLoadFailed)
                 ctx.socket.off('major_desync_seek', onMajorDesyncSeek)
+                ctx.socket.off('minor_desync_start', onMinorDesyncStart)
+                ctx.socket.off('minor_desync_stop', onMinorDesyncStop)
             }
         }
     }, [ctx.socket]);
@@ -571,6 +575,14 @@ export default function Mpv(p: Props): ReactElement {
             .catch(() => {
                 showPersistentErrorAlert(t('mpv-msg-show-failed'))
             })
+    }
+    
+    function onMinorDesyncStart() {
+        console.log('onMinorDesyncStart')
+    }
+
+    function onMinorDesyncStop() {
+        console.log('onMinorDesyncStop')
     }
 
     function onUserFileLoadRetry(uid: UserId) {

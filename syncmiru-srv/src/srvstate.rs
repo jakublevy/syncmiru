@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::ops::Deref;
 use rust_decimal::Decimal;
 use rust_decimal::prelude::ToPrimitive;
@@ -40,7 +40,8 @@ pub struct SrvState {
     pub uid2ready_status: RwLock<HashMap<Id, UserReadyStatus>>,
     pub uid2play_info: RwLock<HashMap<Id, UserPlayInfo>>,
 
-    pub uid2timestamp: RwLock<HashMap<Id, TimestampInfo>>
+    pub uid2timestamp: RwLock<HashMap<Id, TimestampInfo>>,
+    pub uid2minor_desync: RwLock<HashSet<Id>>
 }
 
 impl SrvState {
