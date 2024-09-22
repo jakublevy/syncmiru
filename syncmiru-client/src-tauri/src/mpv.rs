@@ -7,7 +7,7 @@ mod utils;
 use std::fs;
 use std::io::Stdout;
 use std::ops::Deref;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use std::sync::Arc;
 use std::thread::sleep;
@@ -19,7 +19,6 @@ use thiserror::__private::AsDisplay;
 use tokio::io::AsyncWriteExt;
 use tokio::sync::{Mutex, oneshot, RwLock};
 use crate::appstate::AppState;
-use crate::constants::PRELUDE_LOCATION;
 use crate::deps::utils::{mpv_exe, prelude_path, yt_dlp_exe};
 use crate::hash;
 use crate::result::Result;
@@ -29,15 +28,15 @@ use tokio::sync::mpsc::{Sender, Receiver};
 use tokio::task;
 use crate::mpv::ipc::Interface;
 
-pub fn init_prelude() -> Result<()> {
+pub fn init_prelude(prelude_resource_path: impl AsRef<Path>) -> Result<()> {
     let prelude_p = prelude_path()?;
     let mut prelude_hash = "".to_string();
     if prelude_p.exists() {
        prelude_hash = hash::of_file(prelude_p.as_path())?;
     }
-    let correct_hash = hash::of_file(&PRELUDE_LOCATION)?;
+    let correct_hash = hash::of_file(&prelude_resource_path)?;
     if prelude_hash != correct_hash {
-        fs::copy(PRELUDE_LOCATION, prelude_p)?;
+        fs::copy(prelude_resource_path, prelude_p)?;
     }
     Ok(())
 }

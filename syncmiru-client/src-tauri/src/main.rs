@@ -59,7 +59,6 @@ async fn main() -> Result<()> {
         x11_screen_num: None.into(),
     });
     files::create_app_dirs()?;
-    mpv::init_prelude()?;
     let mut ctx = tauri::generate_context!();
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
@@ -128,6 +127,14 @@ async fn main() -> Result<()> {
             mpv::frontend::mpv_decrease_playback_speed,
             frontend::kill_app_with_error_msg
         ])
+        .setup(|app| {
+            let prelude_path = app
+                .path()
+                .resolve("resources/prelude.lua", tauri::path::BaseDirectory::Resource)?;
+
+            mpv::init_prelude(prelude_path)?;
+            Ok(())
+        })
         .on_window_event(move |window: &Window, event: &WindowEvent| {
             let w = window.clone();
             let e = event.clone();
