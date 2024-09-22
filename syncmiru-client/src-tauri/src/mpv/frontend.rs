@@ -95,7 +95,13 @@ pub async fn mpv_wrapper_size_changed(
             sleep(Duration::from_millis(50)).await;
         }
     }
-    let factor = window.scale_factor()?;
+    let mut factor = window.scale_factor()?;
+    cfg_if! {
+        if #[cfg(target_family = "unix")] {
+            factor = mpv::window::x11::get_scale_factor(&state).await?;
+        }
+    }
+
     let scaled_wrapper_size = HtmlElementRect {
         x: wrapper_size.x * factor,
         y: wrapper_size.y * factor,
@@ -114,7 +120,13 @@ pub async fn mpv_reposition_to_small(
     let mpv_wid_rl = state.mpv_wid.read().await;
     let mpv_wid = mpv_wid_rl.unwrap();
 
-    let factor = window.scale_factor()?;
+    let mut factor = window.scale_factor()?;
+    cfg_if! {
+        if #[cfg(target_family = "unix")] {
+            factor = mpv::window::x11::get_scale_factor(&state).await?;
+        }
+    }
+
     let size = window.inner_size()?;
     let offset = 10.0 * factor;
     let x = size.width as f64 / 2.0 + 384.0*factor + offset;

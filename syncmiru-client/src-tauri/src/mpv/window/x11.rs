@@ -155,23 +155,23 @@ pub async fn focus(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     Ok(())
 }
 
-pub async fn get_dpi(state: &Arc<AppState>) -> Result<()> {
+pub async fn get_scale_factor(state: &Arc<AppState>) -> Result<f64> {
     let conn_rl = state.x11_conn.read().await;
+    let x11_screen_num_rl = state.x11_screen_num.read().await;
+    let x11_screen_num = x11_screen_num_rl.unwrap();
     let conn = conn_rl.as_ref().unwrap();
+    let screen = &conn.setup().roots[x11_screen_num];
 
-    let screen = &conn.setup().roots[screen_num];
+    let width_px = screen.width_in_pixels;
+    let height_px = screen.height_in_pixels;
 
-    // // Get screen resolution in pixels
-    // let width_px = screen.width_in_pixels;
-    // let height_px = screen.height_in_pixels;
-    //
-    // // Get physical screen size in millimeters
-    // let width_mm = screen.width_in_millimeters;
-    // let height_mm = screen.height_in_millimeters;
-    //
-    // // Calculate DPI
-    // let dpi_x = (width_px as f64 / width_mm as f64) * 25.4; // DPI along the X axis
-    // let dpi_y = (height_px as f64 / height_mm as f64) * 25.4; // DPI along the Y axis
+    let width_mm = screen.width_in_millimeters;
+    let height_mm = screen.height_in_millimeters;
+
+    let dpi_x = ((width_px as f64 / width_mm as f64) * 25.4).round();
+    let dpi_y = ((height_px as f64 / height_mm as f64) * 25.4).round();
+    let dpi = (dpi_x + dpi_y) / 2f64;
+    Ok(dpi / 96f64)
 }
 
 fn set_decoration(conn: &RustConnection, window: xproto::Window, motif_hints: &[u32; 5]) -> Result<()> {
