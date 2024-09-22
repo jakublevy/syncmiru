@@ -155,6 +155,25 @@ pub async fn focus(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     Ok(())
 }
 
+pub async fn get_dpi(state: &Arc<AppState>) -> Result<()> {
+    let conn_rl = state.x11_conn.read().await;
+    let conn = conn_rl.as_ref().unwrap();
+
+    let screen = &conn.setup().roots[screen_num];
+
+    // // Get screen resolution in pixels
+    // let width_px = screen.width_in_pixels;
+    // let height_px = screen.height_in_pixels;
+    //
+    // // Get physical screen size in millimeters
+    // let width_mm = screen.width_in_millimeters;
+    // let height_mm = screen.height_in_millimeters;
+    //
+    // // Calculate DPI
+    // let dpi_x = (width_px as f64 / width_mm as f64) * 25.4; // DPI along the X axis
+    // let dpi_y = (height_px as f64 / height_mm as f64) * 25.4; // DPI along the Y axis
+}
+
 fn set_decoration(conn: &RustConnection, window: xproto::Window, motif_hints: &[u32; 5]) -> Result<()> {
     let motif_hints_atom = conn.intern_atom(false, "_MOTIF_WM_HINTS".as_ref())?.reply()?.atom;
 
