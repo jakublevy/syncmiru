@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use cfg_if::cfg_if;
 use rust_decimal::Decimal;
-use tauri::{Emitter};
+use tauri::{Emitter, LogicalSize};
 use crate::appstate::{AppState, MpvMsg};
 use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, utils, window};
 use crate::mpv::ipc::{get_aid, get_sid, Interface, IpcData, MsgMood};
@@ -81,7 +81,11 @@ pub async fn get_is_supported_window_system() -> Result<bool> {
 }
 
 #[tauri::command]
-pub async fn mpv_wrapper_size_changed(state: tauri::State<'_, Arc<AppState>>, wrapper_size: HtmlElementRect) -> Result<()> {
+pub async fn mpv_wrapper_size_changed(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window,
+    wrapper_size: HtmlElementRect
+) -> Result<()> {
     let mpv_wid_rl = state.mpv_wid.read().await;
     let mpv_wid = mpv_wid_rl.unwrap();
 
@@ -91,21 +95,32 @@ pub async fn mpv_wrapper_size_changed(state: tauri::State<'_, Arc<AppState>>, wr
             sleep(Duration::from_millis(50)).await;
         }
     }
-    window::reposition(&state, mpv_wid, &wrapper_size).await?;
+    let factor = window.scale_factor()?;
+    let scaled_wrapper_size = HtmlElementRect {
+        x: wrapper_size.x * factor,
+        y: wrapper_size.y * factor,
+        width: wrapper_size.width * factor,
+        height: wrapper_size.height * factor
+    };
+    window::reposition(&state, mpv_wid, &scaled_wrapper_size).await?;
     Ok(())
 }
 
 #[tauri::command]
-pub async fn mpv_reposition_to_small(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
+pub async fn mpv_reposition_to_small(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window
+) -> Result<()> {
     let mpv_wid_rl = state.mpv_wid.read().await;
     let mpv_wid = mpv_wid_rl.unwrap();
 
-    let size = window.inner_size()?;
-    let offset = 10.0;
-    let x = size.width as f64 / 2.0 + 384.0 + offset;
-    let w = size.width as f64 - x - 2.0*offset;
+    let factor = window.scale_factor()?;
+    let size: LogicalSize<f64> = window.inner_size()?.to_logical(factor);
+    let offset = 10.0 * factor;
+    let x = size.width / 2.0 + 384.0 * factor + offset;
+    let w = size.width - x - 2.0*offset;
     let h = w / 16.0 * 9.0;
-    let y = size.height as f64 - offset - h;
+    let y = size.height - offset - h;
 
     window::reposition(&state, mpv_wid, &HtmlElementRect {
         x,

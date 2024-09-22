@@ -32,7 +32,6 @@ pub(super) async fn reparent(state: &Arc<AppState>, mpv_wid: usize, parent_wid: 
     let parent = id2hwnd(parent_wid);
     Ok(unsafe {
         SetParent(mpv, parent)?;
-        //SetWindowPos(mpv, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE)?
     })
 }
 
@@ -53,7 +52,7 @@ pub async fn reposition(state: &Arc<AppState>, mpv_wid: usize, container_rect: &
             container_rect.y.round() as i32,
             container_rect.width.round() as i32,
             container_rect.height.round() as i32,
-            SWP_NOZORDER
+            SWP_NOZORDER | SWP_NOACTIVATE
         )?;
     })
 }

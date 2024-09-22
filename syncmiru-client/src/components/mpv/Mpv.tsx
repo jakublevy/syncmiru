@@ -490,26 +490,12 @@ export default function Mpv(p: Props): ReactElement {
     function mpvResize() {
         const mpvWrapper = mpvWrapperRef.current as HTMLDivElement
         const rect = mpvWrapper.getBoundingClientRect()
-        getCurrent().scaleFactor()
-            .then((scaleFactor: number) => {
-                const scaledRect = {
-                    x: rect.x * scaleFactor,
-                    y: rect.y * scaleFactor,
-                    width: rect.width * scaleFactor,
-                    height: rect.height * scaleFactor
-                }
 
-                invoke('mpv_wrapper_size_changed', {wrapperSize: scaledRect})
-                    .catch(() => {
-                        showPersistentErrorAlert(t('mpv-resize-error'))
-                        forceDisconnectFromRoom(ctx, t)
-                    })
-        })
+        invoke('mpv_wrapper_size_changed', {wrapperSize: rect})
             .catch(() => {
                 showPersistentErrorAlert(t('mpv-resize-error'))
                 forceDisconnectFromRoom(ctx, t)
             })
-
     }
 
     function mpvResizeToSmall() {
