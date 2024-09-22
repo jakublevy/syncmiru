@@ -1,7 +1,7 @@
 {
   "productName": "syncmiru-client",
   "version": "0.0.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "cz.levy.jakub.client.syncmiru",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
