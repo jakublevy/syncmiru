@@ -115,12 +115,12 @@ pub async fn mpv_reposition_to_small(
     let mpv_wid = mpv_wid_rl.unwrap();
 
     let factor = window.scale_factor()?;
-    let size: LogicalSize<f64> = window.inner_size()?.to_logical(factor);
+    let size = window.inner_size()?;
     let offset = 10.0 * factor;
-    let x = size.width / 2.0 + 384.0 * factor + offset;
-    let w = size.width - x - 2.0*offset;
+    let x = size.width as f64 / 2.0 + 384.0*factor + offset;
+    let w = size.width as f64 - x - 2.0*offset;
     let h = w / 16.0 * 9.0;
-    let y = size.height - offset - h;
+    let y = size.height as f64 - offset - h;
 
     window::reposition(&state, mpv_wid, &HtmlElementRect {
         x,
