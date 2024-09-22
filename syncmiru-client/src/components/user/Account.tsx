@@ -16,9 +16,7 @@ import Signout from "@components/user/Signout.tsx";
 
 export default function Account(): ReactElement {
     const [_, navigate] = useLocation()
-    const {socket} = useMainContext()
     const {t} = useTranslation()
-    const clearJwt = useClearJwt()
     const [usernameLoading, setUsernameLoading] = useState<boolean>(true)
     const [passwordChangeLoading, setPasswordChangeLoading] = useState<boolean>(false)
     const [avatarLoading, setAvatarLoading] = useState<boolean>(true)

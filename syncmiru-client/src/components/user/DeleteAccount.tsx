@@ -18,13 +18,14 @@ import {tknValidate} from "src/form/validators.ts";
 import useClearJwt from "@hooks/useClearJwt.ts";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
+import {invoke} from "@tauri-apps/api/core";
 
 export default function DeleteAccount(p: Props): ReactElement {
     const {t} = useTranslation()
     const lang = useLanguage()
     const clearJwt = useClearJwt()
     const [_, navigate] = useLocation()
-    const {socket} = useMainContext()
+    const ctx = useMainContext()
     const [emailLoading, setEmailLoading] = useState<boolean>(true)
     const [resendTimeLoading, setResendTimeLoading] = useState<boolean>(true)
     const resendTimeoutDefault = useRef<number>(60)
@@ -37,15 +38,15 @@ export default function DeleteAccount(p: Props): ReactElement {
     const [tknShowError, setTknShowError] = useState<boolean>(false)
 
     useEffect(() => {
-        if(socket !== undefined) {
-            socket.emitWithAck("get_email_resend_timeout")
+        if(ctx.socket !== undefined) {
+            ctx.socket.emitWithAck("get_email_resend_timeout")
                 .then((timeout) => {
                     resendTimeoutDefault.current = timeout
                     setResendTimeout(timeout)
                 })
                 .finally(() => setResendTimeLoading(false))
 
-            socket.emitWithAck("get_email")
+            ctx.socket.emitWithAck("get_email")
                 .then((email: string) => {
                     setEmail(email)
                 })
@@ -55,7 +56,7 @@ export default function DeleteAccount(p: Props): ReactElement {
                 })
                 .finally(() => setEmailLoading(false))
         }
-    }, [socket]);
+    }, [ctx.socket]);
 
     useEffect(() => {
         if(!emailLoading && !resendTimeLoading)
@@ -67,7 +68,7 @@ export default function DeleteAccount(p: Props): ReactElement {
     function deleteClicked() {
         setDeleteAccountModalOpen(true)
 
-        socket!.emitWithAck("send_delete_account_email", {lang: lang})
+        ctx.socket!.emitWithAck("send_delete_account_email", {lang: lang})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
                     showTemporalErrorAlertForModal(t('email-send-error'))
@@ -93,7 +94,7 @@ export default function DeleteAccount(p: Props): ReactElement {
         setDeleteAccountModalOpen(false)
         p.setLoading(true)
 
-        socket!.emitWithAck("send_delete_account_email", {lang: lang})
+        ctx.socket!.emitWithAck("send_delete_account_email", {lang: lang})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err) {
                     showTemporalErrorAlertForModal(t('email-send-error'))
@@ -125,7 +126,7 @@ export default function DeleteAccount(p: Props): ReactElement {
     function deleteAccount() {
         p.setLoading(true)
         setDeleteAccountModalOpen(false)
-        socket!.emitWithAck("delete_account", {tkn: tkn, lang: lang})
+        ctx.socket!.emitWithAck("delete_account", {tkn: tkn, lang: lang})
             .then((ack: SocketIoAck<boolean>) => {
                 if(ack.status === SocketIoAckType.Ok) {
                     if(!ack.payload) {
@@ -138,9 +139,16 @@ export default function DeleteAccount(p: Props): ReactElement {
                     return
                 }
 
-                clearJwt().then(() => {
-                    navigateToLoginFormMain(navigate)
-                })
+                invoke('mpv_quit', {})
+                    .then(() => {
+                        ctx.setMpvRunning(false)
+                        clearJwt().then(() => {
+                            navigateToLoginFormMain(navigate)
+                        })
+                    })
+                    .catch(() => {
+                        invoke('kill_app_with_error_msg', {msg: t('mpv-quit-error')})
+                    })
                 showTemporalSuccessAlertForModal(t('modal-delete-account-delete-success'))
             })
             .catch(() => {
@@ -155,7 +163,7 @@ export default function DeleteAccount(p: Props): ReactElement {
         if(!tknValidate(tkn))
             return false
 
-        return socket!.emitWithAck("check_delete_account_tkn", { tkn: tkn })
+        return ctx.socket!.emitWithAck("check_delete_account_tkn", { tkn: tkn })
             .then((ack: SocketIoAck<boolean>) => {
                 setTknCheckFailed(false)
                 if(ack.status === SocketIoAckType.Ok)

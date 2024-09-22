@@ -6,11 +6,12 @@ import useClearJwt from "@hooks/useClearJwt.ts";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {useLocation} from "wouter";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
+import {invoke} from "@tauri-apps/api/core";
 
 export default function Signout(p: Props): ReactElement {
     const [_, navigate] = useLocation()
     const {t} = useTranslation()
-    const {socket} = useMainContext()
+    const ctx = useMainContext()
     const [showSignoutModal, setShowSignoutModal] = useState<boolean>(false);
     const clearJwt = useClearJwt()
 
@@ -20,17 +21,32 @@ export default function Signout(p: Props): ReactElement {
 
     function signoutClicked() {
         p.setLoading(true)
-        clearJwt().then(() => {
-            navigateToLoginFormMain(navigate)
-        })
+        invoke('mpv_quit', {})
+            .then(() => {
+                ctx.setMpvRunning(false)
+                clearJwt().then(() => {
+                    navigateToLoginFormMain(navigate)
+                })
+            })
+            .catch(() => {
+                invoke('kill_app_with_errador_msg', {msg: t('mpv-quit-error')})
+            })
     }
 
     function signoutAndForgetClicked() {
         p.setLoading(true)
-        clearJwt().then(() => {
-            socket!.emit("sign_out")
-            navigateToLoginFormMain(navigate)
-        })
+        invoke('mpv_quit', {})
+            .then(() => {
+                ctx.setMpvRunning(false)
+                clearJwt().then(() => {
+                    ctx.socket!.emit("sign_out")
+                    navigateToLoginFormMain(navigate)
+                })
+            })
+            .catch(() => {
+                invoke('kill_app_with_error_msg', {msg: t('mpv-quit-error')})
+            })
+
     }
 
     return (

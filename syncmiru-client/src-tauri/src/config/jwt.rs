@@ -21,7 +21,7 @@ pub fn write(jwt: &str) -> Result<()> {
 
 pub fn clear() -> Result<()> {
     let entry = Entry::new(constants::KEYRING_SERVICE, constants::KEYRING_LOGIN_JWT_USER)?;
-    match entry.delete_password() {
+    match entry.delete_credential() {
         Ok(_) => Ok(()),
         Err(keyring_err::NoEntry) => Ok(()),
         Err(e) => Err(SyncmiruError::KeyringError(e)),
