@@ -95,7 +95,7 @@ pub enum SyncmiruError {
     DepsDownloadFailed,
 
     #[error("Poison error")]
-    PoisonError
+    PoisonError,
 }
 
 impl<T> From<PoisonError<T>> for SyncmiruError {
@@ -106,6 +106,12 @@ impl<T> From<PoisonError<T>> for SyncmiruError {
 
 impl From<()> for SyncmiruError {
     fn from(value: ()) -> Self {
+        Self::VoidError()
+    }
+}
+
+impl From<bool> for SyncmiruError {
+    fn from(value: bool) -> Self {
         Self::VoidError()
     }
 }

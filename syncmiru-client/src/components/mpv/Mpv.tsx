@@ -30,10 +30,12 @@ import {UserId} from "@models/user.ts";
 import {MpvMsgMood, showMpvReadyMessages, timestampPretty} from "src/utils/mpv.ts";
 import Decimal from "decimal.js";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
+import {useIsSupportedWindowSystem} from "@hooks/useIsSupportedWindowSystem.ts";
 
 export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
     const {t} = useTranslation()
+    const isSupportedWindowSystem = useIsSupportedWindowSystem()
     const mpvWrapperRef: React.MutableRefObject<HTMLDivElement | null> = useRef(null)
     const connectedToRoom = ctx.currentRid != null && ctx.roomConnection === RoomConnectionState.Established
 
@@ -151,7 +153,7 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<void>('mpv-resize', (e: Event<void>) => {
-            if(ctx.mpvRunning && !ctx.mpvWinDetached) {
+            if(ctx.mpvRunning && !ctx.mpvWinDetached && isSupportedWindowSystem) {
                 if(!ctx.mpvShowSmall)
                     mpvResize()
                 else
@@ -160,14 +162,14 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<Record<"width" | "height", number>>('tauri://resize', (e) => {
-            setTimeout(() => {
-                if(ctx.mpvRunning && !ctx.mpvWinDetached) {
-                    if(!ctx.mpvShowSmall)
-                        mpvResize()
-                    else
-                        mpvResizeToSmall()
-                }
-            }, 50)
+            if(ctx.mpvRunning && !ctx.mpvWinDetached && isSupportedWindowSystem) {
+                setTimeout(() => {
+                        if(!ctx.mpvShowSmall)
+                            mpvResize()
+                        else
+                            mpvResizeToSmall()
+                }, 50)
+            }
         }))
 
         unlisten.push(listen<boolean>('mpv-win-detached-changed', (e: Event<boolean>) => {

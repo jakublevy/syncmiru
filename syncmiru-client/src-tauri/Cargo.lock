@@ -4860,6 +4860,7 @@ dependencies = [
  "keyring",
  "machineid-rs",
  "octocrab",
+ "once_cell",
  "reqwest",
  "roxmltree",
  "rust-i18n",

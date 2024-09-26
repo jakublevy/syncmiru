@@ -4,6 +4,7 @@ use crate::result::Result;
 
 #[cfg(target_family = "unix")]
 use gtk::prelude::WidgetExt;
+use crate::constants;
 
 pub trait WindowExt {
     async fn native_id(&self) -> Result<Option<usize>>;
@@ -16,7 +17,7 @@ impl WindowExt for tauri::Window {
                 Ok(Some(self.hwnd()?.0 as usize))
             }
             else {
-                if is_supported_window_system().await? {
+                if *constants::SUPPORTED_WINDOW_SYSTEM.get().unwrap() {
                     let gtk_window = self.gtk_window()?;
                     let window_opt = gtk_window.window();
                     let window = window_opt.unwrap();
@@ -30,7 +31,7 @@ impl WindowExt for tauri::Window {
     }
 }
 
-pub async fn is_supported_window_system() -> Result<bool> {
+pub(super) async fn is_supported_window_system() -> Result<bool> {
     if cfg!(target_family = "windows") {
         Ok(true)
     }

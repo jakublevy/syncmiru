@@ -58,6 +58,7 @@ async fn main() -> Result<()> {
         #[cfg(target_family = "unix")]
         x11_screen_num: None.into(),
     });
+    constants::init_runtime_constants().await?;
     files::create_app_dirs()?;
     let mut ctx = tauri::generate_context!();
     tauri::Builder::default()

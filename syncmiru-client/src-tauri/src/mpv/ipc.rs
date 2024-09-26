@@ -640,7 +640,10 @@ async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -
 }
 
 async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Result<()> {
-    let start = Instant::now();
+    if !constants::SUPPORTED_WINDOW_SYSTEM.get().unwrap() {
+        return Ok(())
+    }
+
     {
         let mut mpv_ignore_fullscreen_events_timestamp_rl = ipc_data.app_state.mpv_ignore_fullscreen_events_timestamp.write().await;
         let now = Instant::now();
@@ -711,6 +714,10 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
 }
 
 async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Result<()> {
+    if !constants::SUPPORTED_WINDOW_SYSTEM.get().unwrap() {
+        return Ok(())
+    }
+
     if let Some(args_value) = msg.get("args") {
         if let Some(args) = args_value.as_array() {
             let cmd = args.get(0).unwrap().as_str().unwrap();

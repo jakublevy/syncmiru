@@ -1,3 +1,7 @@
+use once_cell::sync::OnceCell;
+use crate::window;
+use crate::result::Result;
+
 pub const APP_NAME_PRETTY: &'static str = "Syncmiru";
 pub const APP_NAME: &'static str = "syncmiru";
 pub const CONFIG_INI_FILE_NAME: &'static str = "config.ini";
@@ -10,3 +14,9 @@ pub const HWID_KEY: &'static str = "&-]#pBy7Wkxn72l|r#lW$6rAD:I7;ksbX976_ltp=LVM
 pub const MPV_IGNORE_FULLSCREEN_MILLIS: u128 = 300;
 pub const MPV_MIN_USER_REQ_ID: u32 = 100;
 pub const DEFAULT_DPI: u32 = 96;
+pub static SUPPORTED_WINDOW_SYSTEM: OnceCell<bool> = OnceCell::new();
+
+pub async fn init_runtime_constants() -> Result<()> {
+    SUPPORTED_WINDOW_SYSTEM.set(window::is_supported_window_system().await?)?;
+    Ok(())
+}

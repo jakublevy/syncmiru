@@ -11,7 +11,8 @@ use crate::mpv::window::HtmlElementRect;
 use tokio::time::{sleep, Instant};
 use crate::result::Result;
 use mpv::ipc;
-use crate::mpv;
+use crate::{constants, mpv};
+use crate::error::SyncmiruError;
 
 #[tauri::command]
 pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
@@ -49,11 +50,13 @@ pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Wi
             mpv_detached = appdata.mpv_win_detached;
         }
 
-        let mpv_wid_rl = state.mpv_wid.read().await;
-        let mpv_wid = mpv_wid_rl.unwrap();
+        if *constants::SUPPORTED_WINDOW_SYSTEM.get().unwrap() {
+            let mpv_wid_rl = state.mpv_wid.read().await;
+            let mpv_wid = mpv_wid_rl.unwrap();
 
-        if !mpv_detached {
-            window::attach(&state, &window, mpv_wid).await?;
+            if !mpv_detached {
+                window::attach(&state, &window, mpv_wid).await?;
+            }
         }
         window.emit("mpv-running", true)?;
     }
@@ -77,7 +80,7 @@ pub async fn mpv_quit(state: tauri::State<'_, Arc<AppState>>, window: tauri::Win
 
 #[tauri::command]
 pub async fn get_is_supported_window_system() -> Result<bool> {
-    crate::window::is_supported_window_system().await
+    Ok(*constants::SUPPORTED_WINDOW_SYSTEM.get().unwrap())
 }
 
 #[tauri::command]
@@ -133,8 +136,8 @@ pub async fn mpv_reposition_to_small(
 
     let size = window.inner_size()?;
     let offset = 10.0 * factor;
-    let x = size.width as f64 / 2.0 + 384.0*factor + offset;
-    let w = size.width as f64 - x - 2.0*offset;
+    let x = size.width as f64 / 2.0 + 384.0 * factor + offset;
+    let w = size.width as f64 - x - 2.0 * offset;
     let h = w / 16.0 * 9.0;
     let y = size.height as f64 - offset - h;
 

@@ -20,7 +20,7 @@ use tokio::io::AsyncWriteExt;
 use tokio::sync::{Mutex, oneshot, RwLock};
 use crate::appstate::AppState;
 use crate::deps::utils::{mpv_exe, prelude_path, yt_dlp_exe};
-use crate::hash;
+use crate::{constants, hash};
 use crate::result::Result;
 use tokio::process::Command;
 use tokio::sync::mpsc;
@@ -77,7 +77,9 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
 
     cfg_if! {
         if #[cfg(target_family = "unix")] {
-            window::init_connection(state).await?;
+            if *constants::SUPPORTED_WINDOW_SYSTEM.get().unwrap() {
+                window::init_connection(state).await?;
+            }
         }
     }
 
@@ -88,11 +90,14 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
         *mpv_loading_msg_id_wl = None;
     }
 
-    let mpv_wid_opt = window::pid2wid(state, pid).await?;
-    {
-        let mut mpv_wid_wl = state.mpv_wid.write().await;
-        *mpv_wid_wl = Some(mpv_wid_opt.expect("missing mpv window"));
+    if *constants::SUPPORTED_WINDOW_SYSTEM.get().unwrap() {
+        let mpv_wid_opt = window::pid2wid(state, pid).await?;
+        {
+            let mut mpv_wid_wl = state.mpv_wid.write().await;
+            *mpv_wid_wl = Some(mpv_wid_opt.expect("missing mpv window"));
+        }
     }
+
     let (tx, rx) = oneshot::channel::<()>();
     {
         let mut mpv_tx_wl = state.mpv_stop_tx.write().await;
