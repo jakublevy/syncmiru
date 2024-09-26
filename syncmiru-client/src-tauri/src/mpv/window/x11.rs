@@ -9,6 +9,7 @@ use crate::mpv::window::HtmlElementRect;
 use crate::result::Result;
 use x11rb::protocol::xproto;
 use x11rb::protocol::xproto::{ChangeWindowAttributesAux, ClientMessageData, ClientMessageEvent, ConfigureWindowAux, ConnectionExt, EventMask, InputFocus};
+use x11rb::resource_manager::new_from_default;
 use x11rb::wrapper::ConnectionExt as OtherConnectionExt;
 
 pub async fn init_connection(state: &Arc<AppState>) -> Result<()> {
@@ -157,21 +158,10 @@ pub async fn focus(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
 
 pub async fn get_scale_factor(state: &Arc<AppState>) -> Result<f64> {
     let conn_rl = state.x11_conn.read().await;
-    let x11_screen_num_rl = state.x11_screen_num.read().await;
-    let x11_screen_num = x11_screen_num_rl.unwrap();
     let conn = conn_rl.as_ref().unwrap();
-    let screen = &conn.setup().roots[x11_screen_num];
-
-    let width_px = screen.width_in_pixels;
-    let height_px = screen.height_in_pixels;
-
-    let width_mm = screen.width_in_millimeters;
-    let height_mm = screen.height_in_millimeters;
-
-    let dpi_x = ((width_px as f64 / width_mm as f64) * 25.4).round();
-    let dpi_y = ((height_px as f64 / height_mm as f64) * 25.4).round();
-    let dpi = (dpi_x + dpi_y) / 2f64;
-    Ok(dpi / 96f64)
+    let db = new_from_default(conn)?;
+    let dpi: u32 = db.get_value("Xft.dpi", "")?.unwrap_or(1);
+    Ok(dpi as f64 / 96f64)
 }
 
 fn set_decoration(conn: &RustConnection, window: xproto::Window, motif_hints: &[u32; 5]) -> Result<()> {

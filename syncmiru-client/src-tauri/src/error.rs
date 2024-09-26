@@ -1,5 +1,6 @@
 use serde_with::DisplayFromStr;
 use std::io;
+use std::num::ParseIntError;
 use std::str::ParseBoolError;
 use std::sync::PoisonError;
 use crate::mpv::ipc::Interface;
@@ -80,6 +81,9 @@ pub enum SyncmiruError {
 
     #[error("Rust Decimal error")]
     RustDecimalError(#[from] rust_decimal::Error),
+
+    #[error("Parse int error")]
+    ParseIntError(#[from] ParseIntError),
 
     #[error("Mpv obtaining property failed")]
     MpvReceiveResponseError,

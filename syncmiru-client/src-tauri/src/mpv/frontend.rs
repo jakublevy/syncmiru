@@ -98,7 +98,9 @@ pub async fn mpv_wrapper_size_changed(
     let mut factor = window.scale_factor()?;
     cfg_if! {
         if #[cfg(target_family = "unix")] {
-            factor = mpv::window::x11::get_scale_factor(&state).await?;
+            if factor == 1f64 {
+                factor = mpv::window::x11::get_scale_factor(&state).await?;
+            }
         }
     }
 
@@ -123,7 +125,9 @@ pub async fn mpv_reposition_to_small(
     let mut factor = window.scale_factor()?;
     cfg_if! {
         if #[cfg(target_family = "unix")] {
-            factor = mpv::window::x11::get_scale_factor(&state).await?;
+            if factor == 1f64 {
+                factor = mpv::window::x11::get_scale_factor(&state).await?;
+            }
         }
     }
 
