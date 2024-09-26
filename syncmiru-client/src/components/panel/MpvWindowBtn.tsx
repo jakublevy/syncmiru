@@ -25,7 +25,7 @@ export default function MpvWindowBtn(): ReactElement {
 
     if (!isSupportedWindowSystem) {
         return (
-            <div>
+            <div className="z-10">
                 <a data-tooltip-id="mpv-win-btn" data-tooltip-html={t('unsupported-window-system-tooltip')}>
                     <Clickable
                         className="p-2 ml-1"

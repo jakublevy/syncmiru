@@ -10,13 +10,13 @@ use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use std::sync::Arc;
-use std::thread::sleep;
 use std::time::{Duration, SystemTime};
 use anyhow::anyhow;
 use cfg_if::cfg_if;
 use tauri::{Emitter, Manager, State};
 use thiserror::__private::AsDisplay;
 use tokio::io::AsyncWriteExt;
+use tokio::net::unix::pipe::pipe;
 use tokio::sync::{Mutex, oneshot, RwLock};
 use crate::appstate::AppState;
 use crate::deps::utils::{mpv_exe, prelude_path, yt_dlp_exe};
@@ -26,6 +26,8 @@ use tokio::process::Command;
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::{Sender, Receiver};
 use tokio::task;
+use tokio::time::sleep;
+use crate::error::SyncmiruError;
 use crate::mpv::ipc::Interface;
 
 pub fn init_prelude(prelude_resource_path: impl AsRef<Path>) -> Result<()> {
@@ -139,6 +141,21 @@ pub async fn start_ipc(state: &Arc<AppState>, pipe_id: &str, window: tauri::Wind
     {
         let mut mpv_ipc_tx_wl = state.mpv_ipc_tx.write().await;
         *mpv_ipc_tx_wl = Some(tx);
+    }
+    if crate::window::is_wayland() {
+        let pipe_path = get_pipe_ipc_path(pipe_id);
+        let max_wait = 1000;
+        let mut waited = 0;
+        while waited < max_wait {
+            if Path::new(&pipe_path).exists() {
+                break;
+            }
+            sleep(Duration::from_millis(10)).await;
+            waited += 10;
+        }
+        if waited == max_wait {
+            return Err(SyncmiruError::MpvIpcNotRunning)
+        }
     }
     task::spawn(ipc::start(rx, pipe_id.to_string(), window, state.clone()));
     Ok(())

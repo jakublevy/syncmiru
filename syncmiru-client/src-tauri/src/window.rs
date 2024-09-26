@@ -31,24 +31,33 @@ impl WindowExt for tauri::Window {
     }
 }
 
-pub(super) async fn is_supported_window_system() -> Result<bool> {
+pub(super) fn is_supported_window_system() -> bool {
     if cfg!(target_family = "windows") {
-        Ok(true)
+        true
     }
     else if cfg!(target_family = "unix") {
         if let Some(_) = env::var_os("WAYLAND_DISPLAY") {
-            Ok(false)
+            false
         }
         else if let Some(_) = env::var_os("DISPLAY") {
-            Ok(true)
+            true
         }
         else {
-            Ok(false)
+            false
         }
     }
     else {
-        Ok(false)
+        false
     }
+}
+
+pub fn is_wayland() -> bool {
+    if cfg!(target_family = "unix") {
+        if let Some(_) = env::var_os("WAYLAND_DISPLAY") {
+            return true
+        }
+    }
+    false
 }
 
 #[cfg(target_family = "unix")]

@@ -94,6 +94,9 @@ pub enum SyncmiruError {
     #[error("Deps download failed")]
     DepsDownloadFailed,
 
+    #[error("Mpv IPC not running")]
+    MpvIpcNotRunning,
+
     #[error("Poison error")]
     PoisonError,
 }

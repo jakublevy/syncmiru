@@ -1,18 +1,16 @@
 use std::sync::Arc;
-use std::time::Duration;
 use cfg_if::cfg_if;
 use rust_decimal::Decimal;
-use tauri::{Emitter, LogicalSize};
+use tauri::{Emitter};
 use crate::appstate::{AppState, MpvMsg};
 use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, utils, window};
 use crate::mpv::ipc::{get_aid, get_sid, Interface, IpcData, MsgMood};
 use crate::mpv::models::{LoadFromSource, LoadFromUrl, UserLoadedInfo};
 use crate::mpv::window::HtmlElementRect;
-use tokio::time::{sleep, Instant};
+use tokio::time::{Instant};
 use crate::result::Result;
 use mpv::ipc;
 use crate::{constants, mpv};
-use crate::error::SyncmiruError;
 
 #[tauri::command]
 pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {

@@ -17,6 +17,6 @@ pub const DEFAULT_DPI: u32 = 96;
 pub static SUPPORTED_WINDOW_SYSTEM: OnceCell<bool> = OnceCell::new();
 
 pub async fn init_runtime_constants() -> Result<()> {
-    SUPPORTED_WINDOW_SYSTEM.set(window::is_supported_window_system().await?)?;
+    SUPPORTED_WINDOW_SYSTEM.set(window::is_supported_window_system())?;
     Ok(())
 }
