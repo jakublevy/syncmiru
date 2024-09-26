@@ -16,7 +16,6 @@ use cfg_if::cfg_if;
 use tauri::{Emitter, Manager, State};
 use thiserror::__private::AsDisplay;
 use tokio::io::AsyncWriteExt;
-use tokio::net::unix::pipe::pipe;
 use tokio::sync::{Mutex, oneshot, RwLock};
 use crate::appstate::AppState;
 use crate::deps::utils::{mpv_exe, prelude_path, yt_dlp_exe};

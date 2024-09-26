@@ -12,6 +12,9 @@ use crate::result::Result;
 use mpv::ipc;
 use crate::{constants, mpv};
 
+#[cfg(target_family = "windows")]
+use tokio::time::{sleep, Duration};
+
 #[tauri::command]
 pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
     let mpv_running_rl = state.mpv_stop_tx.read().await;
