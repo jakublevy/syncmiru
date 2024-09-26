@@ -11,6 +11,7 @@ use x11rb::protocol::xproto;
 use x11rb::protocol::xproto::{ChangeWindowAttributesAux, ClientMessageData, ClientMessageEvent, ConfigureWindowAux, ConnectionExt, EventMask, InputFocus};
 use x11rb::resource_manager::new_from_default;
 use x11rb::wrapper::ConnectionExt as OtherConnectionExt;
+use crate::constants;
 
 pub async fn init_connection(state: &Arc<AppState>) -> Result<()> {
     let (conn, screen_num) = RustConnection::connect(None)?;
@@ -161,7 +162,7 @@ pub async fn get_scale_factor(state: &Arc<AppState>) -> Result<f64> {
     let conn = conn_rl.as_ref().unwrap();
     let db = new_from_default(conn)?;
     let dpi: u32 = db.get_value("Xft.dpi", "")?.unwrap_or(1);
-    Ok(dpi as f64 / 96f64)
+    Ok(dpi as f64 / constants::DEFAULT_DPI as f64)
 }
 
 fn set_decoration(conn: &RustConnection, window: xproto::Window, motif_hints: &[u32; 5]) -> Result<()> {
