@@ -249,7 +249,7 @@ async fn listen(
                         break;
                      },
                      Ok(_) => {
-                        //println!("recv {}", buffer);
+                        println!("recv {}", buffer);
                         process_mpv_msg(&buffer, ipc_data).await?;
                         buffer.clear();
                      },
@@ -281,10 +281,11 @@ async fn write(
             match msg {
                 Interface::LoadFromSource {ref source_url, ref jwt } => {
                     let cmd = format!(
-                        "{{\"command\":  [\"loadfile\", \"{}\", \"replace\", {{\"http-header-fields\": \"Authorization: Bearer {}\"}}]}}\n",
+                        "{{\"command\":  [\"loadfile\", \"{}\", \"replace\", 0, {{\"http-header-fields\": \"Authorization: Bearer {}\"}}]}}\n",
                         source_url,
                         jwt
                     );
+                    println!("{}", cmd);
                     sender.write_all(cmd.as_bytes()).await?;
                 },
                 Interface::LoadFromUrl(ref url) => {
