@@ -18,6 +18,33 @@ export default function Licenses(): ReactElement {
                 "THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n"
         },
         {
+            name: "The Unlicense License",
+            text: "This is free and unencumbered software released into the public domain.\n" +
+                "\n" +
+                "Anyone is free to copy, modify, publish, use, compile, sell, or\n" +
+                "distribute this software, either in source code form or as a compiled\n" +
+                "binary, for any purpose, commercial or non-commercial, and by any\n" +
+                "means.\n" +
+                "\n" +
+                "In jurisdictions that recognize copyright laws, the author or authors\n" +
+                "of this software dedicate any and all copyright interest in the\n" +
+                "software to the public domain. We make this dedication for the benefit\n" +
+                "of the public at large and to the detriment of our heirs and\n" +
+                "successors. We intend this dedication to be an overt act of\n" +
+                "relinquishment in perpetuity of all present and future rights to this\n" +
+                "software under copyright law.\n" +
+                "\n" +
+                "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\n" +
+                "EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n" +
+                "MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\n" +
+                "IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR\n" +
+                "OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,\n" +
+                "ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR\n" +
+                "OTHER DEALINGS IN THE SOFTWARE.\n" +
+                "\n" +
+                "For more information, please refer to <https://unlicense.org>"
+        },
+        {
             name: "Apache License Version 2.0, January 2004 <http://www.apache.org/licenses/>",
             text: "TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n" +
                 "\n" +
@@ -67,6 +94,339 @@ export default function Licenses(): ReactElement {
                 "9. Accepting Warranty or Additional Liability. While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.\n" +
                 "\n" +
                 "END OF TERMS AND CONDITIONS"
+        },
+        {
+            name: "3-Clause BSD License",
+            text: "Copyright <YEAR> <COPYRIGHT HOLDER>\n" +
+                "\n" +
+                "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:\n" +
+                "\n" +
+                "1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.\n" +
+                "\n" +
+                "2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.\n" +
+                "\n" +
+                "3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.\n" +
+                "\n" +
+                "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+        },
+        {
+            name: "MPL-2.0 License",
+            text: "\n" +
+                "Mozilla Public License\n" +
+                "Version 2.0\n" +
+                "1. Definitions\n" +
+                "\n" +
+                "1.1. “Contributor”\n" +
+                "\n" +
+                "    means each individual or legal entity that creates, contributes to the creation of, or owns Covered Software.\n" +
+                "1.2. “Contributor Version”\n" +
+                "\n" +
+                "    means the combination of the Contributions of others (if any) used by a Contributor and that particular Contributor’s Contribution.\n" +
+                "1.3. “Contribution”\n" +
+                "\n" +
+                "    means Covered Software of a particular Contributor.\n" +
+                "1.4. “Covered Software”\n" +
+                "\n" +
+                "    means Source Code Form to which the initial Contributor has attached the notice in Exhibit A, the Executable Form of such Source Code Form, and Modifications of such Source Code Form, in each case including portions thereof.\n" +
+                "1.5. “Incompatible With Secondary Licenses”\n" +
+                "\n" +
+                "    means\n" +
+                "\n" +
+                "        that the initial Contributor has attached the notice described in Exhibit B to the Covered Software; or\n" +
+                "\n" +
+                "        that the Covered Software was made available under the terms of version 1.1 or earlier of the License, but not also under the terms of a Secondary License.\n" +
+                "\n" +
+                "1.6. “Executable Form”\n" +
+                "\n" +
+                "    means any form of the work other than Source Code Form.\n" +
+                "1.7. “Larger Work”\n" +
+                "\n" +
+                "    means a work that combines Covered Software with other material, in a separate file or files, that is not Covered Software.\n" +
+                "1.8. “License”\n" +
+                "\n" +
+                "    means this document.\n" +
+                "1.9. “Licensable”\n" +
+                "\n" +
+                "    means having the right to grant, to the maximum extent possible, whether at the time of the initial grant or subsequently, any and all of the rights conveyed by this License.\n" +
+                "1.10. “Modifications”\n" +
+                "\n" +
+                "    means any of the following:\n" +
+                "\n" +
+                "        any file in Source Code Form that results from an addition to, deletion from, or modification of the contents of Covered Software; or\n" +
+                "\n" +
+                "        any new file in Source Code Form that contains any Covered Software.\n" +
+                "\n" +
+                "1.11. “Patent Claims” of a Contributor\n" +
+                "\n" +
+                "    means any patent claim(s), including without limitation, method, process, and apparatus claims, in any patent Licensable by such Contributor that would be infringed, but for the grant of the License, by the making, using, selling, offering for sale, having made, import, or transfer of either its Contributions or its Contributor Version.\n" +
+                "1.12. “Secondary License”\n" +
+                "\n" +
+                "    means either the GNU General Public License, Version 2.0, the GNU Lesser General Public License, Version 2.1, the GNU Affero General Public License, Version 3.0, or any later versions of those licenses.\n" +
+                "1.13. “Source Code Form”\n" +
+                "\n" +
+                "    means the form of the work preferred for making modifications.\n" +
+                "1.14. “You” (or “Your”)\n" +
+                "\n" +
+                "    means an individual or a legal entity exercising rights under this License. For legal entities, “You” includes any entity that controls, is controlled by, or is under common control with You. For purposes of this definition, “control” means (a) the power, direct or indirect, to cause the direction or management of such entity, whether by contract or otherwise, or (b) ownership of more than fifty percent (50%) of the outstanding shares or beneficial ownership of such entity.\n" +
+                "\n" +
+                "2. License Grants and Conditions\n" +
+                "2.1. Grants\n" +
+                "\n" +
+                "Each Contributor hereby grants You a world-wide, royalty-free, non-exclusive license:\n" +
+                "\n" +
+                "    under intellectual property rights (other than patent or trademark) Licensable by such Contributor to use, reproduce, make available, modify, display, perform, distribute, and otherwise exploit its Contributions, either on an unmodified basis, with Modifications, or as part of a Larger Work; and\n" +
+                "\n" +
+                "    under Patent Claims of such Contributor to make, use, sell, offer for sale, have made, import, and otherwise transfer either its Contributions or its Contributor Version.\n" +
+                "\n" +
+                "2.2. Effective Date\n" +
+                "\n" +
+                "The licenses granted in Section 2.1 with respect to any Contribution become effective for each Contribution on the date the Contributor first distributes such Contribution.\n" +
+                "2.3. Limitations on Grant Scope\n" +
+                "\n" +
+                "The licenses granted in this Section 2 are the only rights granted under this License. No additional rights or licenses will be implied from the distribution or licensing of Covered Software under this License. Notwithstanding Section 2.1(b) above, no patent license is granted by a Contributor:\n" +
+                "\n" +
+                "    for any code that a Contributor has removed from Covered Software; or\n" +
+                "\n" +
+                "    for infringements caused by: (i) Your and any other third party’s modifications of Covered Software, or (ii) the combination of its Contributions with other software (except as part of its Contributor Version); or\n" +
+                "\n" +
+                "    under Patent Claims infringed by Covered Software in the absence of its Contributions.\n" +
+                "\n" +
+                "This License does not grant any rights in the trademarks, service marks, or logos of any Contributor (except as may be necessary to comply with the notice requirements in Section 3.4).\n" +
+                "2.4. Subsequent Licenses\n" +
+                "\n" +
+                "No Contributor makes additional grants as a result of Your choice to distribute the Covered Software under a subsequent version of this License (see Section 10.2) or under the terms of a Secondary License (if permitted under the terms of Section 3.3).\n" +
+                "2.5. Representation\n" +
+                "\n" +
+                "Each Contributor represents that the Contributor believes its Contributions are its original creation(s) or it has sufficient rights to grant the rights to its Contributions conveyed by this License.\n" +
+                "2.6. Fair Use\n" +
+                "\n" +
+                "This License is not intended to limit any rights You have under applicable copyright doctrines of fair use, fair dealing, or other equivalents.\n" +
+                "2.7. Conditions\n" +
+                "\n" +
+                "Sections 3.1, 3.2, 3.3, and 3.4 are conditions of the licenses granted in Section 2.1.\n" +
+                "3. Responsibilities\n" +
+                "3.1. Distribution of Source Form\n" +
+                "\n" +
+                "All distribution of Covered Software in Source Code Form, including any Modifications that You create or to which You contribute, must be under the terms of this License. You must inform recipients that the Source Code Form of the Covered Software is governed by the terms of this License, and how they can obtain a copy of this License. You may not attempt to alter or restrict the recipients’ rights in the Source Code Form.\n" +
+                "3.2. Distribution of Executable Form\n" +
+                "\n" +
+                "If You distribute Covered Software in Executable Form then:\n" +
+                "\n" +
+                "    such Covered Software must also be made available in Source Code Form, as described in Section 3.1, and You must inform recipients of the Executable Form how they can obtain a copy of such Source Code Form by reasonable means in a timely manner, at a charge no more than the cost of distribution to the recipient; and\n" +
+                "\n" +
+                "    You may distribute such Executable Form under the terms of this License, or sublicense it under different terms, provided that the license for the Executable Form does not attempt to limit or alter the recipients’ rights in the Source Code Form under this License.\n" +
+                "\n" +
+                "3.3. Distribution of a Larger Work\n" +
+                "\n" +
+                "You may create and distribute a Larger Work under terms of Your choice, provided that You also comply with the requirements of this License for the Covered Software. If the Larger Work is a combination of Covered Software with a work governed by one or more Secondary Licenses, and the Covered Software is not Incompatible With Secondary Licenses, this License permits You to additionally distribute such Covered Software under the terms of such Secondary License(s), so that the recipient of the Larger Work may, at their option, further distribute the Covered Software under the terms of either this License or such Secondary License(s).\n" +
+                "3.4. Notices\n" +
+                "\n" +
+                "You may not remove or alter the substance of any license notices (including copyright notices, patent notices, disclaimers of warranty, or limitations of liability) contained within the Source Code Form of the Covered Software, except that You may alter any license notices to the extent required to remedy known factual inaccuracies.\n" +
+                "3.5. Application of Additional Terms\n" +
+                "\n" +
+                "You may choose to offer, and to charge a fee for, warranty, support, indemnity or liability obligations to one or more recipients of Covered Software. However, You may do so only on Your own behalf, and not on behalf of any Contributor. You must make it absolutely clear that any such warranty, support, indemnity, or liability obligation is offered by You alone, and You hereby agree to indemnify every Contributor for any liability incurred by such Contributor as a result of warranty, support, indemnity or liability terms You offer. You may include additional disclaimers of warranty and limitations of liability specific to any jurisdiction.\n" +
+                "4. Inability to Comply Due to Statute or Regulation\n" +
+                "\n" +
+                "If it is impossible for You to comply with any of the terms of this License with respect to some or all of the Covered Software due to statute, judicial order, or regulation then You must: (a) comply with the terms of this License to the maximum extent possible; and (b) describe the limitations and the code they affect. Such description must be placed in a text file included with all distributions of the Covered Software under this License. Except to the extent prohibited by statute or regulation, such description must be sufficiently detailed for a recipient of ordinary skill to be able to understand it.\n" +
+                "5. Termination\n" +
+                "\n" +
+                "5.1. The rights granted under this License will terminate automatically if You fail to comply with any of its terms. However, if You become compliant, then the rights granted under this License from a particular Contributor are reinstated (a) provisionally, unless and until such Contributor explicitly and finally terminates Your grants, and (b) on an ongoing basis, if such Contributor fails to notify You of the non-compliance by some reasonable means prior to 60 days after You have come back into compliance. Moreover, Your grants from a particular Contributor are reinstated on an ongoing basis if such Contributor notifies You of the non-compliance by some reasonable means, this is the first time You have received notice of non-compliance with this License from such Contributor, and You become compliant prior to 30 days after Your receipt of the notice.\n" +
+                "\n" +
+                "5.2. If You initiate litigation against any entity by asserting a patent infringement claim (excluding declaratory judgment actions, counter-claims, and cross-claims) alleging that a Contributor Version directly or indirectly infringes any patent, then the rights granted to You by any and all Contributors for the Covered Software under Section 2.1 of this License shall terminate.\n" +
+                "\n" +
+                "5.3. In the event of termination under Sections 5.1 or 5.2 above, all end user license agreements (excluding distributors and resellers) which have been validly granted by You or Your distributors under this License prior to termination shall survive termination.\n" +
+                "6. Disclaimer of Warranty\n" +
+                "\n" +
+                "Covered Software is provided under this License on an “as is” basis, without warranty of any kind, either expressed, implied, or statutory, including, without limitation, warranties that the Covered Software is free of defects, merchantable, fit for a particular purpose or non-infringing. The entire risk as to the quality and performance of the Covered Software is with You. Should any Covered Software prove defective in any respect, You (not any Contributor) assume the cost of any necessary servicing, repair, or correction. This disclaimer of warranty constitutes an essential part of this License. No use of any Covered Software is authorized under this License except under this disclaimer.\n" +
+                "7. Limitation of Liability\n" +
+                "\n" +
+                "Under no circumstances and under no legal theory, whether tort (including negligence), contract, or otherwise, shall any Contributor, or anyone who distributes Covered Software as permitted above, be liable to You for any direct, indirect, special, incidental, or consequential damages of any character including, without limitation, damages for lost profits, loss of goodwill, work stoppage, computer failure or malfunction, or any and all other commercial damages or losses, even if such party shall have been informed of the possibility of such damages. This limitation of liability shall not apply to liability for death or personal injury resulting from such party’s negligence to the extent applicable law prohibits such limitation. Some jurisdictions do not allow the exclusion or limitation of incidental or consequential damages, so this exclusion and limitation may not apply to You.\n" +
+                "8. Litigation\n" +
+                "\n" +
+                "Any litigation relating to this License may be brought only in the courts of a jurisdiction where the defendant maintains its principal place of business and such litigation shall be governed by laws of that jurisdiction, without reference to its conflict-of-law provisions. Nothing in this Section shall prevent a party’s ability to bring cross-claims or counter-claims.\n" +
+                "9. Miscellaneous\n" +
+                "\n" +
+                "This License represents the complete agreement concerning the subject matter hereof. If any provision of this License is held to be unenforceable, such provision shall be reformed only to the extent necessary to make it enforceable. Any law or regulation which provides that the language of a contract shall be construed against the drafter shall not be used to construe this License against a Contributor.\n" +
+                "10. Versions of the License\n" +
+                "10.1. New Versions\n" +
+                "\n" +
+                "Mozilla Foundation is the license steward. Except as provided in Section 10.3, no one other than the license steward has the right to modify or publish new versions of this License. Each version will be given a distinguishing version number.\n" +
+                "10.2. Effect of New Versions\n" +
+                "\n" +
+                "You may distribute the Covered Software under the terms of the version of the License under which You originally received the Covered Software, or under the terms of any subsequent version published by the license steward.\n" +
+                "10.3. Modified Versions\n" +
+                "\n" +
+                "If you create software not governed by this License, and you want to create a new license for such software, you may create and use a modified version of this License if you rename the license and remove any references to the name of the license steward (except to note that such modified license differs from this License).\n" +
+                "10.4. Distributing Source Code Form that is Incompatible With Secondary Licenses\n" +
+                "\n" +
+                "If You choose to distribute Source Code Form that is Incompatible With Secondary Licenses under the terms of this version of the License, the notice described in Exhibit B of this License must be attached.\n" +
+                "Exhibit A - Source Code Form License Notice\n" +
+                "\n" +
+                "    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.\n" +
+                "\n" +
+                "If it is not possible or desirable to put the notice in a particular file, then You may include the notice in a location (such as a LICENSE file in a relevant directory) where a recipient would be likely to look for such a notice.\n" +
+                "\n" +
+                "You may add additional accurate notices of copyright ownership.\n" +
+                "Exhibit B - “Incompatible With Secondary Licenses” Notice\n" +
+                "\n" +
+                "    This Source Code Form is “Incompatible With Secondary Licenses”, as defined by the Mozilla Public License, v. 2.0.\n" +
+                "\n"
+        },
+        {
+            name: "BSL-1.0",
+            text: "Permission is hereby granted, free of charge, to any person or organization obtaining a copy of the software and accompanying documentation covered by this license (the “Software”) to use, reproduce, display, distribute, execute, and transmit the Software, and to prepare derivative works of the Software, and to permit third-parties to whom the Software is furnished to do so, all subject to the following:\n" +
+                "\n" +
+                "The copyright notices in the Software and this entire statement, including the above license grant, this restriction and the following disclaimer, must be included in all copies of the Software, in whole or in part, and all derivative works of the Software, unless such copies or derivative works are solely in the form of machine-executable object code generated by a source language processor.\n" +
+                "\n" +
+                "THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+        },
+        {
+            name: "CC Attribution License 4.0",
+            text: "\n" +
+                "Attribution 4.0 International\n" +
+                "\n" +
+                "By exercising the Licensed Rights (defined below), You accept and agree to be bound by the terms and conditions of this Creative Commons Attribution 4.0 International Public License (\"Public License\"). To the extent this Public License may be interpreted as a contract, You are granted the Licensed Rights in consideration of Your acceptance of these terms and conditions, and the Licensor grants You such rights in consideration of benefits the Licensor receives from making the Licensed Material available under these terms and conditions.\n" +
+                "Section 1 – Definitions.\n" +
+                "\n" +
+                "    Adapted Material means material subject to Copyright and Similar Rights that is derived from or based upon the Licensed Material and in which the Licensed Material is translated, altered, arranged, transformed, or otherwise modified in a manner requiring permission under the Copyright and Similar Rights held by the Licensor. For purposes of this Public License, where the Licensed Material is a musical work, performance, or sound recording, Adapted Material is always produced where the Licensed Material is synched in timed relation with a moving image.\n" +
+                "    Adapter's License means the license You apply to Your Copyright and Similar Rights in Your contributions to Adapted Material in accordance with the terms and conditions of this Public License.\n" +
+                "    Copyright and Similar Rights means copyright and/or similar rights closely related to copyright including, without limitation, performance, broadcast, sound recording, and Sui Generis Database Rights, without regard to how the rights are labeled or categorized. For purposes of this Public License, the rights specified in Section 2(b)(1)-(2) are not Copyright and Similar Rights.\n" +
+                "    Effective Technological Measures means those measures that, in the absence of proper authority, may not be circumvented under laws fulfilling obligations under Article 11 of the WIPO Copyright Treaty adopted on December 20, 1996, and/or similar international agreements.\n" +
+                "    Exceptions and Limitations means fair use, fair dealing, and/or any other exception or limitation to Copyright and Similar Rights that applies to Your use of the Licensed Material.\n" +
+                "    Licensed Material means the artistic or literary work, database, or other material to which the Licensor applied this Public License.\n" +
+                "    Licensed Rights means the rights granted to You subject to the terms and conditions of this Public License, which are limited to all Copyright and Similar Rights that apply to Your use of the Licensed Material and that the Licensor has authority to license.\n" +
+                "    Licensor means the individual(s) or entity(ies) granting rights under this Public License.\n" +
+                "    Share means to provide material to the public by any means or process that requires permission under the Licensed Rights, such as reproduction, public display, public performance, distribution, dissemination, communication, or importation, and to make material available to the public including in ways that members of the public may access the material from a place and at a time individually chosen by them.\n" +
+                "    Sui Generis Database Rights means rights other than copyright resulting from Directive 96/9/EC of the European Parliament and of the Council of 11 March 1996 on the legal protection of databases, as amended and/or succeeded, as well as other essentially equivalent rights anywhere in the world.\n" +
+                "    You means the individual or entity exercising the Licensed Rights under this Public License. Your has a corresponding meaning.\n" +
+                "\n" +
+                "Section 2 – Scope.\n" +
+                "\n" +
+                "    License grant .\n" +
+                "        Subject to the terms and conditions of this Public License, the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights in the Licensed Material to:\n" +
+                "            reproduce and Share the Licensed Material, in whole or in part; and\n" +
+                "            produce, reproduce, and Share Adapted Material.\n" +
+                "        Exceptions and Limitations . For the avoidance of doubt, where Exceptions and Limitations apply to Your use, this Public License does not apply, and You do not need to comply with its terms and conditions.\n" +
+                "        Term . The term of this Public License is specified in Section 6(a) .\n" +
+                "        Media and formats; technical modifications allowed . The Licensor authorizes You to exercise the Licensed Rights in all media and formats whether now known or hereafter created, and to make technical modifications necessary to do so. The Licensor waives and/or agrees not to assert any right or authority to forbid You from making technical modifications necessary to exercise the Licensed Rights, including technical modifications necessary to circumvent Effective Technological Measures. For purposes of this Public License, simply making modifications authorized by this Section 2(a)(4) never produces Adapted Material.\n" +
+                "        Downstream recipients .\n" +
+                "            Offer from the Licensor – Licensed Material . Every recipient of the Licensed Material automatically receives an offer from the Licensor to exercise the Licensed Rights under the terms and conditions of this Public License.\n" +
+                "            No downstream restrictions . You may not offer or impose any additional or different terms or conditions on, or apply any Effective Technological Measures to, the Licensed Material if doing so restricts exercise of the Licensed Rights by any recipient of the Licensed Material.\n" +
+                "        No endorsement . Nothing in this Public License constitutes or may be construed as permission to assert or imply that You are, or that Your use of the Licensed Material is, connected with, or sponsored, endorsed, or granted official status by, the Licensor or others designated to receive attribution as provided in Section 3(a)(1)(A)(i) .\n" +
+                "    Other rights .\n" +
+                "        Moral rights, such as the right of integrity, are not licensed under this Public License, nor are publicity, privacy, and/or other similar personality rights; however, to the extent possible, the Licensor waives and/or agrees not to assert any such rights held by the Licensor to the limited extent necessary to allow You to exercise the Licensed Rights, but not otherwise.\n" +
+                "        Patent and trademark rights are not licensed under this Public License.\n" +
+                "        To the extent possible, the Licensor waives any right to collect royalties from You for the exercise of the Licensed Rights, whether directly or through a collecting society under any voluntary or waivable statutory or compulsory licensing scheme. In all other cases the Licensor expressly reserves any right to collect such royalties.\n" +
+                "\n" +
+                "Section 3 – License Conditions.\n" +
+                "\n" +
+                "Your exercise of the Licensed Rights is expressly made subject to the following conditions.\n" +
+                "\n" +
+                "    Attribution .\n" +
+                "\n" +
+                "        If You Share the Licensed Material (including in modified form), You must:\n" +
+                "            retain the following if it is supplied by the Licensor with the Licensed Material:\n" +
+                "                identification of the creator(s) of the Licensed Material and any others designated to receive attribution, in any reasonable manner requested by the Licensor (including by pseudonym if designated);\n" +
+                "                a copyright notice;\n" +
+                "                a notice that refers to this Public License;\n" +
+                "                a notice that refers to the disclaimer of warranties;\n" +
+                "                a URI or hyperlink to the Licensed Material to the extent reasonably practicable;\n" +
+                "            indicate if You modified the Licensed Material and retain an indication of any previous modifications; and\n" +
+                "            indicate the Licensed Material is licensed under this Public License, and include the text of, or the URI or hyperlink to, this Public License.\n" +
+                "        You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material. For example, it may be reasonable to satisfy the conditions by providing a URI or hyperlink to a resource that includes the required information.\n" +
+                "        If requested by the Licensor, You must remove any of the information required by Section 3(a)(1)(A) to the extent reasonably practicable.\n" +
+                "        If You Share Adapted Material You produce, the Adapter's License You apply must not prevent recipients of the Adapted Material from complying with this Public License.\n" +
+                "\n" +
+                "Section 4 – Sui Generis Database Rights.\n" +
+                "\n" +
+                "Where the Licensed Rights include Sui Generis Database Rights that apply to Your use of the Licensed Material:\n" +
+                "\n" +
+                "    for the avoidance of doubt, Section 2(a)(1) grants You the right to extract, reuse, reproduce, and Share all or a substantial portion of the contents of the database;\n" +
+                "    if You include all or a substantial portion of the database contents in a database in which You have Sui Generis Database Rights, then the database in which You have Sui Generis Database Rights (but not its individual contents) is Adapted Material; and\n" +
+                "    You must comply with the conditions in Section 3(a) if You Share all or a substantial portion of the contents of the database.\n" +
+                "\n" +
+                "For the avoidance of doubt, this Section 4 supplements and does not replace Your obligations under this Public License where the Licensed Rights include other Copyright and Similar Rights.\n" +
+                "Section 5 – Disclaimer of Warranties and Limitation of Liability.\n" +
+                "\n" +
+                "    Unless otherwise separately undertaken by the Licensor, to the extent possible, the Licensor offers the Licensed Material as-is and as-available, and makes no representations or warranties of any kind concerning the Licensed Material, whether express, implied, statutory, or other. This includes, without limitation, warranties of title, merchantability, fitness for a particular purpose, non-infringement, absence of latent or other defects, accuracy, or the presence or absence of errors, whether or not known or discoverable. Where disclaimers of warranties are not allowed in full or in part, this disclaimer may not apply to You.\n" +
+                "    To the extent possible, in no event will the Licensor be liable to You on any legal theory (including, without limitation, negligence) or otherwise for any direct, special, indirect, incidental, consequential, punitive, exemplary, or other losses, costs, expenses, or damages arising out of this Public License or use of the Licensed Material, even if the Licensor has been advised of the possibility of such losses, costs, expenses, or damages. Where a limitation of liability is not allowed in full or in part, this limitation may not apply to You.\n" +
+                "    The disclaimer of warranties and limitation of liability provided above shall be interpreted in a manner that, to the extent possible, most closely approximates an absolute disclaimer and waiver of all liability.\n" +
+                "\n" +
+                "Section 6 – Term and Termination.\n" +
+                "\n" +
+                "    This Public License applies for the term of the Copyright and Similar Rights licensed here. However, if You fail to comply with this Public License, then Your rights under this Public License terminate automatically.\n" +
+                "\n" +
+                "    Where Your right to use the Licensed Material has terminated under Section 6(a), it reinstates:\n" +
+                "        automatically as of the date the violation is cured, provided it is cured within 30 days of Your discovery of the violation; or\n" +
+                "        upon express reinstatement by the Licensor.\n" +
+                "\n" +
+                "    For the avoidance of doubt, this Section 6(b) does not affect any right the Licensor may have to seek remedies for Your violations of this Public License.\n" +
+                "    For the avoidance of doubt, the Licensor may also offer the Licensed Material under separate terms or conditions or stop distributing the Licensed Material at any time; however, doing so will not terminate this Public License.\n" +
+                "    Sections 1 , 5 , 6 , 7 , and 8 survive termination of this Public License.\n" +
+                "\n" +
+                "Section 7 – Other Terms and Conditions.\n" +
+                "\n" +
+                "    The Licensor shall not be bound by any additional or different terms or conditions communicated by You unless expressly agreed.\n" +
+                "    Any arrangements, understandings, or agreements regarding the Licensed Material not stated herein are separate from and independent of the terms and conditions of this Public License.\n" +
+                "\n" +
+                "Section 8 – Interpretation.\n" +
+                "\n" +
+                "    For the avoidance of doubt, this Public License does not, and shall not be interpreted to, reduce, limit, restrict, or impose conditions on any use of the Licensed Material that could lawfully be made without permission under this Public License.\n" +
+                "    To the extent possible, if any provision of this Public License is deemed unenforceable, it shall be automatically reformed to the minimum extent necessary to make it enforceable. If the provision cannot be reformed, it shall be severed from this Public License without affecting the enforceability of the remaining terms and conditions.\n" +
+                "    No term or condition of this Public License will be waived and no failure to comply consented to unless expressly agreed to by the Licensor.\n" +
+                "    Nothing in this Public License constitutes or may be interpreted as a limitation upon, or waiver of, any privileges and immunities that apply to the Licensor or You, including from the legal processes of any jurisdiction or authority.\n" +
+                "\n"
+        },
+        {
+            name: "OFL License",
+            text: "PREAMBLE\n" +
+                "\n" +
+                "The goals of the Open Font License (OFL) are to stimulate worldwide development of collaborative font projects, to support the font creation efforts of academic and linguistic communities, and to provide a free and open framework in which fonts may be shared and improved in partnership\n" +
+                "with others.\n" +
+                "\n" +
+                "The OFL allows the licensed fonts to be used, studied, modified and redistributed freely as long as they are not sold by themselves. The fonts, including any derivative works, can be bundled, embedded, redistributed and/or sold with any software provided that any reserved\n" +
+                "names are not used by derivative works. The fonts and derivatives, however, cannot be released under any other type of license. The requirement for fonts to remain under this license does not apply to any document created using the fonts or their derivatives.\n" +
+                "DEFINITIONS\n" +
+                "\n" +
+                "“Font Software” refers to the set of files released by the Copyright Holder(s) under this license and clearly marked as such. This may include source files, build scripts and documentation.\n" +
+                "\n" +
+                "“Reserved Font Name” refers to any names specified as such after the copyright statement(s).\n" +
+                "\n" +
+                "“Original Version” refers to the collection of Font Software components as distributed by the Copyright Holder(s).\n" +
+                "\n" +
+                "“Modified Version” refers to any derivative made by adding to, deleting, or substituting – in part or in whole – any of the components of the Original Version, by changing formats or by porting the Font Software to a new environment.\n" +
+                "\n" +
+                "“Author” refers to any designer, engineer, programmer, technical writer or other person who contributed to the Font Software.\n" +
+                "PERMISSION & CONDITIONS\n" +
+                "\n" +
+                "Permission is hereby granted, free of charge, to any person obtaining a copy of the Font Software, to use, study, copy, merge, embed, modify, redistribute, and sell modified and unmodified copies of the Font Software, subject to the following conditions:\n" +
+                "\n" +
+                "1) Neither the Font Software nor any of its individual components, in Original or Modified Versions, may be sold by itself.\n" +
+                "\n" +
+                "2) Original or Modified Versions of the Font Software may be bundled, redistributed and/or sold with any software, provided that each copy contains the above copyright notice and this license. These can be included either as stand-alone text files, human-readable headers or in the appropriate machine-readable metadata fields within text or binary files as long as those fields can be easily viewed by the user.\n" +
+                "\n" +
+                "3) No Modified Version of the Font Software may use the Reserved Font Name(s) unless explicit written permission is granted by the corresponding Copyright Holder. This restriction only applies to the primary font name as presented to the users.\n" +
+                "\n" +
+                "4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font Software shall not be used to promote, endorse or advertise any Modified Version, except to acknowledge the contribution(s) of the Copyright Holder(s) and the Author(s) or with their explicit written permission.\n" +
+                "\n" +
+                "5) The Font Software, modified or unmodified, in part or in whole, must be distributed entirely under this license, and must not be distributed under any other license. The requirement for fonts to remain under this license does not apply to any document created using the Font Software.\n" +
+                "\n" +
+                "TERMINATION\n" +
+                "\n" +
+                "This license becomes null and void if any of the above conditions are\n" +
+                "not met.\n" +
+                "\n" +
+                "DISCLAIMER\n" +
+                "\n" +
+                "THE FONT SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND,\n" +
+                "EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF\n" +
+                "MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT\n" +
+                "OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE\n" +
+                "COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,\n" +
+                "INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL\n" +
+                "DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\n" +
+                "FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM\n" +
+                "OTHER DEALINGS IN THE FONT SOFTWARE."
         }
     ]
 

@@ -56,7 +56,7 @@ export default function LicenseMain(): ReactElement {
                 </div>
                 <div className="h-16"></div>
             </div>
-            <div className="border-l border-gray-200 dark:border-gray-700 w-[38rem] overflow-auto">
+            <div className="border-l border-gray-200 dark:border-gray-700 w-[42rem] overflow-auto">
                 {isActive(Link.Syncmiru) && <Syncmiru/>}
                 {isActive(Link.Acknowledgements) && <Acknowledgements/>}
                 {isActive(Link.Licenses) && <Licenses/>}

@@ -1,7 +1,7 @@
 import {ReactElement} from "react";
 
 // Source: https://www.svgrepo.com/svg/478728/speech-bubble-12
-// License: CC0 License
+// License: Public Domain
 
 export default function BubbleCrossed({className}: Props): ReactElement {
     return (

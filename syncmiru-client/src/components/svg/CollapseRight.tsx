@@ -1,7 +1,7 @@
 import {ReactElement} from "react";
 
 // Source: https://www.svgrepo.com/svg/379887/collapse-right
-// License: MIT
+// License: CC Attribution License
 
 export default function CollapseRight({className}: Props): ReactElement {
     return (

@@ -20,7 +20,7 @@ pub async fn open_license_window(
         tauri::WebviewUrl::App("license.html".into())
     ).build()?;
 
-    let min_size = LogicalSize{width: 800, height: 400};
+    let min_size = LogicalSize{width: 900, height: 400};
     license_window.set_title(&t!("license-window-title"))?;
     license_window.set_min_size(Some(min_size))?;
     license_window.set_size(min_size)?;

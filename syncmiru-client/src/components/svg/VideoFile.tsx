@@ -1,7 +1,7 @@
 import {ReactElement} from "react";
 
 // Source: https://www.svgrepo.com/svg/256839/video-file
-// License: CC0 License
+// License: Public Domain
 
 export default function VideoFile({className}: Props): ReactElement {
     return (

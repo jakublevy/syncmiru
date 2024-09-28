@@ -1,7 +1,7 @@
 import {ReactElement} from "react";
 
 // Source: https://www.svgrepo.com/svg/17893/srt-file-format-symbol
-// License: CC0 License
+// License: Public Domain
 
 export default function SubFile({className}: Props): ReactElement {
     return (
