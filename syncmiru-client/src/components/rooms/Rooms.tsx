@@ -53,7 +53,7 @@ import Subtitles from "@components/svg/Subtitles.tsx";
 import SubtitlesCrossed from "@components/svg/SubtitlesCrossed.tsx";
 import {MpvMsgMood, showMpvReadyMessages} from "src/utils/mpv.ts";
 import {UserAudioSubtitles, UserChangeAudioSync, UserChangeSubSync} from "@models/mpv.ts";
-import {changeActiveVideo} from "../../utils/playlist.ts";
+import {changeActiveVideo} from "src/utils/playlist.ts";
 
 export default function Rooms(): ReactElement {
     const ctx = useMainContext()

@@ -13,7 +13,7 @@ import UserInfoTooltip from "@components/widgets/UserInfoTooltip.tsx";
 import {UserRoomMap} from "@models/roomUser.ts";
 import {RoomId} from "@models/room.ts";
 import {arrayBufferToBase64} from "src/utils/encoding.ts";
-import {createLocaleComparator} from "../../utils/sort.ts";
+import {createLocaleComparator} from "src/utils/sort.ts";
 
 export default function Users(): ReactElement {
     const [_, navigate] = useLocation()

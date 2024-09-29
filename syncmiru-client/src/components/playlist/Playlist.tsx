@@ -18,13 +18,12 @@ import Delete from "@components/svg/Delete.tsx";
 import {ModalDelete} from "@components/widgets/Modal.tsx";
 import {RoomConnectionState} from "@models/context.ts";
 import Copy from "@components/svg/Copy.tsx";
-import {forceDisconnectFromRoom} from "src/utils/room.ts";
 import {invoke} from "@tauri-apps/api/core";
 import {UserId} from "@models/user.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {UserAudioSubtitles} from "@models/mpv.ts";
 import {hideMpvReadyMessages, MpvMsgMood} from "src/utils/mpv.ts";
-import {changeActiveVideo} from "../../utils/playlist.ts";
+import {changeActiveVideo} from "src/utils/playlist.ts";
 
 export default function Playlist(): ReactElement {
     const ctx = useMainContext()

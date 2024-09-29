@@ -9,8 +9,8 @@ export default defineConfig(async () => ({
     build: {
         rollupOptions: {
             input: {
-                main: 'index.html',
-                license: 'license.html'
+                index: './index.html',
+                license: './license.html'
             }
         }
     },

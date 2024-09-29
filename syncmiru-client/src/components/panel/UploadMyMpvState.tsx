@@ -5,7 +5,7 @@ import {useMainContext} from "@hooks/useMainContext.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {Tooltip} from "react-tooltip";
 import {useTranslation} from "react-i18next";
-import {showPersistentErrorAlert} from "../../utils/alert.ts";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 
 export default function UploadMyMpvState(): ReactElement {
