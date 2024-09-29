@@ -1,5 +1,5 @@
 use rust_decimal::Decimal;
-use sqlx::{Executor, PgPool, Postgres, Transaction};
+use sqlx::{PgPool, Postgres, Transaction};
 use crate::models::User;
 use crate::models::query::{EmailTknType, Id, RegDetail, RegTkn, RoomClient, RoomSettings};
 use crate::models::query::UserSession;
@@ -384,14 +384,6 @@ pub async fn get_username_by_uid(db: &PgPool, uid: Id) -> Result<String> {
         .fetch_one(db)
         .await?;
     Ok(username.0)
-}
-
-pub async fn get_displayname_by_uid(db: &PgPool, uid: Id) -> Result<String> {
-    let displayname: (String,) = sqlx::query_as("select display_name from users where id = $1 limit 1")
-        .bind(uid)
-        .fetch_one(db)
-        .await?;
-    Ok(displayname.0)
 }
 
 pub async fn get_email_by_uid(db: &PgPool, uid: Id) -> Result<String> {
@@ -865,16 +857,6 @@ pub async fn new_room(
         .fetch_one(&mut **db)
         .await?;
     Ok(id.0)
-}
-
-pub async fn get_rooms(db: &PgPool) -> Result<Vec<RoomClient>> {
-    let query = r#"
-           select id, name from room
-    "#;
-    let rooms: Vec<RoomClient> = sqlx::query_as::<_, RoomClient>(query)
-        .fetch_all(db)
-        .await?;
-    Ok(rooms)
 }
 
 pub async fn get_rooms_for_update(db: &mut Transaction<'_, Postgres>) -> Result<Vec<RoomClient>> {

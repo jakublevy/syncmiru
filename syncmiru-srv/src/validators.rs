@@ -1,11 +1,9 @@
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
-use sqlx::PgPool;
 use url::Url;
 use validator::ValidationError;
 use crate::constants::SOCKETIO_ACK_TIMEOUT;
 use crate::models::query::Id;
-use crate::query;
 use crate::srvstate::{PlaylistEntryId, UserReadyStatus};
 
 pub fn check_username_format(username: &str) -> Result<(), ValidationError> {
@@ -19,14 +17,6 @@ pub fn check_username_format(username: &str) -> Result<(), ValidationError> {
         }
     }
     Ok(())
-}
-
-async fn check_username_unique(username: &str, db: &PgPool) -> Result<(), ValidationError> {
-    match query::username_unique(db, username).await {
-        Ok(true) => Ok(()),
-        Ok(false) => Err(ValidationError::new("not unique")),
-        _ => Err(ValidationError::new("internal error"))
-    }
 }
 
 pub fn check_displayname_format(displayname: &str) -> Result<(), ValidationError> {
@@ -90,7 +80,7 @@ pub fn check_avatar(data: &[u8]) -> Result<(), ValidationError> {
     }
 
     let pic = image::load_from_memory(data)
-        .map_err(|e| ValidationError::new("not a valid picture"))?;
+        .map_err(|_| ValidationError::new("not a valid picture"))?;
     if pic.width() != 128 {
         return Err(ValidationError::new("invalid avatar width"))
     }

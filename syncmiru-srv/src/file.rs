@@ -4,13 +4,11 @@ use anyhow::anyhow;
 use josekit::jws::JwsHeader;
 use josekit::jwt::JwtPayload;
 use reqwest::Client;
-use serde::{Deserialize, Deserializer, Serialize};
 use crate::{constants, Result};
 use crate::error::SyncmiruError;
 use urlencoding::encode;
 use crate::config::{JwtSigner, Source};
 use crate::models::file::{FileInfo, FileType};
-use crate::trait_ext::DurationExt;
 
 pub async fn list(
     root_url: &str,
@@ -47,7 +45,7 @@ pub async fn f_exists(
     if files_r.is_err() {
         return Ok(false)
     }
-    let files = files_r.unwrap();
+    let files = files_r?;
     for file in &files {
         if file.name == f
         && file.file_type == FileType::File
@@ -66,7 +64,7 @@ pub async fn gen_access_jwt(
     header.set_token_type("JWT");
 
     let mut payload = JwtPayload::new();
-    payload.set_expires_at(&(SystemTime::now() + Duration::from_hours(12)));
+    payload.set_expires_at(&(SystemTime::now() + Duration::from_secs(12 * 3600)));
 
     let file_value = serde_json::from_str(&format!("\"{}\"", path))?;
     payload.set_claim("file", Some(file_value))?;
@@ -99,7 +97,7 @@ mod tests {
             "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3N1ZWQiOjE3MTg2MzE0Njh9.8kkgmQ_5HTUFqiyrFR_1ZYqSpzK0sg-7JqmI-fi4byBMLzyE5OFY5rqlN5y6aqmR0yJ4u-y0FjL2alo2j8OuVA",
             "/anime/Initial D"
         ).await;
-        if let Ok(files) = files_opt {
+        if let Ok(_) = files_opt {
             assert_eq!(1,1);
         }
         else {

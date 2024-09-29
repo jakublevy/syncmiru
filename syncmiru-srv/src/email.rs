@@ -1,10 +1,7 @@
-use std::fmt::format;
-use base64::Engine;
-use lettre::{Message, SmtpTransport, Transport};
-use lettre::message::header::ContentType;
+use lettre::{Transport};
 use crate::config::EmailConf;
 use crate::result::Result;
-use rust_i18n::{locale, t};
+use rust_i18n::{t};
 use crate::models::query::Id;
 
 pub async fn send_verification_email(

@@ -13,7 +13,6 @@ use tokio::sync::mpsc::Sender;
 use tokio::time::Instant;
 use crate::bimultimap::BiMultiMap;
 use crate::config::Config;
-use crate::handlers;
 use crate::handlers::timers::DesyncTimerInterface;
 use crate::models::query::{Id, RoomSettings};
 
@@ -22,10 +21,10 @@ pub type PlaylistEntryId = u64;
 pub struct SrvState {
     pub config: Config,
     pub db: PgPool,
-    pub desync_timer_tx: Sender<handlers::timers::DesyncTimerInterface>,
-    pub socket_uid: RwLock<bimap::BiMap<socketioxide::socket::Sid, Id>>,
-    pub socket_uid_disconnect: RwLock<HashMap<socketioxide::socket::Sid, Id>>,
-    pub sid_hwid_hash: RwLock<HashMap<socketioxide::socket::Sid, String>>,
+    pub desync_timer_tx: Sender<DesyncTimerInterface>,
+    pub socket_uid: RwLock<bimap::BiMap<Sid, Id>>,
+    pub socket_uid_disconnect: RwLock<HashMap<Sid, Id>>,
+    pub sid_hwid_hash: RwLock<HashMap<Sid, String>>,
     pub io: RwLock<Option<SocketIo>>,
     pub rid_uids: RwLock<BiMultiMap<Id, Id>>,
     pub uid_ping: RwLock<HashMap<Id, f64>>,

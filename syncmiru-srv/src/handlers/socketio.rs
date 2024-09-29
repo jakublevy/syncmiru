@@ -1,5 +1,4 @@
 use std::collections::{HashMap, HashSet};
-use std::hash::Hash;
 use std::sync::Arc;
 use indexmap::{IndexMap, IndexSet};
 use rust_decimal::Decimal;
@@ -114,13 +113,13 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
-    let mut uid_opt: Option<Id>;
+    let uid_opt: Option<Id>;
     {
         let mut socket_uid_lock = state.socket_uid.write().await;
         uid_opt = socket_uid_lock.get_by_left(&s.id).map(|x| x.clone());
         socket_uid_lock.remove_by_left(&s.id);
     }
-    let mut uid: Id;
+    let uid: Id;
     if uid_opt.is_none() {
         let mut socket_uid_disconnect_wl = state.socket_uid_disconnect.write().await;
         uid = socket_uid_disconnect_wl.get(&s.id).unwrap().clone();
@@ -150,7 +149,6 @@ pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
 
 pub async fn get_users(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
 ) {
     let users = query::get_users(&state.db)
@@ -283,7 +281,6 @@ pub async fn set_displayname(
 
 pub async fn get_email_resend_timeout(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
 ) {
     ack.send(state.config.email.wait_before_resend + 1).ok();
@@ -291,7 +288,6 @@ pub async fn get_email_resend_timeout(
 
 pub async fn get_reg_pub_allowed(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
 ) {
     ack.send(state.config.reg_pub.allowed).ok();
@@ -729,7 +725,6 @@ pub async fn create_reg_tkn(
 
 pub async fn active_reg_tkns(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
 ) {
     let active_reg_tkns = query::get_active_reg_tkns(&state.db)
@@ -740,7 +735,6 @@ pub async fn active_reg_tkns(
 
 pub async fn inactive_reg_tkns(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
 ) {
     let inactive_reg_tkns = query::get_inactive_reg_tkns(&state.db)
@@ -751,7 +745,6 @@ pub async fn inactive_reg_tkns(
 
 pub async fn check_reg_tkn_name_unique(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
     Data(payload): Data<RegTknName>,
 ) {
@@ -797,7 +790,6 @@ pub async fn delete_reg_tkn(
 
 pub async fn get_reg_tkn_info(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
     Data(payload): Data<IdStruct>,
 ) {
@@ -813,7 +805,6 @@ pub async fn get_reg_tkn_info(
 
 pub async fn get_default_playback_speed(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
 ) {
     let default_playback_speed = query::get_default_playback_speed(&state.db)
@@ -842,7 +833,6 @@ pub async fn set_default_playback_speed(
 
 pub async fn get_default_desync_tolerance(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
 ) {
     let default_desync_tolerance = query::get_default_desync_tolerance(&state.db)
@@ -871,7 +861,6 @@ pub async fn set_default_desync_tolerance(
 
 pub async fn get_default_major_desync_min(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
 ) {
     let default_major_desync_min = query::get_default_major_desync_min(&state.db)
@@ -900,7 +889,6 @@ pub async fn set_default_major_desync_min(
 
 pub async fn get_default_minor_desync_playback_slow(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
 ) {
     let minor_desync_playback_slow = query::get_default_minor_desync_playback_slow(&state.db)
@@ -929,7 +917,6 @@ pub async fn set_default_minor_desync_playback_slow(
 
 pub async fn check_room_name_unique(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
     Data(payload): Data<RoomName>,
 ) {
@@ -999,7 +986,6 @@ pub async fn create_room(
 
 pub async fn get_rooms(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
 ) {
     let mut transaction = state.db.begin().await.expect("db error");
@@ -1089,7 +1075,6 @@ pub async fn delete_room(
 
 pub async fn get_room_playback_speed(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
     Data(payload): Data<IdStruct>,
 ) {
@@ -1132,7 +1117,6 @@ pub async fn set_room_playback_speed(
 
 pub async fn get_room_desync_tolerance(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
     Data(payload): Data<IdStruct>,
 ) {
@@ -1175,7 +1159,6 @@ pub async fn set_room_desync_tolerance(
 
 pub async fn get_room_minor_desync_playback_slow(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
     Data(payload): Data<IdStruct>,
 ) {
@@ -1218,7 +1201,6 @@ pub async fn set_room_minor_desync_playback_slow(
 
 pub async fn get_room_major_desync_min(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
     Data(payload): Data<IdStruct>,
 ) {
@@ -1290,8 +1272,6 @@ pub async fn set_room_order(
 }
 
 pub async fn ping(
-    State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
 ) {
     ack.send({}).ok();
@@ -1343,7 +1323,7 @@ pub async fn join_room(
         });
     }
     else {
-        let mut rid2runtime_state_rl = state.rid2runtime_state.read().await;
+        let rid2runtime_state_rl = state.rid2runtime_state.read().await;
         let room_runtime_settings = rid2runtime_state_rl.get(&payload.rid).unwrap();
         room_settings = RoomSettings {
             playback_speed: room_runtime_settings.playback_speed,
@@ -1375,7 +1355,7 @@ pub async fn join_room(
 
     room_pings = uid_ping_wl
         .iter()
-        .filter(|&(id, ping)| uids_in_room.contains(id))
+        .filter(|&(id, _)| uids_in_room.contains(id))
         .map(|(id, ping)| (*id, *ping))
         .collect::<HashMap<Id, f64>>();
 
@@ -1399,7 +1379,7 @@ pub async fn join_room(
         .map(|x| x.clone())
         .unwrap_or(IndexSet::new());
 
-    let mut playlist = playlist_order
+    let playlist = playlist_order
         .iter()
         .map(|&id| (id, playlist_rl.get(&id).unwrap()))
         .collect::<HashMap<PlaylistEntryId, &PlaylistEntry>>();
@@ -1453,7 +1433,6 @@ pub async fn disconnect_room(
 
 pub async fn get_room_users(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
 ) {
     let rid_uids_lock = state.rid_uids.read().await;
@@ -1484,7 +1463,6 @@ pub async fn room_ping(
 
 pub async fn get_sources(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
 ) {
     let mut m: IndexMap<&String, &String> = IndexMap::new();
@@ -1496,7 +1474,6 @@ pub async fn get_sources(
 
 pub async fn get_files(
     State(state): State<Arc<SrvState>>,
-    s: SocketRef,
     ack: AckSender,
     Data(payload): Data<GetFilesInfo>,
 ) {
@@ -1655,8 +1632,8 @@ pub async fn req_playing_jwt(
         ack.send(SocketIoAck::<String>::err()).ok();
         return;
     }
-    let mut s: &str;
-    let mut p: &str;
+    let s: &str;
+    let p: &str;
     match entry {
         PlaylistEntry::Video { source, path } => {
             s = source;

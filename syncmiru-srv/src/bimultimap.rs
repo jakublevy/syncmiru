@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap};
 use indexmap::IndexSet;
 
 #[derive(Debug)]
@@ -22,7 +22,7 @@ impl<K, V> BiMultiMap<K, V>
     pub fn insert(&mut self, key: K, value: V) {
         if let Some(existing_key) = self.value_to_key.get(&value) {
             if existing_key != &key {
-                self.key_to_values.get_mut(existing_key).unwrap().remove(&value);
+                self.key_to_values.get_mut(existing_key).unwrap().swap_remove(&value);
                 if self.key_to_values.get(existing_key).unwrap().is_empty() {
                     self.key_to_values.remove(existing_key);
                 }
@@ -67,7 +67,7 @@ impl<K, V> BiMultiMap<K, V>
     pub fn remove_by_right(&mut self, value: &V) {
         if let Some(key) = self.value_to_key.remove(value) {
             if let Some(values) = self.key_to_values.get_mut(&key) {
-                values.remove(value);
+                values.swap_remove(value);
                 if values.is_empty() {
                     self.key_to_values.remove(&key);
                 }

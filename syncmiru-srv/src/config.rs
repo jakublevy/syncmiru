@@ -1,17 +1,13 @@
-use std::collections::{HashMap, HashSet};
-use std::fmt::Display;
+use std::collections::{HashSet};
 use std::fs;
 use std::fs::File;
 use std::io::{Read};
 use std::path::{Path, PathBuf};
-use anyhow::{anyhow, Context};
+use anyhow::{Context};
 use indexmap::IndexMap;
 use josekit::jws::{JwsSigner, JwsVerifier};
-use lettre::SmtpTransport;
 use lettre::transport::smtp::authentication::Credentials;
-use log::{debug, info, Log, warn};
-use openssl::hash::MessageDigest;
-use openssl::sign::Signer;
+use log::{debug, info, warn};
 use yaml_rust2::{Yaml, YamlLoader};
 use crate::config::KeyAlg::{ES256, ES512, RS256, RS512};
 use crate::config::LogOutput::{StdErr, Stdout};
@@ -158,7 +154,7 @@ impl LogConfig {
             .as_str()
             .context("output is missing in log section")?
             .to_lowercase();
-        let mut output_type: LogOutput;
+        let output_type: LogOutput;
         if output == "stdout" {
             output_type = Stdout;
         }
@@ -339,7 +335,7 @@ impl EmailRates {
 fn parse_rate(rate_yaml: &Yaml) -> Result<(i64, i64)> {
     let max = rate_yaml["max"].as_i64().context("rate is missing max value")?;
     let per = rate_yaml["per"].as_i64().context("rate is missing per value")?;
-    return Ok((max, per))
+    Ok((max, per))
 }
 
 #[derive(Debug, Copy, Clone)]

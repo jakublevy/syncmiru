@@ -1,5 +1,4 @@
 use log::{debug, info};
-use sqlx::{Pool, Postgres};
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
 use crate::config::DbConfig;
 use crate::result::Result;

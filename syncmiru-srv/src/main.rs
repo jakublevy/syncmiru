@@ -1,27 +1,19 @@
-use std::cell::Cell;
 use std::collections::{HashMap, HashSet};
-use std::env::set_var;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
-use ::log::{debug, info, warn};
-use axum::extract::State;
-use axum::handler::Handler;
-use axum::{Json, Router};
+use ::log::{debug, info};
+use axum::{Router};
 use axum::error_handling::HandleErrorLayer;
-use axum::http::{Method, StatusCode};
-use axum::response::IntoResponse;
+use axum::http::{Method};
 use axum::routing::{get, post};
 use bimap::BiMap;
-use clap::Parser;
 use tower_http::trace::TraceLayer;
-use socketioxide::extract::SocketRef;
 use socketioxide::handler::ConnectHandler;
 use socketioxide::SocketIo;
-use sqlx::Executor;
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::{Receiver, Sender};
-use tower::{BoxError, ServiceBuilder};
+use tower::{ServiceBuilder};
 use tower_http::cors::CorsLayer;
 use crate::args::Args;
 use crate::constants::SOCKETIO_ACK_TIMEOUT;
@@ -48,7 +40,6 @@ mod tkn;
 mod constants;
 mod bimultimap;
 mod file;
-mod trait_ext;
 
 
 #[macro_use]
