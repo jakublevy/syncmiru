@@ -8,7 +8,6 @@ use crate::result::Result;
 
 #[cfg(target_family = "unix")]
 use x11rb::rust_connection::RustConnection;
-use crate::mpv::ipc::Interface;
 
 #[derive(Debug)]
 pub struct AppState {
@@ -19,7 +18,7 @@ pub struct AppState {
     pub mpv_reattach_on_fullscreen_false: RwLock<bool>,
     pub mpv_next_req_id: RwLock<u32>,
     pub mpv_response_senders: RwLock<HashMap<u32, mpsc::Sender<serde_json::Value>>>,
-    pub mpv_ignore_fullscreen_events_timestamp: RwLock<tokio::time::Instant>,
+    pub mpv_ignore_fullscreen_events_timestamp: RwLock<Instant>,
     pub mpv_ignore_next_pause_true_event: RwLock<bool>,
     pub mpv_ignore_next_pause_false_event: RwLock<bool>,
     pub mpv_ignore_next_seek_event: RwLock<bool>,

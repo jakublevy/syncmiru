@@ -1,6 +1,6 @@
 use crate::result::Result;
 use machineid_rs::{IdBuilder, Encryption, HWIDComponent};
-use anyhow::{anyhow, Context};
+use anyhow::{anyhow};
 use crate::constants;
 
 pub fn id_hashed() -> Result<String> {

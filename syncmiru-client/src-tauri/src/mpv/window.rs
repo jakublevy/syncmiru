@@ -8,7 +8,7 @@ use std::sync::Arc;
 use tokio::time::sleep;
 use std::time::Duration;
 use anyhow::Context;
-use cfg_if::cfg_if;
+
 #[cfg(target_family = "windows")]
 pub use self::win32::*;
 
@@ -16,7 +16,7 @@ pub use self::win32::*;
 pub use self::x11::*;
 
 use serde::Deserialize;
-use tauri::{Emitter, Manager};
+use tauri::{Emitter};
 use crate::appstate::AppState;
 use crate::result::Result;
 use crate::window::WindowExt;

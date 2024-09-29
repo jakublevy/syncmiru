@@ -2,7 +2,7 @@ use std::sync::Arc;
 use crate::appstate::AppState;
 use crate::config::appdata;
 use crate::deps::{DepsAvailable, DepsVersions, download, latest_mpv_download_link, latest_yt_dlp_download_link};
-use crate::deps::utils::{delete_mpv, delete_yt_dlp, decompress_yt_dlp_archive, decompress_mpv_archive, mpv_dir};
+use crate::deps::utils::{delete_mpv, delete_yt_dlp, decompress_yt_dlp_archive, decompress_mpv_archive};
 use crate::files::{delete_tmp, syncmiru_data_dir};
 use crate::result::Result;
 

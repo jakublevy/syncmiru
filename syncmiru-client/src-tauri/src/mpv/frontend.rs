@@ -4,7 +4,7 @@ use rust_decimal::Decimal;
 use tauri::{Emitter};
 use crate::appstate::{AppState, MpvMsg};
 use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, utils, window};
-use crate::mpv::ipc::{get_aid, get_sid, Interface, IpcData, MsgMood};
+use crate::mpv::ipc::{Interface, IpcData, MsgMood};
 use crate::mpv::models::{LoadFromSource, LoadFromUrl, UserLoadedInfo};
 use crate::mpv::window::HtmlElementRect;
 use tokio::time::{Instant};
@@ -199,8 +199,8 @@ pub async fn mpv_remove_current_from_playlist(state: tauri::State<'_, Arc<AppSta
 #[tauri::command]
 pub async fn mpv_get_loaded_info(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<UserLoadedInfo> {
     let ipc_data = IpcData { app_state: state.inner().clone(), window };
-    let aid = get_aid(&ipc_data).await?;
-    let sid = get_sid(&ipc_data).await?;
+    let aid = ipc::get_aid(&ipc_data).await?;
+    let sid = ipc::get_sid(&ipc_data).await?;
     let mut audio_sync = false;
     let mut sub_sync = false;
     {
@@ -266,7 +266,6 @@ pub async fn mpv_seek(
 #[tauri::command]
 pub async fn mpv_show_ready_messages(
     state: tauri::State<'_, Arc<AppState>>,
-    window: tauri::Window,
     loading: Vec<String>,
     not_ready: Vec<String>
 ) -> Result<()> {
@@ -301,7 +300,6 @@ pub async fn mpv_show_ready_messages(
 #[tauri::command]
 pub async fn mpv_hide_ready_messages(
     state: tauri::State<'_, Arc<AppState>>,
-    window: tauri::Window
 ) -> Result<()> {
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
@@ -315,7 +313,6 @@ pub async fn mpv_hide_ready_messages(
 #[tauri::command]
 pub async fn mpv_show_msg(
     state: tauri::State<'_, Arc<AppState>>,
-    window: tauri::Window,
     text: String,
     duration: f64,
     mood: MsgMood
@@ -376,7 +373,6 @@ pub async fn mpv_get_audio(
 #[tauri::command]
 pub async fn mpv_set_audio(
     state: tauri::State<'_, Arc<AppState>>,
-    window: tauri::Window,
     aid: Option<u64>
 ) -> Result<()> {
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
@@ -401,7 +397,6 @@ pub async fn mpv_get_sub(
 #[tauri::command]
 pub async fn mpv_set_sub(
     state: tauri::State<'_, Arc<AppState>>,
-    window: tauri::Window,
     sid: Option<u64>
 ) -> Result<()> {
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
@@ -426,7 +421,6 @@ pub async fn mpv_get_audio_delay(
 #[tauri::command]
 pub async fn mpv_set_audio_delay(
     state: tauri::State<'_, Arc<AppState>>,
-    window: tauri::Window,
     audio_delay: f64
 ) -> Result<()> {
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
@@ -451,7 +445,6 @@ pub async fn mpv_get_sub_delay(
 #[tauri::command]
 pub async fn mpv_set_sub_delay(
     state: tauri::State<'_, Arc<AppState>>,
-    window: tauri::Window,
     sub_delay: f64
 ) -> Result<()> {
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
@@ -466,7 +459,6 @@ pub async fn mpv_set_sub_delay(
 #[tauri::command]
 pub async fn mpv_clear_msgs(
     state: tauri::State<'_, Arc<AppState>>,
-    window: tauri::Window
 ) -> Result<()> {
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
     let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();

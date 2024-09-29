@@ -10,7 +10,7 @@
   },
   "app": {"windows": [
       {
-        "title": "syncmiru-client",
+        "title": "Syncmiru",
         "width": 1200,
         "height": 600,
         "minWidth": 1010,

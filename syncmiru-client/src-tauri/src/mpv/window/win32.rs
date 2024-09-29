@@ -9,7 +9,7 @@ use crate::appstate::AppState;
 use crate::mpv::window::HtmlElementRect;
 use crate::result::Result;
 
-pub async fn hide_borders(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+pub async fn hide_borders(_: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
     Ok(unsafe {
         let style = WINDOW_STYLE(GetWindowLongPtrW(hwnd, GWL_STYLE) as u32);
@@ -18,7 +18,7 @@ pub async fn hide_borders(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     })
 }
 
-pub(super) async fn show_borders(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+pub(super) async fn show_borders(_: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
     Ok(unsafe {
         let style = WINDOW_STYLE(GetWindowLongPtrW(hwnd, GWL_STYLE) as u32);
@@ -27,7 +27,7 @@ pub(super) async fn show_borders(state: &Arc<AppState>, mpv_wid: usize) -> Resul
     })
 }
 
-pub(super) async fn reparent(state: &Arc<AppState>, mpv_wid: usize, parent_wid: usize) -> Result<()> {
+pub(super) async fn reparent(_: &Arc<AppState>, mpv_wid: usize, parent_wid: usize) -> Result<()> {
     let mpv = id2hwnd(mpv_wid);
     let parent = id2hwnd(parent_wid);
     Ok(unsafe {
@@ -35,14 +35,14 @@ pub(super) async fn reparent(state: &Arc<AppState>, mpv_wid: usize, parent_wid: 
     })
 }
 
-pub(super) async fn maximize(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+pub(super) async fn maximize(_: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
     Ok(unsafe {
         let _ = ShowWindow(hwnd, SW_MAXIMIZE);
     })
 }
 
-pub async fn reposition(state: &Arc<AppState>, mpv_wid: usize, container_rect: &HtmlElementRect) -> Result<()> {
+pub async fn reposition(_: &Arc<AppState>, mpv_wid: usize, container_rect: &HtmlElementRect) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
     Ok(unsafe {
         SetWindowPos(
@@ -63,14 +63,14 @@ pub async fn manual_fullscreen(state: &Arc<AppState>, mpv_wid: usize) -> Result<
     Ok(())
 }
 
-pub(super) async fn unparent(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+pub(super) async fn unparent(_: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
     Ok(unsafe {
         SetParent(hwnd, HWND::default())?;
     })
 }
 
-pub async fn focus(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
+pub async fn focus(_: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
     Ok(unsafe {
         let _ = SetForegroundWindow(hwnd);
@@ -78,7 +78,7 @@ pub async fn focus(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     })
 }
 
-pub async fn pid2wid(state: &Arc<AppState>, pid: u32) -> Result<Option<usize>> {
+pub async fn pid2wid(_: &Arc<AppState>, pid: u32) -> Result<Option<usize>> {
     static mut FOUND_HWND: Option<HWND> = None;
     unsafe extern "system" fn enum_windows_proc(hwnd: HWND, l_param: LPARAM) -> BOOL {
         let mut process_id = 0u32;

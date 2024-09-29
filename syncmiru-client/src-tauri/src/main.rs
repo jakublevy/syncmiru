@@ -145,7 +145,7 @@ async fn main() -> Result<()> {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_theme::init(ctx.config_mut()))
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_single_instance::init(|app, args, cwd| {
+        .plugin(tauri_plugin_single_instance::init(|app, _, _| {
             let _ = focus_window(app);
         }))
         .run(ctx)

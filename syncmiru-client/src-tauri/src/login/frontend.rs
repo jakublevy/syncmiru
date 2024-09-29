@@ -1,14 +1,8 @@
-use std::future::Future;
-use std::pin::Pin;
 use std::sync::Arc;
-use anyhow::Context;
-use serde_json::Value;
 use crate::appstate::AppState;
 use crate::config::appdata;
 use crate::result::Result;
 use crate::config::jwt;
-use tauri::Manager;
-use whoami::fallible::hostname;
 use crate::login::{ServiceStatus, RegData, BooleanResp, HttpMethod, TknEmail, ForgottenPasswordChange, LoginForm, NewLogin, Jwt, Tkn};
 use crate::{sys};
 

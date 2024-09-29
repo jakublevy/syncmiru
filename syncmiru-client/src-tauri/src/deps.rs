@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 use anyhow::Context;
 use reqwest::Client;
 use serde::Serialize;
-use tauri::{Emitter, Manager};
+use tauri::{Emitter};
 use crate::constants;
 use crate::deps::utils::{mpv_exe, yt_dlp_exe};
 use crate::error::SyncmiruError;

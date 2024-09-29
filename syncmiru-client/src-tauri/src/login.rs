@@ -3,7 +3,7 @@ pub mod frontend;
 use std::time::Duration;
 use anyhow::{anyhow};
 use reqwest::{Client};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize};
 use crate::constants;
 use crate::error::SyncmiruError;
 use crate::result::Result;

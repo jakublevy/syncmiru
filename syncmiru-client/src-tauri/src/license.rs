@@ -6,8 +6,6 @@ use crate::result::Result;
 #[tauri::command]
 pub async fn open_license_window(
     app: tauri::AppHandle,
-    window: tauri::Window,
-    state: tauri::State<'_, Arc<AppState>>
 ) -> Result<()> {
     let license_window_opt = app.get_webview_window("license");
     if let Some(license_window) = license_window_opt {

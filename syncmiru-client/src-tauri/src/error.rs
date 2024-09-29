@@ -1,4 +1,3 @@
-use serde_with::DisplayFromStr;
 use std::io;
 use std::num::ParseIntError;
 use std::str::ParseBoolError;
@@ -108,13 +107,13 @@ impl<T> From<PoisonError<T>> for SyncmiruError {
 }
 
 impl From<()> for SyncmiruError {
-    fn from(value: ()) -> Self {
+    fn from(_: ()) -> Self {
         Self::VoidError()
     }
 }
 
 impl From<bool> for SyncmiruError {
-    fn from(value: bool) -> Self {
+    fn from(_: bool) -> Self {
         Self::VoidError()
     }
 }
@@ -124,16 +123,6 @@ impl serde::Serialize for SyncmiruError {
         where
             S: serde::ser::Serializer,
     {
-        #[serde_with::serde_as]
-        #[serde_with::skip_serializing_none]
-        #[derive(serde::Serialize, Debug)]
-        struct ErrorResponse<'a> {
-            #[serde_as(as = "DisplayFromStr")]
-            message: &'a SyncmiruError,
-
-            desc: Option<String>,
-        }
-
         let mut errors: Option<String> = None;
         if let SyncmiruError::ReqwestError(e) = &self {
             errors = Some(e.to_string());

@@ -4,7 +4,6 @@ use crate::result::Result;
 
 #[cfg(target_family = "unix")]
 use gtk::prelude::WidgetExt;
-use crate::constants;
 
 pub trait WindowExt {
     async fn native_id(&self) -> Result<Option<usize>>;

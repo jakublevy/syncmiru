@@ -6,7 +6,7 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
-use anyhow::{anyhow, Context};
+use anyhow::{anyhow};
 use cfg_if::cfg_if;
 use interprocess::local_socket::{
     tokio::{prelude::*, Stream},
@@ -16,7 +16,6 @@ use rust_decimal::Decimal;
 use rust_decimal::prelude::FromPrimitive;
 use serde_repr::Deserialize_repr;
 use tauri::Emitter;
-use thiserror::__private::AsDisplay;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::sync::mpsc::{Receiver};
 use tokio::sync::{mpsc, oneshot};
@@ -93,7 +92,7 @@ pub struct IpcData {
 }
 
 pub async fn start(
-    mut mpv_write_rx: Receiver<Interface>,
+    mpv_write_rx: Receiver<Interface>,
     pipe_id: String,
     window: tauri::Window,
     app_state: Arc<AppState>,
@@ -101,7 +100,7 @@ pub async fn start(
     let pipe_name = utils::get_pipe_name(&pipe_id)?;
 
     let conn = Stream::connect(pipe_name).await?;
-    let (recv, mut sender) = conn.split();
+    let (recv, sender) = conn.split();
 
     let (exit_tx, exit_rx) = oneshot::channel();
     let exit_tx_opt = Some(exit_tx);
@@ -111,7 +110,7 @@ pub async fn start(
     let listen_task = listen(recv, &ipc_data, exit_rx);
     let write_task = write(mpv_write_rx, sender, &ipc_data, exit_tx_opt);
 
-    tokio::try_join!(listen_task, write_task);
+    tokio::try_join!(listen_task, write_task)?;
     Ok(())
 }
 
@@ -486,7 +485,7 @@ async fn write(
                         .take()
                         .unwrap()
                         .send(())
-                        .map_err(|e| anyhow!("killing interprocess mpv communication failed"))?;
+                        .map_err(|_| anyhow!("killing interprocess mpv communication failed"))?;
                 }
             }
             //println!("msg {:?}", msg);
@@ -498,7 +497,7 @@ async fn write(
     Ok(())
 }
 
-async fn init_observe_property(mut sender: &SendHalf) -> Result<()> {
+async fn init_observe_property(sender: &SendHalf) -> Result<()> {
     let properties = vec!["aid", "sid", "pause", "fullscreen", "speed", "audio-delay", "sub-delay"];
     for (i, property) in properties.iter().enumerate() {
         observe_property(sender, i, property).await?;

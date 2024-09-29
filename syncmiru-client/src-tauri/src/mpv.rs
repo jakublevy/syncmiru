@@ -5,18 +5,14 @@ mod models;
 mod utils;
 
 use std::fs;
-use std::io::Stdout;
-use std::ops::Deref;
 use std::path::{Path, PathBuf};
-use std::process::Stdio;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 use anyhow::anyhow;
 use cfg_if::cfg_if;
-use tauri::{Emitter, Manager, State};
+use tauri::{Emitter};
 use thiserror::__private::AsDisplay;
-use tokio::io::AsyncWriteExt;
-use tokio::sync::{Mutex, oneshot, RwLock};
+use tokio::sync::{oneshot};
 use crate::appstate::AppState;
 use crate::deps::utils::{mpv_exe, prelude_path, yt_dlp_exe};
 use crate::{constants, hash};
@@ -130,13 +126,13 @@ pub async fn stop_process(state: &Arc<AppState>) -> Result<()> {
     let mut mpv_tx_wl = state.mpv_stop_tx.write().await;
     let tx_opt = mpv_tx_wl.take();
     if let Some(tx) = tx_opt {
-        tx.send(()).map_err(|e| anyhow!("killing process failed"))?;
+        tx.send(()).map_err(|_| anyhow!("killing process failed"))?;
     }
     Ok(())
 }
 
 pub async fn start_ipc(state: &Arc<AppState>, pipe_id: &str, window: tauri::Window) -> Result<()> {
-    let (tx, rx): (Sender<ipc::Interface>, Receiver<ipc::Interface>) = mpsc::channel(1);
+    let (tx, rx): (Sender<Interface>, Receiver<Interface>) = mpsc::channel(1);
     {
         let mut mpv_ipc_tx_wl = state.mpv_ipc_tx.write().await;
         *mpv_ipc_tx_wl = Some(tx);

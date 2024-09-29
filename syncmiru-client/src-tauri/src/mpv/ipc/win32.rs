@@ -1,4 +1,3 @@
-use tokio::sync::mpsc;
 use crate::mpv::ipc::{IpcData, Property, send_with_response};
 use crate::mpv::ipc::Interface;
 use crate::result::Result;

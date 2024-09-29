@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::{Path, PathBuf};
-use tauri::{Emitter, Manager};
+use tauri::{Emitter};
 use crate::files::syncmiru_data_dir;
 use crate::result::Result;
 use crate::files::{decompress_7z, decompress_zip};
