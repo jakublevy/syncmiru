@@ -418,5 +418,7 @@
 
   "register-tkn-check-failed": "Connection error while verifying the token",
   "register-tkn-invalid": "Invalid or already used token",
-  "register-tkn-valid": "Token is valid"
+  "register-tkn-valid": "Token is valid",
+
+  "login-email-not-verified-too-many-attempts": "Login failed, the account is not verified and the verification email was sent recently, if the email did not arrive, try logging in later"
 }

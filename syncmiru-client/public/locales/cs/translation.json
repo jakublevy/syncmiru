@@ -418,5 +418,7 @@
 
   "register-tkn-check-failed": "Chyba spojení při ověřování tokenu",
   "register-tkn-invalid": "Neplatný nebo již použitý token",
-  "register-tkn-valid": "Token je validní"
+  "register-tkn-valid": "Token je validní",
+
+  "login-email-not-verified-too-many-attempts": "Přihlášení selhalo, účet není ověřen a email pro ověření byl odeslán v nedávné době, pokud email nedorazil, zkuste se přihlásit později"
 }

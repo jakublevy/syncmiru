@@ -1,3 +1,4 @@
+use log::info;
 use std::borrow::Cow;
 use std::sync::Arc;
 use anyhow::Context;
@@ -5,7 +6,7 @@ use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{Html, IntoResponse};
-use hcaptcha::Hcaptcha;
+use hcaptcha::{Hcaptcha, HcaptchaCaptcha, HcaptchaClient, HcaptchaRequest};
 use tower::BoxError;
 use crate::srvstate::SrvState;
 use validator::{Validate};

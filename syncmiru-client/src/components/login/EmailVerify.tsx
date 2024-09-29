@@ -4,36 +4,41 @@ import {useLocation} from "wouter";
 import {useHistoryState} from "wouter/use-browser-location";
 import {VerifyEmailHistoryState} from "@models/historyState.ts";
 import {useWatchVerify} from "@hooks/useWatchVerify.tsx";
-import {useReqVerificationEmail, useReqVerificationEmailAgain} from "@hooks/useReqVerificationEmail.ts";
+import {useReqVerificationEmail} from "@hooks/useReqVerificationEmail.ts";
 import BtnTimeout from "@components/widgets/BtnTimeout.tsx";
 import Loading from "@components/Loading.tsx";
 import {useTranslation} from "react-i18next";
 import {StatusAlertService} from "react-status-alert";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
+import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 
 export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
     const [_, navigate] = useLocation()
     const {t} = useTranslation()
     const {email}: VerifyEmailHistoryState = useHistoryState()
-    const {error: verEmailError, isLoading: verEmailIsLoading} = useReqVerificationEmail(email)
-    const reqVerEmailAgain = useReqVerificationEmailAgain()
+    const reqVerEmailAgain = useReqVerificationEmail()
     const {data: isVerified} = useWatchVerify(email)
     const [loading, setLoading] = useState<boolean>(false)
     const [resendTimeout , setResendTimeout] = useState<number>(waitBeforeResend)
 
     useEffect(() => {
-        setLoading(verEmailIsLoading)
-    }, [verEmailIsLoading]);
+        setLoading(true)
+        reqVerEmailAgain(email)
+            .then(() => {
+                setResendTimeout(waitBeforeResend)
+                StatusAlertService.showSuccess(t('new-email-has-been-sent-msg'))
+                setLoading(false)
+            })
+            .catch(() => {
+                showPersistentErrorAlert(t('login-email-not-verified-too-many-attempts'))
+                navigateToLoginFormMain(navigate)
+            })
+    }, []);
 
     useEffect(() => {
         if(isVerified)
             navigate('/email-verified')
     }, [isVerified]);
-
-    useEffect(() => {
-        if(verEmailError !== undefined)
-            showPersistentErrorAlert(t('email-send-error'))
-    }, [verEmailError]);
 
     function resendEmail() {
         setLoading(true)
