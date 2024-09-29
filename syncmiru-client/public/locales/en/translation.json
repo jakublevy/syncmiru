@@ -67,7 +67,7 @@
   "forgotten-password-title": "Forgotten password",
   "forgotten-password-tkn-label": "Verification code",
   "forgotten-password-tkn-help": "Paste here 24 character code to verify your email.",
-  "tkn-check-failed": "Connection error",
+  "tkn-check-failed": "Connection error while verifying the code",
   "tkn-invalid": "Invalid code",
   "tkn-valid": "Valid code",
   "forgotten-password-new-password-title": "Setting a new password",
@@ -411,5 +411,12 @@
   "mpv-msg-upload-state": "changed the mpv settings according to his/her configuration",
   "mpv-msg-desync-seek-1": "Rewind back to",
   "mpv-msg-desync-seek-2": "due to major desync",
-  "mpv-minor-desync-error": "An error occurred while correcting minor desync"
+  "mpv-minor-desync-error": "An error occurred while correcting minor desync",
+
+  "language-change-failed": "An error occurred while changing the language",
+  "kill-app-failed": "An error occurred while killing the application",
+
+  "register-tkn-check-failed": "Connection error while verifying the token",
+  "register-tkn-invalid": "Invalid or already used token",
+  "register-tkn-valid": "Token is valid"
 }

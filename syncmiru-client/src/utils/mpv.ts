@@ -1,8 +1,8 @@
 import {UserId, UserValueClient} from "@models/user.ts";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {invoke} from "@tauri-apps/api/core";
-import {showPersistentErrorAlert} from "./alert.ts";
-import {createLocaleComparator} from "./sort.ts";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
+import {createLocaleComparator} from "src/utils/sort.ts";
 import {TFunction} from "i18next";
 
 export function showMpvReadyMessages(

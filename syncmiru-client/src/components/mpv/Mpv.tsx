@@ -6,7 +6,6 @@ import {Event, listen, UnlistenFn} from "@tauri-apps/api/event";
 import {disconnectFromRoom, forceDisconnectFromRoom} from "src/utils/room.ts";
 import {RoomConnectionState} from "@models/context.ts";
 import {invoke} from "@tauri-apps/api/core";
-import { getCurrent } from '@tauri-apps/api/window'
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {PlaylistEntry, PlaylistEntryId, PlaylistEntryUrl, PlaylistEntryVideo} from "@models/playlist.ts";
 import {

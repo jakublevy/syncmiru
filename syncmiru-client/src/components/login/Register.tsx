@@ -15,7 +15,7 @@ import {useLocation} from "wouter";
 import {Language} from "@models/config.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
 import HCaptchaThemeAware from "@components/widgets/HCaptchaThemeAware.tsx";
-import {useForm, useWatch} from "react-hook-form";
+import {useForm} from "react-hook-form";
 import Joi from 'joi'
 import {joiResolver} from "@hookform/resolvers/joi";
 import Loading from "@components/Loading.tsx";
@@ -38,7 +38,7 @@ export default function Register({regPubAllowed}: Props): ReactElement {
         = useState<Unique>({email: true, username: true})
 
     const [regTknValid, setRegTknValid] = useState<boolean>(false)
-    const [regTknError, setRegTknError] = useState<boolean>(false)
+    const [regTknCheckFailed, setRegTknCheckFailed] = useState<boolean>(false)
 
     const formSchema: Joi.ObjectSchema<RegFormFields> = useRegFormSchema(regPubAllowed, t)
 
@@ -112,11 +112,12 @@ export default function Register({regPubAllowed}: Props): ReactElement {
     }
 
     function regTknValidationChanged(valid: boolean) {
+        setRegTknCheckFailed(false)
         setRegTknValid(valid)
     }
 
     function regTknValidationError(error: string) {
-        setRegTknError(true)
+        setRegTknCheckFailed(true)
     }
 
     if(loading)
@@ -154,9 +155,14 @@ export default function Register({regPubAllowed}: Props): ReactElement {
                                 {errors.regTkn
                                     ? <p className="text-danger font-semibold">{errors.regTkn.message}</p>
                                     : <>
-                                        {!regTknValid && (regTkn !== undefined && regTkn !== '') && <p className="text-danger font-semibold">Neplatný nebo již použitý token</p> }
-                                        {regTknValid && <p className="text-success dark:text-successdark font-semibold">Token je validní</p>}
-                                        {(regTkn === undefined || regTkn === '') && <p className="text-danger invisible font-semibold">L</p>}
+                                        {regTknCheckFailed
+                                            ? <p className="text-danger font-semibold">{t('register-tkn-check-failed')}</p>
+                                            : <>
+                                                {!regTknValid && (regTkn !== undefined && regTkn !== '') && <p className="text-danger font-semibold">{t('register-tkn-invalid')}</p> }
+                                                {regTknValid && <p className="text-success dark:text-successdark font-semibold">{t('register-tkn-valid')}</p>}
+                                                {(regTkn === undefined || regTkn === '') && <p className="text-danger invisible font-semibold">L</p>}
+                                              </>
+                                        }
                                     </>
                                 }
                             </div>

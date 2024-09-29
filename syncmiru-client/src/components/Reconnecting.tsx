@@ -8,6 +8,7 @@ import useClearJwt from "@hooks/useClearJwt.ts";
 import {useTranslation} from "react-i18next";
 import {invoke} from "@tauri-apps/api/core";
 import {useMainContext} from "@hooks/useMainContext.ts";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
 
 export default function Reconnecting(): ReactElement {
     const [_, navigate] = useLocation()
@@ -23,6 +24,9 @@ export default function Reconnecting(): ReactElement {
             })
             .catch(() => {
                 invoke('kill_app_with_error_msg', {msg: t('mpv-quit-error')})
+                    .catch(() => {
+                        showPersistentErrorAlert(t('kill-app-failed'))
+                    })
             })
     }, []);
 

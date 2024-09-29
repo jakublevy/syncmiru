@@ -1,5 +1,4 @@
 import React, {ReactElement, useState} from "react";
-import {useMainContext} from "@hooks/useMainContext.ts";
 import Loading from "@components/Loading.tsx";
 import {CloseBtn} from "@components/widgets/Button.tsx";
 import {navigateToMain} from "src/utils/navigate.ts";
@@ -11,20 +10,19 @@ import {RoomSettingsHistoryState} from "@models/historyState.ts";
 import DesyncTolerance from "@components/rooms/DesyncTolerance.tsx";
 import MinorDesyncPlaybackSlow from "@components/rooms/MinorDesyncPlaybackSlow.tsx";
 import MajorDesyncMin from "@components/rooms/MajorDesyncMin.tsx";
-import {InfoBanner, WarningBanner} from "@components/widgets/Banner.tsx";
+import {InfoBanner} from "@components/widgets/Banner.tsx";
 
 export default function RoomSyncSettings(): ReactElement {
     const [_, navigate] = useLocation()
     const {rid} = useHistoryState<RoomSettingsHistoryState>()
-    const {rooms} = useMainContext()
     const [playbackSpeedLoading, setPlaybackSpeedLoading] = useState<boolean>(true)
     const [desyncToleranceLoading, setDesyncToleranceLoading] = useState<boolean>(true)
-    const [minorDesyncPlaybackSlow, setMinorDesyncPlaybackSlowLoading] = useState<boolean>(true)
-    const [majorDesyncMin, setMajorDesyncMinLoading] = useState<boolean>(true)
+    const [minorDesyncPlaybackSlowLoading, setMinorDesyncPlaybackSlowLoading] = useState<boolean>(true)
+    const [majorDesyncMinLoading, setMajorDesyncMinLoading] = useState<boolean>(true)
     const {t} = useTranslation()
 
     function showContent() {
-        return !playbackSpeedLoading && !desyncToleranceLoading && !minorDesyncPlaybackSlow
+        return !playbackSpeedLoading && !desyncToleranceLoading && !minorDesyncPlaybackSlowLoading && !majorDesyncMinLoading
     }
 
     return (

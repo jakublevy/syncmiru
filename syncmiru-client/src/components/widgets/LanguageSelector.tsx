@@ -5,17 +5,21 @@ import {useChangeLanguage, useLanguage} from '@hooks/useLanguage.ts'
 import {useTranslation} from "react-i18next";
 import {refresh} from "@mittwald/react-use-promise";
 import 'src/react-select.css'
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
 
 
 export default function LanguageSelector({className}: Props): ReactElement {
     const initLang: Language = useLanguage()
     const changeLang = useChangeLanguage()
-    const {i18n} = useTranslation()
+    const {i18n, t} = useTranslation()
     const [lang, setLang] = useState<Language>(initLang)
 
     useEffect(() => {
         setLang(initLang)
         i18n.changeLanguage(initLang)
+            .catch(() => {
+                showPersistentErrorAlert(t('language-change-failed'))
+            })
 
         return () => refresh({tag: "useLanguage"})
     }, [initLang]);

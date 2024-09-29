@@ -8,6 +8,7 @@ import Acknowledgements from "@components/lic/Acknowledgements.tsx";
 import Licenses from "@components/lic/Licenses.tsx";
 import {useLanguage} from "@hooks/useLanguage.ts";
 import i18n from "src/i18n.ts";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
 
 export default function LicenseMain(): ReactElement {
     const [location, navigate] = useLocation()
@@ -20,6 +21,9 @@ export default function LicenseMain(): ReactElement {
 
     useEffect(() => {
         i18n.changeLanguage(lang)
+            .catch(() => {
+                showPersistentErrorAlert(t('language-change-failed'))
+            })
     }, [lang]);
 
     useEffect(() => {

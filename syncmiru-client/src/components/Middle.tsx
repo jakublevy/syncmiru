@@ -2,7 +2,6 @@ import React, {ReactElement, useRef, useState} from "react";
 import Mpv from "@components/mpv/Mpv.tsx";
 import Playlist from "@components/playlist/Playlist.tsx";
 import {ImperativePanelHandle, Panel, PanelGroup, PanelResizeHandle} from "react-resizable-panels";
-import ResizableIndicator from "@components/svg/ResizableIndicator.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 
 export default function Middle(): ReactElement {

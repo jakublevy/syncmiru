@@ -1,5 +1,5 @@
 import {RegTkn} from "@models/regTkn.ts";
-import {showTemporalSuccessAlertForModal} from "./alert.ts";
+import {showTemporalSuccessAlertForModal} from "src/utils/alert.ts";
 import {TFunction} from "i18next";
 
 export async function copyRegTkn(regTkn: RegTkn, t: TFunction<"translation", undefined>) {

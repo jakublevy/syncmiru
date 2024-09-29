@@ -7,6 +7,7 @@ import {useMainContext} from "@hooks/useMainContext.ts";
 import {useLocation} from "wouter";
 import {navigateToLoginFormMain} from "src/utils/navigate.ts";
 import {invoke} from "@tauri-apps/api/core";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
 
 export default function Signout(p: Props): ReactElement {
     const [_, navigate] = useLocation()
@@ -30,6 +31,9 @@ export default function Signout(p: Props): ReactElement {
             })
             .catch(() => {
                 invoke('kill_app_with_errador_msg', {msg: t('mpv-quit-error')})
+                    .catch(() => {
+                        showPersistentErrorAlert(t('kill-app-failed'))
+                    })
             })
     }
 
@@ -45,6 +49,9 @@ export default function Signout(p: Props): ReactElement {
             })
             .catch(() => {
                 invoke('kill_app_with_error_msg', {msg: t('mpv-quit-error')})
+                    .catch(() => {
+                        showPersistentErrorAlert(t('kill-app-failed'))
+                    })
             })
 
     }

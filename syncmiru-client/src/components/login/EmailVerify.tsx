@@ -42,7 +42,7 @@ export default function EmailVerify({waitBeforeResend}: Props): ReactElement {
                 setResendTimeout(waitBeforeResend)
                 StatusAlertService.showSuccess(t('new-email-has-been-sent-msg'))
             })
-            .catch((e) => {
+            .catch(() => {
                 setResendTimeout(0)
                 showPersistentErrorAlert(t('email-send-error'))
             })

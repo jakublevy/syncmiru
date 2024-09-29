@@ -22,16 +22,20 @@ import ForgottenPasswordChanged from "@components/login/ForgottenPasswordChanged
 import DepsUpdate from "@components/deps/windows/DepsUpdate.tsx";
 import Main from "@components/Main.tsx";
 import {navigateToDeps, navigateToWelcome} from "src/utils/navigate.ts";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
 
 
 export default function App(): ReactElement {
-    const {i18n} = useTranslation()
+    const {i18n, t} = useTranslation()
     const lang: Language = useLanguage()
     const firstRunSeen: boolean = useFirstRunSeen()
     const [_, navigate] = useLocation()
 
     useEffect(() => {
         i18n.changeLanguage(lang)
+            .catch(() => {
+                showPersistentErrorAlert(t('language-change-failed'))
+            })
     }, [lang]);
 
     useEffect(() => {

@@ -2,7 +2,7 @@ import {MainContextModel, RoomConnectionState} from "@models/context.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {UserId} from "@models/user.ts";
 import {invoke} from "@tauri-apps/api/core";
-import {showPersistentErrorAlert} from "./alert.ts";
+import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {TFunction} from "i18next";
 import {UserReadyState} from "@components/widgets/ReadyState.tsx";
 import {PlaylistEntry, PlaylistEntryId} from "@models/playlist.ts";
@@ -20,6 +20,9 @@ export function forceDisconnectFromRoom(ctx: MainContextModel, t: TFunction<"tra
         })
         .catch(() => {
             invoke('kill_app_with_error_msg', {msg: t('mpv-quit-error')})
+                .catch(() => {
+                    showPersistentErrorAlert(t('kill-app-failed'))
+                })
         })
 }
 

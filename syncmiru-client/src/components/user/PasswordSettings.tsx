@@ -37,7 +37,7 @@ export default function PasswordSettings(p: Props): ReactElement {
         register,
         handleSubmit,
         reset,
-        formState: {errors, isSubmitted}
+        formState: {errors}
     } = useForm<FormFields>({resolver: joiResolver(formSchema)});
 
     function changePasswordClicked() {

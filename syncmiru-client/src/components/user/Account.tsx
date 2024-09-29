@@ -1,10 +1,8 @@
 import {ReactElement, useState} from "react";
 import {useTranslation} from "react-i18next";
-import {BtnSecondary, CloseBtn} from "@components/widgets/Button.tsx";
-import {navigateToLoginFormMain, navigateToMain} from "src/utils/navigate.ts";
+import {CloseBtn} from "@components/widgets/Button.tsx";
+import {navigateToMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
-import useClearJwt from "@hooks/useClearJwt.ts";
-import {useMainContext} from "@hooks/useMainContext.ts";
 import AvatarSettings from "@components/user/AvatarSettings.tsx";
 import UsernameView from "@components/user/UsernameView.tsx";
 import DisplaynameSettings from "@components/user/DisplaynameSettings.tsx";

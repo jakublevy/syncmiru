@@ -148,6 +148,9 @@ export default function DeleteAccount(p: Props): ReactElement {
                     })
                     .catch(() => {
                         invoke('kill_app_with_error_msg', {msg: t('mpv-quit-error')})
+                            .catch(() => {
+                                showPersistentErrorAlert(t('kill-app-failed'))
+                            })
                     })
                 showTemporalSuccessAlertForModal(t('modal-delete-account-delete-success'))
             })

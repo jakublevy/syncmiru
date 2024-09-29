@@ -67,7 +67,7 @@
   "forgotten-password-title": "Zapomenuté heslo",
   "forgotten-password-tkn-label": "Kód pro ověření",
   "forgotten-password-tkn-help": "Sem vložte 24 místný kód pro ověření vašeho emailu.",
-  "tkn-check-failed": "Chyba spojení",
+  "tkn-check-failed": "Chyba spojení při ověřování kódu",
   "tkn-invalid": "Neplatný kód",
   "tkn-valid": "Validní kód",
   "forgotten-password-new-password-title": "Nastavení nového hesla",
@@ -411,5 +411,12 @@
   "mpv-msg-upload-state": "změnil(a) nastavení mpv dle vlastní konfigurace",
   "mpv-msg-desync-seek-1": "Přetočeno zpět na",
   "mpv-msg-desync-seek-2": "kvůli ztrátě synchronizace",
-  "mpv-minor-desync-error": "Došlo k chybě při synchronizaci drobné ochylky"
+  "mpv-minor-desync-error": "Došlo k chybě při synchronizaci drobné ochylky",
+
+  "language-change-failed": "Došlo k chybě při změně jazyka",
+  "kill-app-failed": "Došlo k chybě při ukončení aplikace",
+
+  "register-tkn-check-failed": "Chyba spojení při ověřování tokenu",
+  "register-tkn-invalid": "Neplatný nebo již použitý token",
+  "register-tkn-valid": "Token je validní"
 }

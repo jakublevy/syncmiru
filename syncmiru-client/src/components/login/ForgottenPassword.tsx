@@ -68,7 +68,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
                 StatusAlertService.showSuccess(t('new-email-has-been-sent-msg'))
                 setTkn('')
             })
-            .catch((e) => {
+            .catch(() => {
                 setResendTimeout(0)
                 showPersistentErrorAlert(t('email-send-error'))
             })
@@ -104,7 +104,7 @@ export default function ForgottenPassword({email, waitBeforeResend}: Props): Rea
             .then(() => {
                 navigate('/forgotten-password-changed')
             })
-            .catch((e: string) => {
+            .catch(() => {
                 showPersistentErrorAlert(t('forgotten-password-change-password-error'))
             })
             .finally(() => setLoading(false))
