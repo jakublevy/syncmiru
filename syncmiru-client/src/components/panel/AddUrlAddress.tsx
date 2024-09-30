@@ -80,7 +80,7 @@ export default function AddUrlAddress(): ReactElement {
                         <div>
                             <p className="mb-2">{t('modal-add-url-to-playlist-text')}</p>
                             <TextAreaModalFix
-                                className="p-1.5 w-full h-[50dvh] border font-mono"
+                                className="p-1.5 w-full h-[50dvh] border font-mono dark:bg-darkbg"
                                 value={urlContent}
                                 onChange={urlAreaChanged}
                             />
