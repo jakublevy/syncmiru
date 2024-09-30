@@ -1,4 +1,4 @@
-import {ReactElement, useEffect} from "react";
+import {ReactElement, Suspense, useEffect} from "react";
 import {NavLink} from "@components/widgets/Button.tsx";
 import Card from "@components/widgets/Card.tsx";
 import {useLocation} from "wouter";
@@ -9,6 +9,7 @@ import {useTranslation} from "react-i18next";
 import Devices from "@components/user/Devices.tsx";
 import About from "@components/user/About.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
+import Loading from "@components/Loading.tsx";
 
 export default function UserSettings(): ReactElement {
     const [location, navigate] = useLocation()
@@ -63,10 +64,16 @@ export default function UserSettings(): ReactElement {
                 <div className="h-16"></div>
             </div>
             <div className="border-l border-gray-200 dark:border-gray-700 w-[38rem] overflow-auto">
-                {isActive(Link.Account) && <Account/>}
-                {isActive(Link.Appearance) && <Appearance/>}
-                {isActive(Link.Devices) && <Devices/>}
-                {isActive(Link.About) && <About/>}
+                <Suspense fallback={
+                    <div className="flex h-[calc(100dvh-2rem)] items-center justify-center">
+                        <Loading/>
+                    </div>
+                }>
+                    {isActive(Link.Account) && <Account/>}
+                    {isActive(Link.Appearance) && <Appearance/>}
+                    {isActive(Link.Devices) && <Devices/>}
+                    {isActive(Link.About) && <About/>}
+                </Suspense>
             </div>
         </Card>
     )

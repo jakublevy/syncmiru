@@ -248,7 +248,6 @@ async fn listen(
                         break;
                      },
                      Ok(_) => {
-                        println!("recv {}", buffer);
                         process_mpv_msg(&buffer, ipc_data).await?;
                         buffer.clear();
                      },

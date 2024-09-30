@@ -12,6 +12,7 @@ export default function LoginDispatch(): ReactElement {
 
     useEffect(() => {
         refresh({tag: 'useCanAutoLogin'})
+        refresh({tag: 'useDepsState'})
         if(canAutoLogin)
             navigateToMain(navigate)
         else

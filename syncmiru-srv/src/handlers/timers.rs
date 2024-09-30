@@ -120,14 +120,11 @@ async fn desync_timer(state: Arc<SrvState>) {
                                 let curr_diff = compensated_timestamp - smallest_timestamp;
                                 let next_tick_in = constants::DESYNC_TIMER_TICK_MS as f64 / 1000f64;
 
-                                println!("curr_diff = {}", curr_diff);
-                                println!("next_tick_in = {}", next_tick_in);
                                 if curr_diff < next_tick_in {
                                     let io_rl = state.io.read().await;
                                     let io = io_rl.as_ref().unwrap();
                                     if let Some(sid) = state.uid2sid(*uid).await {
                                         if let Some(s) = io.get_socket(sid) {
-                                            println!("minor_desync_stop next worse");
                                             s.emit("minor_desync_stop", {}).ok();
                                             uid2minor_desync_wl.remove(uid);
                                         }
@@ -136,7 +133,6 @@ async fn desync_timer(state: Arc<SrvState>) {
                             }
                             else {
                                 if compensated_timestamp - smallest_timestamp >= desync_tolerance_f64 {
-                                    println!("minor_desync_start");
                                     let io_rl = state.io.read().await;
                                     let io = io_rl.as_ref().unwrap();
                                     if let Some(sid) = state.uid2sid(*uid).await {
