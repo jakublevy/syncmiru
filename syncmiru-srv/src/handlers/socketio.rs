@@ -138,7 +138,7 @@ pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
         rid_opt = rid_uids_rl.get_by_right(&uid).map(|x|x.clone());
     }
     if let Some(rid) = rid_opt {
-        disconnect_from_room(state, &s, uid, rid).await;
+        disconnect_from_room(&state, &s, uid, rid).await;
 
         let urd = UserRoomDisconnect { rid, uid };
         s.broadcast().emit("user_room_disconnect", &urd).ok();
@@ -1298,7 +1298,7 @@ pub async fn join_room(
     let uid = state.socket2uid(&s).await;
     let old_connected_room_opt = state.socket_connected_room(&s).await;
     if old_connected_room_opt.is_some() {
-        disconnect_from_room(state, &s, uid, old_connected_room_opt.unwrap()).await;
+        disconnect_from_room(&state, &s, uid, old_connected_room_opt.unwrap()).await;
     }
 
     let mut uid_ping_wl = state.uid_ping.write().await;
@@ -1423,7 +1423,7 @@ pub async fn disconnect_room(
     }
     let rid = connected_room_opt.unwrap();
     {
-        disconnect_from_room(state, &s, uid, rid).await;
+        disconnect_from_room(&state, &s, uid, rid).await;
     }
     let urd = UserRoomDisconnect { rid, uid };
     s.broadcast().emit("user_room_disconnect", &urd).ok();
@@ -1621,7 +1621,7 @@ pub async fn req_playing_jwt(
     }
 
     let rid = rid_opt.unwrap();
-    if !video_id_in_room(state, rid, payload.playlist_entry_id).await {
+    if !video_id_in_room(&state, rid, payload.playlist_entry_id).await {
         ack.send(SocketIoAck::<String>::err()).ok();
         return;
     }
@@ -1669,7 +1669,7 @@ pub async fn change_active_video(
     }
 
     let rid = rid_opt.unwrap();
-    if !video_id_in_room(state, rid, payload.playlist_entry_id).await {
+    if !video_id_in_room(&state, rid, payload.playlist_entry_id).await {
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }
@@ -1771,7 +1771,7 @@ pub async fn delete_playlist_entry(
 
     drop(playlist_rl);
 
-    if !video_id_in_room(state, rid, payload.playlist_entry_id).await {
+    if !video_id_in_room(&state, rid, payload.playlist_entry_id).await {
         ack.send(SocketIoAck::<()>::err()).ok();
         return;
     }

@@ -65,15 +65,6 @@ pub fn check_tkn(tkn: &str) -> Result<(), ValidationError> {
     Ok(())
 }
 
-pub fn check_reg_tkn(tkn_opt: &Option<String>) -> Result<(), ValidationError> {
-    if let Some(tkn) = tkn_opt {
-        check_tkn(tkn)
-    }
-    else {
-        Ok(())
-    }
-}
-
 pub fn check_avatar(data: &[u8]) -> Result<(), ValidationError> {
     if data.len() < 1 || data.len() > 5242880 {
         return Err(ValidationError::new("invalid avatar size"))
@@ -97,11 +88,9 @@ pub fn check_reg_tkn_name(reg_tkn_name: &str) -> Result<(), ValidationError> {
     Ok(())
 }
 
-pub fn check_reg_tkn_max_regs(max_regs_opt: &Option<i32>) -> Result<(), ValidationError> {
-    if let Some(max_regs) = max_regs_opt {
-        if *max_regs < 1 {
-            return Err(ValidationError::new("invalid max_regs value"))
-        }
+pub fn check_reg_tkn_max_regs(max_regs: i32) -> Result<(), ValidationError> {
+    if max_regs < 1 {
+        return Err(ValidationError::new("invalid max_regs value"))
     }
     Ok(())
 }
@@ -155,8 +144,8 @@ pub fn check_room_order(room_order: &Vec<Id>) -> Result<(), ValidationError> {
     Ok(())
 }
 
-pub fn check_ping(ping: &f64) -> Result<(), ValidationError> {
-    if *ping <= 0f64 && *ping > SOCKETIO_ACK_TIMEOUT.as_millis() as f64 {
+pub fn check_ping(ping: f64) -> Result<(), ValidationError> {
+    if ping <= 0f64 && ping > SOCKETIO_ACK_TIMEOUT.as_millis() as f64 {
         return Err(ValidationError::new("invalid ping value"))
     }
     Ok(())
@@ -226,8 +215,8 @@ pub fn check_playlist_order(order: &Vec<PlaylistEntryId>) -> Result<(), Validati
     Ok(())
 }
 
-pub fn check_aid_sid(aid_sid: &Option<u64>) -> Result<(), ValidationError> {
-    if aid_sid.is_none() || aid_sid.is_some_and(|x| x > 0) {
+pub fn check_aid_sid(aid_sid: u64) -> Result<(), ValidationError> {
+    if aid_sid > 0 {
         Ok(())
     }
     else {
