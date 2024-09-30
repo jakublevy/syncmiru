@@ -81,6 +81,7 @@ async fn main() -> Result<()> {
    let socketio_srvstate = srvstate.clone();
    let (socketio_layer, io) = SocketIo::builder()
        .ack_timeout(SOCKETIO_ACK_TIMEOUT)
+       .ping_interval(Duration::from_secs(15))
        .with_state(socketio_srvstate.clone())
        .build_layer();
    {

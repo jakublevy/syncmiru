@@ -90,7 +90,7 @@ export default function Main(): ReactElement {
     useEffect(() => {
         const s = io(homeSrv, {
                 auth: {jwt: jwt, hwid_hash: hwidHash} as LoginTkns,
-                ackTimeout: SOCKETIO_ACK_TIMEOUT_MS
+                ackTimeout: SOCKETIO_ACK_TIMEOUT_MS,
             },
         )
         s.on('connect', () => {
