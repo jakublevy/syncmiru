@@ -248,6 +248,7 @@ async fn listen(
                         break;
                      },
                      Ok(_) => {
+                        println!("recv {}", buffer);
                         process_mpv_msg(&buffer, ipc_data).await?;
                         buffer.clear();
                      },
@@ -665,7 +666,11 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
 
             cfg_if! {
                 if #[cfg(target_family = "windows")] {
-                    mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
+                    let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
+                    let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+                    mpv_ipc_tx.send(Interface::SetFullscreen(false)).await?;
+                    sleep(Duration::from_millis(70)).await;
+                    mpv_ipc_tx.send(Interface::SetFullscreen(true)).await?;
                 }
                 else {
                     sleep(Duration::from_millis(70)).await;
@@ -674,6 +679,18 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
                     mpv_ipc_tx.send(Interface::SetFullscreen(true)).await?;
                 }
             }
+
+            // cfg_if! {
+            //     if #[cfg(target_family = "windows")] {
+            //         mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
+            //     }
+            //     else {
+            //         sleep(Duration::from_millis(70)).await;
+            //         let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
+            //         let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
+            //         mpv_ipc_tx.send(Interface::SetFullscreen(true)).await?;
+            //     }
+            // }
 
             appdata_wl.mpv_win_detached = true;
 
