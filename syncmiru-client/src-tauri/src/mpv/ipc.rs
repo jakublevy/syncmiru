@@ -276,7 +276,7 @@ async fn write(
             match msg {
                 Interface::LoadFromSource {ref source_url, ref jwt } => {
                     let cmd = format!(
-                        "{{\"command\":  [\"loadfile\", \"{}\", \"replace\", 0, {{\"http-header-fields\": \"Authorization: Bearer {}\"}}]}}\n",
+                        "{{\"command\":  [\"loadfile\", \"{}\", \"replace\", -1, {{\"start\": \"0\", \"http-header-fields\": \"Authorization: Bearer {}\"}}]}}\n",
                         source_url,
                         jwt
                     );
@@ -673,18 +673,6 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
                     mpv_ipc_tx.send(Interface::SetFullscreen(true)).await?;
                 }
             }
-
-            // cfg_if! {
-            //     if #[cfg(target_family = "windows")] {
-            //         mpv::window::win32::manual_fullscreen(&ipc_data.app_state, mpv_wid).await?;
-            //     }
-            //     else {
-            //         sleep(Duration::from_millis(70)).await;
-            //         let mpv_ipc_tx_rl = ipc_data.app_state.mpv_ipc_tx.read().await;
-            //         let mpv_ipc_tx = mpv_ipc_tx_rl.as_ref().unwrap();
-            //         mpv_ipc_tx.send(Interface::SetFullscreen(true)).await?;
-            //     }
-            // }
 
             appdata_wl.mpv_win_detached = true;
 

@@ -1326,7 +1326,7 @@ pub async fn join_room(
         let rid2runtime_state_rl = state.rid2runtime_state.read().await;
         let room_runtime_settings = rid2runtime_state_rl.get(&payload.rid).unwrap();
         room_settings = RoomSettings {
-            playback_speed: room_runtime_settings.playback_speed,
+            playback_speed: room_runtime_settings.runtime_config.playback_speed,
             major_desync_min: room_runtime_settings.runtime_config.major_desync_min,
             minor_desync_playback_slow: room_runtime_settings.runtime_config.minor_desync_playback_slow,
             desync_tolerance: room_runtime_settings.runtime_config.desync_tolerance
@@ -1689,11 +1689,17 @@ pub async fn change_active_video(
         }
     );
 
+    let mut rid2runtime_state_wl = state.rid2runtime_state.write().await;
+    let room_runtime_state = rid2runtime_state_wl.get_mut(&rid).unwrap();
+    room_runtime_state.playback_speed = room_runtime_state.runtime_config.playback_speed;
+
     let mut uid2ready_status_wl = state.uid2ready_status.write().await;
+    let mut uid2timestamp_wl = state.uid2timestamp.write().await;
     let rid_uids_rl = state.rid_uids.read().await;
     let uids = rid_uids_rl.get_by_left(&rid).unwrap();
     for uid in uids {
         uid2ready_status_wl.insert(*uid, UserReadyStatus::Loading);
+        uid2timestamp_wl.remove(uid);
     }
 
     ack.send(SocketIoAck::<()>::ok(None)).ok();
@@ -2425,13 +2431,6 @@ pub async fn get_mpv_state(
         ))
             .filter_map(|x| x)
             .collect::<Vec<f64>>();
-
-        // if play_info.playing_state == PlayingState::Play {
-        //     timestamps = timestamps
-        //         .iter()
-        //         .map(|x| x + room_runtime_state.runtime_config.desync_tolerance.to_f64().unwrap())
-        //         .collect::<Vec<f64>>()
-        // }
 
         timestamps.sort_by(|a, b| a.partial_cmp(b).unwrap());
         let mut timestamp = *timestamps.first().unwrap_or(&0f64);

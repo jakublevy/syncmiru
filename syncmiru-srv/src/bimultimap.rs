@@ -152,10 +152,8 @@ mod tests {
         multimap.insert("key1", "value1");
         multimap.insert("key1", "value2");
 
-        // Insert "value1" again but with a different key
         multimap.insert("key2", "value1");
 
-        // Check that "value1" is now associated with "key2"
         assert_eq!(multimap.get_by_right(&"value1"), Some(&"key2"));
         assert!(!multimap.get_by_left(&"key1").unwrap().contains(&"value1"));
     }

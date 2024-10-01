@@ -1,5 +1,3 @@
-// TODO: put here some html response constants for email links
-
 use axum::response::Html;
 use rust_i18n::t;
 

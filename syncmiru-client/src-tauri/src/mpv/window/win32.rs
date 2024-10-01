@@ -4,7 +4,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::time::sleep;
 use windows::Win32::Foundation::{BOOL, HWND, LPARAM};
-use windows::Win32::UI::WindowsAndMessaging::{EnumWindows, GetWindowLongPtrW, GetWindowThreadProcessId, GWL_STYLE, HWND_TOP, IsWindowVisible, SetForegroundWindow, SetParent, SetWindowLongPtrW, SetWindowPos, ShowWindow, SW_MAXIMIZE, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, WINDOW_STYLE, WS_BORDER, WS_CAPTION, WS_THICKFRAME};
+use windows::Win32::UI::WindowsAndMessaging::{EnumWindows, GetWindowLongPtrW, GetWindowThreadProcessId, GWL_STYLE, HWND_TOP, IsWindowVisible, SetForegroundWindow, SetParent, SetWindowLongPtrW, SetWindowPos, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, WINDOW_STYLE, WS_BORDER, WS_CAPTION, WS_THICKFRAME};
 use crate::appstate::AppState;
 use crate::mpv::window::HtmlElementRect;
 use crate::result::Result;
@@ -35,13 +35,6 @@ pub(super) async fn reparent(_: &Arc<AppState>, mpv_wid: usize, parent_wid: usiz
     })
 }
 
-pub(super) async fn maximize(_: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
-    let hwnd = id2hwnd(mpv_wid);
-    Ok(unsafe {
-        let _ = ShowWindow(hwnd, SW_MAXIMIZE);
-    })
-}
-
 pub async fn reposition(_: &Arc<AppState>, mpv_wid: usize, container_rect: &HtmlElementRect) -> Result<()> {
     let hwnd = id2hwnd(mpv_wid);
     Ok(unsafe {
@@ -55,12 +48,6 @@ pub async fn reposition(_: &Arc<AppState>, mpv_wid: usize, container_rect: &Html
             SWP_NOZORDER | SWP_NOACTIVATE
         )?;
     })
-}
-
-pub async fn manual_fullscreen(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
-    maximize(state, mpv_wid).await?;
-    hide_borders(state, mpv_wid).await?;
-    Ok(())
 }
 
 pub(super) async fn unparent(_: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
