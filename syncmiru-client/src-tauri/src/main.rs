@@ -24,7 +24,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use result::Result;
 use rust_i18n::t;
-use tauri::{Manager, Window, WindowEvent};
+use tauri::{AppHandle, Manager, Window, WindowEvent};
 use tauri::WindowEvent::CloseRequested;
 use tokio::time::Instant;
 
@@ -158,6 +158,9 @@ async fn handle_window_event(window: Window, event: WindowEvent) {
     match event {
         CloseRequested { .. } => {
             if window.label() == "main" {
+                if let Some(license  ) = window.get_webview_window("license") {
+                    license.close().ok();
+                }
                 let state = window.app_handle().state();
                 mpv::stop_process(&state)
                     .await
