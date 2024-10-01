@@ -18,18 +18,3 @@ pub fn id_hashed() -> Result<String> {
 pub fn device() -> String {
     whoami::devicename()
 }
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn id_test() {
-        assert_eq!(id_hashed().unwrap(), "afds")
-    }
-
-    #[test]
-    fn device_test() {
-        assert_eq!(device(), "Desktop")
-    }
-}

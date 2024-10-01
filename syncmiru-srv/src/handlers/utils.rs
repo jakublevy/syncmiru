@@ -186,17 +186,3 @@ pub(super) async fn video_id_in_room(
     let rid_of_entry_opt = rid2video_id_rl.get_by_right(&playlist_entry_id);
     rid_of_entry_opt.is_some() && *rid_of_entry_opt.unwrap() == rid
 }
-
-pub(super) fn debug_print(state: &Arc<SrvState>) {
-    println!("playlist: {:?}", state.playlist);
-    println!("---------------------------------------");
-    println!("rid_video_id: {:?}", state.rid_video_id);
-    println!("---------------------------------------");
-    println!("rid2runtime_state: {:?}", state.rid2runtime_state);
-    println!("---------------------------------------");
-    println!("rid2play_info: {:?}", state.rid2play_info);
-    println!("---------------------------------------");
-    println!("uid2ready_status: {:?}", state.uid2ready_status);
-    println!("---------------------------------------");
-    println!("uid2_play_info: {:?}", state.uid2play_info);
-}

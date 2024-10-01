@@ -15,7 +15,7 @@ pub struct FileInfo {
     pub size: Option<u64>
 }
 
-fn deserialize_rfc1123<'de, D>(deserializer: D) -> std::result::Result<chrono::DateTime<Utc>, D::Error>
+fn deserialize_rfc1123<'de, D>(deserializer: D) -> Result<chrono::DateTime<Utc>, D::Error>
 where
     D: Deserializer<'de>,
 {

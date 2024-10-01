@@ -1,6 +1,4 @@
-use std::sync::Arc;
 use tauri::{LogicalSize, Manager};
-use crate::appstate::AppState;
 use crate::result::Result;
 
 #[tauri::command]

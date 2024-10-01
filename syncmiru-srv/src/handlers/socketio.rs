@@ -1399,7 +1399,7 @@ pub async fn join_room(
     }
 
     ack.send(SocketIoAck::<JoinedRoomInfo>::ok(Some(JoinedRoomInfo {
-        room_settings: room_settings_db,
+        room_settings,
         room_pings,
         playlist,
         playlist_order,

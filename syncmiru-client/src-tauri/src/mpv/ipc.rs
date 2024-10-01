@@ -244,7 +244,6 @@ async fn listen(
             read_bytes = reader.read_line(&mut buffer) => {
                 match read_bytes {
                      Ok(0) => {
-                        println!("Connection closed");
                         break;
                      },
                      Ok(_) => {
@@ -252,13 +251,11 @@ async fn listen(
                         buffer.clear();
                      },
                      Err(e) => {
-                        println!("Read error: {:?}", e);
                         break;
                      }
                 }
             }
             _ = &mut exit_rx => {
-                println!("listen exit called");
                 break;
             }
         }
@@ -488,9 +485,7 @@ async fn write(
                         .map_err(|_| anyhow!("killing interprocess mpv communication failed"))?;
                 }
             }
-            //println!("msg {:?}", msg);
         } else {
-            println!("msg None");
             break;
         }
     }

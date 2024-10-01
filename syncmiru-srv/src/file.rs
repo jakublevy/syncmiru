@@ -85,35 +85,3 @@ fn split_on_last_occurrence(s: &str, delimiter: char) -> Option<(&str, &str)> {
     let first_part = parts.next().unwrap_or("");
     Some((first_part, second_part))
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn list_root() {
-        let files_opt = list(
-            "https://kodi.levy.cx/syncmiru-server/?dir=",
-            "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3N1ZWQiOjE3MTg2MzE0Njh9.8kkgmQ_5HTUFqiyrFR_1ZYqSpzK0sg-7JqmI-fi4byBMLzyE5OFY5rqlN5y6aqmR0yJ4u-y0FjL2alo2j8OuVA",
-            "/anime/Initial D"
-        ).await;
-        if let Ok(_) = files_opt {
-            assert_eq!(1,1);
-        }
-        else {
-            assert_eq!(1,2)
-        }
-    }
-
-    #[tokio::test]
-    async fn f_exists_test() {
-        let extensions = vec!["avi".to_string(), "m4a".to_string(), "mkv".to_string(), "mov".to_string(), "mp4".to_string(), "vob".to_string(), "webm".to_string(), "wmv".to_string()];
-        let res = f_exists(
-            "https://kodi.levy.cx/syncmiru-server/?dir=",
-            "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3N1ZWQiOjE3MTg2MzE0Njh9.8kkgmQ_5HTUFqiyrFR_1ZYqSpzK0sg-7JqmI-fi4byBMLzyE5OFY5rqlN5y6aqmR0yJ4u-y0FjL2alo2j8OuVA",
-            "/anime/MF Ghost",
-            extensions.as_ref()
-        ).await;
-        assert!(res.unwrap())
-    }
-}

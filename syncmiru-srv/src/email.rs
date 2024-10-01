@@ -1,4 +1,5 @@
-use lettre::{Transport};
+use lettre::{Message, SmtpTransport, Transport};
+use lettre::message::header::ContentType;
 use crate::config::EmailConf;
 use crate::result::Result;
 use rust_i18n::{t};
@@ -161,19 +162,17 @@ async fn send_email(
     subject: &str,
     body: &str,
 ) -> Result<()> {
-    println!("EMAIL\n---------------------------------");
-    println!("{}", body);
-    // let email = Message::builder()
-    //     .from(email_conf.from.parse()?)
-    //     .to(to.parse()?)
-    //     .subject(subject)
-    //     .header(ContentType::TEXT_HTML)
-    //     .body(String::from(format!("{}<br/><br/>Syncmiru<br/>{}", body, srv_url)))?;
-    // let mailer = SmtpTransport::relay(&email_conf.smtp_host)?
-    //     .port(email_conf.smtp_port)
-    //     .credentials(email_conf.credentials.clone())
-    //     .build();
-    // mailer.send(&email)?;
+    let email = Message::builder()
+        .from(email_conf.from.parse()?)
+        .to(to.parse()?)
+        .subject(subject)
+        .header(ContentType::TEXT_HTML)
+        .body(String::from(format!("{}<br/><br/>Syncmiru<br/>{}", body, srv_url)))?;
+    let mailer = SmtpTransport::relay(&email_conf.smtp_host)?
+        .port(email_conf.smtp_port)
+        .credentials(email_conf.credentials.clone())
+        .build();
+    mailer.send(&email)?;
     Ok(())
 }
 
