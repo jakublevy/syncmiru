@@ -17,6 +17,11 @@ export default function LanguageSelector({className}: Props): ReactElement {
     useEffect(() => {
         setLang(initLang)
         i18n.changeLanguage(initLang)
+            .then(() => {
+                changeLang(lang).catch(() => {
+                    showPersistentErrorAlert(t('language-change-failed'))
+                })
+            })
             .catch(() => {
                 showPersistentErrorAlert(t('language-change-failed'))
             })
