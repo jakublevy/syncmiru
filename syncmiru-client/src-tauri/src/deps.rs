@@ -3,6 +3,7 @@ use std::io::{Write};
 use std::process::Command;
 use std::time::{Duration, Instant};
 use anyhow::Context;
+use cfg_if::cfg_if;
 use reqwest::Client;
 use serde::Serialize;
 use tauri::{Emitter};
@@ -11,6 +12,9 @@ use crate::deps::utils::{mpv_exe, yt_dlp_exe};
 use crate::error::SyncmiruError;
 use crate::files::syncmiru_data_dir;
 use crate::result::Result;
+
+#[cfg(target_family = "windows")]
+use std::os::windows::process::CommandExt;
 
 pub mod frontend;
 pub mod utils;
@@ -176,9 +180,16 @@ impl DepsAvailable {
         let mut mpv_ver = "".to_string();
         let mut yt_dlp_ver = "".to_string();
 
-        let mpv_output_r = Command::new(mpv)
-            .arg("--version")
-            .output();
+        let mut mpv_c = Command::new(mpv);
+        let mut mpv_cmd = mpv_c.arg("--version");
+
+        cfg_if! {
+            if #[cfg(target_family = "windows")] {
+                mpv_cmd = mpv_cmd.creation_flags(constants::WIN32_CREATE_NO_WINDOW)
+            }
+        }
+        let mpv_output_r = mpv_cmd.output();
+
         if let Ok(mpv_output) = mpv_output_r {
             let mpv_stdout_output = String::from_utf8_lossy(mpv_output.stdout.as_slice());
             let mpv_stdout_first = mpv_stdout_output
@@ -193,9 +204,16 @@ impl DepsAvailable {
             }
         }
 
-        let yt_dlp_output = Command::new(yt_dlp)
-            .arg("--version")
-            .output();
+        let mut yt_dlp_c = Command::new(yt_dlp);
+        let mut yt_dlp_cmd = yt_dlp_c.arg("--version");
+
+        cfg_if! {
+            if #[cfg(target_family = "windows")] {
+                yt_dlp_cmd = yt_dlp_cmd.creation_flags(constants::WIN32_CREATE_NO_WINDOW)
+            }
+        }
+        let yt_dlp_output = yt_dlp_cmd.output();
+
         if let Ok(yt_dlp_output) = yt_dlp_output {
             let yt_dlp_stdout_output = String::from_utf8_lossy(yt_dlp_output.stdout.as_slice());
             let yt_dlp_version = yt_dlp_stdout_output

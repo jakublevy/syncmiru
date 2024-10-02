@@ -12,6 +12,7 @@ pub const HWID_KEY: &'static str = "&-]#pBy7Wkxn72l|r#lW$6rAD:I7;ksbX976_ltp=LVM
 pub const MPV_IGNORE_FULLSCREEN_MILLIS: u128 = 300;
 pub const MPV_MIN_USER_REQ_ID: u32 = 100;
 pub const DEFAULT_DPI: u32 = 96;
+pub const WIN32_CREATE_NO_WINDOW: u32 = 0x08000000;
 pub static SUPPORTED_WINDOW_SYSTEM: OnceCell<bool> = OnceCell::new();
 
 pub async fn init_runtime_constants() -> Result<()> {
