@@ -27,18 +27,19 @@ pub async fn attach(state: &Arc<AppState>, window: &tauri::Window, mpv_wid: usiz
         .context("could not get tauri window id, possibly broken window system")?;
 
     hide_borders(state, mpv_wid).await?;
-    sleep(Duration::from_millis(90)).await;
+    sleep(Duration::from_millis(100)).await;
     reparent(state, mpv_wid, syncmiru_id).await?;
     window.emit("mpv-resize", {})?;
+    sleep(Duration::from_millis(50)).await;
     focus(state, mpv_wid).await?;
     Ok(())
 }
 
 pub async fn detach(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     unparent(state, mpv_wid).await?;
-    sleep(Duration::from_millis(90)).await;
+    sleep(Duration::from_millis(100)).await;
     show_borders(state, mpv_wid).await?;
-    sleep(Duration::from_millis(90)).await;
+    sleep(Duration::from_millis(50)).await;
     focus(state, mpv_wid).await?;
     Ok(())
 }
