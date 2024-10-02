@@ -1,10 +1,14 @@
 use std::sync::Arc;
 use cfg_if::cfg_if;
 use tauri::{Manager, PhysicalSize};
-use x11rb::rust_connection::RustConnection;
-use crate::{constants, x11};
 use crate::appstate::AppState;
 use crate::result::Result;
+
+#[cfg(target_family = "unix")]
+use x11rb::rust_connection::RustConnection;
+
+#[cfg(target_family = "unix")]
+use crate::{constants, x11};
 
 #[tauri::command]
 pub async fn open_license_window(

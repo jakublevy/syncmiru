@@ -15,7 +15,12 @@ mod mpv;
 mod hash;
 mod window;
 mod frontend;
+
+#[cfg(target_family = "unix")]
 mod x11;
+
+#[cfg(target_family = "unix")]
+use x11rb::rust_connection::RustConnection;
 
 #[macro_use]
 extern crate rust_i18n;
@@ -29,7 +34,6 @@ use rust_i18n::t;
 use tauri::{Manager, PhysicalSize, Window, WindowEvent};
 use tauri::WindowEvent::CloseRequested;
 use tokio::time::Instant;
-use x11rb::rust_connection::RustConnection;
 
 #[tokio::main]
 async fn main() -> Result<()> {
