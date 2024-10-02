@@ -126,6 +126,7 @@ async fn main() -> Result<()> {
             mpv::frontend::mpv_clear_msgs,
             mpv::frontend::mpv_increase_playback_speed,
             mpv::frontend::mpv_decrease_playback_speed,
+            mpv::frontend::mpv_get_pause,
             frontend::kill_app_with_error_msg
         ])
         .setup(|app| {

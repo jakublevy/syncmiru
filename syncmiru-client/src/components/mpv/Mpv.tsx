@@ -10,7 +10,6 @@ import {showPersistentErrorAlert} from "src/utils/alert.ts";
 import {PlaylistEntry, PlaylistEntryId, PlaylistEntryUrl, PlaylistEntryVideo} from "@models/playlist.ts";
 import {
     MpvState,
-    PlayingState,
     UserAudioSubtitles,
     UserChangeAudio,
     UserChangeAudioDelay,
@@ -209,13 +208,21 @@ export default function Mpv(p: Props): ReactElement {
                                                         .then(() => {
                                                             startTimestampTimer()
 
-                                                            if(payload.playing_state === PlayingState.Play) {
-                                                                invoke('mpv_set_pause', {pause: false})
-                                                                    .catch(() => {
-                                                                        showPersistentErrorAlert(t('mpv-load-error'))
-                                                                        disconnectFromRoom(ctx, t)
-                                                                    })
-                                                            }
+                                                            invoke<boolean>('mpv_get_pause', {})
+                                                                .then((pause: boolean)=> {
+                                                                    const setPause = Boolean(payload.playing_state.valueOf())
+                                                                    if(setPause !== pause) {
+                                                                        invoke('mpv_set_pause', {pause: setPause})
+                                                                            .catch(() => {
+                                                                                showPersistentErrorAlert(t('mpv-load-error'))
+                                                                                disconnectFromRoom(ctx, t)
+                                                                            })
+                                                                    }
+                                                                })
+                                                                .catch(() => {
+                                                                    showPersistentErrorAlert(t('mpv-load-error'))
+                                                                    disconnectFromRoom(ctx, t)
+                                                                })
                                                         })
                                                         .catch(() => {
                                                             showPersistentErrorAlert(t('mpv-load-error'))
@@ -580,7 +587,6 @@ export default function Mpv(p: Props): ReactElement {
     }
     
     function onMinorDesyncStart() {
-        console.log('onMinorDesyncStart')
         invoke('mpv_decrease_playback_speed', {playbackSpeedMinus: joinedRoomSettingsRef.current.minor_desync_playback_slow})
             .catch(() => {
                 showPersistentErrorAlert(t('mpv-minor-desync-error'))
@@ -589,7 +595,6 @@ export default function Mpv(p: Props): ReactElement {
     }
 
     function onMinorDesyncStop() {
-        console.log('onMinorDesyncStop')
         invoke('mpv_increase_playback_speed', {playbackSpeedPlus: joinedRoomSettingsRef.current.minor_desync_playback_slow})
             .catch(() => {
                 showPersistentErrorAlert(t('mpv-minor-desync-error'))

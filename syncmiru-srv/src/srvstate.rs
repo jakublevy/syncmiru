@@ -99,8 +99,8 @@ impl SrvState {
     }
 
     pub async fn user_file_loaded(&self, uid: Id) -> bool {
-        let uid2ready_status_wl = self.uid2ready_status.write().await;
-        if let Some(ready_status) = uid2ready_status_wl.get(&uid) {
+        let uid2ready_status_rl = self.uid2ready_status.read().await;
+        if let Some(ready_status) = uid2ready_status_rl.get(&uid) {
             *ready_status == UserReadyStatus::Ready || *ready_status == UserReadyStatus::NotReady
         }
         else {

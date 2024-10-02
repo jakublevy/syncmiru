@@ -500,3 +500,12 @@ pub async fn mpv_decrease_playback_speed(
     mpv_ipc_tx.send(Interface::SetPlaybackSpeed(speed - playback_speed_minus)).await?;
     Ok(())
 }
+
+#[tauri::command]
+pub async fn mpv_get_pause(
+    state: tauri::State<'_, Arc<AppState>>,
+    window: tauri::Window,
+) -> Result<bool> {
+    let ipc_data = IpcData { app_state: state.inner().clone(), window };
+    Ok(ipc::get_pause(&ipc_data).await?)
+}
