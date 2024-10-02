@@ -22,6 +22,7 @@ rust_i18n::i18n!("locales");
 
 use std::collections::HashMap;
 use std::sync::Arc;
+use cfg_if::cfg_if;
 use result::Result;
 use rust_i18n::t;
 use tauri::{AppHandle, LogicalSize, Manager, Window, WindowEvent};
@@ -131,6 +132,16 @@ async fn main() -> Result<()> {
         ])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
+
+            let mut factor = window.scale_factor()?;
+            cfg_if! {
+                if #[cfg(target_family = "unix")] {
+                    if factor == 1f64 && constants::SUPPORTED_WINDOW_SYSTEM.get().unwrap() {
+                        factor = mpv::window::x11::get_scale_factor(&state).await?;
+                    }
+                }
+            }
+
             window.set_min_size(Some(LogicalSize{ width: 1010, height: 400 }))?;
             window.set_size(LogicalSize { width: 1200, height: 600 })?;
 

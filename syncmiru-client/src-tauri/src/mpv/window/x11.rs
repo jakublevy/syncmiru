@@ -157,9 +157,8 @@ pub async fn focus(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     Ok(())
 }
 
-pub async fn get_scale_factor(state: &Arc<AppState>) -> Result<f64> {
-    let conn_rl = state.x11_conn.read().await;
-    let conn = conn_rl.as_ref().unwrap();
+pub async fn get_scale_factor(x11_conn_rl: &RwLock<Option<RustConnection>>) -> Result<f64> {
+    let conn = x11_conn_rl.unwrap();
     let db = new_from_default(conn)?;
     let dpi: u32 = db.get_value("Xft.dpi", "")?.unwrap_or(1);
     Ok(dpi as f64 / constants::DEFAULT_DPI as f64)
