@@ -1,4 +1,4 @@
-import {ReactElement, Suspense} from "react";
+import {ReactElement} from "react";
 import {BtnTextPrimary, CloseBtn} from "@components/widgets/Button.tsx";
 import {navigateToMain} from "src/utils/navigate.ts";
 import {useLocation} from "wouter";
@@ -7,7 +7,6 @@ import {SYNCMIRU_VERSION} from "src/utils/constants.ts";
 import {useDepsState} from "@hooks/useDepsState.ts";
 import {invoke} from "@tauri-apps/api/core";
 import {showPersistentErrorAlert} from "src/utils/alert.ts";
-import Loading from "@components/Loading.tsx";
 
 export default function About(): ReactElement {
     const [_, navigate] = useLocation()
