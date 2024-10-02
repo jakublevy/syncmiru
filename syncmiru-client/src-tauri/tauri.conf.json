@@ -1,5 +1,5 @@
 {
-  "productName": "syncmiru-client",
+  "productName": "Syncmiru",
   "version": "0.1.0",
   "identifier": "cz.levy.jakub.client.syncmiru",
   "build": {
@@ -10,7 +10,11 @@
   },
   "app": {"windows": [
       {
-        "title": "Syncmiru"
+        "title": "Syncmiru",
+        "width": 1200,
+        "height": 600,
+        "minWidth": 1010,
+        "minHeight": 400
       }
     ],
     "security": {
@@ -18,6 +22,9 @@
     }
   },
   "bundle": {
+    "publisher": "Jakub Levý",
+    "copyright": "Copyright (c) 2024 Jakub Levý",
+    "category": "Video",
     "active": true,
     "targets": "all",
     "icon": [
