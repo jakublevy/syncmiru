@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 use std::sync::Arc;
 use tokio::time::sleep;
 use std::time::Duration;
+use tokio::sync::RwLock;
 use x11rb::connection::Connection;
 use x11rb::rust_connection::RustConnection;
 use crate::appstate::AppState;
@@ -157,11 +158,10 @@ pub async fn focus(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     Ok(())
 }
 
-pub async fn get_scale_factor(x11_conn_rl: &RwLock<Option<RustConnection>>) -> Result<f64> {
-    let conn = x11_conn_rl.unwrap();
-    let db = new_from_default(conn)?;
-    let dpi: u32 = db.get_value("Xft.dpi", "")?.unwrap_or(1);
-    Ok(dpi as f64 / constants::DEFAULT_DPI as f64)
+pub async fn get_scale_factor(state: &Arc<AppState>) -> Result<f64> {
+    let conn_rl = state.x11_conn.read().await;
+    let conn = conn_rl.as_ref().unwrap();
+    Ok(crate::x11::get_scale_factor(conn)?)
 }
 
 fn set_decoration(conn: &RustConnection, window: xproto::Window, motif_hints: &[u32; 5]) -> Result<()> {

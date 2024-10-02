@@ -15,6 +15,7 @@ mod mpv;
 mod hash;
 mod window;
 mod frontend;
+mod x11;
 
 #[macro_use]
 extern crate rust_i18n;
@@ -25,9 +26,10 @@ use std::sync::Arc;
 use cfg_if::cfg_if;
 use result::Result;
 use rust_i18n::t;
-use tauri::{AppHandle, LogicalSize, Manager, Window, WindowEvent};
+use tauri::{Manager, PhysicalSize, Window, WindowEvent};
 use tauri::WindowEvent::CloseRequested;
 use tokio::time::Instant;
+use x11rb::rust_connection::RustConnection;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -136,14 +138,21 @@ async fn main() -> Result<()> {
             let mut factor = window.scale_factor()?;
             cfg_if! {
                 if #[cfg(target_family = "unix")] {
-                    if factor == 1f64 && constants::SUPPORTED_WINDOW_SYSTEM.get().unwrap() {
-                        factor = mpv::window::x11::get_scale_factor(&state).await?;
+                    if factor == 1f64 && *constants::SUPPORTED_WINDOW_SYSTEM.get().unwrap() {
+                        let (conn, screen_num) = RustConnection::connect(None)?;
+                        factor = x11::get_scale_factor(&conn)?;
                     }
                 }
             }
 
-            window.set_min_size(Some(LogicalSize{ width: 1010, height: 400 }))?;
-            window.set_size(LogicalSize { width: 1200, height: 600 })?;
+            window.set_min_size(Some(PhysicalSize {
+                width: (1010f64 * factor).round() as u32,
+                height: (400f64 * factor).round() as u32
+            }))?;
+            window.set_size(PhysicalSize {
+                width: (1200f64 * factor).round() as u32,
+                height: (600f64 * factor).round() as u32
+            })?;
 
             let prelude_path = app
                 .path()

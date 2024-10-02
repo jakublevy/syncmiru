@@ -1,8 +1,14 @@
-use tauri::{LogicalSize, Manager};
+use std::sync::Arc;
+use cfg_if::cfg_if;
+use tauri::{Manager, PhysicalSize};
+use x11rb::rust_connection::RustConnection;
+use crate::{constants, x11};
+use crate::appstate::AppState;
 use crate::result::Result;
 
 #[tauri::command]
 pub async fn open_license_window(
+    state: tauri::State<'_, Arc<AppState>>,
     app: tauri::AppHandle,
 ) -> Result<()> {
     let license_window_opt = app.get_webview_window("license");
@@ -16,7 +22,32 @@ pub async fn open_license_window(
         tauri::WebviewUrl::App("license.html".into())
     ).build()?;
 
-    let min_size = LogicalSize{width: 900, height: 400};
+    let mut factor = license_window.scale_factor()?;
+    cfg_if! {
+        if #[cfg(target_family = "unix")] {
+            if factor == 1f64 && *constants::SUPPORTED_WINDOW_SYSTEM.get().unwrap() {
+                let conn: &RustConnection;
+                let mut new_connection: RustConnection;
+
+                let x11_conn_rl = state.x11_conn.read().await;
+                let conn_opt = x11_conn_rl.as_ref();
+                if let Some(c) = conn_opt {
+                    conn = c;
+                }
+                else {
+                    let (c, screen_num) = RustConnection::connect(None)?;
+                    new_connection = c;
+                    conn = &new_connection
+                }
+                factor = x11::get_scale_factor(&conn)?;
+            }
+        }
+    }
+
+    let min_size = PhysicalSize{
+        width: (900f64 * factor).round() as u32,
+        height: (400f64 * factor).round() as u32
+    };
     license_window.set_title(&t!("license-window-title"))?;
     license_window.set_min_size(Some(min_size))?;
     license_window.set_size(min_size)?;

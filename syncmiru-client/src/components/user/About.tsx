@@ -52,7 +52,7 @@ export default function About(): ReactElement {
                 </div>
             </div>
             <hr/>
-            <div className="ml-8 mr-8 mt-8">
+            <div className="ml-8 mr-8 mt-8 mb-4">
                 <BtnTextPrimary
                     onClick={viewLicenseClicked}
                 >{t('user-settings-about-view-license')}</BtnTextPrimary>
