@@ -24,7 +24,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use result::Result;
 use rust_i18n::t;
-use tauri::{AppHandle, Manager, Window, WindowEvent};
+use tauri::{AppHandle, LogicalSize, Manager, Window, WindowEvent};
 use tauri::WindowEvent::CloseRequested;
 use tokio::time::Instant;
 
@@ -130,6 +130,10 @@ async fn main() -> Result<()> {
             frontend::kill_app_with_error_msg
         ])
         .setup(|app| {
+            let window = app.get_webview_window("main").unwrap();
+            window.set_min_size(Some(LogicalSize{ width: 1010, height: 400 }))?;
+            window.set_size(LogicalSize { width: 1200, height: 600 })?;
+
             let prelude_path = app
                 .path()
                 .resolve("resources/prelude.lua", tauri::path::BaseDirectory::Resource)?;
