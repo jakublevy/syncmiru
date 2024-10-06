@@ -42,17 +42,26 @@ export default function Playlist(): ReactElement {
             ctx.socket.on('add_video_files', onAddVideoFiles)
             ctx.socket.on('add_urls', onAddUrls)
             ctx.socket.on('playlist_order', onPlaylistOrder)
-            ctx.socket.on('del_playlist_entry', onDelPlaylistEntry)
         }
         return () => {
             if(ctx.socket !== undefined) {
                 ctx.socket.off('add_video_files', onAddVideoFiles)
                 ctx.socket.off('add_urls', onAddUrls)
                 ctx.socket.off('playlist_order', onPlaylistOrder)
-                ctx.socket.off('del_playlist_entry', onDelPlaylistEntry)
             }
         }
     }, [ctx.socket]);
+
+    useEffect(() => {
+        if(ctx.socket !== undefined) {
+            ctx.socket.on('del_playlist_entry', onDelPlaylistEntry)
+        }
+        return () => {
+            if(ctx.socket !== undefined) {
+                ctx.socket.off('del_playlist_entry', onDelPlaylistEntry)
+            }
+        }
+    }, [ctx.socket, ctx.activeVideoId])
 
     useEffect(() => {
         if(ctx.socket !== undefined) {
@@ -166,9 +175,9 @@ export default function Playlist(): ReactElement {
 
             ctx.setPlaylistOrder((p) => {
                 const m = p.filter(x => x !== deletePlaylistEntry.entry_id)
-                if(m.length > 0)
+                if(ctx.activeVideoId === deletePlaylistEntry.entry_id)
                     setAsActiveVideo(m[0])
-                else {
+                else if (m.length == 0) {
                     hideMpvReadyMessages(t)
                     ctx.setActiveVideoId(null)
                     ctx.setUid2ready((p) => {
