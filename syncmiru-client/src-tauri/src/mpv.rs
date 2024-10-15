@@ -10,7 +10,7 @@ use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 use anyhow::anyhow;
 use cfg_if::cfg_if;
-use tauri::{Emitter};
+use tauri::{Emitter, Window};
 use thiserror::__private::AsDisplay;
 use tokio::sync::{oneshot};
 use crate::appstate::AppState;
@@ -106,15 +106,16 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
                Ok(_) => {
                    let mut mpv_tx_wl = state_for_process.mpv_stop_tx.write().await;
                    mpv_tx_wl.take();
-                   let mut mpv_ipc_tx_wl = state_for_process.mpv_ipc_tx.write().await;
-                   if let Some(mpv_ipc_tx) = mpv_ipc_tx_wl.take() {
-                       mpv_ipc_tx.send(Interface::Exit).await.ok();
-                   }
-                   window.emit("mpv-running", false).expect("tauri error")
+
+                   on_mpv_stopped(&state_for_process, window).await.expect("tauri error");
                },
                Err(_) => panic!("Error while waiting for process")
            },
-           _ = rx => { process_handle.kill().await.expect("kill error"); }
+           _ = rx => {
+               process_handle.kill().await.expect("kill error");
+
+               on_mpv_stopped(&state_for_process, window).await.expect("tauri error");
+           }
        }
     });
 
@@ -186,4 +187,21 @@ pub fn get_pipe_ipc_path(pipe_id: &str) -> String {
         ipcserver = pipe_id.to_string();
     }
     ipcserver
+}
+
+pub async fn on_mpv_stopped(state: &Arc<AppState>, window: Window) -> Result<()> {
+    let mut mpv_ipc_tx_wl = state.mpv_ipc_tx.write().await;
+    if let Some(mpv_ipc_tx) = mpv_ipc_tx_wl.take() {
+        mpv_ipc_tx.send(Interface::Exit).await.ok();
+    }
+    window.emit("mpv-running", false)?;
+
+    let mut mpv_reattach_on_fullscreen_false_wl = state.mpv_reattach_on_fullscreen_false.write().await;
+    if *mpv_reattach_on_fullscreen_false_wl {
+        let mut appdata_wl = state.appdata.write().await;
+        window.emit("mpv-win-detached-changed", false)?;
+        appdata_wl.mpv_win_detached = false;
+        *mpv_reattach_on_fullscreen_false_wl = false;
+    }
+    Ok(())
 }

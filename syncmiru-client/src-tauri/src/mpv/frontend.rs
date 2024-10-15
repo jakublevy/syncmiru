@@ -3,7 +3,7 @@ use cfg_if::cfg_if;
 use rust_decimal::Decimal;
 use tauri::{Emitter};
 use crate::appstate::{AppState, MpvMsg};
-use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, utils, window};
+use crate::mpv::{gen_pipe_id, on_mpv_stopped, start_ipc, start_process, stop_ipc, stop_process, utils, window};
 use crate::mpv::ipc::{Interface, IpcData, MsgMood};
 use crate::mpv::models::{LoadFromSource, LoadFromUrl, UserLoadedInfo};
 use crate::mpv::window::HtmlElementRect;
@@ -72,9 +72,10 @@ pub async fn mpv_quit(state: tauri::State<'_, Arc<AppState>>, window: tauri::Win
     window.emit("mpv-reported-speed-change", None::<Decimal>)?;
     let mut mpv_reattach_on_fullscreen_false_wl = state.mpv_reattach_on_fullscreen_false.write().await;
     if *mpv_reattach_on_fullscreen_false_wl {
-        *mpv_reattach_on_fullscreen_false_wl = false;
         let mut appdata_wl = state.appdata.write().await;
         appdata_wl.mpv_win_detached = false;
+        *mpv_reattach_on_fullscreen_false_wl = false;
+        window.emit("mpv-restore-detached-state", {})?;
     }
     Ok(())
 }

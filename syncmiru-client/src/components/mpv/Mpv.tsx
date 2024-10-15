@@ -420,6 +420,10 @@ export default function Mpv(p: Props): ReactElement {
             }
         }))
 
+        unlisten.push(listen<null>('mpv-restore-detached-state', (e: Event<null>) => {
+            setTimeout(() => ctx.setMpvWinDetached(false), 100)
+        }))
+
         return () => {
             unlisten.forEach(x => x.then((unsub) => unsub()))
         }
