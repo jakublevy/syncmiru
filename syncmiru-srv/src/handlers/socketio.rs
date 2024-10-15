@@ -1418,7 +1418,7 @@ pub async fn disconnect_room(
     let uid = state.socket2uid(&s).await;
     let connected_room_opt = state.socket_connected_room(&s).await;
     if connected_room_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(SocketIoAck::<()>::ok(None)).ok();
         return;
     }
     let rid = connected_room_opt.unwrap();
