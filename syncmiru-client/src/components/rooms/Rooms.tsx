@@ -786,17 +786,17 @@ export default function Rooms(): ReactElement {
                                                                     ? <>
                                                                         {readyState != null
                                                                             ? <ReadyState
-                                                                                className="w-3 h-5 mr-2"
+                                                                                className="min-w-3 w-3 min-h-5 h-5 mr-2"
                                                                                 state={readyState}/>
-                                                                            : <div className="w-5"></div>
+                                                                            : <div className="min-w-5 w-5"></div>
                                                                         }
                                                                       </>
-                                                                    : <div className="w-5"></div>}
+                                                                    : <div className="min-w-5 w-5"></div>}
                                                                 {showAdditional && ping != null
-                                                                    ? <Ping id={`${uid}_ping`} ping={ping} className="w-3 mr-2"/>
-                                                                    : <div className="w-5"></div>
+                                                                    ? <Ping id={`${uid}_ping`} ping={ping} className="min-w-3 w-3 mr-2"/>
+                                                                    : <div className="min-w-5 w-5"></div>
                                                                 }
-                                                                <Avatar className="w-6" picBase64={user.avatar}/>
+                                                                <Avatar className="min-w-6 w-6" picBase64={user.avatar}/>
                                                                 <p className="text-sm text-left ml-1.5 w-[4.4rem] break-words">{user.displayname}</p>
                                                                 <div className="flex-1"></div>
 
