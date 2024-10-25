@@ -147,6 +147,7 @@
   "email-currently-using": "Tento email aktuálně používáte",
   "emails-not-received": "Emaily nepřišly?",
 
+  "new-email-label": "Nový email",
   "modal-change-email-title-2": "Ověření emailů",
   "modal-change-email-text-1": "Vyžádal jste si změnu emailové adresy",
   "modal-change-email-text-2": "Na obě emailové adresy byly odeslány 24-místné kódy pro ověření, které pro dokončení změny emailové adresy vložte níže.",
@@ -253,6 +254,7 @@
   "reg-at-label": "Registrován",
   "verified-label": "Ověřen",
 
+  "reg-tkn-view-title": "Detail registračního tokenu",
   "reg-tkn-view-max-regs": "Max počet registrací",
   "reg-tkn-view-used": "Počet použití",
   "reg-tkn-view-delete-tkn": "Smazat registrační token",
@@ -342,7 +344,6 @@
   "add-to-playlist-btn": "Přidat do playlistu",
 
   "modal-add-video-to-playlist-from-file-srv-title": "Video ze souborového serveru",
-  "modal-add-subtitles-to-playlist-from-file-srv-title": "Titulky ze souborového serveru",
 
   "file-picker-select-text": "Vyberte souborový server z dostupných",
   "file-picker-file-name": "Název",

@@ -73,7 +73,7 @@ export default function RegTknView(p: Props): ReactElement {
             <div className="flex flex-col">
                 <div className="flex items-center m-8">
                     <BackBtn onClick={p.backClicked} className="mr-4"/>
-                    <h1 className="text-2xl font-bold">Detail registračního tokenu</h1>
+                    <h1 className="text-2xl font-bold">{t('reg-tkn-view-title')}</h1>
                     <div className="flex-1"></div>
                     <CloseBtn onClick={() => navigateToMain(navigate)}></CloseBtn>
                 </div>

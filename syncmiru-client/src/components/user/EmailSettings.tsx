@@ -250,7 +250,7 @@ export default function EmailSettings(p: Props): ReactElement {
                 content={
                     <form onSubmit={handleSubmit(changeEmail)} noValidate>
                         <div className="flex justify-between">
-                            <Label htmlFor="email">{t('email-label')}</Label>
+                            <Label htmlFor="email">{t('new-email-label')}</Label>
                             <Help
                                 tooltipId="email-help"
                                 className="w-4"

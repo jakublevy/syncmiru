@@ -52,7 +52,7 @@
   "cemail-label": "Email confirmation",
   "cemail-help": "Your email once again for checking.",
   "password-help": "The password must contain at least 8 characters.",
-  "cpassword-label": "Password confirm",
+  "cpassword-label": "Password confirmation",
   "cpassword-help": "Your password once again for checking.",
   "register-create-account-msg": "Create an account",
   "already-have-account-msg": "Already have an account?",
@@ -147,6 +147,7 @@
   "email-currently-using": "You are currently using this email",
   "emails-not-received": "Emails not received?",
 
+  "new-email-label": "New email",
   "modal-change-email-title-2": "Verification of emails",
   "modal-change-email-text-1": "You have requested a change of email address from",
   "modal-change-email-text-2": "24-digit verification codes have been sent to both email addresses, please enter them below to complete the email address change.",
@@ -253,6 +254,7 @@
   "reg-at-label": "Registered at",
   "verified-label": "Verified",
 
+  "reg-tkn-view-title": "Registration token detail",
   "reg-tkn-view-max-regs": "Max registration count",
   "reg-tkn-view-used": "The number of uses",
   "reg-tkn-view-delete-tkn": "Delete the registration token",
@@ -341,8 +343,7 @@
   "add-to-playlist-source": "Video source",
   "add-to-playlist-btn": "Add to the playlist",
 
-  "modal-add-video-to-playlist-from-file-srv-title": "Video from the file server",
-  "modal-add-subtitles-to-playlist-from-file-srv-title": "Subtitles from the file server",
+  "modal-add-video-to-playlist-from-file-srv-title": "Video from file server",
 
   "file-picker-select-text": "Select a file server from the available ones",
   "file-picker-file-name": "Name",
