@@ -392,7 +392,7 @@ export default function Playlist(): ReactElement {
                     return (
                         <div key={eid} className="flex gap-x-2 items-center">
                             <VideoFile className="min-w-6 w-6"/>
-                            <p className={`text-sm ${ctx.activeVideoId === eid ? 'font-bold' : ''}`}>{renderTxt}</p>
+                            <p className={`text-sm break-words break-all ${ctx.activeVideoId === eid ? 'font-bold' : ''}`}>{renderTxt}</p>
                         </div>
                     )
                 }))
