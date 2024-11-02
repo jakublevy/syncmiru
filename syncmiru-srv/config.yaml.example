@@ -1,0 +1,138 @@
+# General server settings
+srv:
+  # The URL address on which the server will be accessible 
+  url: http://127.0.0.1
+
+  # Port to listen on
+  port: 80
+
+registration_public:
+  # Enable or disable public registrations
+  allowed: false # Possible values: true, false
+
+  # HCaptcha account-level secret. Required if public registration is enabled
+  # hcaptcha_secret: 'INSERT YOUR HCAPTCHA ACCOUNT-LEVEL SECRET'
+
+# Connection to database
+db:
+  # Database name
+  name: syncmiru
+
+  # Name of the host to connect to
+  host: localhost
+
+  # Postgres user name to connect as
+  user: syncmiru
+
+  # Password
+  password: secretpa$$word
+
+  # Port on which Postgres runs
+  port: 5432
+
+# Logging options
+log:
+  # Where to output log messages
+  output: stderr # Possible values: stdout, stderr, file
+
+  # File location of the file log. Required if the output is set to 'file'
+  # file: './log/srv.log'
+
+  # Determines the details of messages that are logged
+  level: info # Possible values: trace, debug, info, warn, error
+
+# Email configuration
+email:
+  # SMTP server for sending emails
+  smtp_host: 'INSERT YOUR SMTP HOST' # Example: smtp.seznam.cz
+
+  # Port on which smtp_host is running
+  smtp_port: 465 # or 587 usually
+
+  # Username to the email account from which all emails are sent
+  username: 'INSERT YOUR USER NAME' # Example: noreply@yourdomain.com
+
+  # Password to the email account from which all emails are sent
+  password: 'INSERT THE EMAIL PASSWORD'
+
+  # Email address to fill to the 'From:' field
+  from: 'INSERT THE FROM EMAIL ADDRESS' # Example: noreply@yourdomain.com
+
+  # The minimum time clients must wait before they can request to resend an email
+  wait_before_resend: 59 # 59 seconds
+
+  # Expiration time of tokens sent via email
+  token_valid_time: 600 # 10 minutes
+
+  # Quota configuration
+  rates:
+    # Quota for the email sent after clicking the 'Forgotten password?' button
+    forgotten_password:
+      max: 3
+      per: 3600 # 1 hour
+
+    # Quota for the account verification email sent after creating the account
+    verification:
+      max: 3
+      per: 3600 # 1 hour
+
+    # Quota for the emails sent after attempting to change your email
+    change_email:
+      max: 3
+      per: 3600 # 1 hour
+
+    # Quota for the email sent after clicking the 'Delete your account' button
+    delete_account:
+      max: 3
+      per: 3600 # 1 hour
+
+# Public and private keys used for generating and validating login JWTs
+login_jwt:
+
+  # File path to the private key. The file must be in the PEM format and unprotected by password
+  priv_key_file: './keys/p-521_priv.pem'
+
+  # File path to the public key. The file must be in the PEM format and unprotected by password
+  pub_key_file: './keys/p-521_pub.pem'
+
+  # Which algorithm to use for signing JWTs
+  # Note that the algorithms require a specific keypair
+  # RS256, RS512 at least 2048-bit or larger RSA key
+  # ES256 P-256 curve (secp256r1)
+  # ES512 P-521 curve (secp521r1)
+  algorithm: 'ES512' # Possible values: RS256, RS512, ES256, ES512
+
+# File extensions configuration
+extensions:
+  # Which file extensions are considered video files and are not filtered out when users are browsing files on a configured file server
+  videos: [avi, m4a, mkv, mov, mp4, vob, webm, wmv]
+
+# Configured OpenResty file servers
+sources:
+  REPLACE_WITH_SRC_NAME: # The name can be arbitrary, it just has to be unambiguous
+
+    # Endpoint returning the list of files
+    list_root_url: 'INSERT URL ADDRESS RECEIVING A DIRECTORY PARAMETER' # Example: https://example.com/syncmiru-server/?dir=
+
+    # JWT with which the server authenticates to list_root_url
+    srv_jwt: 'INSERT SRV JWT'
+
+    # URL used by clients to access files
+    client_url: 'INSERT URL ADDRESS FOR CLIENTS' # Example: https://example.com/syncmiru-client/
+
+    # Private key used to issue client JWTs for accessing files
+    priv_key_file: './keys/p-521_file_priv.pem'
+
+    # Which algorithm to use for signing JWTs
+    # Note that the algorithms require a specific keypair
+    # RS256, RS512 at least 2048-bit or larger RSA key
+    # ES256 P-256 curve (secp256r1)
+    # ES512 P-521 curve (secp521r1)
+    algorithm: 'ES512'
+
+  # REPLACE_WITH_SRC_NAME2:
+  #   list_root_url: ''
+  #   srv_jwt: ''
+  #   client_url: ''
+  #   priv_key_file: ''
+  #   algorithm: ''
