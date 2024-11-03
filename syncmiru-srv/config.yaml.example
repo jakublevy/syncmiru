@@ -1,7 +1,7 @@
 # General server settings
 srv:
   # The URL address on which the server will be accessible 
-  url: http://127.0.0.1
+  url: http://syncmiru.localhost
 
   # Port to listen on
   port: 80
@@ -19,13 +19,13 @@ db:
   name: syncmiru
 
   # Name of the host to connect to
-  host: localhost
+  host: postgres
 
   # Postgres user name to connect as
   user: syncmiru
 
   # Password
-  password: secretpa$$word
+  password: secretpass
 
   # Port on which Postgres runs
   port: 5432
@@ -90,13 +90,13 @@ email:
 login_jwt:
 
   # File path to the private key. The file must be in the PEM format and unprotected by password
-  priv_key_file: './keys/p-521_priv.pem'
+  priv_key_file: './keys/login_jwt_priv.pem'
 
   # File path to the public key. The file must be in the PEM format and unprotected by password
-  pub_key_file: './keys/p-521_pub.pem'
+  pub_key_file: './keys/login_jwt_pub.pem'
 
   # Which algorithm to use for signing JWTs
-  # Note that the algorithms require a specific keypair
+  # Note that the algorithms require a specific key pair
   # RS256, RS512 at least 2048-bit or larger RSA key
   # ES256 P-256 curve (secp256r1)
   # ES512 P-521 curve (secp521r1)
@@ -109,22 +109,22 @@ extensions:
 
 # Configured OpenResty file servers
 sources:
-  REPLACE_WITH_SRC_NAME: # The name can be arbitrary, it just has to be unambiguous
+  openresty: # The name can be arbitrary, it just has to be unambiguous
 
     # Endpoint returning the list of files
-    list_root_url: 'INSERT URL ADDRESS RECEIVING A DIRECTORY PARAMETER' # Example: https://example.com/syncmiru-server/?dir=
+    list_root_url: 'http://openresty/syncmiru-server/?dir='
 
     # JWT with which the server authenticates to list_root_url
     srv_jwt: 'INSERT SRV JWT'
 
     # URL used by clients to access files
-    client_url: 'INSERT URL ADDRESS FOR CLIENTS' # Example: https://example.com/syncmiru-client/
+    client_url: 'http://openresty.localhost/syncmiru-client/'
 
     # Private key used to issue client JWTs for accessing files
-    priv_key_file: './keys/p-521_file_priv.pem'
+    priv_key_file: './keys/file_acc_priv.pem'
 
     # Which algorithm to use for signing JWTs
-    # Note that the algorithms require a specific keypair
+    # Note that the algorithms require a specific key pair
     # RS256, RS512 at least 2048-bit or larger RSA key
     # ES256 P-256 curve (secp256r1)
     # ES512 P-521 curve (secp521r1)

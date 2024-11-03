@@ -1,0 +1,17 @@
+{
+    auto_https disable_redirects
+}
+
+http://syncmiru.localhost:80 {
+    encode gzip
+    reverse_proxy syncmiru:80 {
+        header_up X-Real-IP {remote_host}
+    }
+}
+
+http://openresty.localhost:80 {
+    encode gzip
+    reverse_proxy openresty:80 {
+        header_up X-Real-IP {remote_host}
+    }
+}

@@ -24,6 +24,8 @@ dist-ssr
 
 syncmiru-srv/target/
 syncmiru-srv/config.yaml
+syncmiru-srv/openresty/www-root/*
 syncmiru-client/src-tauri/gen
 syncmiru-client/src-tauri/target
 bin/
+*.pem

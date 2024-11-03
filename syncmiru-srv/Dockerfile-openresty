@@ -1,0 +1,3 @@
+FROM openresty/openresty:alpine-fat
+RUN /usr/local/openresty/luajit/bin/luarocks install lua-resty-jwt
+#RUN /usr/local/openresty/bin/opm get cdbattags/lua-resty-jwt
