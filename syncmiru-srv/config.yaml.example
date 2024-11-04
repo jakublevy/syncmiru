@@ -97,9 +97,9 @@ login_jwt:
 
   # Which algorithm to use for signing JWTs
   # Note that the algorithms require a specific key pair
-  # RS256, RS512 at least 2048-bit or larger RSA key
-  # ES256 P-256 curve (secp256r1)
-  # ES512 P-521 curve (secp521r1)
+  # RS256, RS512 requires an RSA key, we recommend at least 2048 bit or bigger
+  # ES256 requires P-256 curve (secp256r1)
+  # ES512 requires P-521 curve (secp521r1)
   algorithm: 'ES512' # Possible values: RS256, RS512, ES256, ES512
 
 # File extensions configuration
@@ -125,9 +125,9 @@ sources:
 
     # Which algorithm to use for signing JWTs
     # Note that the algorithms require a specific key pair
-    # RS256, RS512 at least 2048-bit or larger RSA key
-    # ES256 P-256 curve (secp256r1)
-    # ES512 P-521 curve (secp521r1)
+    # RS256, RS512 requires an RSA key, we recommend at least 2048 bit or bigger
+    # ES256 requires P-256 curve (secp256r1)
+    # ES512 requires P-521 curve (secp521r1)
     algorithm: 'ES512'
 
   # REPLACE_WITH_SRC_NAME2:
