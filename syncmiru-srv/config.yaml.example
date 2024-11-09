@@ -49,10 +49,10 @@ email:
   # Port on which smtp_host is running
   smtp_port: 465 # or 587 usually
 
-  # Username to the email account from which all emails are sent
+  # Username of the email account from which all emails are sent
   username: 'INSERT YOUR USER NAME' # Example: noreply@yourdomain.com
 
-  # Password to the email account from which all emails are sent
+  # Password of the email account from which all emails are sent
   password: 'INSERT THE EMAIL PASSWORD'
 
   # Email address to fill to the 'From:' field
