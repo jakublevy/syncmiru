@@ -1,5 +1,4 @@
 local assdraw = require 'mp.assdraw'
-local utils = require 'mp.utils'
 
 local MOOD_NEUTRAL = 0
 local MOOD_BAD = 1
