@@ -132,21 +132,21 @@ async fn download(window: &tauri::Window, release: &DepRelease, dst: &str, event
     let mut file = File::create(syncmiru_data_dir()?.join(dst))?;
 
     let mut last_emit_time = Instant::now();
-    let mut last_print_downloaded_size: u64 = 0;
+    let mut last_emit_downloaded_size: u64 = 0;
     while let Some(chunk) = response.chunk().await? {
         downloaded_size += chunk.len() as u64;
         file.write_all(&chunk)?;
 
         let elapsed_seconds = last_emit_time.elapsed().as_secs_f64() - Instant::now().elapsed().as_secs_f64();
         if elapsed_seconds >= 1.0 {
-            let speed = (((downloaded_size - last_print_downloaded_size) as f64) / elapsed_seconds).round() as u64;
+            let speed = (((downloaded_size - last_emit_downloaded_size) as f64) / elapsed_seconds).round() as u64;
 
             window.emit(
                 &format!("{}download-progress", event_name_prefix),
                 DownloadProgress { speed, received: downloaded_size }
             )?;
 
-            last_print_downloaded_size = downloaded_size;
+            last_emit_downloaded_size = downloaded_size;
             last_emit_time = Instant::now();
         }
     }
