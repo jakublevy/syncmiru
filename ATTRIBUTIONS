@@ -1,0 +1,892 @@
+The development of the application could not be done without using a whole range of existing frameworks, packages and libraries. Thanks to them, the Syncmiru application could be created.
+
+@hcaptcha/react-hcaptcha
+https://github.com/hCaptcha/react-hcaptcha
+Copyright (c) 2018 hCaptcha
+MIT License
+
+
+@headlessui/react
+https://headlessui.com/
+Copyright (c) 2020 Tailwind Labs
+MIT License
+
+
+@hookform/resolvers
+https://github.com/react-hook-form/resolvers
+Copyright (c) 2019-present Beier(Bill) Luo
+MIT License
+
+
+@mittwald/react-use-promise
+https://github.com/mittwald/react-use-promise
+Copyright (c) 2023 Mittwald CM Service GmbH & Co. KG and contributors
+MIT License
+
+
+@szhsin/react-menu
+https://github.com/szhsin/react-menu
+Copyright (c) 2020 Zheng Song
+MIT License
+
+
+@tauri-apps/api
+https://www.npmjs.com/package/@tauri-apps/api
+Copyright (c) 2017 - Present Tauri Apps Contributors
+MIT and Apache 2.0 dual license
+
+
+@tauri-apps/cli
+https://www.npmjs.com/package/@tauri-apps/cli
+Copyright (c) 2017 - Present Tauri Apps Contributors
+MIT and Apache 2.0 dual license
+
+
+@tauri-apps/plugin-shell
+https://github.com/tauri-apps/tauri-plugin-shell
+Copyright (c) 2017 - Present Tauri Apps Contributors
+MIT and Apache 2.0 dual license
+
+
+@types/react
+https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react
+MIT license
+
+
+@types/react-avatar-editor
+https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react-avatar-editor
+MIT license
+
+
+@types/react-dom
+https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react-dom
+MIT license
+
+
+@vitejs/plugin-react
+https://github.com/vitejs/vite-plugin-react
+Copyright (c) 2019-present, Yuxi (Evan) You and Vite contributors
+MIT License
+
+
+anyhow
+https://github.com/dtolnay/anyhow
+MIT and Apache 2.0 dual license
+
+
+argon2
+https://github.com/RustCrypto/password-hashes/tree/master/argon2
+Copyright (c) 2021-2024 The RustCrypto Project Developers
+MIT and Apache 2.0 dual license
+
+
+autoprefixer
+https://github.com/postcss/autoprefixer
+Copyright 2013 Andrey Sitnik <andrey@sitnik.ru>
+MIT License
+
+
+axum
+https://github.com/tokio-rs/axum
+Copyright (c) 2019 Axum Contributors
+MIT License
+
+
+base64
+https://github.com/marshallpierce/rust-base64
+Copyright (c) 2015 Alice Maz
+MIT and Apache 2.0 dual license
+
+
+bimap
+https://github.com/billyrieger/bimap-rs/
+MIT and Apache 2.0 dual license
+
+
+cfg-if
+https://github.com/rust-lang/cfg-if
+Copyright (c) 2014 Alex Crichton
+MIT and Apache 2.0 dual license
+
+
+Check Mark SVG Vector
+https://www.svgrepo.com/svg/404945/check-mark
+Author: Twitter
+MIT License
+
+
+chrono
+https://github.com/chronotope/chrono
+Copyright (c) 2014--2017, Kang Seonghoon and
+contributors
+MIT and Apache 2.0 dual license
+
+
+clap
+https://github.com/clap-rs/clap
+Copyright (c) Individual contributors
+MIT and Apache 2.0 dual license
+
+
+Close Circle SVG Vector
+https://www.svgrepo.com/svg/423627/close-circle
+Author: Radhika Paghdal
+CC Attribution License 4.0
+
+
+Collapse Right SVG Vector
+https://www.svgrepo.com/svg/379887/collapse-right
+Author: zwicon
+CC Attribution License 4.0
+
+
+compare-versions
+https://github.com/omichelsen/compare-versions
+Copyright (c) 2015-2021 Ole Michelsen
+MIT License
+
+
+Copy SVG Vector
+https://www.svgrepo.com/svg/500824/copy
+Author: kudakurage
+OFL License
+
+
+Cross SVG Vector
+https://www.svgrepo.com/svg/520676/cross
+Author: Ankush Syal
+CC Attribution License 4.0
+
+
+Dark Mode Night Moon SVG Vector
+https://www.svgrepo.com/svg/381213/dark-mode-night-moon
+Author: nickylimyeanfen
+CC Attribution License 4.0
+
+
+decimal.js
+https://github.com/MikeMcl/decimal.js
+Copyright (c) 2022 Michael Mclaughlin
+MIT License
+
+
+Delete 1487 SVG Vector
+https://www.svgrepo.com/svg/511788/delete-1487
+Author: bypeople
+Public Domain
+
+
+Directory Image 1627 SVG Vector
+https://www.svgrepo.com/svg/511832/directory-image-1627
+Author: bypeople
+Public Domain
+
+
+dirs
+https://github.com/dirs-dev/dirs-rs
+Copyright (c) 2018-2019 dirs-rs contributors
+MIT and Apache 2.0 dual license
+
+
+Edit SVG Vector
+https://www.svgrepo.com/svg/513824/edit
+Author: Vaneet Thakur
+CC Attribution License 4.0
+
+
+Eject Icon
+https://www.onlinewebfonts.com/icon/141671
+CC Attribution License 4.0
+
+
+Exclamation Mark SVG Vector
+https://www.svgrepo.com/svg/403243/exclamation-mark
+Author: joypixels
+MIT License
+
+
+exifreader
+https://github.com/mattiasw/ExifReader
+MPL-2.0 License
+
+
+Expand Left SVG Vector
+https://www.svgrepo.com/svg/379379/expand-left
+Author: zwicon
+CC Attribution License 4.0
+
+
+Folder Parent SVG Vector
+https://www.svgrepo.com/svg/340341/folder-parent
+Author: Carbon Design
+Apache License 2.0
+
+
+gdk3-rs
+https://crates.io/crates/gdk
+MIT License
+
+
+gtk
+https://gitlab.gnome.org/GNOME/gtk
+LGPL-2
+
+
+gtk3-rs
+https://crates.io/crates/gtk
+MIT License
+
+
+hcaptcha
+https://github.com/jerus-org/hcaptcha-rs
+Copyright (c) 2022 jerusdp
+MIT and Apache 2.0 dual license
+
+
+hex
+https://github.com/KokaKiwi/rust-hex
+Copyright (c) 2013-2014 The Rust Project Developers.
+Copyright (c) 2015-2020 The rust-hex Developers
+MIT and Apache 2.0 dual license
+
+
+Hourglass SVG Vector 328
+https://www.svgrepo.com/svg/525949/hourglass
+Author: Solar Icons
+CC Attribution License 4.0
+
+
+i18next
+https://www.i18next.com/
+Copyright (c) 2024 i18next
+MIT License
+
+
+i18next-http-backend
+https://github.com/i18next/i18next-http-backend
+Copyright (c) 2024 i18next
+MIT License
+
+
+image
+https://github.com/image-rs/image
+MIT and Apache 2.0 dual license
+
+
+indexmap
+https://github.com/indexmap-rs/indexmap
+Copyright (c) 2016--2017
+MIT and Apache 2.0 dual license
+
+
+interprocess
+https://github.com/kotauskas/interprocess
+MIT and Apache 2.0 dual license
+
+
+joi
+https://github.com/hapijs/joi
+Copyright (c) 2012-2022, Project contributors.
+Copyright (c) 2012-2022, Sideway. Inc.
+Copyright (c) 2012-2014, Walmart. All rights reserved.
+3-Clause BSD License
+
+
+josekit
+https://github.com/hidekatsu-izuno/josekit-rs
+MIT and Apache 2.0 dual license
+
+
+keyring
+https://github.com/hwchen/keyring-rs
+Copyright (c) 2016 keyring Developers
+MIT and Apache 2.0 dual license
+
+
+Left Circle 2 SVG Vector
+https://www.svgrepo.com/svg/459465/left-circle-2
+Author: iconhub
+CC Attribution License 4.0
+
+
+Left Right Arrow 2 SVG Vector
+https://www.svgrepo.com/svg/469166/left-right-arrow-2
+Author: Mary Akveo
+Public Domain
+
+
+lettre
+https://github.com/lettre/lettre
+Copyright (c) 2014-2024 Alexis Mousset <contact@amousset.me>
+Copyright (c) 2019-2024 Paolo Barbolini <paolo@paolo565.org>
+Copyright (c) 2018 K. <kayo@illumium.org
+MIT License
+
+
+Light Mode SVG Vector
+https://www.svgrepo.com/svg/432507/light-mode
+Author: Sargam Icons
+MIT License
+
+
+Link Round 1110 SVG Vector
+https://www.svgrepo.com/svg/512415/link-round-1110
+Author: bypeople
+Public Domain
+
+
+log
+https://github.com/rust-lang/log
+Copyright (c) 2014 The Rust Project Developers
+MIT License
+
+
+machineid-rs
+https://github.com/Taptiive/machineid-rs
+MIT and Apache 2.0 dual license
+
+
+Mpv Android SVG Vector
+https://www.svgrepo.com/svg/504625/mpv-android
+Author: lawnchairlauncher
+Apache License 2.0
+
+
+multimap
+https://github.com/havarnov/multimap
+Copyright (c) 2016 multimap developers
+MIT and Apache 2.0 dual license
+
+
+octocrab
+https://github.com/XAMPPRocky/octocrab
+Copyright (c) 2016 Erin Power
+MIT and Apache 2.0 dual license
+
+
+once_cell
+https://github.com/matklad/once_cell
+MIT and Apache 2.0 dual license
+
+
+openssl
+https://github.com/openssl/openssl
+Copyright (c) 1998-2024 The OpenSSL Project Authors
+Copyright (c) 1995-1998 Eric A. Young, Tim J. Hudson
+All rights reserved.
+Apache 2.0 License
+
+
+Party Popper
+https://iconduck.com/emojis/36209/party-popper
+Apache License 2.0
+
+
+Pc Display 2 SVG Vector
+https://www.svgrepo.com/svg/478552/pc-display-2
+Author: Icooon Mono
+Public Domain
+
+
+pem
+https://github.com/jcreekmore/pem-rs
+Copyright (c) 2016 Jonathan Creekmore
+MIT License
+
+
+Picture SVG Vector
+https://www.svgrepo.com/svg/488322/picture
+Author: Neuicons
+MIT License
+
+
+Play SVG Vector
+https://www.svgrepo.com/svg/522226/play
+Author: Catalin Fertu
+CC Attribution License 4.0
+
+
+Plus Circle SVG Vector
+https://www.svgrepo.com/svg/522231/plus-circle
+Author: Catalin Fertu
+CC Attribution License 4.0
+
+
+postcss
+https://github.com/postcss/postcss
+Copyright 2013 Andrey Sitnik <andrey@sitnik.ru>
+MIT License
+
+
+Question Filled SVG Vector
+https://www.svgrepo.com/svg/500665/question-filled
+Author: element-plus
+MIT License
+
+
+rand
+https://github.com/rust-random/rand
+Copyright 2018 Developers of the Rand project
+Copyright (c) 2014 The Rust Project Developers
+MIT and Apache 2.0 dual license
+
+
+rc-slider
+https://github.com/react-component/slider
+Copyright (c) 2015-present Alipay.com, https://www.alipay.com/
+MIT License
+
+
+rc-tooltip
+https://github.com/react-component/tooltip
+Copyright (c) 2015-present Alipay.com, https://www.alipay.com/
+MIT License
+
+
+react
+https://react.dev/
+Copyright (c) Meta Platforms, Inc. and affiliates
+MIT License
+
+
+react-avatar-editor
+https://github.com/mosch/react-avatar-editor
+Copyright (c) 2014-2022 Moritz Schwörer
+MIT License
+
+
+react-country-flag
+https://github.com/danalloway/react-country-flag
+Copyright (c) 2021 Dan Alloway
+MIT License
+
+
+react-data-table-component
+https://github.com/jbetancur/react-data-table-component
+Copyright 2020 John Betancur
+Apache 2.0 License
+
+
+react-dom
+https://www.npmjs.com/package/react-dom
+Copyright (c) Meta Platforms, Inc. and affiliates
+MIT License
+
+
+react-error-boundary
+https://github.com/bvaughn/react-error-boundary
+Copyright (c) 2020 Brian Vaughn
+MIT License
+
+
+react-hook-form
+https://react-hook-form.com/
+Copyright (c) 2019-present Beier(Bill) Luo
+MIT License
+
+
+react-i18next
+https://react.i18next.com/
+Copyright (c) 2024 i18next
+MIT License
+
+
+react-movable
+https://github.com/tajo/react-movable
+Copyright (c) 2019-present, Vojtech Miksu
+MIT License
+
+
+react-resizable-panels
+https://react-resizable-panels.vercel.app/
+Copyright (c) 2023 Brian Vaughn
+MIT License
+
+
+react-select
+https://react-select.com
+Copyright (c) 2022 Jed Watson
+MIT License
+
+
+react-spinners
+https://github.com/davidhu2000/react-spinners
+Copyright (c) 2017 David Hu
+MIT License
+
+
+react-status-alert
+https://github.com/daymosik/react-status-alert
+Copyright (c) 2018 Damian Majsner
+MIT License
+
+
+react-tooltip
+https://github.com/ReactTooltip/react-tooltip
+Copyright (c) 2022 ReactTooltip Team Github
+MIT License
+
+
+Reload SVG Vector
+https://www.svgrepo.com/svg/446804/reload
+Author: Mehdi Namvar
+MIT License
+
+
+reqwest
+https://github.com/seanmonstar/reqwest
+Copyright (c) 2016 Sean McArthur
+MIT and Apache 2.0 dual license
+
+
+Resize Vertical SVG Vector
+https://www.svgrepo.com/svg/391673/resize-vertical
+Author: elusiveicons
+MIT License
+
+
+roxmltree
+https://github.com/RazrFalcon/roxmltree
+Copyright (c) 2018 Yevhenii Reizner
+MIT and Apache 2.0 dual license
+
+
+rust_decimal
+https://github.com/paupino/rust-decimal
+Copyright (c) 2016 Paul Mason
+MIT License
+
+
+rust_decimal_macros
+https://crates.io/crates/rust_decimal_macros
+Copyright (c) 2016 Paul Mason
+MIT License
+
+
+rust-i18n
+https://github.com/longbridgeapp/rust-i18n
+Copyright (c) 2021 Longbridge
+MIT License
+
+
+rust-ini
+https://github.com/zonyitoo/rust-ini
+Copyright (c) 2014 Y. T. CHUNG
+MIT License
+
+
+rust-openssl
+https://github.com/sfackler/rust-openssl
+MIT and Apache 2.0 dual license
+
+
+Search SVG Vector
+https://www.svgrepo.com/svg/532555/search
+Author: Dazzle UI
+CC Attribution License 4.0
+
+
+serde
+https://serde.rs/
+MIT and Apache 2.0 dual license
+
+
+serde_json
+https://github.com/serde-rs/json
+MIT and Apache 2.0 dual license
+
+
+serde_repr
+https://github.com/dtolnay/serde-repr
+MIT and Apache 2.0 dual license
+
+
+serde_urlencoded
+https://github.com/nox/serde_urlencoded
+Copyright (c) 2016 Anthony Ramine
+MIT and Apache 2.0 dual license
+
+
+serde_with
+https://github.com/jonasbb/serde_with
+Copyright (c) 2015
+MIT and Apache 2.0 dual license
+
+
+serial_test
+https://github.com/palfrey/serial_test/
+Copyright (c) 2018 Tom Parker-Shemilt
+MIT License
+
+
+Server SVG Vector
+https://www.svgrepo.com/svg/513604/server
+Author: prmack
+CC Attribution License 4.0
+
+
+Session Leave SVG Vector
+https://www.svgrepo.com/svg/304503/session-leave
+Author: Significa Labs
+Public Domain
+
+
+Settings SVG Vector
+https://www.svgrepo.com/svg/501352/settings
+Author: instructure-ui
+MIT License
+
+
+sevenz-rust
+https://crates.io/crates/sevenz-rust
+Apache License 2.0
+
+
+sha2
+https://github.com/RustCrypto/hashes/tree/master/sha2
+Copyright (c) 2006-2009 Graydon Hoare
+Copyright (c) 2009-2013 Mozilla Foundation
+Copyright (c) 2016 Artyom Pavlov
+Copyright (c) 2016-2024 The RustCrypto Project Developers
+MIT and Apache 2.0 dual license
+
+
+Signal SVG Vector
+https://www.svgrepo.com/svg/487791/signal
+Author: Neuicons
+MIT License
+
+
+simplelog
+https://github.com/drakulix/simplelog.rs
+Copyright (c) 2015 Victor Brekenfeld
+MIT and Apache 2.0 dual license
+
+
+socket.io-client
+https://socket.io/
+Copyright (c) 2014-present Guillermo Rauch and Socket.IO contributors
+MIT License
+
+
+socketioxide
+https://github.com/Totodore/socketioxide
+Copyright (c) 2023 Théodore Prévot
+MIT License
+
+
+Speech Bubble 12 SVG Vector
+https://www.svgrepo.com/svg/478728/speech-bubble-12
+Author: Icooon Mono
+Public Domain
+
+
+sqlx
+https://github.com/launchbadge/sqlx
+Copyright (c) 2020 LaunchBadge, LLC
+MIT and Apache 2.0 dual license
+
+
+Srt File Format Symbol SVG Vector
+https://www.svgrepo.com/svg/17893/srt-file-format-symbol
+Public domain
+
+
+Subtitles SVG Vector
+https://www.svgrepo.com/svg/446039/subtitles
+Author: Denali Design
+MIT License
+
+
+swr
+https://swr.vercel.app/
+Copyright (c) 2023 Vercel, Inc.
+MIT License
+
+
+Synchronize SVG Vector
+https://www.svgrepo.com/svg/423717/synchronize
+Author: Radhika Paghdal
+CC Attribution License 4.0
+
+
+sys-locale
+https://github.com/1Password/sys-locale
+Copyright (c) 2021 1Password
+MIT and Apache 2.0 dual license
+
+
+tailwindcss
+https://tailwindcss.com/
+Copyright (c) Tailwind Labs, Inc.
+MIT License
+
+
+tauri
+https://tauri.app/
+Copyright (c) 2017 - Present Tauri Apps Contributors
+MIT and Apache 2.0 dual license
+
+
+tauri-plugin-dialog
+https://github.com/tauri-apps/tauri-plugin-dialog
+Copyright (c) 2017 - Present Tauri Apps Contributors
+MIT and Apache 2.0 dual license
+
+
+tauri-plugin-shell
+https://crates.io/crates/tauri-plugin-shell
+Copyright (c) 2017 - Present Tauri Apps Contributors
+MIT and Apache 2.0 dual license
+
+
+tauri-plugin-single-instance
+https://crates.io/crates/tauri-plugin-single-instance
+Copyright (c) 2017 - Present Tauri Apps Contributors
+MIT and Apache 2.0 dual license
+
+
+tauri-plugin-theme
+https://github.com/wyhaya/tauri-plugin-theme
+MIT License
+
+
+thiserror
+https://github.com/dtolnay/thiserror
+MIT and Apache 2.0 dual license
+
+
+tokio
+https://github.com/tokio-rs/tokio
+Copyright (c) Tokio Contributors
+MIT License
+
+
+Tools SVG Vector
+https://www.svgrepo.com/svg/522317/tools
+Author: Catalin Fertu
+CC Attribution License 4.0
+
+
+tower
+https://github.com/tower-rs/tower
+Copyright (c) 2019 Tower Contributors
+MIT License
+
+
+tower-http
+https://github.com/tower-rs/tower-http
+Copyright (c) 2019-2021 Tower Contributors
+MIT License
+
+
+typescript
+https://www.typescriptlang.org/
+Apache 2.0 License
+
+
+Upload Cloud SVG Vector
+https://www.svgrepo.com/svg/510302/upload
+Author: zest
+MIT License
+
+
+Upload SVG Vector
+https://www.svgrepo.com/svg/522322/upload
+Author: Catalin Fertu
+CC Attribution License 4.0
+
+
+url
+https://github.com/servo/rust-url
+Copyright (c) 2013-2022 The rust-url developers
+MIT and Apache 2.0 dual license
+
+
+urlencoding
+https://github.com/kornelski/rust_urlencoding
+Copyright © 2016 Bertram Truong
+Copyright © 2021 Kornel Lesiński
+MIT License
+
+
+User Avatar Filled SVG Vector
+https://www.svgrepo.com/svg/341256/user-avatar-filled
+Author: Carbon Design
+Apache License 2.0
+
+
+validator
+https://github.com/Keats/validator
+Copyright (c) 2016 Vincent Prouillet
+MIT License
+
+
+Video File SVG Vector
+https://www.svgrepo.com/svg/256839/video-file
+Public Domain
+
+
+View Eye SVG Vector
+https://www.svgrepo.com/svg/506777/view-eye
+Author: Salah Elimam
+Public Domain
+
+
+vite
+https://vitejs.dev/
+Copyright (c) 2019-present, Yuxi (Evan) You and Vite contributors
+MIT License
+
+
+vite-tsconfig-paths
+https://github.com/aleclarson/vite-tsconfig-paths
+Copyright (c) Alec Larson
+MIT License
+
+
+Warning SVG Vector
+https://www.svgrepo.com/svg/489221/warning
+Author: Gabriele Malaspina
+Public Domain
+
+
+whoami
+https://github.com/ardaku/whoami
+MIT or Apache 2.0 or BSL-1.0 license
+
+
+windows
+https://github.com/microsoft/windows-rs
+Copyright (c) Microsoft Corporation
+MIT and Apache 2.0 dual license
+
+
+wouter
+https://github.com/molefrog/wouter
+Unlicense license
+
+
+x11rb
+https://github.com/psychon/x11rb
+Copyright 2019 x11rb Contributers
+MIT and Apache 2.0 dual license
+
+
+yaml-rust2
+https://github.com/Ethiraric/yaml-rust2
+Copyright (c) Chen Yuheng
+Copyright (c) Ethiraric
+MIT and Apache 2.0 dual license
+
+
+zip
+https://github.com/zip-rs/zip2
+Copyright (c) 2014 Mathijs van de Nes
+MIT License
+
+
+Zoom Reset SVG Vector
+https://www.svgrepo.com/svg/342945/zoom-reset
+Author: CoreyGinnivan
+Public Domain

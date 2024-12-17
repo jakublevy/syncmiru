@@ -203,7 +203,7 @@ export default function Acknowledgements(): ReactElement {
             name: "@tauri-apps/cli",
             url: "https://www.npmjs.com/package/@tauri-apps/cli",
             copyright: "Copyright (c) 2017 - Present Tauri Apps Contributors",
-            license: ""
+            license: "MIT and Apache 2.0 dual license"
         },
         {
             name: "@types/react",
@@ -244,7 +244,7 @@ export default function Acknowledgements(): ReactElement {
             name: "tailwindcss",
             url: "https://tailwindcss.com/",
             copyright: "Copyright (c) Tailwind Labs, Inc.",
-            license: "Copyright (c) Tailwind Labs, Inc."
+            license: "MIT License"
         },
         {
             name: "typescript",
@@ -336,7 +336,7 @@ export default function Acknowledgements(): ReactElement {
             license: "MIT and Apache 2.0 dual license"
         },{
             name: "tauri-plugin-theme",
-            url: "https://github.com/jakublevy/tauri-plugin-theme",
+            url: "https://github.com/wyhaya/tauri-plugin-theme",
             copyright: "",
             license: "MIT License"
         },
@@ -477,11 +477,17 @@ export default function Acknowledgements(): ReactElement {
         },
         {
             name: "gtk",
+            url: "https://gitlab.gnome.org/GNOME/gtk",
+            copyright: "",
+            license: "LGPL-2"
+        },
+        {
+            name: "gtk3-rs",
             url: "https://crates.io/crates/gtk",
             copyright: "",
             license: "MIT License"
         },{
-            name: "gdk",
+            name: "gdk3-rs",
             url: "https://crates.io/crates/gdk",
             copyright: "",
             license: "MIT License"
@@ -555,8 +561,8 @@ export default function Acknowledgements(): ReactElement {
         {
             name: "hcaptcha",
             url: "https://github.com/jerus-org/hcaptcha-rs",
-            copyright: "",
-            license: "Apache 2.0 License"
+            copyright: "Copyright (c) 2022 jerusdp",
+            license: "MIT and Apache 2.0 dual license"
         },{
             name: "argon2",
             url: "https://github.com/RustCrypto/password-hashes/tree/master/argon2",
@@ -604,6 +610,12 @@ export default function Acknowledgements(): ReactElement {
         },
         {
             name: "openssl",
+            url: "https://github.com/openssl/openssl",
+            copyright: "Copyright (c) 1998-2024 The OpenSSL Project Authors\n" + "Copyright (c) 1995-1998 Eric A. Young, Tim J. Hudson\n" + "All rights reserved.",
+            license: "Apache 2.0 License"
+        },
+        {
+            name: "rust-openssl",
             url: "https://github.com/sfackler/rust-openssl",
             copyright: "",
             license: "MIT and Apache 2.0 dual license"
@@ -636,14 +648,14 @@ export default function Acknowledgements(): ReactElement {
         },{
             name: "indexmap",
             url: "https://github.com/indexmap-rs/indexmap",
-            copyright: "",
-            license: "Apache 2.0 License"
+            copyright: "Copyright (c) 2016--2017",
+            license: "MIT and Apache 2.0 dual license"
         },
         {
             name: "multimap",
             url: "https://github.com/havarnov/multimap",
-            copyright: "",
-            license: "Apache 2.0 License"
+            copyright: "Copyright (c) 2016 multimap developers",
+            license: "MIT and Apache 2.0 dual license"
         },
         {
             name: "url",
@@ -660,13 +672,13 @@ export default function Acknowledgements(): ReactElement {
         {
             name: "Speech Bubble 12 SVG Vector",
             url: "https://www.svgrepo.com/svg/478728/speech-bubble-12",
-            copyright: "",
+            copyright: "Author: Icooon Mono",
             license: "Public Domain"
         },
         {
             name: "Check Mark SVG Vector",
             url: "https://www.svgrepo.com/svg/404945/check-mark",
-            copyright: "",
+            copyright: "Author: Twitter",
             license: "MIT License"
         },
         {
@@ -684,7 +696,7 @@ export default function Acknowledgements(): ReactElement {
         {
             name: "Copy SVG Vector",
             url: "https://www.svgrepo.com/svg/500824/copy",
-            copyright: "",
+            copyright: "Author: kudakurage",
             license: "OFL License"
         },
         {
@@ -696,7 +708,7 @@ export default function Acknowledgements(): ReactElement {
         {
             name: "Warning SVG Vector",
             url: "https://www.svgrepo.com/svg/489221/warning",
-            copyright: "",
+            copyright: "Author: Gabriele Malaspina",
             license: "Public Domain"
         },
         {
@@ -708,13 +720,13 @@ export default function Acknowledgements(): ReactElement {
         {
             name: "User Avatar Filled SVG Vector",
             url: "https://www.svgrepo.com/svg/341256/user-avatar-filled",
-            copyright: "",
+            copyright: "Author: Carbon Design",
             license: "Apache License 2.0"
         },
         {
             name: "Delete 1487 SVG Vector",
             url: "https://www.svgrepo.com/svg/511788/delete-1487",
-            copyright: "",
+            copyright: "Author: bypeople",
             license: "Public Domain"
         },
         {
@@ -726,7 +738,7 @@ export default function Acknowledgements(): ReactElement {
         {
             name: "Session Leave SVG Vector",
             url: "https://www.svgrepo.com/svg/304503/session-leave",
-            copyright: "",
+            copyright: "Author: Significa Labs",
             license: "Public Domain"
         },
         {
@@ -738,7 +750,7 @@ export default function Acknowledgements(): ReactElement {
         {
             name: "Exclamation Mark SVG Vector",
             url: "https://www.svgrepo.com/svg/403243/exclamation-mark",
-            copyright: "",
+            copyright: "Author: joypixels",
             license: "MIT License"
         },
         {
@@ -750,43 +762,43 @@ export default function Acknowledgements(): ReactElement {
         {
             name: "Directory Image 1627 SVG Vector",
             url: "https://www.svgrepo.com/svg/511832/directory-image-1627",
-            copyright: "",
+            copyright: "Author: bypeople",
             license: "Public Domain"
         },
         {
             name: "Hourglass SVG Vector 328",
             url: "https://www.svgrepo.com/svg/525949/hourglass",
-            copyright: "",
+            copyright: "Author: Solar Icons",
             license: "CC Attribution License 4.0"
         },
         {
             name: "Left Right Arrow 2 SVG Vector",
             url: "https://www.svgrepo.com/svg/469166/left-right-arrow-2",
-            copyright: "",
+            copyright: "Author: Mary Akveo",
             license: "Public Domain"
         },
         {
             name: "Light Mode SVG Vector",
             url: "https://www.svgrepo.com/svg/432507/light-mode",
-            copyright: "",
+            copyright: "Author: Sargam Icons",
             license: "MIT License"
         },
         {
             name: "Link Round 1110 SVG Vector",
             url: "https://www.svgrepo.com/svg/512415/link-round-1110",
-            copyright: "",
+            copyright: "Author: bypeople",
             license: "Public Domain"
         },
         {
             name: "Mpv Android SVG Vector",
             url: "https://www.svgrepo.com/svg/504625/mpv-android",
-            copyright: "",
+            copyright: "Author: lawnchairlauncher",
             license: "Apache License 2.0"
         },
         {
             name: "Folder Parent SVG Vector",
             url: "https://www.svgrepo.com/svg/340341/folder-parent",
-            copyright: "",
+            copyright: "Author: Carbon Design",
             license: "Apache License 2.0"
         },
         {
@@ -798,13 +810,13 @@ export default function Acknowledgements(): ReactElement {
         {
             name: "Pc Display 2 SVG Vector",
             url: "https://www.svgrepo.com/svg/478552/pc-display-2",
-            copyright: "",
+            copyright: "Author: Icooon Mono",
             license: "Public Domain"
         },
         {
             name: "Picture SVG Vector",
             url: "https://www.svgrepo.com/svg/488322/picture",
-            copyright: "",
+            copyright: "Author: Neuicons",
             license: "MIT License"
         },
         {
@@ -827,19 +839,19 @@ export default function Acknowledgements(): ReactElement {
         },{
             name: "Question Filled SVG Vector",
             url: "https://www.svgrepo.com/svg/500665/question-filled",
-            copyright: "",
+            copyright: "Author: element-plus",
             license: "MIT License"
         },
         {
             name: "Reload SVG Vector",
             url: "https://www.svgrepo.com/svg/446804/reload",
-            copyright: "",
+            copyright: "Author: Mehdi Namvar",
             license: "MIT License"
         },
         {
             name: "Resize Vertical SVG Vector",
             url: "https://www.svgrepo.com/svg/391673/resize-vertical",
-            copyright: "",
+            copyright: "Author: elusiveicons",
             license: "MIT License"
         },
         {
@@ -857,12 +869,12 @@ export default function Acknowledgements(): ReactElement {
         {
             name: "Settings SVG Vector",
             url: "https://www.svgrepo.com/svg/501352/settings",
-            copyright: "",
+            copyright: "Author: instructure-ui",
             license: "MIT License"
         },{
             name: "Signal SVG Vector",
             url: "https://www.svgrepo.com/svg/487791/signal",
-            copyright: "",
+            copyright: "Author: Neuicons",
             license: "MIT License"
         },
         {
@@ -874,7 +886,7 @@ export default function Acknowledgements(): ReactElement {
         {
             name: "Subtitles SVG Vector",
             url: "https://www.svgrepo.com/svg/446039/subtitles",
-            copyright: "",
+            copyright: "Author: Denali Design",
             license: "MIT License"
         },
         {
@@ -891,7 +903,7 @@ export default function Acknowledgements(): ReactElement {
         },{
             name: "Upload Cloud SVG Vector",
             url: "https://www.svgrepo.com/svg/510302/upload",
-            copyright: "",
+            copyright: "Author: zest",
             license: "MIT License"
         },
         {
@@ -903,7 +915,7 @@ export default function Acknowledgements(): ReactElement {
         {
             name: "View Eye SVG Vector",
             url: "https://www.svgrepo.com/svg/506777/view-eye",
-            copyright: "",
+            copyright: "Author: Salah Elimam",
             license: "Public Domain"
         },
         {
@@ -915,7 +927,7 @@ export default function Acknowledgements(): ReactElement {
         {
             name: "Zoom Reset SVG Vector",
             url: "https://www.svgrepo.com/svg/342945/zoom-reset",
-            copyright: "",
+            copyright: "Author: CoreyGinnivan",
             license: "Public Domain"
         }
 
