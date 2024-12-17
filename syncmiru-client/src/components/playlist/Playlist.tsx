@@ -175,11 +175,12 @@ export default function Playlist(): ReactElement {
 
             ctx.setPlaylistOrder((p) => {
                 const m = p.filter(x => x !== deletePlaylistEntry.entry_id)
-                if(ctx.activeVideoId === deletePlaylistEntry.entry_id)
+                if(ctx.activeVideoId === deletePlaylistEntry.entry_id && m.length > 0)
                     setAsActiveVideo(m[0])
                 else if (m.length == 0) {
                     hideMpvReadyMessages(t)
                     ctx.setActiveVideoId(null)
+                    clearInterval(ctx.timestampTimerRef?.current)
                     ctx.setUid2ready((p) => {
                         const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
                         for (const [id, value] of p)
