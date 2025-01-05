@@ -1,4 +1,3 @@
-use hcaptcha::Hcaptcha;
 use validator::Validate;
 use crate::validators;
 use serde::{Serialize, Deserialize};
@@ -11,7 +10,7 @@ pub struct ServiceStatus {
     pub wait_before_resend: i64
 }
 
-#[derive(Debug, Clone, Deserialize, Validate, Hcaptcha)]
+#[derive(Debug, Clone, Deserialize, Validate)]
 pub struct RegForm {
     #[validate(custom(function = "validators::check_username_format"))]
     pub username: String,
@@ -25,7 +24,7 @@ pub struct RegForm {
     #[validate(custom(function = "validators::check_password_format"))]
     pub password: String,
 
-    #[captcha]
+    #[validate(length(min = 1))]
     pub captcha: String,
 
     #[validate(custom(function = "validators::check_tkn"))]

@@ -1,6 +1,6 @@
 [package]
 name = "syncmiru-client"
-version = "0.1.0"
+version = "1.0.0"
 description = "Syncmiru client"
 authors = ["Jakub Levý"]
 edition = "2021"

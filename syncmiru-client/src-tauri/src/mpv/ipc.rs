@@ -247,7 +247,6 @@ async fn listen(
                         break;
                      },
                      Ok(_) => {
-                        println!("R {}", buffer);
                         process_mpv_msg(&buffer, ipc_data).await?;
                         buffer.clear();
                      },
@@ -274,7 +273,6 @@ async fn write(
     loop {
         let msg_opt = rx.recv().await;
         if let Some(msg) = msg_opt {
-            println!("W {:?}", msg);
             match msg {
                 Interface::LoadFromSource {ref source_url, ref jwt } => {
                     let cmd = format!(

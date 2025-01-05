@@ -1,11 +1,15 @@
 use std::borrow::Cow;
+use std::ops::Deref;
 use std::sync::Arc;
-use anyhow::Context;
+use anyhow::{anyhow, Context};
+use argon2::Argon2;
+use argon2::password_hash::SaltString;
 use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{Html, IntoResponse};
-use hcaptcha::{Hcaptcha};
+use hcaptcha::Hcaptcha;
+use tokio::task;
 use tower::BoxError;
 use crate::srvstate::SrvState;
 use validator::{Validate};
@@ -51,14 +55,25 @@ pub async fn register(
 
     let hashed_password = crypto::hash(payload.password.clone()).await?;
     if state.config.reg_pub.allowed {
-        payload.valid_response(state.config.reg_pub.hcaptcha_secret.as_ref().unwrap(), None).await?;
-        query::new_user(
-            &state.db,
-            &payload.username,
-            &payload.displayname,
-            &payload.email,
-            &hashed_password,
-        ).await?;
+
+        let hcaptcha_req = hcaptcha::Request::new(
+            &state.config.reg_pub.hcaptcha_secret.as_ref().unwrap(),
+            hcaptcha::Captcha::new(payload.captcha.as_str())?
+        )?;
+        let hcaptcha_client = hcaptcha::Client::new();
+        let hcaptcha_valid = hcaptcha_client.verify(hcaptcha_req).await?;
+        if hcaptcha_valid.success() {
+            query::new_user(
+                &state.db,
+                &payload.username,
+                &payload.displayname,
+                &payload.email,
+                &hashed_password,
+            ).await?;
+        }
+        else {
+            return Err(SyncmiruError::UnprocessableEntity("captcha".to_string()));
+        }
     } else {
         if payload.reg_tkn.is_none() {
             return Err(SyncmiruError::UnprocessableEntity("reg_tkn".to_string()));

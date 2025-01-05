@@ -28,7 +28,7 @@ pub enum SyncmiruError {
     JoinError(#[from] tokio::task::JoinError),
 
     #[error("HCaptcha invalid")]
-    HCaptchaInvalid(#[from] hcaptcha::HcaptchaError),
+    HCaptchaInvalid(#[from] hcaptcha::Error),
 
     #[error("Lettre email address error")]
     LettreAddressError(#[from] lettre::address::AddressError),
