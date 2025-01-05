@@ -48,7 +48,7 @@ pub async fn new_client(
                 let mut socket_uid_wl = state.socket_uid.write().await;
                 socket_uid_wl.insert(s.id, uid);
             }
-            old_socket.emit("new_login", {})?;
+            old_socket.emit("new_login", &{})?;
             old_socket.disconnect()?;
         }
     }

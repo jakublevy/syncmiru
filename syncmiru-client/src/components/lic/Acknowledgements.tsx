@@ -652,12 +652,6 @@ export default function Acknowledgements(): ReactElement {
             license: "MIT and Apache 2.0 dual license"
         },
         {
-            name: "multimap",
-            url: "https://github.com/havarnov/multimap",
-            copyright: "Copyright (c) 2016 multimap developers",
-            license: "MIT and Apache 2.0 dual license"
-        },
-        {
             name: "url",
             url: "https://github.com/servo/rust-url",
             copyright: "Copyright (c) 2013-2022 The rust-url developers",

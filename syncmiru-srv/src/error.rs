@@ -58,7 +58,7 @@ pub enum SyncmiruError {
     JoseError(#[from] josekit::JoseError),
 
     #[error("socketio send error")]
-    SocketIoSendUnitError(#[from] socketioxide::SendError<()>),
+    SocketIoSendUnitError(#[from] socketioxide::SendError),
 
     #[error("socketio disconnect error")]
     SocketIoDisconnectError(#[from] socketioxide::DisconnectError),

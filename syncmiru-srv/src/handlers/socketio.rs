@@ -108,8 +108,8 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
         .await
         .expect("db error");
 
-    s.broadcast().emit("users", user).ok();
-    s.broadcast().emit("online", uid).ok();
+    s.broadcast().emit("users", &user).ok();
+    s.broadcast().emit("online", &uid).ok();
 }
 
 pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -144,7 +144,7 @@ pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
         s.broadcast().emit("user_room_disconnect", &urd).ok();
     }
 
-    s.broadcast().emit("offline", uid).ok();
+    s.broadcast().emit("offline", &uid).ok();
 }
 
 pub async fn get_users(
@@ -154,7 +154,7 @@ pub async fn get_users(
     let users = query::get_users(&state.db)
         .await
         .expect("db error");
-    ack.send([users]).ok();
+    ack.send(&[users]).ok();
 }
 
 pub async fn get_me(
@@ -163,7 +163,7 @@ pub async fn get_me(
     ack: AckSender,
 ) {
     let uid = state.socket2uid(&s).await;
-    ack.send(uid).ok();
+    ack.send(&uid).ok();
 }
 
 pub async fn get_online(
@@ -173,9 +173,9 @@ pub async fn get_online(
 ) {
     let online_uids_lock = state.socket_uid.read().await;
     let online_uids = online_uids_lock.right_values().collect::<Vec<&Id>>();
-    ack.send([online_uids]).ok();
+    ack.send(&[online_uids]).ok();
     let uid = state.socket2uid(&s).await;
-    s.broadcast().emit("online", uid).ok();
+    s.broadcast().emit("online", &uid).ok();
 }
 
 pub async fn get_user_sessions(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -188,7 +188,7 @@ pub async fn get_user_sessions(State(state): State<Arc<SrvState>>, s: SocketRef)
     )
         .await
         .expect("getting inactive user sessions failed");
-    s.emit("inactive_sessions", [inactive_sessions]).ok();
+    s.emit("inactive_sessions", &[inactive_sessions]).ok();
 
     let active_session = query::get_active_user_session(
         &state.db,
@@ -198,7 +198,7 @@ pub async fn get_user_sessions(State(state): State<Arc<SrvState>>, s: SocketRef)
         .await
         .expect("getting active user sessions failed");
 
-    s.emit("active_session", active_session).ok();
+    s.emit("active_session", &active_session).ok();
 }
 
 pub async fn delete_session(
@@ -208,7 +208,7 @@ pub async fn delete_session(
     Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -216,20 +216,20 @@ pub async fn delete_session(
         .await
         .expect("db error");
     if !is_session_of_user {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let active_session = query::get_active_user_session(&state.db, uid, &state.socket2hwid_hash(&s).await)
         .await
         .expect("db error");
     if active_session.id == payload.id {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     query::delete_user_session(&state.db, payload.id)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn sign_out(State(state): State<Arc<SrvState>>, s: SocketRef) {
@@ -250,7 +250,7 @@ pub async fn get_email(
     let email = query::get_email_by_uid(&state.db, uid)
         .await
         .expect("db error");
-    ack.send(email).ok();
+    ack.send(&email).ok();
 }
 
 pub async fn set_displayname(
@@ -260,7 +260,7 @@ pub async fn set_displayname(
     Data(payload): Data<Displayname>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -269,28 +269,28 @@ pub async fn set_displayname(
         .expect("db error");
     s
         .broadcast()
-        .emit("displayname_change", DisplaynameChange { uid, displayname: payload.displayname.clone() })
+        .emit("displayname_change", &DisplaynameChange { uid, displayname: payload.displayname.clone() })
         .ok();
 
     s
-        .emit("displayname_change", DisplaynameChange { uid, displayname: payload.displayname })
+        .emit("displayname_change", &DisplaynameChange { uid, displayname: payload.displayname })
         .ok();
 
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn get_email_resend_timeout(
     State(state): State<Arc<SrvState>>,
     ack: AckSender,
 ) {
-    ack.send(state.config.email.wait_before_resend + 1).ok();
+    ack.send(&(state.config.email.wait_before_resend + 1)).ok();
 }
 
 pub async fn get_reg_pub_allowed(
     State(state): State<Arc<SrvState>>,
     ack: AckSender,
 ) {
-    ack.send(state.config.reg_pub.allowed).ok();
+    ack.send(&state.config.reg_pub.allowed).ok();
 }
 
 pub async fn send_email_change_verification_emails(
@@ -300,7 +300,7 @@ pub async fn send_email_change_verification_emails(
     Data(payload): Data<EmailWithLang>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -309,7 +309,7 @@ pub async fn send_email_change_verification_emails(
         .await
         .expect("change_email_out_of_quota error");
     if out_of_quota {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
 
@@ -339,7 +339,7 @@ pub async fn send_email_change_verification_emails(
     )
         .await
         .expect("email error");
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn check_email_change_tkn(
@@ -349,7 +349,7 @@ pub async fn check_email_change_tkn(
     Data(payload): Data<EmailChangeTkn>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
 
@@ -363,7 +363,7 @@ pub async fn check_email_change_tkn(
         .await
         .expect("checking email tkn error");
 
-    ack.send(SocketIoAck::<bool>::ok(Some(tkn_valid))).ok();
+    ack.send(&SocketIoAck::<bool>::ok(Some(tkn_valid))).ok();
 }
 
 pub async fn change_email(
@@ -373,7 +373,7 @@ pub async fn change_email(
     Data(payload): Data<ChangeEmail>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -386,7 +386,7 @@ pub async fn change_email(
         .expect("checking email tkn error");
 
     if !tkn_from_valid {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
 
@@ -399,7 +399,7 @@ pub async fn change_email(
         .expect("checking email tkn error");
 
     if !tkn_to_valid {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
 
@@ -417,7 +417,7 @@ pub async fn change_email(
         .expect("db error");
 
     if email_old == payload.email_new {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
 
@@ -445,7 +445,7 @@ pub async fn change_email(
     )
         .await
         .expect("email error");
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
     transaction.commit().await.expect("db error");
 }
 
@@ -456,7 +456,7 @@ pub async fn set_avatar(
     Data(payload): Data<AvatarBin>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -466,14 +466,14 @@ pub async fn set_avatar(
 
     s
         .broadcast()
-        .emit("avatar_change", AvatarChange { uid, avatar: payload.data.clone() })
+        .emit("avatar_change", &AvatarChange { uid, avatar: payload.data.clone() })
         .ok();
 
     s
-        .emit("avatar_change", AvatarChange { uid, avatar: payload.data })
+        .emit("avatar_change", &AvatarChange { uid, avatar: payload.data })
         .ok();
 
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn delete_avatar(
@@ -488,13 +488,13 @@ pub async fn delete_avatar(
 
     s
         .broadcast()
-        .emit("avatar_change", AvatarChange { uid, avatar: vec![] })
+        .emit("avatar_change", &AvatarChange { uid, avatar: vec![] })
         .ok();
 
     s
-        .emit("avatar_change", AvatarChange { uid, avatar: vec![] })
+        .emit("avatar_change", &AvatarChange { uid, avatar: vec![] })
         .ok();
-    ack.send({}).ok();
+    ack.send(&{}).ok();
 }
 
 pub async fn check_password(
@@ -504,7 +504,7 @@ pub async fn check_password(
     Data(payload): Data<Password>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<bool>::ok(Some(false))).ok();
+        ack.send(&SocketIoAck::<bool>::ok(Some(false))).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -512,10 +512,10 @@ pub async fn check_password(
         .await
         .expect("db error");
     if crypto::verify(payload.password, password_hash).await.expect("argon2 error") {
-        ack.send(SocketIoAck::<bool>::ok(Some(true))).ok();
+        ack.send(&SocketIoAck::<bool>::ok(Some(true))).ok();
         return;
     }
-    ack.send(SocketIoAck::<bool>::ok(Some(false))).ok();
+    ack.send(&SocketIoAck::<bool>::ok(Some(false))).ok();
 }
 
 pub async fn change_password(
@@ -525,7 +525,7 @@ pub async fn change_password(
     Data(payload): Data<ChangePassword>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -539,10 +539,10 @@ pub async fn change_password(
         query::update_password_by_uid(&state.db, uid, &new_hash)
             .await
             .expect("db error");
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    ack.send(SocketIoAck::<()>::err()).ok();
+    ack.send(&SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn send_delete_account_email(
@@ -552,7 +552,7 @@ pub async fn send_delete_account_email(
     Data(payload): Data<Language>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -566,7 +566,7 @@ pub async fn send_delete_account_email(
         .await
         .expect("check_email_tkn quota error");
     if !out_of_quota {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
 
@@ -587,7 +587,7 @@ pub async fn send_delete_account_email(
         .await
         .expect("email error");
 
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn check_delete_account_tkn(
@@ -597,7 +597,7 @@ pub async fn check_delete_account_tkn(
     Data(payload): Data<Tkn>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
 
@@ -612,7 +612,7 @@ pub async fn check_delete_account_tkn(
         .expect("invalid or expired token");
 
     if hashed_tkn_opt.is_none() {
-        ack.send(SocketIoAck::<bool>::ok(Some(false))).ok();
+        ack.send(&SocketIoAck::<bool>::ok(Some(false))).ok();
         return;
     }
     let hashed_tkn = hashed_tkn_opt.unwrap();
@@ -621,7 +621,7 @@ pub async fn check_delete_account_tkn(
         .await
         .expect("argon2 error");
 
-    ack.send(SocketIoAck::<bool>::ok(Some(tkn_valid))).ok();
+    ack.send(&SocketIoAck::<bool>::ok(Some(tkn_valid))).ok();
 }
 
 pub async fn delete_account(
@@ -631,7 +631,7 @@ pub async fn delete_account(
     Data(payload): Data<TknWithLang>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
 
@@ -646,7 +646,7 @@ pub async fn delete_account(
         .expect("invalid or expired token");
 
     if hashed_tkn_opt.is_none() {
-        ack.send(SocketIoAck::<bool>::ok(Some(false))).ok();
+        ack.send(&SocketIoAck::<bool>::ok(Some(false))).ok();
         return;
     }
     let hashed_tkn = hashed_tkn_opt.unwrap();
@@ -656,7 +656,7 @@ pub async fn delete_account(
         .expect("argon2 error");
 
     if !tkn_valid {
-        ack.send(SocketIoAck::<bool>::ok(Some(false))).ok();
+        ack.send(&SocketIoAck::<bool>::ok(Some(false))).ok();
         return;
     }
     let username = query::get_username_by_uid(&state.db, uid)
@@ -669,7 +669,7 @@ pub async fn delete_account(
         .await
         .expect("db error");
 
-    s.broadcast().emit("del_users", [[uid]]).ok();
+    s.broadcast().emit("del_users", &[[uid]]).ok();
 
     email::send_account_deleted_email_warning(
         &state.config.email,
@@ -680,7 +680,7 @@ pub async fn delete_account(
     )
         .await
         .expect("email error");
-    ack.send(SocketIoAck::<bool>::ok(Some(true))).ok();
+    ack.send(&SocketIoAck::<bool>::ok(Some(true))).ok();
 }
 
 pub async fn create_reg_tkn(
@@ -690,14 +690,14 @@ pub async fn create_reg_tkn(
     Data(payload): Data<RegTknCreate>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let unique = query::reg_tkn_name_unique(&state.db, &payload.reg_tkn_name)
         .await
         .expect("db error");
     if !unique {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let key = crypto::gen_tkn();
@@ -718,9 +718,9 @@ pub async fn create_reg_tkn(
         key,
     };
 
-    s.emit("active_reg_tkns", [[&reg_tkn]]).ok();
-    s.broadcast().emit("active_reg_tkns", [[reg_tkn]]).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.emit("active_reg_tkns", &[[&reg_tkn]]).ok();
+    s.broadcast().emit("active_reg_tkns", &[[reg_tkn]]).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn active_reg_tkns(
@@ -730,7 +730,7 @@ pub async fn active_reg_tkns(
     let active_reg_tkns = query::get_active_reg_tkns(&state.db)
         .await
         .expect("db error");
-    ack.send([active_reg_tkns]).ok();
+    ack.send(&[active_reg_tkns]).ok();
 }
 
 pub async fn inactive_reg_tkns(
@@ -740,7 +740,7 @@ pub async fn inactive_reg_tkns(
     let inactive_reg_tkns = query::get_inactive_reg_tkns(&state.db)
         .await
         .expect("db error");
-    ack.send([inactive_reg_tkns]).ok();
+    ack.send(&[inactive_reg_tkns]).ok();
 }
 
 pub async fn check_reg_tkn_name_unique(
@@ -749,13 +749,13 @@ pub async fn check_reg_tkn_name_unique(
     Data(payload): Data<RegTknName>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<bool>::err()).ok();
+        ack.send(&SocketIoAck::<bool>::err()).ok();
         return;
     }
     let unique = query::reg_tkn_name_unique(&state.db, &payload.reg_tkn_name)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<bool>::ok(Some(unique))).ok();
+    ack.send(&SocketIoAck::<bool>::ok(Some(unique))).ok();
 }
 
 pub async fn delete_reg_tkn(
@@ -765,7 +765,7 @@ pub async fn delete_reg_tkn(
     Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let mut transaction = state.db.begin().await.expect("db error");
@@ -777,14 +777,14 @@ pub async fn delete_reg_tkn(
             .await
             .expect("db error");
 
-        s.broadcast().emit("del_active_reg_tkns", [[payload.id]]).ok();
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        s.broadcast().emit("del_active_reg_tkns", &[[payload.id]]).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         transaction
             .commit()
             .await
             .expect("db error");
     } else {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
     }
 }
 
@@ -794,13 +794,13 @@ pub async fn get_reg_tkn_info(
     Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<Vec<RegDetail>>::err()).ok();
+        ack.send(&SocketIoAck::<Vec<RegDetail>>::err()).ok();
         return;
     }
     let tkn_detail = query::get_reg_tkn_info(&state.db, payload.id)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<Vec<RegDetail>>::ok(Some(tkn_detail))).ok();
+    ack.send(&SocketIoAck::<Vec<RegDetail>>::ok(Some(tkn_detail))).ok();
 }
 
 pub async fn get_default_playback_speed(
@@ -810,7 +810,7 @@ pub async fn get_default_playback_speed(
     let default_playback_speed = query::get_default_playback_speed(&state.db)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<Decimal>::ok(Some(default_playback_speed))).ok();
+    ack.send(&SocketIoAck::<Decimal>::ok(Some(default_playback_speed))).ok();
 }
 
 pub async fn set_default_playback_speed(
@@ -820,15 +820,15 @@ pub async fn set_default_playback_speed(
     Data(payload): Data<PlaybackSpeed>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     query::set_default_playback_speed(&state.db, &payload.playback_speed)
         .await
         .expect("db error");
 
-    s.broadcast().emit("default_playback_speed", payload.playback_speed).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.broadcast().emit("default_playback_speed", &payload.playback_speed).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn get_default_desync_tolerance(
@@ -838,7 +838,7 @@ pub async fn get_default_desync_tolerance(
     let default_desync_tolerance = query::get_default_desync_tolerance(&state.db)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<Decimal>::ok(Some(default_desync_tolerance))).ok();
+    ack.send(&SocketIoAck::<Decimal>::ok(Some(default_desync_tolerance))).ok();
 }
 
 pub async fn set_default_desync_tolerance(
@@ -848,15 +848,15 @@ pub async fn set_default_desync_tolerance(
     Data(payload): Data<DesyncTolerance>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     query::set_default_desync_tolerance(&state.db, &payload.desync_tolerance)
         .await
         .expect("db error");
 
-    s.broadcast().emit("default_desync_tolerance", payload.desync_tolerance).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.broadcast().emit("default_desync_tolerance", &payload.desync_tolerance).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn get_default_major_desync_min(
@@ -866,7 +866,7 @@ pub async fn get_default_major_desync_min(
     let default_major_desync_min = query::get_default_major_desync_min(&state.db)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<Decimal>::ok(Some(default_major_desync_min))).ok();
+    ack.send(&SocketIoAck::<Decimal>::ok(Some(default_major_desync_min))).ok();
 }
 
 pub async fn set_default_major_desync_min(
@@ -876,15 +876,15 @@ pub async fn set_default_major_desync_min(
     Data(payload): Data<MajorDesyncMin>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     query::set_default_major_desync_min(&state.db, &payload.major_desync_min)
         .await
         .expect("db error");
 
-    s.broadcast().emit("default_major_desync_min", payload.major_desync_min).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.broadcast().emit("default_major_desync_min", &payload.major_desync_min).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn get_default_minor_desync_playback_slow(
@@ -894,7 +894,7 @@ pub async fn get_default_minor_desync_playback_slow(
     let minor_desync_playback_slow = query::get_default_minor_desync_playback_slow(&state.db)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<Decimal>::ok(Some(minor_desync_playback_slow))).ok();
+    ack.send(&SocketIoAck::<Decimal>::ok(Some(minor_desync_playback_slow))).ok();
 }
 
 pub async fn set_default_minor_desync_playback_slow(
@@ -904,15 +904,15 @@ pub async fn set_default_minor_desync_playback_slow(
     Data(payload): Data<MinorDesyncPlaybackSlow>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     query::set_default_minor_desync_playback_slow(&state.db, &payload.minor_desync_playback_slow)
         .await
         .expect("db error");
 
-    s.broadcast().emit("default_minor_desync_playback_slow", payload.minor_desync_playback_slow).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.broadcast().emit("default_minor_desync_playback_slow", &payload.minor_desync_playback_slow).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn check_room_name_unique(
@@ -921,13 +921,13 @@ pub async fn check_room_name_unique(
     Data(payload): Data<RoomName>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<bool>::err()).ok();
+        ack.send(&SocketIoAck::<bool>::err()).ok();
         return;
     }
     let unique = query::room_name_unique(&state.db, &payload.room_name)
         .await
         .expect("db error");
-    ack.send(SocketIoAck::<bool>::ok(Some(unique))).ok();
+    ack.send(&SocketIoAck::<bool>::ok(Some(unique))).ok();
 }
 
 pub async fn create_room(
@@ -937,14 +937,14 @@ pub async fn create_room(
     Data(payload): Data<RoomName>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let unique = query::room_name_unique(&state.db, &payload.room_name)
         .await
         .expect("db error");
     if !unique {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let default_room_settings = query::get_default_room_settings(&state.db)
@@ -974,9 +974,9 @@ pub async fn create_room(
         id: room_id,
         name: payload.room_name,
     };
-    s.broadcast().emit("rooms", [[&room]]).ok();
-    s.emit("rooms", [[&room]]).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.broadcast().emit("rooms", &[[&room]]).ok();
+    s.emit("rooms", &[[&room]]).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 
     transaction
         .commit()
@@ -997,7 +997,7 @@ pub async fn get_rooms(
         .expect("db error");
 
     let rooms_w_order = RoomsClientWOrder { room_order, rooms };
-    ack.send(rooms_w_order).ok();
+    ack.send(&rooms_w_order).ok();
     transaction
         .commit()
         .await
@@ -1011,16 +1011,16 @@ pub async fn set_room_name(
     Data(payload): Data<RoomNameChange>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     query::set_room_name(&state.db, payload.rid, &payload.room_name)
         .await
         .expect("db error");
 
-    s.broadcast().emit("room_name_change", [[&payload]]).ok();
-    s.emit("room_name_change", [[payload]]).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.broadcast().emit("room_name_change", &[[&payload]]).ok();
+    s.emit("room_name_change", &[[payload]]).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn delete_room(
@@ -1030,7 +1030,7 @@ pub async fn delete_room(
     Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let mut transaction = state.db.begin().await.expect("db error");
@@ -1061,15 +1061,15 @@ pub async fn delete_room(
             io.leave([room_name]).ok();
             rid_uids_lock.remove_by_left(&payload.id);
         }
-        s.broadcast().emit("del_rooms", [[payload.id]]).ok();
-        s.emit("del_rooms", [[payload.id]]).ok();
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        s.broadcast().emit("del_rooms", &[[payload.id]]).ok();
+        s.emit("del_rooms", &[[payload.id]]).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         transaction
             .commit()
             .await
             .expect("db error");
     } else {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
     }
 }
 
@@ -1079,18 +1079,18 @@ pub async fn get_room_playback_speed(
     Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<Decimal>::err()).ok();
+        ack.send(&SocketIoAck::<Decimal>::err()).ok();
         return;
     }
     let playback_speed_opt = query::get_room_playback_speed(&state.db, payload.id)
         .await
         .expect("db error");
     if playback_speed_opt.is_none() {
-        ack.send(SocketIoAck::<Decimal>::err()).ok();
+        ack.send(&SocketIoAck::<Decimal>::err()).ok();
         return;
     }
     let playback_speed = playback_speed_opt.unwrap();
-    ack.send(SocketIoAck::<Decimal>::ok(Some(playback_speed))).ok();
+    ack.send(&SocketIoAck::<Decimal>::ok(Some(playback_speed))).ok();
 }
 
 pub async fn set_room_playback_speed(
@@ -1100,7 +1100,7 @@ pub async fn set_room_playback_speed(
     Data(payload): Data<RoomPlaybackSpeed>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let updated = query::set_room_playback_speed(&state.db, payload.id, &payload.playback_speed)
@@ -1108,11 +1108,11 @@ pub async fn set_room_playback_speed(
         .expect("db error");
 
     if !updated {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
-    s.broadcast().emit("room_playback_speed", payload).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.broadcast().emit("room_playback_speed", &payload).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn get_room_desync_tolerance(
@@ -1121,18 +1121,18 @@ pub async fn get_room_desync_tolerance(
     Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<Decimal>::err()).ok();
+        ack.send(&SocketIoAck::<Decimal>::err()).ok();
         return;
     }
     let desync_tolerance_opt = query::get_room_desync_tolerance(&state.db, payload.id)
         .await
         .expect("db error");
     if desync_tolerance_opt.is_none() {
-        ack.send(SocketIoAck::<Decimal>::err()).ok();
+        ack.send(&SocketIoAck::<Decimal>::err()).ok();
         return;
     }
     let desync_tolerance = desync_tolerance_opt.unwrap();
-    ack.send(SocketIoAck::<Decimal>::ok(Some(desync_tolerance))).ok();
+    ack.send(&SocketIoAck::<Decimal>::ok(Some(desync_tolerance))).ok();
 }
 
 pub async fn set_room_desync_tolerance(
@@ -1142,7 +1142,7 @@ pub async fn set_room_desync_tolerance(
     Data(payload): Data<RoomDesyncTolerance>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let updated = query::set_room_desync_tolerance(&state.db, payload.id, &payload.desync_tolerance)
@@ -1150,11 +1150,11 @@ pub async fn set_room_desync_tolerance(
         .expect("db error");
 
     if !updated {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
-    s.broadcast().emit("room_desync_tolerance", payload).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.broadcast().emit("room_desync_tolerance", &payload).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn get_room_minor_desync_playback_slow(
@@ -1163,18 +1163,18 @@ pub async fn get_room_minor_desync_playback_slow(
     Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<Decimal>::err()).ok();
+        ack.send(&SocketIoAck::<Decimal>::err()).ok();
         return;
     }
     let room_minor_desync_playback_slow_opt = query::get_room_minor_desync_playback_slow(&state.db, payload.id)
         .await
         .expect("db error");
     if room_minor_desync_playback_slow_opt.is_none() {
-        ack.send(SocketIoAck::<Decimal>::err()).ok();
+        ack.send(&SocketIoAck::<Decimal>::err()).ok();
         return;
     }
     let room_minor_desync_playback_slow = room_minor_desync_playback_slow_opt.unwrap();
-    ack.send(SocketIoAck::<Decimal>::ok(Some(room_minor_desync_playback_slow))).ok();
+    ack.send(&SocketIoAck::<Decimal>::ok(Some(room_minor_desync_playback_slow))).ok();
 }
 
 pub async fn set_room_minor_desync_playback_slow(
@@ -1184,7 +1184,7 @@ pub async fn set_room_minor_desync_playback_slow(
     Data(payload): Data<RoomMinorDesyncPlaybackSlow>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let updated = query::set_room_minor_desync_playback_slow(&state.db, payload.id, &payload.minor_desync_playback_slow)
@@ -1192,11 +1192,11 @@ pub async fn set_room_minor_desync_playback_slow(
         .expect("db error");
 
     if !updated {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
-    s.broadcast().emit("room_minor_desync_playback_slow", payload).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.broadcast().emit("room_minor_desync_playback_slow", &payload).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn get_room_major_desync_min(
@@ -1205,18 +1205,18 @@ pub async fn get_room_major_desync_min(
     Data(payload): Data<IdStruct>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<Decimal>::err()).ok();
+        ack.send(&SocketIoAck::<Decimal>::err()).ok();
         return;
     }
     let room_major_desync_min_opt = query::get_room_major_desync_min(&state.db, payload.id)
         .await
         .expect("db error");
     if room_major_desync_min_opt.is_none() {
-        ack.send(SocketIoAck::<Decimal>::err()).ok();
+        ack.send(&SocketIoAck::<Decimal>::err()).ok();
         return;
     }
     let room_major_desync_min = room_major_desync_min_opt.unwrap();
-    ack.send(SocketIoAck::<Decimal>::ok(Some(room_major_desync_min))).ok();
+    ack.send(&SocketIoAck::<Decimal>::ok(Some(room_major_desync_min))).ok();
 }
 
 pub async fn set_room_major_desync_min(
@@ -1226,7 +1226,7 @@ pub async fn set_room_major_desync_min(
     Data(payload): Data<RoomMajorDesyncMin>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let updated = query::set_room_major_desync_min(&state.db, payload.id, &payload.major_desync_min)
@@ -1234,11 +1234,11 @@ pub async fn set_room_major_desync_min(
         .expect("db error");
 
     if !updated {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
-    s.broadcast().emit("room_major_desync_min", payload).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.broadcast().emit("room_major_desync_min", &payload).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn set_room_order(
@@ -1248,7 +1248,7 @@ pub async fn set_room_order(
     Data(payload): Data<RoomOrder>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let mut transaction = state.db.begin().await.expect("db error");
@@ -1256,15 +1256,15 @@ pub async fn set_room_order(
         .await
         .expect("db error");
     if !valid {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     query::set_room_order(&mut transaction, &payload.room_order)
         .await
         .expect("db error");
 
-    s.broadcast().emit("room_order", [payload.room_order]).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.broadcast().emit("room_order", &[payload.room_order]).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
     transaction
         .commit()
         .await
@@ -1274,7 +1274,7 @@ pub async fn set_room_order(
 pub async fn ping(
     ack: AckSender,
 ) {
-    ack.send({}).ok();
+    ack.send(&{}).ok();
 }
 
 pub async fn join_room(
@@ -1284,7 +1284,7 @@ pub async fn join_room(
     Data(payload): Data<JoinRoomReq>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<JoinedRoomInfo>::err()).ok();
+        ack.send(&SocketIoAck::<JoinedRoomInfo>::err()).ok();
         return;
     }
     let mut transaction = state.db.begin().await.expect("db error");
@@ -1292,7 +1292,7 @@ pub async fn join_room(
         .await
         .expect("db error");
     if !room_exists {
-        ack.send(SocketIoAck::<JoinedRoomInfo>::err()).ok();
+        ack.send(&SocketIoAck::<JoinedRoomInfo>::err()).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -1359,16 +1359,16 @@ pub async fn join_room(
         .map(|(id, ping)| (*id, *ping))
         .collect::<HashMap<Id, f64>>();
 
-    s.to(new_room_name).emit("room_user_ping", RoomUserPingChange { uid, ping: payload.ping }).ok();
+    s.to(new_room_name).emit("room_user_ping", &RoomUserPingChange { uid, ping: payload.ping }).ok();
 
     if let Some(old_connected_room) = old_connected_room_opt {
         let urc = UserRoomChange { uid, old_rid: old_connected_room, new_rid: payload.rid };
         s.broadcast().emit("user_room_change", &urc).ok();
-        s.emit("user_room_change", urc).ok();
+        s.emit("user_room_change", &urc).ok();
     } else {
         let urj = UserRoomJoin { uid, rid: payload.rid };
         s.broadcast().emit("user_room_join", &urj).ok();
-        s.emit("user_room_join", urj).ok();
+        s.emit("user_room_join", &urj).ok();
     }
 
     let playlist_rl = state.playlist.read().await;
@@ -1398,7 +1398,7 @@ pub async fn join_room(
         active_video_id = Some(room_play_info.playing_entry_id);
     }
 
-    ack.send(SocketIoAck::<JoinedRoomInfo>::ok(Some(JoinedRoomInfo {
+    ack.send(&SocketIoAck::<JoinedRoomInfo>::ok(Some(JoinedRoomInfo {
         room_settings,
         room_pings,
         playlist,
@@ -1418,7 +1418,7 @@ pub async fn disconnect_room(
     let uid = state.socket2uid(&s).await;
     let connected_room_opt = state.socket_connected_room(&s).await;
     if connected_room_opt.is_none() {
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
     let rid = connected_room_opt.unwrap();
@@ -1427,8 +1427,8 @@ pub async fn disconnect_room(
     }
     let urd = UserRoomDisconnect { rid, uid };
     s.broadcast().emit("user_room_disconnect", &urd).ok();
-    s.emit("user_room_disconnect", urd).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.emit("user_room_disconnect", &urd).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn get_room_users(
@@ -1437,7 +1437,7 @@ pub async fn get_room_users(
 ) {
     let rid_uids_lock = state.rid_uids.read().await;
     let rid2uids = rid_uids_lock.get_key_to_values_hashmap().clone();
-    ack.send(rid2uids).ok();
+    ack.send(&rid2uids).ok();
 }
 
 pub async fn room_ping(
@@ -1448,7 +1448,7 @@ pub async fn room_ping(
 ) {
     let connected_room_opt = state.socket_connected_room(&s).await;
     if connected_room_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -1457,8 +1457,8 @@ pub async fn room_ping(
         uid_ping_lock.insert(uid, payload.ping);
     }
     let room_name = connected_room_opt.unwrap().to_string();
-    s.to(room_name).emit("room_user_ping", RoomUserPingChange { uid, ping: payload.ping }).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.to(room_name).emit("room_user_ping", &RoomUserPingChange { uid, ping: payload.ping }).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn get_sources(
@@ -1469,7 +1469,7 @@ pub async fn get_sources(
     for (key, source) in &state.config.sources {
         m.insert(key, &source.client_url);
     }
-    ack.send(m).ok();
+    ack.send(&m).ok();
 }
 
 pub async fn get_files(
@@ -1478,11 +1478,11 @@ pub async fn get_files(
     Data(payload): Data<GetFilesInfo>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<Vec<FileInfo>>::err()).ok();
+        ack.send(&SocketIoAck::<Vec<FileInfo>>::err()).ok();
         return;
     }
     if !state.config.sources.contains_key(&payload.file_srv) {
-        ack.send(SocketIoAck::<Vec<FileInfo>>::err()).ok();
+        ack.send(&SocketIoAck::<Vec<FileInfo>>::err()).ok();
         return;
     }
     let source = state.config.sources.get(&payload.file_srv).unwrap();
@@ -1508,7 +1508,7 @@ pub async fn get_files(
             .map(|x| x.clone())
             .collect::<Vec<FileInfo>>();
     }
-    ack.send(SocketIoAck::<Vec<FileInfo>>::ok(Some(files))).ok();
+    ack.send(&SocketIoAck::<Vec<FileInfo>>::ok(Some(files))).ok();
 }
 
 pub async fn add_video_files(
@@ -1519,12 +1519,12 @@ pub async fn add_video_files(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -1533,7 +1533,7 @@ pub async fn add_video_files(
     for full_path in &payload.full_paths {
         let (source, path) = full_path.split_once(":").unwrap();
         if !state.config.sources.contains_key(source) {
-            ack.send(SocketIoAck::<()>::err()).ok();
+            ack.send(&SocketIoAck::<()>::err()).ok();
             return;
         }
         let source_info = state.config.sources.get(source).unwrap();
@@ -1546,7 +1546,7 @@ pub async fn add_video_files(
             .await
             .expect("http error");
         if !exists {
-            ack.send(SocketIoAck::<()>::err()).ok();
+            ack.send(&SocketIoAck::<()>::err()).ok();
             return;
         }
         v.push((source, path));
@@ -1562,8 +1562,8 @@ pub async fn add_video_files(
         rid_video_id_wl.insert(rid, entry_id);
     }
 
-    s.within(rid.to_string()).emit("add_video_files", AddEntryFilesResp { uid, entries: send_entries }).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.within(rid.to_string()).emit("add_video_files", &AddEntryFilesResp { uid, entries: send_entries }).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 
     drop(rid_video_id_wl);
     drop(playlist_wl);
@@ -1577,12 +1577,12 @@ pub async fn add_urls(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -1597,8 +1597,8 @@ pub async fn add_urls(
         playlist_wl.insert(entry_id, entry);
         rid_video_id_wl.insert(rid, entry_id);
     }
-    s.within(rid.to_string()).emit("add_urls", AddEntryFilesResp { uid, entries: send_entries }).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.within(rid.to_string()).emit("add_urls", &AddEntryFilesResp { uid, entries: send_entries }).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 
     drop(rid_video_id_wl);
     drop(playlist_wl);
@@ -1611,25 +1611,25 @@ pub async fn req_playing_jwt(
     Data(payload): Data<PlaylistEntryIdStruct>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<String>::err()).ok();
+        ack.send(&SocketIoAck::<String>::err()).ok();
         return;
     }
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<String>::err()).ok();
+        ack.send(&SocketIoAck::<String>::err()).ok();
         return;
     }
 
     let rid = rid_opt.unwrap();
     if !video_id_in_room(&state, rid, payload.playlist_entry_id).await {
-        ack.send(SocketIoAck::<String>::err()).ok();
+        ack.send(&SocketIoAck::<String>::err()).ok();
         return;
     }
 
     let playlist_rl = state.playlist.read().await;
     let entry = playlist_rl.get(&payload.playlist_entry_id).unwrap();
     if let PlaylistEntry::Url { .. } = entry {
-        ack.send(SocketIoAck::<String>::err()).ok();
+        ack.send(&SocketIoAck::<String>::err()).ok();
         return;
     }
     let s: &str;
@@ -1640,7 +1640,7 @@ pub async fn req_playing_jwt(
             p = path;
         }
         _ => {
-            ack.send(SocketIoAck::<String>::err()).ok();
+            ack.send(&SocketIoAck::<String>::err()).ok();
             return;
         }
     }
@@ -1649,7 +1649,7 @@ pub async fn req_playing_jwt(
         .await
         .expect("jwt signer error");
 
-    ack.send(SocketIoAck::<String>::ok(Some(jwt))).ok();
+    ack.send(&SocketIoAck::<String>::ok(Some(jwt))).ok();
 }
 
 pub async fn change_active_video(
@@ -1659,24 +1659,24 @@ pub async fn change_active_video(
     Data(payload): Data<PlaylistEntryIdStruct>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
 
     let rid = rid_opt.unwrap();
     if !video_id_in_room(&state, rid, payload.playlist_entry_id).await {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let mut rid2play_info_wl = state.rid2play_info.write().await;
     let play_info_opt = rid2play_info_wl.get(&rid);
     if play_info_opt.is_some() && play_info_opt.unwrap().playing_entry_id == payload.playlist_entry_id {
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
     state.clear_uid2play_info_by_rid(rid).await;
@@ -1702,8 +1702,8 @@ pub async fn change_active_video(
         uid2timestamp_wl.remove(uid);
     }
 
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
-    s.within(rid.to_string()).emit("change_active_video", payload.playlist_entry_id).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
+    s.within(rid.to_string()).emit("change_active_video", &payload.playlist_entry_id).ok();
 
     drop(rid2play_info_wl);
 }
@@ -1715,12 +1715,12 @@ pub async fn set_playlist_order(
     Data(payload): Data<PlaylistOrder>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -1730,7 +1730,7 @@ pub async fn set_playlist_order(
     for entry_id in &payload.playlist_order {
         let rid_of_entry_opt = rid_video_id_rl.get_by_right(entry_id);
         if rid_of_entry_opt.is_none() || *rid_of_entry_opt.unwrap() != rid {
-            ack.send(SocketIoAck::<()>::err()).ok();
+            ack.send(&SocketIoAck::<()>::err()).ok();
             return;
         }
     }
@@ -1744,8 +1744,8 @@ pub async fn set_playlist_order(
         order.insert(*id);
     }
 
-    s.to(rid.to_string()).emit("playlist_order", ChangePlaylistOrder { uid, order: payload.playlist_order }).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.to(rid.to_string()).emit("playlist_order", &ChangePlaylistOrder { uid, order: payload.playlist_order }).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 
     drop(rid_video_id_wl);
 }
@@ -1757,12 +1757,12 @@ pub async fn delete_playlist_entry(
     Data(payload): Data<PlaylistEntryIdStruct>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -1771,14 +1771,14 @@ pub async fn delete_playlist_entry(
     let playlist_rl = state.playlist.read().await;
     let entry_opt = playlist_rl.get(&payload.playlist_entry_id);
     if entry_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
 
     drop(playlist_rl);
 
     if !video_id_in_room(&state, rid, payload.playlist_entry_id).await {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let mut rid2play_info_wl = state.rid2play_info.write().await;
@@ -1792,8 +1792,8 @@ pub async fn delete_playlist_entry(
     }
     state.remove_video_entry(payload.playlist_entry_id).await;
 
-    s.within(rid.to_string()).emit("del_playlist_entry", DeletePlaylistEntry { uid, entry_id: payload.playlist_entry_id }).ok();
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    s.within(rid.to_string()).emit("del_playlist_entry", &DeletePlaylistEntry { uid, entry_id: payload.playlist_entry_id }).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn mpv_file_loaded(
@@ -1803,12 +1803,12 @@ pub async fn mpv_file_loaded(
     Data(payload): Data<UserLoadedInfo>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -1833,7 +1833,7 @@ pub async fn mpv_file_loaded(
 
     s.within(rid.to_string()).emit(
         "user_file_loaded",
-        UserPlayInfoClient {
+        &UserPlayInfoClient {
             aid: payload.aid,
             sid: payload.sid,
             audio_sync: payload.audio_sync,
@@ -1845,7 +1845,7 @@ pub async fn mpv_file_loaded(
         }
     ).ok();
 
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn mpv_file_load_failed(
@@ -1855,7 +1855,7 @@ pub async fn mpv_file_load_failed(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -1864,17 +1864,17 @@ pub async fn mpv_file_load_failed(
     let mut uid2ready_status_wl = state.uid2ready_status.write().await;
     let ready_status = uid2ready_status_wl.get_mut(&uid).unwrap();
     if *ready_status != UserReadyStatus::Loading {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     *ready_status = UserReadyStatus::Error;
 
     s
         .within(rid.to_string())
-        .emit("user_file_load_failed", uid)
+        .emit("user_file_load_failed", &uid)
         .ok();
 
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn user_ready_state_change(
@@ -1884,13 +1884,13 @@ pub async fn user_ready_state_change(
     Data(payload): Data<UserReadyStateChangeReq>,
 ) {
     if let Err(_) = payload.validate() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
 
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -1903,16 +1903,16 @@ pub async fn user_ready_state_change(
 
             s
                 .within(rid.to_string())
-                .emit("user_ready_state_change", UserReadyStateChangeClient {
+                .emit("user_ready_state_change", &UserReadyStateChangeClient {
                     uid,
                     ready_state: payload.ready_state
                 }).ok();
         }
 
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
     }
     else {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
     }
 }
 
@@ -1923,7 +1923,7 @@ pub async fn user_file_load_retry(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -1936,13 +1936,13 @@ pub async fn user_file_load_retry(
 
             s
                 .within(rid.to_string())
-                .emit("user_file_load_retry", uid).ok();
+                .emit("user_file_load_retry", &uid).ok();
         }
 
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
     }
     else {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
     }
 }
 
@@ -1953,7 +1953,7 @@ pub async fn mpv_play(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -1967,12 +1967,12 @@ pub async fn mpv_play(
 
         s
             .within(rid.to_string())
-            .emit("mpv_play", uid).ok();
+            .emit("mpv_play", &uid).ok();
 
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    ack.send(SocketIoAck::<()>::err()).ok();
+    ack.send(&SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn mpv_pause(
@@ -1983,7 +1983,7 @@ pub async fn mpv_pause(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -2006,7 +2006,7 @@ pub async fn mpv_pause(
                 let io = io_rl.as_ref().unwrap();
                 if let Some(sid) = state.uid2sid(*uid).await {
                     if let Some(target_socket) = io.get_socket(sid) {
-                        target_socket.emit("minor_desync_stop", {}).ok();
+                        target_socket.emit("minor_desync_stop", &{}).ok();
                     }
                 }
             }
@@ -2015,12 +2015,12 @@ pub async fn mpv_pause(
 
         s
             .within(rid.to_string())
-            .emit("mpv_pause", UserPause { uid, timestamp: payload }).ok();
+            .emit("mpv_pause", &UserPause { uid, timestamp: payload }).ok();
 
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    ack.send(SocketIoAck::<()>::err()).ok();
+    ack.send(&SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn mpv_seek(
@@ -2031,7 +2031,7 @@ pub async fn mpv_seek(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -2049,7 +2049,7 @@ pub async fn mpv_seek(
                 let io = io_rl.as_ref().unwrap();
                 if let Some(sid) = state.uid2sid(*uid).await {
                     if let Some(target_socket) = io.get_socket(sid) {
-                        target_socket.emit("minor_desync_stop", {}).ok();
+                        target_socket.emit("minor_desync_stop", &{}).ok();
                     }
                 }
             }
@@ -2058,12 +2058,12 @@ pub async fn mpv_seek(
 
         s
             .within(rid.to_string())
-            .emit("mpv_seek", UserSeek { uid, timestamp: payload }).ok();
+            .emit("mpv_seek", &UserSeek { uid, timestamp: payload }).ok();
 
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    ack.send(SocketIoAck::<()>::err()).ok();
+    ack.send(&SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn mpv_speed_change(
@@ -2074,7 +2074,7 @@ pub async fn mpv_speed_change(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -2088,12 +2088,12 @@ pub async fn mpv_speed_change(
 
         s
             .within(rid.to_string())
-            .emit("mpv_speed_change", UserSpeedChange { uid, speed: payload }).ok();
+            .emit("mpv_speed_change", &UserSpeedChange { uid, speed: payload }).ok();
 
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    ack.send(SocketIoAck::<()>::err()).ok();
+    ack.send(&SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn change_audio_sync(
@@ -2104,7 +2104,7 @@ pub async fn change_audio_sync(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -2113,10 +2113,10 @@ pub async fn change_audio_sync(
     let mut uid2play_info_wl = state.uid2play_info.write().await;
     if let Some(user_play_info) = uid2play_info_wl.get_mut(&uid) {
         user_play_info.audio_sync = payload;
-        s.to(rid.to_string()).emit("change_audio_sync", UserChangeAudioSync { uid, audio_sync: payload }).ok();
+        s.to(rid.to_string()).emit("change_audio_sync", &UserChangeAudioSync { uid, audio_sync: payload }).ok();
     }
 
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn change_sub_sync(
@@ -2127,7 +2127,7 @@ pub async fn change_sub_sync(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -2136,10 +2136,10 @@ pub async fn change_sub_sync(
     let mut uid2play_info_wl = state.uid2play_info.write().await;
     if let Some(user_play_info) = uid2play_info_wl.get_mut(&uid) {
         user_play_info.sub_sync = payload;
-        s.to(rid.to_string()).emit("change_sub_sync", UserChangeSubSync { uid, sub_sync: payload }).ok();
+        s.to(rid.to_string()).emit("change_sub_sync", &UserChangeSubSync { uid, sub_sync: payload }).ok();
     }
 
-    ack.send(SocketIoAck::<()>::ok(None)).ok();
+    ack.send(&SocketIoAck::<()>::ok(None)).ok();
 }
 
 pub async fn mpv_audio_change(
@@ -2150,18 +2150,18 @@ pub async fn mpv_audio_change(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
 
     if state.user_file_loaded(uid).await {
-        s.within(rid.to_string()).emit("mpv_audio_change", UserChangeAudio { aid: payload, uid }).ok();
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        s.within(rid.to_string()).emit("mpv_audio_change", &UserChangeAudio { aid: payload, uid }).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    ack.send(SocketIoAck::<()>::err()).ok();
+    ack.send(&SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn mpv_sub_change(
@@ -2172,18 +2172,18 @@ pub async fn mpv_sub_change(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
 
     if state.user_file_loaded(uid).await {
-        s.within(rid.to_string()).emit("mpv_sub_change", UserChangeSub { sid: payload, uid }).ok();
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        s.within(rid.to_string()).emit("mpv_sub_change", &UserChangeSub { sid: payload, uid }).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    ack.send(SocketIoAck::<()>::err()).ok();
+    ack.send(&SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn mpv_audio_delay_change(
@@ -2194,18 +2194,18 @@ pub async fn mpv_audio_delay_change(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
 
     if state.user_file_loaded(uid).await {
-        s.within(rid.to_string()).emit("mpv_audio_delay_change", UserChangeAudioDelay { audio_delay: payload, uid }).ok();
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        s.within(rid.to_string()).emit("mpv_audio_delay_change", &UserChangeAudioDelay { audio_delay: payload, uid }).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    ack.send(SocketIoAck::<()>::err()).ok();
+    ack.send(&SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn mpv_sub_delay_change(
@@ -2216,18 +2216,18 @@ pub async fn mpv_sub_delay_change(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
 
     if state.user_file_loaded(uid).await {
-        s.within(rid.to_string()).emit("mpv_sub_delay_change", UserChangeSubDelay { sub_delay: payload, uid }).ok();
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        s.within(rid.to_string()).emit("mpv_sub_delay_change", &UserChangeSubDelay { sub_delay: payload, uid }).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    ack.send(SocketIoAck::<()>::err()).ok();
+    ack.send(&SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn mpv_upload_state(
@@ -2238,24 +2238,24 @@ pub async fn mpv_upload_state(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
 
     if state.user_file_loaded(uid).await {
-        s.within(rid.to_string()).emit("mpv_upload_state", UserUploadMpvState {
+        s.within(rid.to_string()).emit("mpv_upload_state", &UserUploadMpvState {
             uid,
             aid: payload.aid,
             sid: payload.sid,
             audio_delay: payload.audio_delay,
             sub_delay: payload.sub_delay
         }).ok();
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    ack.send(SocketIoAck::<()>::err()).ok();
+    ack.send(&SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn user_change_aid(
@@ -2266,7 +2266,7 @@ pub async fn user_change_aid(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -2277,12 +2277,12 @@ pub async fn user_change_aid(
         let play_info = uid2play_info_wl.get_mut(&uid).unwrap();
         if play_info.aid != payload {
             play_info.aid = payload;
-            s.within(rid.to_string()).emit("user_change_aid", UserChangeAudio { uid, aid: payload }).ok();
+            s.within(rid.to_string()).emit("user_change_aid", &UserChangeAudio { uid, aid: payload }).ok();
         }
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    ack.send(SocketIoAck::<()>::err()).ok();
+    ack.send(&SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn user_change_sid(
@@ -2293,7 +2293,7 @@ pub async fn user_change_sid(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -2304,12 +2304,12 @@ pub async fn user_change_sid(
         let play_info = uid2play_info_wl.get_mut(&uid).unwrap();
         if play_info.sid != payload {
             play_info.sid = payload;
-            s.within(rid.to_string()).emit("user_change_sid", UserChangeSub { uid, sid: payload }).ok();
+            s.within(rid.to_string()).emit("user_change_sid", &UserChangeSub { uid, sid: payload }).ok();
         }
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    ack.send(SocketIoAck::<()>::err()).ok();
+    ack.send(&SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn user_change_audio_delay(
@@ -2320,7 +2320,7 @@ pub async fn user_change_audio_delay(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -2331,12 +2331,12 @@ pub async fn user_change_audio_delay(
         let play_info = uid2play_info_wl.get_mut(&uid).unwrap();
         if play_info.audio_delay != payload {
             play_info.audio_delay = payload;
-            s.within(rid.to_string()).emit("user_change_audio_delay", UserChangeAudioDelay { uid, audio_delay: payload }).ok();
+            s.within(rid.to_string()).emit("user_change_audio_delay", &UserChangeAudioDelay { uid, audio_delay: payload }).ok();
         }
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    ack.send(SocketIoAck::<()>::err()).ok();
+    ack.send(&SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn user_change_sub_delay(
@@ -2347,7 +2347,7 @@ pub async fn user_change_sub_delay(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -2358,12 +2358,12 @@ pub async fn user_change_sub_delay(
         let play_info = uid2play_info_wl.get_mut(&uid).unwrap();
         if play_info.sub_delay != payload {
             play_info.sub_delay = payload;
-            s.within(rid.to_string()).emit("user_change_sub_delay", UserChangeSubDelay { uid, sub_delay: payload }).ok();
+            s.within(rid.to_string()).emit("user_change_sub_delay", &UserChangeSubDelay { uid, sub_delay: payload }).ok();
         }
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    ack.send(SocketIoAck::<()>::err()).ok();
+    ack.send(&SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn timestamp_tick(
@@ -2374,7 +2374,7 @@ pub async fn timestamp_tick(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<()>::err()).ok();
+        ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
     let uid = state.socket2uid(&s).await;
@@ -2382,10 +2382,10 @@ pub async fn timestamp_tick(
         let mut uid2timestamp_wl = state.uid2timestamp.write().await;
         uid2timestamp_wl.insert(uid, TimestampInfo{ timestamp: payload, recv: Instant::now() });
 
-        ack.send(SocketIoAck::<()>::ok(None)).ok();
+        ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
-    ack.send(SocketIoAck::<()>::err()).ok();
+    ack.send(&SocketIoAck::<()>::err()).ok();
 }
 
 pub async fn get_mpv_state(
@@ -2395,7 +2395,7 @@ pub async fn get_mpv_state(
 ) {
     let rid_opt = state.socket_connected_room(&s).await;
     if rid_opt.is_none() {
-        ack.send(SocketIoAck::<MpvState>::err()).ok();
+        ack.send(&SocketIoAck::<MpvState>::err()).ok();
         return;
     }
     let rid = rid_opt.unwrap();
@@ -2439,12 +2439,12 @@ pub async fn get_mpv_state(
         }
 
         let play_info = rid2play_info_rl.get(&rid).unwrap();
-        ack.send(SocketIoAck::<MpvState>::ok(Some(MpvState{
+        ack.send(&SocketIoAck::<MpvState>::ok(Some(MpvState{
             timestamp,
             playing_state: play_info.playing_state,
             playback_speed: room_runtime_state.playback_speed
         }))).ok();
         return;
     }
-    ack.send(SocketIoAck::<MpvState>::err()).ok();
+    ack.send(&SocketIoAck::<MpvState>::err()).ok();
 }

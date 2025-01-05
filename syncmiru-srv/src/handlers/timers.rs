@@ -108,7 +108,7 @@ async fn desync_timer(state: Arc<SrvState>) {
                                 if let Some(sid) = state.uid2sid(*uid).await {
                                     if let Some(s) = io.get_socket(sid) {
                                         if uid2minor_desync_wl.remove(uid) {
-                                            s.emit("minor_desync_stop", {}).ok();
+                                            s.emit("minor_desync_stop", &{}).ok();
                                         }
 
                                         s.emit("major_desync_seek", smallest_timestamp).ok();
@@ -125,7 +125,7 @@ async fn desync_timer(state: Arc<SrvState>) {
                                     let io = io_rl.as_ref().unwrap();
                                     if let Some(sid) = state.uid2sid(*uid).await {
                                         if let Some(s) = io.get_socket(sid) {
-                                            s.emit("minor_desync_stop", {}).ok();
+                                            s.emit("minor_desync_stop", &{}).ok();
                                             uid2minor_desync_wl.remove(uid);
                                         }
                                     }
@@ -137,7 +137,7 @@ async fn desync_timer(state: Arc<SrvState>) {
                                     let io = io_rl.as_ref().unwrap();
                                     if let Some(sid) = state.uid2sid(*uid).await {
                                         if let Some(s) = io.get_socket(sid) {
-                                            s.emit("minor_desync_start", {}).ok();
+                                            s.emit("minor_desync_start", &{}).ok();
                                             uid2minor_desync_wl.insert(*uid);
                                         }
                                     }
