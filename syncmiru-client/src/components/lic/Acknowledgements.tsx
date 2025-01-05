@@ -71,7 +71,7 @@ export default function Acknowledgements(): ReactElement {
             name: "wouter",
             url: "https://github.com/molefrog/wouter",
             copyright: "",
-            license: "Unlicense license"
+            license: "The Unlicense license"
         },
         {
             name: "react-select",
@@ -486,11 +486,24 @@ export default function Acknowledgements(): ReactElement {
             url: "https://crates.io/crates/gtk",
             copyright: "",
             license: "MIT License"
-        },{
+        },
+        {
             name: "gdk3-rs",
             url: "https://crates.io/crates/gdk",
             copyright: "",
             license: "MIT License"
+        },
+        {
+            name: "mpv",
+            url: "https://mpv.io/",
+            copyright: "",
+            license: "GPLv2+"
+        },
+        {
+            name: "yt-dlp",
+            url: "https://github.com/yt-dlp/yt-dlp",
+            copyright: "",
+            license: "The Unlicense license"
         },
 
 

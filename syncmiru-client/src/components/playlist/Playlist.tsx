@@ -106,7 +106,7 @@ export default function Playlist(): ReactElement {
 
         ctx.setPlaylist((p) => {
             if(p.size === 0)
-                setAsActiveVideo(m.keys().next().value)
+                setAsActiveVideo(m.keys().next().value as number)
 
             return new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m])
         })
@@ -133,7 +133,7 @@ export default function Playlist(): ReactElement {
 
         ctx.setPlaylist((p) => {
             if(p.size === 0)
-                setAsActiveVideo(m.keys().next().value)
+                setAsActiveVideo(m.keys().next().value as number)
 
             return new Map<PlaylistEntryId, PlaylistEntry>([...p, ...m])
         })

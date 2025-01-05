@@ -545,6 +545,7 @@ export default function Rooms(): ReactElement {
         if (ctx.currentRid === rid || [RoomConnectionState.Connecting, RoomConnectionState.Disconnecting].includes(ctx.roomConnection))
             return
 
+        clearInterval(ctx.timestampTimerRef?.current)
         ctx.setCurrentRid(rid)
         ctx.setRoomConnection(RoomConnectionState.Connecting)
         const start = performance.now()
