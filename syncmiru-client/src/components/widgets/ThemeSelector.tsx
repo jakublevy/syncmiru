@@ -22,9 +22,6 @@ export default function ThemeSelector(): ReactElement {
         changeTheme(newTheme)
             .then(() => {
                 setTheme(newTheme)
-                if(targetFamily === 'windows') {
-                    StatusAlertService.showWarning(t('theme-changed-windows-warning'))
-                }
             })
     }
 

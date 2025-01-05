@@ -87,6 +87,7 @@ async fn main() -> Result<()> {
             config::frontend::get_hwid_hash,
             config::frontend::get_mpv_win_detached,
             config::frontend::set_mpv_win_detached,
+            config::frontend::set_theme,
             deps::frontend::get_deps_state,
             deps::frontend::mpv_start_downloading,
             deps::frontend::yt_dlp_start_downloading,

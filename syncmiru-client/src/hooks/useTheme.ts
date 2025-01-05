@@ -12,6 +12,9 @@ const themePromise = (): Promise<Theme> => {
 
 export function useChangeTheme(): (t: Theme) => Promise<void> {
     return (t: Theme): Promise<void> => {
-        return invoke('plugin:theme|set_theme', {theme: t})
+        return invoke('set_theme', {theme: t})
+            .then(() => {
+                invoke('plugin:theme|set_theme', {theme: t})
+            })
     }
 }

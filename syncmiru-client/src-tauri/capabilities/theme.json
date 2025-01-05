@@ -1,7 +1,0 @@
-{
-  "$schema": "./schemas/desktop-schema.json",
-  "identifier": "main-theme-capability",
-  "description": "tauri-plugin-theme",
-  "windows": ["main"],
-  "permissions": ["theme:allow-set-theme", "theme:allow-get-theme"]
-}

@@ -1,6 +1,6 @@
-use serde::{Deserializer, Serializer};
+use serde::{Deserialize, Deserializer, Serializer};
 use crate::config::Language::{Czech, English};
-use crate::config::Theme::{Dark, Light, System};
+use crate::config::Theme::{Dark, Light, Auto};
 
 pub mod utils;
 pub mod appdata;
@@ -41,11 +41,12 @@ impl<'de> serde::Deserialize<'de> for Language {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Theme {
     Light,
     Dark,
-    System,
+    Auto,
 }
 
 impl Theme {
@@ -53,14 +54,14 @@ impl Theme {
         match s.to_lowercase().as_str() {
             "light" => Light,
             "dark" => Dark,
-            _ => System
+            _ => Auto
         }
     }
     pub fn as_str(&self) -> &'static str {
         match self {
             Light => "light",
             Dark => "dark",
-            System => "system"
+            Auto => "auto"
         }
     }
 }
@@ -68,9 +69,19 @@ impl Theme {
 impl From<tauri_plugin_theme::Theme> for Theme {
     fn from(value: tauri_plugin_theme::Theme) -> Self {
         match value {
-            tauri_plugin_theme::Theme::Auto => Theme::System,
+            tauri_plugin_theme::Theme::Auto => Theme::Auto,
             tauri_plugin_theme::Theme::Light => Theme::Light,
             tauri_plugin_theme::Theme::Dark => Theme::Dark
+        }
+    }
+}
+
+impl From<Theme> for tauri::Theme {
+    fn from(value: Theme) -> Self {
+        match value {
+            Theme::Light => tauri::Theme::Light,
+            Theme::Dark => tauri::Theme::Dark,
+            Theme::Auto => tauri::Theme::Light
         }
     }
 }

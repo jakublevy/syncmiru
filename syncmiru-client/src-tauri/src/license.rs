@@ -9,6 +9,7 @@ use x11rb::rust_connection::RustConnection;
 
 #[cfg(target_family = "unix")]
 use crate::{constants, x11};
+use crate::config::Theme;
 
 #[tauri::command]
 pub async fn open_license_window(
@@ -20,11 +21,22 @@ pub async fn open_license_window(
         license_window.set_focus()?;
         return Ok(())
     }
-    let license_window = tauri::WebviewWindowBuilder::new(
+    let mut theme = Theme::Auto;
+    {
+        let appdata = state.appdata.read().await;
+        theme = appdata.theme;
+    }
+    let mut license_window_builder = tauri::WebviewWindowBuilder::new(
         &app,
         "license",
         tauri::WebviewUrl::App("license.html".into())
-    ).build()?;
+    );
+    if theme != Theme::Auto {
+        license_window_builder = license_window_builder.theme(Some(theme.into()))
+    }
+
+    let license_window = license_window_builder.build()?;
+
 
     let mut factor = license_window.scale_factor()?;
     cfg_if! {

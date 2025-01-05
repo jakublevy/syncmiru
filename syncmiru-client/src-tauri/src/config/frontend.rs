@@ -3,7 +3,7 @@ use tokio::time::sleep;
 use std::time::Duration;
 use cfg_if::cfg_if;
 use crate::appstate::AppState;
-use crate::config::{appdata, jwt};
+use crate::config::{appdata, jwt, Theme};
 use crate::config::{Language};
 use crate::result::Result;
 use crate::{mpv, sys};
@@ -149,6 +149,18 @@ pub async fn set_mpv_win_detached(state: tauri::State<'_, Arc<AppState>>, window
         let mut appdata = state.appdata.write().await;
         appdata.mpv_win_detached = mpv_win_detach_req;
     }
+    let appdata = state.appdata.read().await;
+    appdata::write(&appdata)?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn set_theme(state: tauri::State<'_, Arc<AppState>>, theme: Theme) -> Result<()> {
+    {
+        let mut appdata = state.appdata.write().await;
+        appdata.theme = theme;
+    }
+
     let appdata = state.appdata.read().await;
     appdata::write(&appdata)?;
     Ok(())

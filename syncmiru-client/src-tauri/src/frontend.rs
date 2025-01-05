@@ -1,5 +1,5 @@
 use crate::result::Result;
-use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
+use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 use rust_i18n::t;
 
 
@@ -12,7 +12,7 @@ pub fn kill_app_with_error_msg(app: tauri::AppHandle, msg: String) -> Result<()>
                 .message(msg)
                 .title(t!("error-window-title"))
                 .kind(MessageDialogKind::Error)
-                .ok_button_label("Ok")
+                .buttons(MessageDialogButtons::Ok)
                 .blocking_show();
 
             app.exit(1);

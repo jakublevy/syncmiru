@@ -30,7 +30,7 @@ impl Default for AppData {
             deps_managed: false,
             mpv_version: None,
             yt_dlp_version: None,
-            theme: Theme::System,
+            theme: Theme::Auto,
             lang: get_preferred_locale(),
             users_shown: true,
             audio_sync: true,
