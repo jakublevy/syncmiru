@@ -23,7 +23,7 @@ pub fn kill_app_with_error_msg(app: tauri::AppHandle, msg: String) -> Result<()>
                 .message(msg)
                 .title(t!("error-window-title"))
                 .kind(MessageDialogKind::Error)
-                .ok_button_label("Ok")
+                .buttons(MessageDialogButtons::Ok)
                 .show(move |res| { app.exit(1); });
         }
     }
