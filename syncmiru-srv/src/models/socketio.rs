@@ -88,7 +88,10 @@ pub struct ChangePassword {
     pub old_password: String,
 
     #[validate(custom(function = "validators::check_password_format"))]
-    pub new_password: String
+    pub new_password: String,
+
+    #[validate(custom(function = "validators::check_lang"))]
+    pub lang: String
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]

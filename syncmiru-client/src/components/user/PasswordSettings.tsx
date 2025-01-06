@@ -12,10 +12,13 @@ import {Input} from "@components/widgets/Input.tsx";
 import {useMainContext} from "@hooks/useMainContext.ts";
 import {SocketIoAck, SocketIoAckType} from "@models/socketio.ts";
 import {showPersistentErrorAlert, showTemporalSuccessAlertForModal} from "src/utils/alert.ts";
+import {Language} from "@models/config.tsx";
+import {useLanguage} from "@hooks/useLanguage.ts";
 
 export default function PasswordSettings(p: Props): ReactElement {
     const {t} = useTranslation()
     const {socket} = useMainContext()
+    const lang: Language = useLanguage()
     const [passwordChangeModalOpen, setPasswordChangeModalOpen] = useState(false);
     const formSchema = Joi.object({
         oldPassword: Joi
@@ -47,7 +50,7 @@ export default function PasswordSettings(p: Props): ReactElement {
 
     function changePassword(data: FormFields) {
         setPasswordChangeModalOpen(false)
-        socket!.emitWithAck("change_password", {old_password: data.oldPassword, new_password: data.password})
+        socket!.emitWithAck("change_password", {old_password: data.oldPassword, new_password: data.password, lang: lang})
             .then((ack: SocketIoAck<null>) => {
                 if(ack.status === SocketIoAckType.Err)
                     showPersistentErrorAlert(t('modal-change-password-failed'))

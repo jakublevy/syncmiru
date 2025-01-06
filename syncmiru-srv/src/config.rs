@@ -127,14 +127,9 @@ impl RegConfig {
 
         let hs = &reg_yaml["hcaptcha_secret"];
         if allowed {
-            if !hs.is_badvalue() {
-                hcaptcha_secret = Some(hs.as_str()
-                    .context("hcaptcha_secret is missing inside registration_public")?
-                    .to_string());
-            }
-            else {
-                warn!("Public registration allowed but hcaptcha disabled");
-            }
+            hcaptcha_secret = Some(hs.as_str()
+                .context("hcaptcha_secret is missing inside registration_public")?
+                .to_string());
         }
         Ok(
             Self { allowed, hcaptcha_secret }

@@ -533,12 +533,24 @@ pub async fn change_password(
         .await
         .expect("db error");
     if crypto::verify(payload.old_password, password_hash).await.expect("argon2 error") {
+        let email = query::get_email_by_uid(&state.db, uid)
+            .await
+            .expect("db error");
         let new_hash = crypto::hash(payload.new_password)
             .await
             .expect("argon2 error");
         query::update_password_by_uid(&state.db, uid, &new_hash)
             .await
             .expect("db error");
+        email::send_password_changed_warning(
+            &state.config.email,
+            &email,
+            &state.config.srv.url,
+            &payload.lang
+        )
+            .await
+            .expect("email error");
+
         ack.send(&SocketIoAck::<()>::ok(None)).ok();
         return;
     }
