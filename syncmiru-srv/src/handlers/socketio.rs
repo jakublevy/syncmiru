@@ -2049,9 +2049,10 @@ pub async fn mpv_seek(
     let rid = rid_opt.unwrap();
     let uid = state.socket2uid(&s).await;
 
+    let mut uid2timestamp_wl = state.uid2timestamp.write().await;
+    let mut uid2minor_desync_wl = state.uid2minor_desync.write().await;
+
     if state.user_file_loaded(uid).await {
-        let mut uid2timestamp_wl = state.uid2timestamp.write().await;
-        let mut uid2minor_desync_wl = state.uid2minor_desync.write().await;
         let rid_uids_rl = state.rid_uids.read().await;
         let now = Instant::now();
         let uids = rid_uids_rl.get_by_left(&rid).unwrap();

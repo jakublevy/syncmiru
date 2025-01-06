@@ -34,6 +34,7 @@ export default function Mpv(p: Props): ReactElement {
     const ctx = useMainContext()
     const {t} = useTranslation()
     const isSupportedWindowSystem = useIsSupportedWindowSystem()
+    const mpvSeekingRef = useRef<boolean>(false)
     const mpvWrapperRef: React.MutableRefObject<HTMLDivElement | null> = useRef(null)
     const connectedToRoom = ctx.currentRid != null && ctx.roomConnection === RoomConnectionState.Established
 
@@ -60,7 +61,7 @@ export default function Mpv(p: Props): ReactElement {
 
         }
         return () => {
-            if(ctx.socket !== undefined) {
+            if (ctx.socket !== undefined) {
                 ctx.socket.off('user_file_loaded', onUserFileLoaded)
                 ctx.socket.off('user_change_aid', onUserChangeAid)
                 ctx.socket.off('user_change_sid', onUserChangeSid)
@@ -74,11 +75,11 @@ export default function Mpv(p: Props): ReactElement {
     }, [ctx.socket]);
 
     useEffect(() => {
-        if(ctx.socket !== undefined) {
+        if (ctx.socket !== undefined) {
             ctx.socket.on('user_file_load_retry', onUserFileLoadRetry)
         }
         return () => {
-            if(ctx.socket !== undefined) {
+            if (ctx.socket !== undefined) {
                 ctx.socket.off('user_file_load_retry', onUserFileLoadRetry)
             }
         }
@@ -93,7 +94,7 @@ export default function Mpv(p: Props): ReactElement {
 
         }
         return () => {
-            if(ctx.socket !== undefined) {
+            if (ctx.socket !== undefined) {
                 ctx.socket.off("mpv_play", onMpvPlay)
                 ctx.socket.off('mpv_pause', onMpvPause)
                 ctx.socket.off("mpv_seek", onMpvSeek)
@@ -104,12 +105,12 @@ export default function Mpv(p: Props): ReactElement {
     }, [ctx.socket, ctx.uid, ctx.uid2ready]);
 
     useEffect(() => {
-        if(ctx.socket !== undefined) {
+        if (ctx.socket !== undefined) {
             ctx.socket.on('mpv_audio_change', onMpvAudioChange)
             ctx.socket.on("mpv_audio_delay_change", onMpvAudioDelayChange)
         }
         return () => {
-            if(ctx.socket !== undefined) {
+            if (ctx.socket !== undefined) {
                 ctx.socket.off('mpv_audio_change', onMpvAudioChange)
                 ctx.socket.off("mpv_audio_delay_change", onMpvAudioDelayChange)
             }
@@ -117,12 +118,12 @@ export default function Mpv(p: Props): ReactElement {
     }, [ctx.socket, ctx.uid, ctx.audioSync]);
 
     useEffect(() => {
-        if(ctx.socket !== undefined) {
+        if (ctx.socket !== undefined) {
             ctx.socket.on('mpv_sub_change', onMpvSubChange)
             ctx.socket.on('mpv_sub_delay_change', onMpvSubDelayChange)
         }
         return () => {
-            if(ctx.socket !== undefined) {
+            if (ctx.socket !== undefined) {
                 ctx.socket.off('mpv_sub_change', onMpvSubChange)
                 ctx.socket.off('mpv_sub_delay_change', onMpvSubDelayChange)
             }
@@ -130,11 +131,11 @@ export default function Mpv(p: Props): ReactElement {
     }, [ctx.socket, ctx.uid, ctx.subSync]);
 
     useEffect(() => {
-        if(ctx.socket !== undefined) {
+        if (ctx.socket !== undefined) {
             ctx.socket.on('mpv_upload_state', onMpvUploadState)
         }
         return () => {
-            if(ctx.socket !== undefined) {
+            if (ctx.socket !== undefined) {
                 ctx.socket.off('mpv_upload_state', onMpvUploadState)
             }
         }
@@ -144,15 +145,15 @@ export default function Mpv(p: Props): ReactElement {
         let unlisten: Array<Promise<UnlistenFn>> = []
 
         unlisten.push(listen<boolean>('mpv-running', (e: Event<boolean>) => {
-            if(!e.payload && connectedToRoom) {
+            if (!e.payload && connectedToRoom) {
                 disconnectFromRoom(ctx, t)
             }
             ctx.setMpvRunning(e.payload)
         }))
 
         unlisten.push(listen<void>('mpv-resize', (e: Event<void>) => {
-            if(ctx.mpvRunning && !ctx.mpvWinDetached && isSupportedWindowSystem) {
-                if(!ctx.mpvShowSmall)
+            if (ctx.mpvRunning && !ctx.mpvWinDetached && isSupportedWindowSystem) {
+                if (!ctx.mpvShowSmall)
                     mpvResize()
                 else
                     mpvResizeToSmall()
@@ -160,12 +161,12 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<Record<"width" | "height", number>>('tauri://resize', (e) => {
-            if(ctx.mpvRunning && !ctx.mpvWinDetached && isSupportedWindowSystem) {
+            if (ctx.mpvRunning && !ctx.mpvWinDetached && isSupportedWindowSystem) {
                 setTimeout(() => {
-                        if(!ctx.mpvShowSmall)
-                            mpvResize()
-                        else
-                            mpvResizeToSmall()
+                    if (!ctx.mpvShowSmall)
+                        mpvResize()
+                    else
+                        mpvResizeToSmall()
                 }, 50)
             }
         }))
@@ -187,18 +188,16 @@ export default function Mpv(p: Props): ReactElement {
                 .then((payload: UserLoadedInfo) => {
                     ctx.socket!.emitWithAck('mpv_file_loaded', payload)
                         .then((ack: SocketIoAck<null>) => {
-                            if(ack.status === SocketIoAckType.Err) {
+                            if (ack.status === SocketIoAckType.Err) {
                                 showPersistentErrorAlert(t('mpv-load-error'))
                                 disconnectFromRoom(ctx, t)
-                            }
-                            else {
+                            } else {
                                 ctx.socket!.emitWithAck('get_mpv_state', {})
                                     .then((ack: SocketIoAck<MpvState>) => {
-                                        if(ack.status === SocketIoAckType.Err) {
+                                        if (ack.status === SocketIoAckType.Err) {
                                             showPersistentErrorAlert(t('mpv-load-error'))
                                             disconnectFromRoom(ctx, t)
-                                        }
-                                        else {
+                                        } else {
                                             const payload = ack.payload as MpvState
                                             const speed = new Decimal(payload.playback_speed)
                                             invoke('mpv_set_speed', {speed: speed})
@@ -209,9 +208,9 @@ export default function Mpv(p: Props): ReactElement {
                                                             startTimestampTimer()
 
                                                             invoke<boolean>('mpv_get_pause', {})
-                                                                .then((pause: boolean)=> {
+                                                                .then((pause: boolean) => {
                                                                     const setPause = Boolean(payload.playing_state.valueOf())
-                                                                    if(setPause !== pause) {
+                                                                    if (setPause !== pause) {
                                                                         invoke('mpv_set_pause', {pause: setPause})
                                                                             .catch(() => {
                                                                                 showPersistentErrorAlert(t('mpv-load-error'))
@@ -255,11 +254,10 @@ export default function Mpv(p: Props): ReactElement {
         unlisten.push(listen<void>('mpv-file-load-failed', (e: Event<void>) => {
             ctx.socket!.emitWithAck('mpv_file_load_failed', {})
                 .then((ack: SocketIoAck<null>) => {
-                    if(ack.status === SocketIoAckType.Err) {
+                    if (ack.status === SocketIoAckType.Err) {
                         showPersistentErrorAlert(t('mpv-load-error'))
                         disconnectFromRoom(ctx, t)
-                    }
-                    else {
+                    } else {
                         showPersistentErrorAlert(t('mpv-invalid-file'))
                     }
                 })
@@ -271,15 +269,15 @@ export default function Mpv(p: Props): ReactElement {
 
         unlisten.push(listen<boolean>('mpv-pause-changed', (e: Event<boolean>) => {
             const readyState = ctx.uid2ready.get(ctx.uid)
-            if(readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
+            if (readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
                 return
 
-            if(e.payload) {
+            if (e.payload) {
                 invoke<number>('mpv_get_timestamp', {})
                     .then((time: number) => {
                         ctx.socket!.emitWithAck('mpv_pause', time)
                             .then((ack: SocketIoAck<null>) => {
-                                if(ack.status === SocketIoAckType.Err) {
+                                if (ack.status === SocketIoAckType.Err) {
                                     showPersistentErrorAlert(t('mpv-pause-error'))
                                     disconnectFromRoom(ctx, t)
                                 }
@@ -293,11 +291,10 @@ export default function Mpv(p: Props): ReactElement {
                         showPersistentErrorAlert(t('mpv-play-error'))
                         disconnectFromRoom(ctx, t)
                     })
-            }
-            else {
+            } else {
                 ctx.socket!.emitWithAck('mpv_play', {})
                     .then((ack: SocketIoAck<null>) => {
-                        if(ack.status === SocketIoAckType.Err) {
+                        if (ack.status === SocketIoAckType.Err) {
                             showPersistentErrorAlert(t('mpv-play-error'))
                             disconnectFromRoom(ctx, t)
                         }
@@ -310,15 +307,18 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<void>('mpv-seek', (e: Event<void>) => {
+            mpvSeekingRef.current = true
             const readyState = ctx.uid2ready.get(ctx.uid)
-            if(readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
+            if (readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState)) {
+                mpvSeekingRef.current = false
                 return
+            }
 
             invoke<number>('mpv_get_timestamp', {})
                 .then((time: number) => {
                     ctx.socket!.emitWithAck('mpv_seek', time)
                         .then((ack: SocketIoAck<null>) => {
-                            if(ack.status === SocketIoAckType.Err) {
+                            if (ack.status === SocketIoAckType.Err) {
                                 showPersistentErrorAlert(t('mpv-seek-error'))
                                 disconnectFromRoom(ctx, t)
                             }
@@ -327,16 +327,20 @@ export default function Mpv(p: Props): ReactElement {
                             showPersistentErrorAlert(t('mpv-seek-error'))
                             disconnectFromRoom(ctx, t)
                         })
+                        .finally(() => {
+                            mpvSeekingRef.current = false
+                        })
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-seek-error'))
                     disconnectFromRoom(ctx, t)
+                    mpvSeekingRef.current = false
                 })
         }))
 
         unlisten.push(listen<string>('mpv-speed-changed', (e: Event<string>) => {
             const readyState = ctx.uid2ready.get(ctx.uid)
-            if(readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
+            if (readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
                 return
 
             const speed = new Decimal(e.payload)
@@ -344,7 +348,7 @@ export default function Mpv(p: Props): ReactElement {
 
             ctx.socket!.emitWithAck('mpv_speed_change', speed)
                 .then((ack: SocketIoAck<null>) => {
-                    if(ack.status === SocketIoAckType.Err) {
+                    if (ack.status === SocketIoAckType.Err) {
                         showPersistentErrorAlert(t('mpv-speed-change-error'))
                         disconnectFromRoom(ctx, t)
                     }
@@ -358,7 +362,7 @@ export default function Mpv(p: Props): ReactElement {
         unlisten.push(listen<number | null>('mpv-audio-changed', (e: Event<number | null>) => {
             ctx.socket!.emitWithAck('mpv_audio_change', e.payload)
                 .then((ack: SocketIoAck<null>) => {
-                    if(ack.status === SocketIoAckType.Err) {
+                    if (ack.status === SocketIoAckType.Err) {
                         showPersistentErrorAlert(t('mpv-audio-change-error'))
                         disconnectFromRoom(ctx, t)
                     }
@@ -412,10 +416,9 @@ export default function Mpv(p: Props): ReactElement {
         }))
 
         unlisten.push(listen<string | null>('mpv-reported-speed-change', (e: Event<string | null>) => {
-            if(e.payload != null) {
+            if (e.payload != null) {
                 ctx.setReportedPlaybackSpeed(new Decimal(e.payload))
-            }
-            else {
+            } else {
                 ctx.setReportedPlaybackSpeed(null)
             }
         }))
@@ -441,12 +444,12 @@ export default function Mpv(p: Props): ReactElement {
     }, [ctx.jwts, ctx.source2url, ctx.playlist, ctx.joinedRoomSettings, ctx.users, ctx.activeVideoId, ctx.uid2ready, ctx.uid2audioSub]);
 
     useEffect(() => {
-        if(ctx.mpvRunning && !ctx.mpvWinDetached && !ctx.mpvShowSmall)
+        if (ctx.mpvRunning && !ctx.mpvWinDetached && !ctx.mpvShowSmall)
             mpvResize()
     }, [p.mpvResizeVar, mpvWrapperRef.current, ctx.mpvRunning, ctx.mpvShowSmall, ctx.usersShown]);
 
     useEffect(() => {
-        if(ctx.mpvRunning && !ctx.mpvWinDetached) {
+        if (ctx.mpvRunning && !ctx.mpvWinDetached) {
             if (ctx.modalShown || ctx.settingsShown) {
                 ctx.setMpvShowSmall(true)
                 mpvResizeToSmall()
@@ -456,15 +459,15 @@ export default function Mpv(p: Props): ReactElement {
             }
         }
     }, [ctx.modalShown, ctx.settingsShown, ctx.mpvRunning, ctx.mpvWinDetached]);
-    
+
 
     useEffect(() => {
-        if(ctx.activeVideoId == null)
+        if (ctx.activeVideoId == null)
             return
 
         const id = ctx.activeVideoId as PlaylistEntryId
         const entry = playlistRef.current.get(id) as PlaylistEntry
-        if(entry instanceof PlaylistEntryVideo) {
+        if (entry instanceof PlaylistEntryVideo) {
             const jwt = jwtsRef.current.get(id) as string
             const video = entry as PlaylistEntryVideo
             const source = source2urlRef.current.get(video.source) as string
@@ -481,8 +484,7 @@ export default function Mpv(p: Props): ReactElement {
                     showPersistentErrorAlert(t('mpv-load-error'))
                     disconnectFromRoom(ctx, t)
                 })
-        }
-        else if(entry instanceof PlaylistEntryUrl) {
+        } else if (entry instanceof PlaylistEntryUrl) {
             const video = entry as PlaylistEntryUrl
             const data = {
                 url: video.url,
@@ -522,7 +524,7 @@ export default function Mpv(p: Props): ReactElement {
         ctx.setUid2audioSub((p) => {
             const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
             for (const [id, value] of p) {
-                if(userPlayInfo.uid !== id) {
+                if (userPlayInfo.uid !== id) {
                     m.set(id, value)
                 }
             }
@@ -540,7 +542,7 @@ export default function Mpv(p: Props): ReactElement {
         ctx.setUid2ready((p) => {
             const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
             for (const [id, value] of p) {
-                if(userPlayInfo.uid !== id) {
+                if (userPlayInfo.uid !== id) {
                     m.set(id, value)
                 }
             }
@@ -555,7 +557,7 @@ export default function Mpv(p: Props): ReactElement {
         ctx.setUid2audioSub((p) => {
             const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
             for (const [id, value] of p) {
-                if(uid !== id) {
+                if (uid !== id) {
                     m.set(id, value)
                 }
             }
@@ -565,7 +567,7 @@ export default function Mpv(p: Props): ReactElement {
         ctx.setUid2ready((p) => {
             const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
             for (const [id, value] of p) {
-                if(uid !== id) {
+                if (uid !== id) {
                     m.set(id, value)
                 }
             }
@@ -577,6 +579,9 @@ export default function Mpv(p: Props): ReactElement {
     }
 
     function onMajorDesyncSeek(timestamp: number) {
+        if(mpvSeekingRef.current)
+            return
+
         invoke('mpv_seek', {timestamp: timestamp})
             .catch(() => {
                 showPersistentErrorAlert(t('mpv-load-error'))
@@ -589,7 +594,7 @@ export default function Mpv(p: Props): ReactElement {
                 showPersistentErrorAlert(t('mpv-msg-show-failed'))
             })
     }
-    
+
     function onMinorDesyncStart() {
         invoke('mpv_decrease_playback_speed', {playbackSpeedMinus: joinedRoomSettingsRef.current.minor_desync_playback_slow})
             .catch(() => {
@@ -610,13 +615,13 @@ export default function Mpv(p: Props): ReactElement {
         ctx.setUid2ready((p) => {
             const m: Map<UserId, UserReadyState> = new Map<UserId, UserReadyState>()
             for (const [id, value] of p) {
-                if(uid !== id) {
+                if (uid !== id) {
                     m.set(id, value)
                 }
             }
             m.set(uid, UserReadyState.Loading)
 
-            if(ctx.uid !== uid)
+            if (ctx.uid !== uid)
                 showMpvReadyMessages(m, usersRef.current, t)
             return m
         })
@@ -624,7 +629,7 @@ export default function Mpv(p: Props): ReactElement {
 
     function onMpvPlay(uid: UserId) {
         const readyState = ctx.uid2ready.get(ctx.uid)
-        if(readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
+        if (readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
             return
 
         if (uid !== ctx.uid) {
@@ -646,7 +651,7 @@ export default function Mpv(p: Props): ReactElement {
 
     function onMpvPause(payload: UserPause) {
         const readyState = ctx.uid2ready.get(ctx.uid)
-        if(readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
+        if (readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
             return
 
         if (payload.uid !== ctx.uid) {
@@ -675,10 +680,10 @@ export default function Mpv(p: Props): ReactElement {
 
     function onMpvSeek(payload: UserSeek) {
         const readyState = ctx.uid2ready.get(ctx.uid)
-        if(readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
+        if (readyState == null || [UserReadyState.Loading, UserReadyState.Error].includes(readyState))
             return
 
-        if(payload.uid !== ctx.uid) {
+        if (payload.uid !== ctx.uid) {
             invoke('mpv_seek', {timestamp: payload.timestamp})
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-seek-error'))
@@ -701,7 +706,7 @@ export default function Mpv(p: Props): ReactElement {
             ...p,
             speed: new Decimal(speed)
         }
-        if(payload.uid !== ctx.uid) {
+        if (payload.uid !== ctx.uid) {
             invoke('mpv_set_speed', {speed: clientPayload.speed})
                 .then(() => {
                     ctx.setReportedPlaybackSpeed(clientPayload.speed)
@@ -712,7 +717,7 @@ export default function Mpv(p: Props): ReactElement {
                 })
         }
         const userValue = usersRef.current.get(payload.uid)
-        if(userValue != null) {
+        if (userValue != null) {
             const msgText = `${userValue.displayname} ${t('mpv-msg-speed-change')} ${clientPayload.speed.toFixed(2)}`
             invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
                 .catch(() => {
@@ -724,12 +729,12 @@ export default function Mpv(p: Props): ReactElement {
     function onUserChangeAid(payload: UserChangeAudio) {
         ctx.setUid2audioSub((p) => {
             const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
-            for(const [id, value] of p) {
-                if(id !== payload.uid)
+            for (const [id, value] of p) {
+                if (id !== payload.uid)
                     m.set(id, value)
             }
             const oldValue = p.get(payload.uid)
-            if(oldValue != null) {
+            if (oldValue != null) {
                 const {aid: oldAid, ...rest} = oldValue
                 const newValue = {
                     aid: payload.aid,
@@ -744,12 +749,12 @@ export default function Mpv(p: Props): ReactElement {
     function onUserChangeSid(payload: UserChangeSub) {
         ctx.setUid2audioSub((p) => {
             const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
-            for(const [id, value] of p) {
-                if(id !== payload.uid)
+            for (const [id, value] of p) {
+                if (id !== payload.uid)
                     m.set(id, value)
             }
             const oldValue = p.get(payload.uid)
-            if(oldValue != null) {
+            if (oldValue != null) {
                 const {sid: oldSid, ...rest} = oldValue
                 const newValue = {
                     sid: payload.sid,
@@ -764,12 +769,12 @@ export default function Mpv(p: Props): ReactElement {
     function onUserChangeAudioDelay(payload: UserChangeAudioDelay) {
         ctx.setUid2audioSub((p) => {
             const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
-            for(const [id, value] of p) {
-                if(id !== payload.uid)
+            for (const [id, value] of p) {
+                if (id !== payload.uid)
                     m.set(id, value)
             }
             const oldValue = p.get(payload.uid)
-            if(oldValue != null) {
+            if (oldValue != null) {
                 const {audio_delay: oldAudioDelay, ...rest} = oldValue
                 const newValue = {
                     audio_delay: payload.audio_delay,
@@ -784,12 +789,12 @@ export default function Mpv(p: Props): ReactElement {
     function onUserChangeSubDelay(payload: UserChangeSubDelay) {
         ctx.setUid2audioSub((p) => {
             const m: Map<UserId, UserAudioSubtitles> = new Map<UserId, UserAudioSubtitles>()
-            for(const [id, value] of p) {
-                if(id !== payload.uid)
+            for (const [id, value] of p) {
+                if (id !== payload.uid)
                     m.set(id, value)
             }
             const oldValue = p.get(payload.uid)
-            if(oldValue != null) {
+            if (oldValue != null) {
                 const {sub_delay: oldSubDelay, ...rest} = oldValue
                 const newValue = {
                     sub_delay: payload.sub_delay,
@@ -803,18 +808,18 @@ export default function Mpv(p: Props): ReactElement {
 
     function onMpvAudioChange(payload: UserChangeAudio) {
         const myReadyStatus = uid2readyRef.current.get(ctx.uid)
-        if(myReadyStatus == null || ![UserReadyState.NotReady, UserReadyState.Ready].includes(myReadyStatus))
+        if (myReadyStatus == null || ![UserReadyState.NotReady, UserReadyState.Ready].includes(myReadyStatus))
             return
 
-        if(payload.uid !== ctx.uid) {
-            if(!ctx.audioSync)
+        if (payload.uid !== ctx.uid) {
+            if (!ctx.audioSync)
                 return
 
             invoke<number | null>('mpv_get_audio')
                 .then((aid: number | null) => {
-                  if(aid !== payload.aid) {
-                      invoke('mpv_set_audio', {aid: payload.aid})
-                          .then(() => {
+                    if (aid !== payload.aid) {
+                        invoke('mpv_set_audio', {aid: payload.aid})
+                            .then(() => {
                                 ctx.socket!.emitWithAck('user_change_aid', payload.aid)
                                     .then((ack: SocketIoAck<null>) => {
                                         if (ack.status === SocketIoAckType.Err) {
@@ -826,21 +831,20 @@ export default function Mpv(p: Props): ReactElement {
                                         showPersistentErrorAlert(t('mpv-audio-change-error'))
                                         disconnectFromRoom(ctx, t)
                                     })
-                          })
-                          .catch(() => {
-                              showPersistentErrorAlert(t('mpv-audio-change-error'))
-                              disconnectFromRoom(ctx, t)
-                          })
+                            })
+                            .catch(() => {
+                                showPersistentErrorAlert(t('mpv-audio-change-error'))
+                                disconnectFromRoom(ctx, t)
+                            })
 
-                      mpvShowAudioChangeMsg(payload)
-                  }
+                        mpvShowAudioChangeMsg(payload)
+                    }
                 })
                 .catch(() => {
                     showPersistentErrorAlert(t('mpv-audio-change-error'))
                     disconnectFromRoom(ctx, t)
                 })
-        }
-        else {
+        } else {
             ctx.socket!.emitWithAck('user_change_aid', payload.aid)
                 .then((ack: SocketIoAck<null>) => {
                     if (ack.status === SocketIoAckType.Err) {
@@ -858,7 +862,7 @@ export default function Mpv(p: Props): ReactElement {
 
     function mpvShowAudioChangeMsg(payload: UserChangeAudio) {
         const userValue = usersRef.current.get(payload.uid)
-        if(userValue != null) {
+        if (userValue != null) {
             const msgText = `${userValue.displayname} ${t('mpv-msg-change-audio')} ${payload.aid != null ? payload.aid : '∅'}`
             invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
                 .catch(() => {
@@ -869,17 +873,17 @@ export default function Mpv(p: Props): ReactElement {
 
     function onMpvSubChange(payload: UserChangeSub) {
         const myReadyStatus = uid2readyRef.current.get(ctx.uid)
-        if(myReadyStatus == null || ![UserReadyState.NotReady, UserReadyState.Ready].includes(myReadyStatus))
+        if (myReadyStatus == null || ![UserReadyState.NotReady, UserReadyState.Ready].includes(myReadyStatus))
             return
 
 
-        if(payload.uid !== ctx.uid) {
-            if(!ctx.subSync)
+        if (payload.uid !== ctx.uid) {
+            if (!ctx.subSync)
                 return
 
             invoke<number | null>('mpv_get_sub')
                 .then((aid: number | null) => {
-                    if(aid !== payload.sid) {
+                    if (aid !== payload.sid) {
                         invoke('mpv_set_sub', {sid: payload.sid})
                             .then(() => {
                                 ctx.socket!.emitWithAck('user_change_sid', payload.sid)
@@ -906,11 +910,10 @@ export default function Mpv(p: Props): ReactElement {
                     showPersistentErrorAlert(t('mpv-sub-change-error'))
                     disconnectFromRoom(ctx, t)
                 })
-        }
-        else {
+        } else {
             ctx.socket!.emitWithAck('user_change_sid', payload.sid)
                 .then((ack: SocketIoAck<null>) => {
-                    if(ack.status === SocketIoAckType.Err) {
+                    if (ack.status === SocketIoAckType.Err) {
                         showPersistentErrorAlert(t('mpv-sub-change-error'))
                         disconnectFromRoom(ctx, t)
                     }
@@ -925,7 +928,7 @@ export default function Mpv(p: Props): ReactElement {
 
     function mpvShowSubChangeMsg(payload: UserChangeSub) {
         const userValue = usersRef.current.get(payload.uid)
-        if(userValue != null) {
+        if (userValue != null) {
             const msgText = `${userValue.displayname} ${t('mpv-msg-change-sub')} ${payload.sid != null ? payload.sid : '∅'}`
             invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
                 .catch(() => {
@@ -936,16 +939,16 @@ export default function Mpv(p: Props): ReactElement {
 
     function onMpvAudioDelayChange(payload: UserChangeAudioDelay) {
         const myReadyStatus = uid2readyRef.current.get(ctx.uid)
-        if(myReadyStatus == null || ![UserReadyState.NotReady, UserReadyState.Ready].includes(myReadyStatus))
+        if (myReadyStatus == null || ![UserReadyState.NotReady, UserReadyState.Ready].includes(myReadyStatus))
             return
 
-        if(payload.uid !== ctx.uid) {
-            if(!ctx.audioSync)
+        if (payload.uid !== ctx.uid) {
+            if (!ctx.audioSync)
                 return
 
             invoke<number>('mpv_get_audio_delay')
                 .then((audio_delay: number) => {
-                    if(audio_delay !== payload.audio_delay) {
+                    if (audio_delay !== payload.audio_delay) {
                         invoke('mpv_set_audio_delay', {audioDelay: payload.audio_delay})
                             .then(() => {
                                 ctx.socket!.emitWithAck('user_change_audio_delay', payload.audio_delay)
@@ -972,8 +975,7 @@ export default function Mpv(p: Props): ReactElement {
                     showPersistentErrorAlert(t('mpv-audio-delay-change-error'))
                     disconnectFromRoom(ctx, t)
                 })
-        }
-        else {
+        } else {
             ctx.socket!.emitWithAck('user_change_audio_delay', payload.audio_delay)
                 .then((ack: SocketIoAck<null>) => {
                     if (ack.status === SocketIoAckType.Err) {
@@ -991,7 +993,7 @@ export default function Mpv(p: Props): ReactElement {
 
     function mpvShowAudioDelayChangeMsg(payload: UserChangeAudioDelay) {
         const userValue = usersRef.current.get(payload.uid)
-        if(userValue != null) {
+        if (userValue != null) {
             const msgText = `${userValue.displayname} ${t('mpv-msg-audio-delay')} ${payload.audio_delay * 1000} ms`
             invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
                 .catch(() => {
@@ -1002,7 +1004,7 @@ export default function Mpv(p: Props): ReactElement {
 
     function mpvShowSubDelayChangeMsg(payload: UserChangeSubDelay) {
         const userValue = usersRef.current.get(payload.uid)
-        if(userValue != null) {
+        if (userValue != null) {
             const msgText = `${userValue.displayname} ${t('mpv-msg-sub-delay')} ${payload.sub_delay * 1000} ms`
             invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
                 .catch(() => {
@@ -1013,16 +1015,16 @@ export default function Mpv(p: Props): ReactElement {
 
     function onMpvSubDelayChange(payload: UserChangeSubDelay) {
         const myReadyStatus = uid2readyRef.current.get(ctx.uid)
-        if(myReadyStatus == null || ![UserReadyState.NotReady, UserReadyState.Ready].includes(myReadyStatus))
+        if (myReadyStatus == null || ![UserReadyState.NotReady, UserReadyState.Ready].includes(myReadyStatus))
             return
 
-        if(payload.uid !== ctx.uid) {
-            if(!ctx.subSync)
+        if (payload.uid !== ctx.uid) {
+            if (!ctx.subSync)
                 return
 
             invoke<number>('mpv_get_sub_delay')
                 .then((sub_delay: number) => {
-                    if(sub_delay !== payload.sub_delay) {
+                    if (sub_delay !== payload.sub_delay) {
                         invoke('mpv_set_sub_delay', {subDelay: payload.sub_delay})
                             .then(() => {
                                 ctx.socket!.emitWithAck('user_change_sub_delay', payload.sub_delay)
@@ -1049,8 +1051,7 @@ export default function Mpv(p: Props): ReactElement {
                     showPersistentErrorAlert(t('mpv-sub-delay-change-error'))
                     disconnectFromRoom(ctx, t)
                 })
-        }
-        else {
+        } else {
             ctx.socket!.emitWithAck('user_change_sub_delay', payload.sub_delay)
                 .then((ack: SocketIoAck<null>) => {
                     if (ack.status === SocketIoAckType.Err) {
@@ -1068,7 +1069,7 @@ export default function Mpv(p: Props): ReactElement {
 
     function onMpvUploadState(payload: UserUploadMpvState) {
         const myAudioSub = uid2audioSubRef.current.get(ctx.uid)
-        if(myAudioSub == null) {
+        if (myAudioSub == null) {
             showPersistentErrorAlert(t('mpv-sync-state-error'))
             return;
         }
@@ -1082,9 +1083,9 @@ export default function Mpv(p: Props): ReactElement {
             sub_sync: myAudioSub.sub_sync,
         } as UserAudioSubtitles
 
-        if(ctx.uid !== payload.uid) {
-            if(ctx.audioSync) {
-                if(myAudioSub.aid !== payload.aid) {
+        if (ctx.uid !== payload.uid) {
+            if (ctx.audioSync) {
+                if (myAudioSub.aid !== payload.aid) {
                     invoke('mpv_set_audio', {aid: payload.aid})
                         .then(() => {
                             ctx.socket!.emitWithAck('user_change_aid', payload.aid)
@@ -1106,7 +1107,7 @@ export default function Mpv(p: Props): ReactElement {
                     changeAudioSub.aid = payload.aid
                     change = true
                 }
-                if(myAudioSub.audio_delay !== payload.audio_delay) {
+                if (myAudioSub.audio_delay !== payload.audio_delay) {
                     invoke('mpv_set_audio_delay', {audioDelay: payload.audio_delay})
                         .then(() => {
                             ctx.socket!.emitWithAck('user_change_audio_delay', payload.audio_delay)
@@ -1129,8 +1130,8 @@ export default function Mpv(p: Props): ReactElement {
                     change = true
                 }
             }
-            if(ctx.subSync) {
-                if(myAudioSub.sid !== payload.sid) {
+            if (ctx.subSync) {
+                if (myAudioSub.sid !== payload.sid) {
                     invoke('mpv_set_sub', {sid: payload.sid})
                         .then(() => {
                             ctx.socket!.emitWithAck('user_change_sid', payload.sid)
@@ -1152,7 +1153,7 @@ export default function Mpv(p: Props): ReactElement {
                     changeAudioSub.sid = payload.sid
                     change = true
                 }
-                if(myAudioSub.sub_delay !== payload.sub_delay) {
+                if (myAudioSub.sub_delay !== payload.sub_delay) {
                     invoke('mpv_set_sub_delay', {subDelay: payload.sub_delay})
                         .then(() => {
                             ctx.socket!.emitWithAck('user_change_sub_delay', payload.sub_delay)
@@ -1175,18 +1176,17 @@ export default function Mpv(p: Props): ReactElement {
                     change = true
                 }
             }
-        }
-        else {
+        } else {
             mpvShowUploadStateMsg(payload)
         }
-        if(change) {
+        if (change) {
             mpvShowUploadStateMsg(payload)
         }
     }
 
     function mpvShowUploadStateMsg(payload: UserUploadMpvState) {
         const userValue = usersRef.current.get(payload.uid)
-        if(userValue != null) {
+        if (userValue != null) {
             const msgText = `${userValue.displayname} ${t('mpv-msg-upload-state')}`
             invoke('mpv_show_msg', {text: msgText, duration: 5, mood: MpvMsgMood.Neutral})
                 .catch(() => {
@@ -1198,12 +1198,13 @@ export default function Mpv(p: Props): ReactElement {
     function startTimestampTimer() {
         clearInterval(ctx.timestampTimerRef?.current)
         ctx.timestampTimerRef!.current = setInterval(() => {
-            invoke<number>('mpv_get_timestamp', {})
-                .then((time: number) => {
-                    ctx.socket!.emitWithAck('timestamp_tick', time)
-
-                })
-        }, 100)
+            if (!mpvSeekingRef.current) {
+                invoke<number>('mpv_get_timestamp', {})
+                    .then((time: number) => {
+                        ctx.socket!.emitWithAck('timestamp_tick', time)
+                    })
+            }
+        }, 1000)
     }
 
     return (
