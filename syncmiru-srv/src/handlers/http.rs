@@ -1,28 +1,23 @@
-use std::borrow::Cow;
-use std::ops::Deref;
-use std::sync::Arc;
-use anyhow::{anyhow, Context};
-use argon2::Argon2;
-use argon2::password_hash::SaltString;
-use axum::extract::{Query, State};
-use axum::http::StatusCode;
-use axum::Json;
-use axum::response::{Html, IntoResponse};
-use hcaptcha::Hcaptcha;
-use tokio::task;
-use tower::BoxError;
-use crate::srvstate::SrvState;
-use validator::{Validate};
-use crate::error::SyncmiruError;
-use crate::models::http::{RegForm, ServiceStatus, Username, BooleanResp, Email, EmailVerify, TknEmail, ForgottenPasswordChange, Login, Jwt};
-use crate::models::{EmailWithLang, Tkn};
-use crate::{query, tkn};
-use crate::result::{Result};
 use crate::crypto;
 use crate::email;
+use crate::error::SyncmiruError;
 use crate::handlers::utils;
-use crate::models::query::EmailTknType;
 use crate::html;
+use crate::models::http::{BooleanResp, Email, EmailVerify, ForgottenPasswordChange, Jwt, Login, RegForm, ServiceStatus, TknEmail, Username};
+use crate::models::query::EmailTknType;
+use crate::models::{EmailWithLang, Tkn};
+use crate::result::Result;
+use crate::srvstate::SrvState;
+use crate::{query, tkn};
+use anyhow::Context;
+use axum::extract::{Query, State};
+use axum::http::StatusCode;
+use axum::response::{Html, IntoResponse};
+use axum::Json;
+use std::borrow::Cow;
+use std::sync::Arc;
+use tower::BoxError;
+use validator::Validate;
 
 pub async fn index() -> &'static str {
     "Syncmiru server"
