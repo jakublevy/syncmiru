@@ -103,7 +103,7 @@ pub fn check_playback_speed(playback_speed: &Decimal) -> Result<(), ValidationEr
 }
 
 pub fn check_desync_tolerance(desync_tolerance: &Decimal) -> Result<(), ValidationError> {
-    if desync_tolerance < &dec!(1.0) || desync_tolerance > &dec!(3.0) {
+    if desync_tolerance < &dec!(0.5) || desync_tolerance > &dec!(2.0) {
         return Err(ValidationError::new("invalid desync_tolerance value"))
     }
     Ok(())

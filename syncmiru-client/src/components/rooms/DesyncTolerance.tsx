@@ -113,10 +113,10 @@ export default function DesyncTolerance(p: Props): ReactElement {
                         </div>
                         <div className="pl-1.5 pr-1.5 mb-4">
                             <Slider
-                                min={1}
-                                max={3}
+                                min={0.5}
+                                max={2}
                                 step={0.1}
-                                marks={createMarks(1, 3, 0.5, 1, 's')}
+                                marks={createMarks(0.5, 2, 0.5, 1, 's')}
                                 value={sliderDesyncTolerance}
                                 onChange={sliderValueChanged}
                             />
