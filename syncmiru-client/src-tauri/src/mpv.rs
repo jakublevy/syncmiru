@@ -1,3 +1,5 @@
+//! This module contains functions for managing a mpv process and inter-process communication (IPC)
+
 pub mod frontend;
 pub mod ipc;
 pub mod window;
@@ -25,6 +27,13 @@ use tokio::time::sleep;
 use crate::error::SyncmiruError;
 use crate::mpv::ipc::Interface;
 
+/// Initializes the prelude resource file if its hash differs from the correct hash.
+///
+/// # Arguments
+/// * `prelude_resource_path` - The path to the resource file.
+///
+/// # Errors
+/// - Returns an error if file operations or hash calculations fail.
 pub fn init_prelude(prelude_resource_path: impl AsRef<Path>) -> Result<()> {
     let prelude_p = prelude_path()?;
     let mut prelude_hash = "".to_string();
@@ -38,6 +47,15 @@ pub fn init_prelude(prelude_resource_path: impl AsRef<Path>) -> Result<()> {
     Ok(())
 }
 
+/// Starts the `mpv` process and sets up the IPC server for communication.
+///
+/// # Arguments
+/// * `state` - A reference to the `AppState` object.
+/// * `pipe_id` - The unique identifier for the IPC pipe.
+/// * `window` - The Tauri window object used for interaction.
+///
+/// # Errors
+/// - Returns an error if the process cannot be started or if the IPC server setup fails.
 pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::Window) -> Result<()> {
     let mut mpv_exe_path = PathBuf::from("mpv");
     let mut yt_dlp_path = PathBuf::from("yt-dlp");
@@ -123,6 +141,13 @@ pub async fn start_process(state: &Arc<AppState>, pipe_id: &str, window: tauri::
     Ok(())
 }
 
+/// Stops the `mpv` process by sending a stop signal via IPC.
+///
+/// # Arguments
+/// * `state` - A reference to the `AppState` object.
+///
+/// # Errors
+/// - Returns an error if sending the stop signal fails.
 pub async fn stop_process(state: &Arc<AppState>) -> Result<()> {
     let mut mpv_tx_wl = state.mpv_stop_tx.write().await;
     let tx_opt = mpv_tx_wl.take();
@@ -132,6 +157,15 @@ pub async fn stop_process(state: &Arc<AppState>) -> Result<()> {
     Ok(())
 }
 
+/// Starts the IPC server for communication with the `mpv` process.
+///
+/// # Arguments
+/// * `state` - A reference to the `AppState` object.
+/// * `pipe_id` - The unique identifier for the IPC pipe.
+/// * `window` - The Tauri window object used for interaction.
+///
+/// # Errors
+/// - Returns an error if the IPC server cannot be started or if the `mpv` process is not running.
 pub async fn start_ipc(state: &Arc<AppState>, pipe_id: &str, window: tauri::Window) -> Result<()> {
     let (tx, rx): (Sender<Interface>, Receiver<Interface>) = mpsc::channel(1);
     {
@@ -157,6 +191,13 @@ pub async fn start_ipc(state: &Arc<AppState>, pipe_id: &str, window: tauri::Wind
     Ok(())
 }
 
+/// Stops the IPC communication by sending an exit signal to the `mpv` process.
+///
+/// # Arguments
+/// * `state` - A reference to the `AppState` object.
+///
+/// # Errors
+/// - Returns an error if sending the exit signal fails.
 pub async fn stop_ipc(state: &Arc<AppState>) -> Result<()> {
     let mut mpv_ipc_tx_wl = state.mpv_ipc_tx.write().await;
     let tx_opt = mpv_ipc_tx_wl.take();
@@ -166,6 +207,10 @@ pub async fn stop_ipc(state: &Arc<AppState>) -> Result<()> {
     Ok(())
 }
 
+/// Generates a unique identifier for the IPC pipe based on the current time.
+///
+/// # Returns
+/// - A string representing the unique IPC pipe identifier.
 pub fn gen_pipe_id() -> String {
     let start = SystemTime::now();
     let since_the_epoch = start.duration_since(std::time::UNIX_EPOCH)
@@ -174,6 +219,13 @@ pub fn gen_pipe_id() -> String {
     format!("mpvipc-{}", since_the_epoch.as_nanos().to_string())
 }
 
+/// Returns the path to the IPC server socket for Unix-based systems or named pipe for Windows.
+///
+/// # Arguments
+/// * `pipe_id` - The unique identifier for the IPC pipe.
+///
+/// # Returns
+/// - A string representing the path to the IPC server socket or named pipe.
 pub fn get_input_ipc_server(pipe_id: &str) -> String {
     let mut ipcserver = format!("/tmp/{}.sock", pipe_id);
     if cfg!(target_family = "windows") {
@@ -182,6 +234,13 @@ pub fn get_input_ipc_server(pipe_id: &str) -> String {
     ipcserver
 }
 
+/// Returns the path to the IPC socket for communication.
+///
+/// # Arguments
+/// * `pipe_id` - The unique identifier for the IPC pipe.
+///
+/// # Returns
+/// - A string representing the path to the IPC pipe.
 pub fn get_pipe_ipc_path(pipe_id: &str) -> String {
     let mut ipcserver = format!("/tmp/{}.sock", pipe_id);
     if cfg!(target_family = "windows") {
@@ -190,6 +249,15 @@ pub fn get_pipe_ipc_path(pipe_id: &str) -> String {
     ipcserver
 }
 
+/// Handles the process termination when the `mpv` process stops, cleaning up IPC communication
+/// and emitting the appropriate events to the window.
+///
+/// # Arguments
+/// * `state` - A reference to the `AppState` object.
+/// * `window` - The Tauri window object used for interaction.
+///
+/// # Errors
+/// - Returns an error if emitting events to the window fails.
 pub async fn on_mpv_stopped(state: &Arc<AppState>, window: Window) -> Result<()> {
     let mut mpv_ipc_tx_wl = state.mpv_ipc_tx.write().await;
     if let Some(mpv_ipc_tx) = mpv_ipc_tx_wl.take() {

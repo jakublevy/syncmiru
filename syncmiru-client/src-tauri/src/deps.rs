@@ -1,3 +1,8 @@
+//! This module handles the management of dependencies used throughout the application,
+//! specifically `mpv` and `yt-dlp`. It provides functionality for retrieving the latest versions
+//! of these dependencies, checking if they are installed and functional on the user's system,
+//! and downloading them if needed.
+
 use std::fs::File;
 use std::io::{Write};
 use std::process::Command;
@@ -19,31 +24,55 @@ use std::os::windows::process::CommandExt;
 pub mod frontend;
 pub mod utils;
 
+/// Represents the information of a download's start, including the URL and size.
 #[derive(Clone, serde::Serialize)]
 pub struct DownloadStart<'a> {
+    /// URL of the file to download
     pub url: &'a str,
+
+    /// Size of the file in bytes
     pub size: u64,
 }
 
+/// Represents the download progress, including the download speed and received data.
 #[derive(Copy, Clone, serde::Serialize)]
 pub struct DownloadProgress {
+    /// Download speed in bytes per second
     pub speed: u64,
+
+    /// Amount of data received in bytes
     pub received: u64,
 }
 
+/// Represents the information about available dependencies, including their URL and version.
 struct DepRelease {
+    /// URL where the dependency can be obtained
     url: String,
+
+    /// Version of the dependency
     version: String,
 }
 
+/// Struct to hold the versions of the `mpv` and `yt-dlp` dependencies,
+/// both current and the latest available versions.
 #[derive(serde::Serialize)]
 pub struct DepsVersions {
+    /// Currently used mpv version
     mpv_cur: String,
+
+    /// Latest version of mpv available
     mpv_newest: String,
+
+    /// Currently used yt-dlp version
     yt_dlp_cur: String,
+
+    /// Latest version of yt-dlp available
     yt_dlp_newest: String
 }
 
+/// Fetches the latest MPV release URL and version from the configured release source.
+/// Return:
+/// - `Result<DepRelease>`: The latest MPV release information, or an error if the information cannot be retrieved.
 async fn latest_mpv_download_link() -> Result<DepRelease> {
     let mut api_url = constants::MPV_RELEASES_URL;
     if is_x86_feature_detected!("avx2") {
@@ -93,6 +122,9 @@ async fn latest_mpv_download_link() -> Result<DepRelease> {
     Ok(DepRelease{ url: link.to_string(), version: version.to_string() })
 }
 
+/// Fetches the latest release URL and version for `yt-dlp` from GitHub.
+/// Return:
+/// - `Result<DepRelease>`: Returns the latest `yt-dlp` release information, or an error if the information cannot be retrieved.
 async fn latest_yt_dlp_download_link() -> Result<DepRelease> {
     let octocrab = octocrab::instance();
     let page = octocrab.repos("yt-dlp", "yt-dlp")
@@ -112,6 +144,16 @@ async fn latest_yt_dlp_download_link() -> Result<DepRelease> {
     Err(SyncmiruError::LatestVersionMissingError)
 }
 
+/// Downloads the dependency from the provided `release` URL and reports download progress.
+///
+/// Arguments:
+/// - `window: &tauri::Window`: A reference to the Tauri window for emitting events.
+/// - `release: &DepRelease`: The release information, including the URL and version to download.
+/// - `dst: &str`: The destination path to store the downloaded file.
+/// - `event_name_prefix: &str`: Prefix to use when emitting download-related events (mpv-, yt-dlp-).
+///
+/// Return:
+/// - `Result<()>`: Returns `Ok(())` if the download is successful, or an error if there was an issue.
 async fn download(window: &tauri::Window, release: &DepRelease, dst: &str, event_name_prefix: &str) -> Result<()> {
     let client = Client::new();
     let mut response = client
@@ -157,16 +199,35 @@ async fn download(window: &tauri::Window, release: &DepRelease, dst: &str, event
     Ok(())
 }
 
+
+/// Represents the availability of dependencies, including their versions and management status.
 #[derive(Serialize)]
 pub struct DepsAvailable {
+    /// Whether mpv is available
     mpv: bool,
+
+    /// Whether yt-dlp is available
     yt_dlp: bool,
+
+    /// Version of available mpv
     mpv_ver: String,
+
+    /// Version of available yt-dlp
     yt_dlp_ver: String,
+
+    /// Whether dependencies are managed by the application (`true`) or OS (`false`)
     managed: bool
 }
 
 impl DepsAvailable {
+
+    /// Checks the system for available `mpv` and `yt-dlp` executables and their versions.
+    ///
+    /// Arguments:
+    /// - `deps_managed: bool`: A flag indicating whether dependencies are managed by the application or not.
+    ///
+    /// Return:
+    /// - `Result<Self>`: A struct representing whether the dependencies are available, their versions, and whether they are managed.
     pub fn from_params(deps_managed: bool) -> Result<Self> {
         let mut mpv = "mpv".to_string();
         let mut yt_dlp = "yt-dlp".to_string();
@@ -230,6 +291,11 @@ impl DepsAvailable {
 
         Ok(Self { mpv: mpv_res, yt_dlp: yt_dlp_res, managed: deps_managed, mpv_ver, yt_dlp_ver })
     }
+
+    /// Returns whether both `mpv` and `yt-dlp` are available and functional.
+    ///
+    /// Return:
+    /// - `bool`: `true` if both dependencies are available and functional, otherwise `false`.
     pub fn all_available(&self) -> bool {
         self.mpv && self.yt_dlp
     }

@@ -1,3 +1,5 @@
+/// This module handles the creation and management of the license window in the application.
+
 use std::sync::Arc;
 use cfg_if::cfg_if;
 use tauri::{Manager, PhysicalSize};
@@ -11,6 +13,16 @@ use x11rb::rust_connection::RustConnection;
 use crate::{constants, x11};
 use crate::config::Theme;
 
+
+/// Command to open the license window. It checks if the window is already open, and if not,
+/// it creates a new license window with the appropriate size, theme, and scale factor.
+///
+/// # Arguments
+/// - `state`: The application state
+/// - `app`: The tauri application handle used to create and manage windows.
+///
+/// # Returns
+/// - `Result<()>`: Returns an error if the window creation or management fails.
 #[tauri::command]
 pub async fn open_license_window(
     state: tauri::State<'_, Arc<AppState>>,
