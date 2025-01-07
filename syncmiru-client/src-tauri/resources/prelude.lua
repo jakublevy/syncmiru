@@ -169,7 +169,7 @@ mp.add_key_binding("MOUSE_BTN0", handle_mouse_button)
 mp.add_key_binding("MOUSE_BTN1", handle_mouse_button)
 mp.add_key_binding("MOUSE_BTN2", handle_mouse_btn2)
 
--- -- wheel up, wheel down ignored
+-- wheel up, wheel down ignored
 
 mp.add_key_binding("MOUSE_BTN5", handle_mouse_button)
 mp.add_key_binding("MOUSE_BTN6", handle_mouse_button)
