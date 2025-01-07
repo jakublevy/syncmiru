@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use crate::result::Result;
 use interprocess::local_socket::{GenericFilePath, GenericNamespaced, ToFsName, ToNsName};
 use crate::mpv::get_pipe_ipc_path;
 
@@ -11,7 +12,7 @@ pub(super) fn create_set_property_cmd<T: Display + serde::Serialize>(prop: &str,
     format!("{{\"command\": [\"set_property\", \"{}\", {}]}}\n", prop, value_string)
 }
 
-pub(super) fn get_pipe_name(pipe_id: &str) -> crate::result::Result<interprocess::local_socket::Name> {
+pub(super) fn get_pipe_name(pipe_id: &str) -> Result<interprocess::local_socket::Name> {
     let pipe_path = get_pipe_ipc_path(pipe_id);
     if cfg!(target_family = "windows") {
         Ok(pipe_path.to_ns_name::<GenericNamespaced>()?)
