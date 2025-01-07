@@ -1,3 +1,5 @@
+//! This module contains functionality for managing the application data.
+
 use std::fs;
 use anyhow::Context;
 use ini::Ini;
@@ -7,6 +9,9 @@ use crate::files::syncmiru_config_ini;
 use crate::config::Theme;
 use crate::config::utils::{get_preferred_locale, ini_bool_to_string, ini_str_to_bool};
 
+
+/// The `AppData` struct holds the application settings.
+/// It is used to store and manage configuration values for the entire application.
 #[derive(Debug)]
 pub struct AppData {
     pub first_run_seen: bool,
@@ -23,6 +28,7 @@ pub struct AppData {
 }
 
 impl Default for AppData {
+    /// Returns the default `AppData` with predefined values.
     fn default() -> Self {
         Self {
             first_run_seen: false,
@@ -40,6 +46,11 @@ impl Default for AppData {
     }
 }
 
+/// Reads the configuration settings from the configuration file and returns an `AppData` instance with the values.
+///
+/// # Returns
+/// - `Ok(AppData)`: The application data read from the configuration file.
+/// - `Err(SyncmiruError::IniError)`: If an error occurs while reading or parsing the file.
 pub fn read() -> Result<AppData> {
     let syncmiru_config = syncmiru_config_ini()?;
     let mut appdata = AppData::default();
@@ -116,6 +127,14 @@ pub fn read() -> Result<AppData> {
     Ok(appdata)
 }
 
+/// Writes the `AppData` instance to the configuration file, storing the settings for the application.
+///
+/// # Parameters
+/// - `config`: A reference to the `AppData` instance that holds the settings to be saved.
+///
+/// # Returns
+/// - `Ok(())`: If the data was successfully written to the file.
+/// - `Err(SyncmiruError::IniError)`: If an error occurs during the write operation.
 pub fn write(config: &AppData) -> Result<()> {
     let mut ini = Ini::new();
     let mut settings = &mut ini.with_section(Some("Settings"));

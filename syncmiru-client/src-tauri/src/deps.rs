@@ -71,7 +71,7 @@ pub struct DepsVersions {
 }
 
 /// Fetches the latest MPV release URL and version from the configured release source.
-/// Return:
+/// Returns:
 /// - `Result<DepRelease>`: The latest MPV release information, or an error if the information cannot be retrieved.
 async fn latest_mpv_download_link() -> Result<DepRelease> {
     let mut api_url = constants::MPV_RELEASES_URL;
@@ -123,7 +123,7 @@ async fn latest_mpv_download_link() -> Result<DepRelease> {
 }
 
 /// Fetches the latest release URL and version for `yt-dlp` from GitHub.
-/// Return:
+/// Returns:
 /// - `Result<DepRelease>`: Returns the latest `yt-dlp` release information, or an error if the information cannot be retrieved.
 async fn latest_yt_dlp_download_link() -> Result<DepRelease> {
     let octocrab = octocrab::instance();
@@ -152,7 +152,7 @@ async fn latest_yt_dlp_download_link() -> Result<DepRelease> {
 /// - `dst: &str`: The destination path to store the downloaded file.
 /// - `event_name_prefix: &str`: Prefix to use when emitting download-related events (mpv-, yt-dlp-).
 ///
-/// Return:
+/// Returns:
 /// - `Result<()>`: Returns `Ok(())` if the download is successful, or an error if there was an issue.
 async fn download(window: &tauri::Window, release: &DepRelease, dst: &str, event_name_prefix: &str) -> Result<()> {
     let client = Client::new();
@@ -226,7 +226,7 @@ impl DepsAvailable {
     /// Arguments:
     /// - `deps_managed: bool`: A flag indicating whether dependencies are managed by the application or not.
     ///
-    /// Return:
+    /// Returns:
     /// - `Result<Self>`: A struct representing whether the dependencies are available, their versions, and whether they are managed.
     pub fn from_params(deps_managed: bool) -> Result<Self> {
         let mut mpv = "mpv".to_string();
@@ -294,7 +294,7 @@ impl DepsAvailable {
 
     /// Returns whether both `mpv` and `yt-dlp` are available and functional.
     ///
-    /// Return:
+    /// Returns:
     /// - `bool`: `true` if both dependencies are available and functional, otherwise `false`.
     pub fn all_available(&self) -> bool {
         self.mpv && self.yt_dlp

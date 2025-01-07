@@ -1,3 +1,5 @@
+//! This module provides Tauri commands for managing and retrieving application configuration.
+
 use std::sync::Arc;
 use tokio::time::sleep;
 use std::time::Duration;
@@ -9,12 +11,19 @@ use crate::result::Result;
 use crate::{mpv, sys};
 use crate::mpv::ipc::IpcData;
 
+/// Retrieves whether the first-run message has been seen by the user.
+///
+/// # Returns
+/// `true` if the first-run message has been seen, otherwise `false`.
 #[tauri::command]
 pub async fn get_first_run_seen(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
     let appdata = state.appdata.read().await;
     Ok(appdata.first_run_seen)
 }
 
+/// Marks the first-run message as seen by the user.
+///
+/// Updates the application's persistent configuration to reflect this change.
 #[tauri::command]
 pub async fn set_first_run_seen(state: tauri::State<'_, Arc<AppState>>) -> Result<()> {
     {
@@ -26,12 +35,19 @@ pub async fn set_first_run_seen(state: tauri::State<'_, Arc<AppState>>) -> Resul
     Ok(())
 }
 
+/// Retrieves whether the list of users should be shown.
+///
+/// # Returns
+/// `true` if the users list should be shown, otherwise `false`.
 #[tauri::command]
 pub async fn get_users_shown(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
     let appdata = state.appdata.read().await;
     Ok(appdata.users_shown)
 }
 
+/// Sets whether the list of users should be shown.
+///
+/// Updates the application's persistent configuration to reflect this change.
 #[tauri::command]
 pub async fn set_users_shown(state: tauri::State<'_, Arc<AppState>>, users_shown: bool) -> Result<()> {
     {
@@ -43,12 +59,19 @@ pub async fn set_users_shown(state: tauri::State<'_, Arc<AppState>>, users_shown
     Ok(())
 }
 
+/// Retrieves whether audio synchronization is enabled.
+///
+/// # Returns
+/// `true` if audio synchronization is enabled, otherwise `false`.
 #[tauri::command]
 pub async fn get_audio_sync(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
     let appdata = state.appdata.read().await;
     Ok(appdata.audio_sync)
 }
 
+/// Sets whether audio synchronization is enabled.
+///
+/// Updates the application's persistent configuration to reflect this change.
 #[tauri::command]
 pub async fn set_audio_sync(state: tauri::State<'_, Arc<AppState>>, audio_sync: bool) -> Result<()> {
     {
@@ -60,12 +83,19 @@ pub async fn set_audio_sync(state: tauri::State<'_, Arc<AppState>>, audio_sync: 
     Ok(())
 }
 
+/// Retrieves whether subtitle synchronization is enabled.
+///
+/// # Returns
+/// `true` if subtitle synchronization is enabled, otherwise `false`.
 #[tauri::command]
 pub async fn get_sub_sync(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
     let appdata = state.appdata.read().await;
     Ok(appdata.sub_sync)
 }
 
+/// Sets whether subtitle synchronization is enabled.
+///
+/// Updates the application's persistent configuration to reflect this change.
 #[tauri::command]
 pub async fn set_sub_sync(state: tauri::State<'_, Arc<AppState>>, sub_sync: bool) -> Result<()> {
     {
@@ -77,12 +107,19 @@ pub async fn set_sub_sync(state: tauri::State<'_, Arc<AppState>>, sub_sync: bool
     Ok(())
 }
 
+/// Retrieves the current language setting of the application.
+///
+/// # Returns
+/// The language setting as a `Language` enum value.
 #[tauri::command]
 pub async fn get_language(state: tauri::State<'_, Arc<AppState>>) -> Result<Language> {
     let appdata = state.appdata.read().await;
     Ok(appdata.lang)
 }
 
+/// Sets the language for the application.
+///
+/// Updates the application's persistent configuration and sets the runtime locale.
 #[tauri::command]
 pub async fn set_language(state: tauri::State<'_, Arc<AppState>>, language: Language) -> Result<()> {
     {
@@ -95,30 +132,50 @@ pub async fn set_language(state: tauri::State<'_, Arc<AppState>>, language: Lang
     Ok(())
 }
 
+/// Retrieves the target platform family (e.g., "windows", "linux").
+///
+/// # Returns
+/// A string representing the platform family.
 #[tauri::command]
 pub async fn get_target_family() -> Result<String> {
     Ok(std::env::consts::FAMILY.to_string())
 }
 
+/// Retrieves the JWT used for authentication.
+///
+/// # Returns
+/// The JWT as a string, or an empty string if not set.
 #[tauri::command]
 pub async fn get_jwt() -> Result<String> {
     Ok(jwt::read()?.unwrap_or("".to_string()))
 }
 
+/// Clears the stored JWT.
 #[tauri::command]
 pub async fn clear_jwt() -> Result<()> {
     jwt::clear()
 }
 
+/// Retrieves the hashed hardware ID of the system.
+///
+/// # Returns
+/// A string containing the hashed hardware ID.
 #[tauri::command]
 pub async fn get_hwid_hash() -> Result<String> { sys::id_hashed() }
 
+/// Retrieves whether the mpv window is detached.
+///
+/// # Returns
+/// `true` if the window is detached, otherwise `false`.
 #[tauri::command]
 pub async fn get_mpv_win_detached(state: tauri::State<'_, Arc<AppState>>) -> Result<bool> {
     let appdata = state.appdata.read().await;
     Ok(appdata.mpv_win_detached)
 }
 
+/// Sets whether the mpv window is detached.
+///
+/// Handles detaching or attaching the mpv window based on the provided parameter.
 #[tauri::command]
 pub async fn set_mpv_win_detached(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window, mpv_win_detach_req: bool) -> Result<()> {
     {
@@ -154,6 +211,9 @@ pub async fn set_mpv_win_detached(state: tauri::State<'_, Arc<AppState>>, window
     Ok(())
 }
 
+/// Sets the theme for the application.
+///
+/// Updates the application's persistent configuration to reflect the selected theme.
 #[tauri::command]
 pub async fn set_theme(state: tauri::State<'_, Arc<AppState>>, theme: Theme) -> Result<()> {
     {

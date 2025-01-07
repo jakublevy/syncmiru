@@ -1,3 +1,5 @@
+//! This module defines Tauri commands to interact with dependencies.
+
 use std::sync::Arc;
 use crate::appstate::AppState;
 use crate::config::appdata;
@@ -6,6 +8,10 @@ use crate::deps::utils::{delete_mpv, delete_yt_dlp, decompress_yt_dlp_archive, d
 use crate::files::{delete_tmp, syncmiru_data_dir};
 use crate::result::Result;
 
+
+/// Retrieves the current state of the dependencies, checking if they are available.
+/// # Return
+/// - `Result<DepsAvailable>`: A struct indicating whether dependencies are available and whether they are managed by the application or OS.
 #[tauri::command]
 pub async fn get_deps_state(state: tauri::State<'_, Arc<AppState>>) -> Result<DepsAvailable> {
     let mut appdata = state.appdata.write().await;
@@ -29,6 +35,10 @@ pub async fn get_deps_state(state: tauri::State<'_, Arc<AppState>>) -> Result<De
     }
 }
 
+/// Fetches the latest versions of the `mpv` and `yt-dlp` dependencies, along with the current versions stored in the app state.
+///
+/// # Returns
+/// - `Result<DepsVersion>`: A struct containing the current and latest versions of `mpv` and `yt-dlp`.
 #[tauri::command]
 pub async fn get_deps_versions_fetch(state: tauri::State<'_, Arc<AppState>>) -> Result<DepsVersions> {
     let mpv = latest_mpv_download_link().await?;
@@ -42,6 +52,7 @@ pub async fn get_deps_versions_fetch(state: tauri::State<'_, Arc<AppState>>) -> 
     })
 }
 
+/// Starts downloading the `mpv` dependency, including removing any previous versions
 #[tauri::command]
 pub async fn mpv_start_downloading(window: tauri::Window, state: tauri::State<'_, Arc<AppState>>) -> Result<()> {
     delete_mpv()?;
@@ -60,6 +71,7 @@ pub async fn mpv_start_downloading(window: tauri::Window, state: tauri::State<'_
     Ok(())
 }
 
+/// Starts downloading the `yt-dlp` dependency, including removing any previous versions
 #[tauri::command]
 pub async fn yt_dlp_start_downloading(window: tauri::Window, state: tauri::State<'_, Arc<AppState>>) -> Result<()> {
     delete_yt_dlp()?;
