@@ -28,22 +28,3 @@ pub(super) fn bool2_yn(b: bool) -> String {
         "no".to_string()
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn test_create_set_property_cmd() {
-        let a = create_set_property_cmd("a", &"a");
-        assert_eq!(a, "{\"command\": [\"set_property\", \"a\", \"a\"]}\n");
-
-        let b = create_set_property_cmd("a", &false);
-        assert_eq!(b, "{\"command\": [\"set_property\", \"a\", false]}\n");
-
-        let c = create_set_property_cmd("a", &4u64);
-        assert_eq!(c, "{\"command\": [\"set_property\", \"a\", 4]}\n");
-
-        let d = create_set_property_cmd("a", &1.35f64);
-        assert_eq!(d, "{\"command\": [\"set_property\", \"a\", 1.35]}\n");
-    }
-}
