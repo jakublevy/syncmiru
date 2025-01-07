@@ -1,3 +1,5 @@
+//! This module provides utility functions that manage the state and behavior of the mpv.
+
 use std::sync::Arc;
 use rust_decimal::Decimal;
 use tauri::{Emitter, Window};
@@ -6,6 +8,16 @@ use crate::mpv::ipc;
 use crate::mpv::ipc::{Interface, IpcData};
 use crate::result::Result;
 
+/// Prepares mpv before a file is loaded by adjusting the playback settings.
+///
+/// # Parameters
+/// - `state`: The shared application state.
+/// - `window`: The Tauri window, used for emitting events to the frontend.
+/// - `playback_speed`: The desired playback speed to set for the mpv.
+///
+/// # Returns
+/// - `Result<()>`: Returns `Ok(())` if successful, or an error if the operation fails.
+///
 pub async fn mpv_before_file_load(
     state: &Arc<AppState>,
     window: Window,

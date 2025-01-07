@@ -1,3 +1,5 @@
+//! This module handles window-specific functionality related to mpv video player integration.
+
 #[cfg(target_family = "windows")]
 pub mod win32;
 
@@ -21,6 +23,16 @@ use crate::appstate::AppState;
 use crate::result::Result;
 use crate::window::WindowExt;
 
+
+/// Attaches the mpv window to the application's window.
+///
+/// # Parameters
+/// - `state`: The shared application state that contains various configuration data.
+/// - `window`: The Tauri window to which the mpv window should be attached.
+/// - `mpv_wid`: The window ID of the mpv window to attach.
+///
+/// # Returns
+/// - `Result<()>`: Returns `Ok(())` if successful, or an error if the operation fails.
 pub async fn attach(state: &Arc<AppState>, window: &tauri::Window, mpv_wid: usize) -> Result<()> {
     let syncmiru_id = window
         .native_id().await?
@@ -35,6 +47,15 @@ pub async fn attach(state: &Arc<AppState>, window: &tauri::Window, mpv_wid: usiz
     Ok(())
 }
 
+
+/// Detaches the mpv window from the application's window, restoring borders and refocusing the window.
+///
+/// # Parameters
+/// - `state`: The shared application state that contains various configuration data.
+/// - `mpv_wid`: The window ID of the mpv window to detach.
+///
+/// # Returns
+/// - `Result<()>`: Returns `Ok(())` if successful, or an error if the operation fails.
 pub async fn detach(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     unparent(state, mpv_wid).await?;
     sleep(Duration::from_millis(100)).await;
@@ -44,6 +65,16 @@ pub async fn detach(state: &Arc<AppState>, mpv_wid: usize) -> Result<()> {
     Ok(())
 }
 
+
+/// A struct to represent the rectangular bounds of an HTML element, including position and size.
+///
+/// This is used to map the position and dimensions of elements for proper integration with the mpv window.
+///
+/// # Fields
+/// - `x`: The x-coordinate of the top-left corner of the element.
+/// - `y`: The y-coordinate of the top-left corner of the element.
+/// - `width`: The width of the element.
+/// - `height`: The height of the element.
 #[derive(Deserialize, Debug)]
 pub struct HtmlElementRect {
     pub x: f64,
