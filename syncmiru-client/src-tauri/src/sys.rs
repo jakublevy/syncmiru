@@ -10,7 +10,7 @@ pub fn id_hashed() -> Result<String> {
         .add_component(HWIDComponent::MachineName)
         .add_component(HWIDComponent::CPUID);
 
-    let hwid = builder.build(constants::HWID_KEY)
+    let hwid = builder.build(constants::HWID_SEED)
         .map_err(|e| anyhow!(e).context("HWID error"))?;
     Ok(hwid)
 }
