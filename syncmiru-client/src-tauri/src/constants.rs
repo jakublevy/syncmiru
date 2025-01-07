@@ -8,7 +8,7 @@ pub const KEYRING_LOGIN_JWT_USER: &'static str = "jwt";
 pub const MPV_AVX2_RELEASES_URL: &'static str = "https://sourceforge.net/projects/mpv-player-windows/rss?path=/64bit-v3/";
 pub const MPV_RELEASES_URL: &'static str = "https://sourceforge.net/projects/mpv-player-windows/rss?path=/64bit/";
 pub const HTTP_TIMEOUT: u64 = 5;
-pub const HWID_KEY: &'static str = "&-]#pBy7Wkxn72l|r#lW$6rAD:I7;ksbX976_ltp=LVM8iGKqzpQsK0v+<(Yf7e";
+pub const HWID_SEED: &'static str = "&-]#pBy7Wkxn72l|r#lW$6rAD:I7;ksbX976_ltp=LVM8iGKqzpQsK0v+<(Yf7e";
 pub const MPV_IGNORE_FULLSCREEN_MILLIS: u128 = 300;
 pub const MPV_MIN_USER_REQ_ID: u32 = 100;
 pub const DEFAULT_DPI: u32 = 96;
