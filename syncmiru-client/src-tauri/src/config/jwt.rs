@@ -27,3 +27,44 @@ pub fn clear() -> Result<()> {
         Err(e) => Err(SyncmiruError::KeyringError(e)),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use serial_test::serial;
+    use super::*;
+
+    #[test]
+    #[serial]
+    fn read_login_tkn_no_value_test() {
+        clear().unwrap();
+        let tkn = read().unwrap();
+        assert_eq!(None, tkn);
+    }
+
+    #[test]
+    #[serial]
+    fn write_write_test() {
+        clear().unwrap();
+        let tkn1 = "hello";
+        let tkn2 = "something";
+
+        write(tkn1).unwrap();
+        let val1 = read().unwrap().unwrap();
+        assert_eq!(tkn1, val1);
+
+        write(tkn2).unwrap();
+        let val2 = read().unwrap().unwrap();
+        assert_eq!(tkn2, val2);
+        clear().unwrap();
+    }
+
+    #[test]
+    #[serial]
+    fn read_write_login_tkn_test() {
+        let jwt = "hello world";
+        write(jwt).unwrap();
+        let tkn = read().unwrap();
+        clear().unwrap();
+        assert_eq!(Some(jwt.to_string()), tkn);
+    }
+}
