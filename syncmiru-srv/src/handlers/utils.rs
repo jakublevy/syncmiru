@@ -10,7 +10,7 @@ use crate::handlers::timers::DesyncTimerInterface;
 use crate::srvstate::{PlaylistEntryId, SrvState};
 use crate::result::Result;
 
-pub(super) async fn check_email_tkn_out_of_quota(
+pub(super) async fn check_email_tkn_within_quota(
     state: &SrvState,
     uid: Id,
     email_type: EmailTknType,
