@@ -1,3 +1,5 @@
+//! Utility functions for handlers.
+
 use std::sync::Arc;
 use std::time::Duration;
 use rand::Rng;
@@ -10,6 +12,16 @@ use crate::handlers::timers::DesyncTimerInterface;
 use crate::srvstate::{PlaylistEntryId, SrvState};
 use crate::result::Result;
 
+
+/// Checks whether the given user has exceeded its quota for email tokens.
+///
+/// # Arguments
+/// * `state`: The shared application state (`&SrvState`).
+/// * `uid`: The unique identifier of the user (`Id`).
+/// * `email_type`: The type of email token being used (`EmailTknType`).
+///
+/// # Returns
+/// * `Result<bool>`: A result indicating whether the user is within its quota for email tokens.
 pub(super) async fn check_email_tkn_out_of_quota(
     state: &SrvState,
     uid: Id,
