@@ -1,3 +1,5 @@
+//! This module defines the custom error type `SyncmiruError` used throughout the entire application.
+
 use serde_with::DisplayFromStr;
 use std::io;
 use std::num::ParseIntError;
@@ -7,58 +9,80 @@ use axum::Json;
 use axum::response::{IntoResponse, Response};
 use validator::ValidationErrors;
 
+
+/// The `SyncmiruError` enum defines all possible error types that the application may encounter.
+/// Each variant is associated with a specific error type, and `#[from]` allows automatic conversion
+/// from the underlying error type into a `SyncmiruError` instance.
 #[derive(thiserror::Error, Debug)]
 pub enum SyncmiruError {
+    /// IO-related errors
     #[error("Io error occurred")]
     IoError(#[from] io::Error),
 
+    /// Errors related to setting up the logger
     #[error("Logger error")]
     LoggerError(#[from] log::SetLoggerError),
 
+    /// YAML scanning errors (e.g., malformed YAML files)
     #[error("Error while scanning YAML")]
     YamlScanError(#[from] yaml_rust2::ScanError),
 
+    /// Database operation errors from SQLx
     #[error("DB error")]
     SqlxError(#[from] sqlx::error::Error),
 
+    /// Database migration errors from SQLx
     #[error("DB migration error")]
     MigrationError(#[from] sqlx::migrate::MigrateError),
 
+    /// Errors from joining asynchronous tasks in Tokio
     #[error("Join error")]
     JoinError(#[from] tokio::task::JoinError),
 
+    /// Errors related to HCaptcha validation failures
     #[error("HCaptcha invalid")]
     HCaptchaInvalid(#[from] hcaptcha::Error),
 
+    /// Errors when parsing email addresses using Lettre
     #[error("Lettre email address error")]
     LettreAddressError(#[from] lettre::address::AddressError),
 
+    /// Generic Lettre errors
     #[error("Lettre error")]
     LettreError(#[from] lettre::error::Error),
 
+    /// Errors related to SMTP in Lettre
     #[error("Lettre SMTP error")]
     LettreSmtpError(#[from] lettre::transport::smtp::Error),
 
+    /// General internal errors wrapped in `anyhow::Error`
     #[error("Internal error")]
     InternalError(#[from] anyhow::Error),
 
+    /// Validation errors in request bodies
     #[error("Validation error in request body")]
     InvalidEntity(#[from] ValidationErrors),
 
+    /// Errors related to URL encoding serialization
     #[error("URL encoding error")]
     SerdeUrlSerError(#[from] serde_urlencoded::ser::Error),
 
+    /// Errors from parsing PEM files
     #[error("PEM parsing error")]
     PemError(#[from] pem::PemError),
 
+    /// Errors from the OpenSSL error stack
     #[error("openssl error stack")]
     ErrorStack(#[from] openssl::error::ErrorStack),
 
+    /// Errors related to JWT processing
     #[error("jwt error")]
     JoseError(#[from] josekit::JoseError),
 
+    /// Errors when sending messages via Socket.IO
     #[error("socketio send error")]
     SocketIoSendUnitError(#[from] socketioxide::SendError),
+
 
     #[error("socketio disconnect error")]
     SocketIoDisconnectError(#[from] socketioxide::DisconnectError),

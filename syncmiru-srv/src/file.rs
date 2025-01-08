@@ -14,6 +14,19 @@ use urlencoding::encode;
 use crate::config::{JwtSigner, Source};
 use crate::models::file::{FileInfo, FileType};
 
+
+/// Lists files from a specified path on a remote file server.
+///
+/// # Arguments
+/// - `root_url`: The base URL of the file server.
+/// - `jwt`: The JWT token used for authentication.
+/// - `path`: The path on the file server to list files from.
+///
+/// # Returns
+/// A vector of `FileInfo` objects containing details about the files.
+///
+/// # Errors
+/// Returns an error if the HTTP request fails or the server returns an unsuccessful status.
 pub async fn list(
     root_url: &str,
     jwt: &str,
@@ -38,6 +51,17 @@ pub async fn list(
     Ok(files_info)
 }
 
+
+/// Checks if a specific file exists in a given path on the file server.
+///
+/// # Arguments
+/// - `root_url`: The base URL of the file server.
+/// - `jwt`: The JWT token used for authentication.
+/// - `path`: The path to the file.
+/// - `allowed_extensions`: An optional set of allowed file extensions to filter files.
+///
+/// # Returns
+/// `true` if the file exists and meets the criteria, otherwise `false`.
 pub async fn f_exists(
     root_url: &str,
     jwt: &str,
@@ -60,6 +84,18 @@ pub async fn f_exists(
     Ok(false)
 }
 
+
+/// Generates a JWT for accessing a specific file.
+///
+/// # Arguments
+/// - `source`: The source configuration containing the JWT signer.
+/// - `path`: The path to the file for which the token is generated.
+///
+/// # Returns
+/// A signed JWT as a `String`.
+///
+/// # Errors
+/// Returns an error if the JWT signing process fails.
 pub async fn gen_access_jwt(
     source: &Source,
     path: &str
@@ -79,10 +115,28 @@ pub async fn gen_access_jwt(
     Ok(signed)
 }
 
+
+/// Extracts the file extension from a given file path.
+///
+/// # Arguments
+/// - `path`: The file path as a string slice.
+///
+/// # Returns
+/// The file extension as a string slice. Returns an empty string if no extension is found.
 fn extract_extension(path: &str) -> &str {
     path.split(".").last().unwrap_or("")
 }
 
+
+/// Splits a string into two parts based on the last occurrence of a delimiter.
+///
+/// # Arguments
+/// - `s`: The input string.
+/// - `delimiter`: The character used as the delimiter.
+///
+/// # Returns
+/// A tuple containing the two parts of the string. If the delimiter is not found,
+/// the first part is an empty string, and the second part is the input string.
 fn split_on_last_occurrence(s: &str, delimiter: char) -> Option<(&str, &str)> {
     let mut parts = s.rsplitn(2, delimiter);
     let second_part = parts.next()?;
