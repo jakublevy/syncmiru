@@ -1,3 +1,5 @@
+//! This module defines functionality for parsing command-line arguments using `clap`.
+
 use std::fs;
 use std::path::PathBuf;
 use clap::Parser;
@@ -5,11 +7,17 @@ use log::{debug, info};
 use crate::result::Result;
 use crate::error::SyncmiruError;
 
+
+/// Represents the parsed command-line arguments.
 pub struct Args {
     pub config_file: PathBuf
 }
 
 impl Args {
+    /// Parses the command-line arguments.
+    ///
+    /// # Returns
+    /// * `Result<Self>`: Returns a `Result` with `Args` on success or a `SyncmiruError` on failure.
     pub fn parse() -> Result<Self> {
         debug!("Parsing CLI args");
         let cli = Cli::parse();

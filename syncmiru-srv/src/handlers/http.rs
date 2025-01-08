@@ -1,3 +1,5 @@
+//! This module contains the Axum HTTP handlers for the server.
+
 use crate::crypto;
 use crate::email;
 use crate::error::SyncmiruError;
@@ -19,10 +21,23 @@ use std::sync::Arc;
 use tower::BoxError;
 use validator::Validate;
 
+
+/// Default handler that returns the server's name.
+///
+/// # Returns
+/// * `&'static str` - The name of the server.
 pub async fn index() -> &'static str {
     "Syncmiru server"
 }
 
+
+/// Handler to return the service status.
+///
+/// # Arguments
+/// * `state`: The shared application state (`State<Arc<SrvState>>`).
+///
+/// # Returns
+/// * `Json<ServiceStatus>` - A JSON object representing the service's current status.
 pub async fn service(
     State(state): State<Arc<SrvState>>
 ) -> Json<ServiceStatus> {
@@ -33,6 +48,14 @@ pub async fn service(
 }
 
 
+/// Registers a new user based on the provided registration form.
+///
+/// # Arguments
+/// * `state`: The shared application state (`State<Arc<SrvState>>`).
+/// * `payload`: The registration form payload (`Json<RegForm>`).
+///
+/// # Returns
+/// * `Result<()>` - A result indicating success or failure of the registration process.
 pub async fn register(
     State(state): State<Arc<SrvState>>,
     Json(payload): Json<RegForm>,
@@ -99,6 +122,15 @@ pub async fn register(
     Ok(())
 }
 
+
+/// Checks if the provided username is unique.
+///
+/// # Arguments
+/// * `state`: The shared application state (`State<Arc<SrvState>>`).
+/// * `payload`: The username to check for uniqueness (`Json<Username>`).
+///
+/// # Returns
+/// * `Result<Json<BooleanResp>>` - A JSON object containing a boolean response indicating if the username is unique.
 pub async fn username_unique(
     State(state): State<Arc<SrvState>>,
     Json(payload): Json<Username>,
@@ -108,6 +140,15 @@ pub async fn username_unique(
     Ok(Json(BooleanResp::from(unique)))
 }
 
+
+/// Checks if the provided email is unique.
+///
+/// # Arguments
+/// * `state`: The shared application state (`State<Arc<SrvState>>`).
+/// * `payload`: The email to check for uniqueness (`Json<Email>`).
+///
+/// # Returns
+/// * `Result<Json<BooleanResp>>` - A JSON object containing a boolean response indicating if the email is unique.
 pub async fn email_unique(
     State(state): State<Arc<SrvState>>,
     Json(payload): Json<Email>,
@@ -117,6 +158,14 @@ pub async fn email_unique(
     Ok(Json(BooleanResp::from(unique)))
 }
 
+/// Verifies the email using the provided token.
+///
+/// # Arguments
+/// * `state`: The shared application state (`State<Arc<SrvState>>`).
+/// * `payload`: The email verification parameters (`Query<EmailVerify>`).
+///
+/// # Returns
+/// * `Result<Html<String>>` - An HTML response indicating whether the email verification succeeded or failed.
 pub async fn email_verify(
     State(state): State<Arc<SrvState>>,
     Query(payload): Query<EmailVerify>,
@@ -152,6 +201,14 @@ pub async fn email_verify(
 }
 
 
+/// Sends an email verification token to the user.
+///
+/// # Arguments
+/// * `state`: The shared application state (`State<Arc<SrvState>>`).
+/// * `payload`: The email and language parameters (`Json<EmailWithLang>`).
+///
+/// # Returns
+/// * `Result<()>` - A result indicating success or failure of sending the email verification.
 pub async fn email_verify_send(
     State(state): State<Arc<SrvState>>,
     Json(payload): Json<EmailWithLang>,
@@ -185,6 +242,15 @@ pub async fn email_verify_send(
     Ok(())
 }
 
+
+/// Checks if the provided email has been verified.
+///
+/// # Arguments
+/// * `state`: The shared application state (`State<Arc<SrvState>>`).
+/// * `payload`: The email to check verification for (`Json<Email>`).
+///
+/// # Returns
+/// * `Result<Json<BooleanResp>>` - A JSON object containing a boolean response indicating whether the email is verified.
 pub async fn email_verified(
     State(state): State<Arc<SrvState>>,
     Json(payload): Json<Email>,
@@ -196,6 +262,15 @@ pub async fn email_verified(
     Ok(Json(BooleanResp::from(verified)))
 }
 
+
+/// Sends a forgotten password token to the user's email.
+///
+/// # Arguments
+/// * `state`: The shared application state (`State<Arc<SrvState>>`).
+/// * `payload`: The email and language parameters (`Json<EmailWithLang>`).
+///
+/// # Returns
+/// * `Result<()>` - A result indicating success or failure of sending the forgotten password email.
 pub async fn forgotten_password_send(
     State(state): State<Arc<SrvState>>,
     Json(payload): Json<EmailWithLang>,
@@ -225,6 +300,15 @@ pub async fn forgotten_password_send(
     Ok(())
 }
 
+
+/// Validates the forgotten password token.
+///
+/// # Arguments
+/// * `state`: The shared application state (`State<Arc<SrvState>>`).
+/// * `payload`: The forgotten password token parameters (`Query<TknEmail>`).
+///
+/// # Returns
+/// * `Result<Json<BooleanResp>>` - A JSON object containing a boolean response indicating whether the token is valid.
 pub async fn forgotten_password_tkn_valid(
     State(state): State<Arc<SrvState>>,
     Json(payload): Json<TknEmail>
@@ -246,6 +330,15 @@ pub async fn forgotten_password_tkn_valid(
     Ok(Json(BooleanResp{ resp: tkn_valid }))
 }
 
+
+/// Changes the forgotten password using the provided new password and token.
+///
+/// # Arguments
+/// * `state`: The shared application state (`State<Arc<SrvState>>`).
+/// * `payload`: The new password and forgotten password token parameters (`Json<ForgottenPasswordChange>`).
+///
+/// # Returns
+/// * `Result<()>` - A result indicating success or failure of changing the password.
 pub async fn forgotten_password_change(
     State(state): State<Arc<SrvState>>,
     Json(payload): Json<ForgottenPasswordChange>
@@ -288,6 +381,15 @@ pub async fn forgotten_password_change(
     Ok(())
 }
 
+
+/// Handles user login and returns a JWT token if successful.
+///
+/// # Arguments
+/// * `state`: The shared application state (`State<Arc<SrvState>>`).
+/// * `payload`: The login credentials (`Json<Login>`).
+///
+/// # Returns
+/// * `Result<Json<Jwt>>` - A JSON object containing the JWT token if login is successful.
 pub async fn new_login(
     State(state): State<Arc<SrvState>>,
     Json(payload): Json<Login>
@@ -332,6 +434,16 @@ pub async fn new_login(
     Ok(Json(Jwt { jwt }))
 }
 
+
+/// Validates the registration token and checks if it can still be used.
+///
+/// # Arguments
+/// * `state`: The shared application state (`State<Arc<SrvState>>`).
+/// * `payload`: The registration token (`Json<Tkn>`).
+///
+/// # Returns
+/// * `Result<Json<BooleanResp>>` - A JSON object containing a boolean response indicating whether the registration
+/// token is valid and still usable.
 pub async fn reg_tkn_valid(
     State(state): State<Arc<SrvState>>,
     Json(payload): Json<Tkn>
@@ -353,6 +465,14 @@ pub async fn reg_tkn_valid(
     }
 }
 
+
+/// Handles errors and returns appropriate responses based on the error type.
+///
+/// # Arguments
+/// * `error`: The error that occurred (`BoxError`).
+///
+/// # Returns
+/// * `impl IntoResponse` - A response indicating the error, with an appropriate HTTP status code.
 pub async fn error(error: BoxError) -> impl IntoResponse {
     if error.is::<tower::timeout::error::Elapsed>() {
         return (StatusCode::REQUEST_TIMEOUT, Cow::from("request timed out"));

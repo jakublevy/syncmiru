@@ -1,3 +1,5 @@
+//! This module contains functions related to managing the playback synchronization of clients.
+
 use std::sync::Arc;
 use std::time::Duration;
 use rust_decimal::prelude::ToPrimitive;
@@ -8,11 +10,18 @@ use crate::constants;
 use crate::models::query::Id;
 use crate::srvstate::{SrvState};
 
+/// Enum to control the state of the desync timer (either waking up or sleeping).
 pub enum DesyncTimerInterface {
     Wake,
     Sleep
 }
 
+
+/// Manages the desynchronization timer by controlling when it starts or stops.
+///
+/// # Arguments
+/// * `state` - A reference to the shared application state (`Arc<SrvState>`).
+/// * `rx` - A `Receiver<DesyncTimerInterface>` that receives messages to control the timer (either Wake or Sleep).
 pub async fn desync_timer_controller(state: Arc<SrvState>, mut rx: Receiver<DesyncTimerInterface>) {
     let mut task_handle: Option<JoinHandle<()>> = None;
     loop {
@@ -35,6 +44,11 @@ pub async fn desync_timer_controller(state: Arc<SrvState>, mut rx: Receiver<Desy
     }
 }
 
+/// The desynchronization timer monitors and manages the synchronization of users' timestamps in real-time.
+/// This function adjusts the timestamps of users to ensure they are within tolerance levels to avoid desync issues.
+///
+/// # Arguments
+/// * `state` - A reference to the shared application state (`Arc<SrvState>`).
 async fn desync_timer(state: Arc<SrvState>) {
     loop {
         {

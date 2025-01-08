@@ -4,7 +4,7 @@ use once_cell::sync::OnceCell;
 use crate::window;
 use crate::result::Result;
 
-/// The `APP_NAME` constant holds the unique application identifier used for various purposes
+/// The `APP_NAME` constant holds the unique application identifier used for various purposes.
 pub const APP_NAME: &'static str = "cz.levy.jakub.client.syncmiru";
 
 
