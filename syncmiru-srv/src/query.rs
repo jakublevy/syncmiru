@@ -1,3 +1,8 @@
+//! This module provides database-related functions used throughout the application.
+//! It abstracts direct SQL queries into reusable, async functions that interact with
+//! the database using the `sqlx` crate. The functions primarily manage user data,
+//! sessions, tokens, and other related entities.
+
 use rust_decimal::Decimal;
 use sqlx::{PgPool, Postgres, Transaction};
 use crate::models::User;

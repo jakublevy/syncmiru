@@ -1,3 +1,8 @@
+//! This module contains various validation functions for user input.
+//! The functions ensure that the input data adheres to predefined rules and formats.
+//! If the input does not meet the requirements, a `ValidationError` is returned with an appropriate
+//! error message. These validators are used to ensure data integrity and consistency throughout the entire application.
+
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use url::Url;
