@@ -1,3 +1,7 @@
+//! This module provides functionality for interacting with the configured file servers.
+//! It supports listing files, checking the existence of specific files, and generating JSON Web Tokens (JWTs)
+//! for secure file access.
+
 use std::collections::HashSet;
 use std::time::{Duration, SystemTime};
 use anyhow::anyhow;

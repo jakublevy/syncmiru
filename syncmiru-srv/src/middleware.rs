@@ -1,3 +1,7 @@
+//! This module provides middleware functionality for authenticating Socket.IO clients
+//! and managing user sessions. It ensures secure client connections by validating
+//! login tokens and handles scenarios such as multiple logins by the same user.
+
 use std::sync::Arc;
 use anyhow::Context;
 use socketioxide::extract::{Data, SocketRef, State};
@@ -9,6 +13,22 @@ use crate::result::Result;
 use crate::srvstate::SrvState;
 use crate::tkn;
 
+
+/// Authenticates a Socket.IO client based on the provided login tokens.
+///
+/// # Parameters
+/// - `State(state): State<Arc<SrvState>>`:
+///   A server state object containing configuration, database access, etc.
+/// - `s: SocketRef`:
+///   A reference to the current Socket.IO client connection.
+/// - `Data(payload): Data<LoginTkns>`:
+///   The login tokens provided by the client, which include the hardware ID hash.
+///
+/// # Returns
+/// - `Result<()>`:
+///   Returns `Ok(())` if authentication is successful. Otherwise, returns an error.
+/// # Errors
+/// - Returns `AuthError` if the login token is invalid or the client is unauthorized.
 pub async fn auth(
     State(state): State<Arc<SrvState>>,
     s: SocketRef,
@@ -23,6 +43,21 @@ pub async fn auth(
     Ok(())
 }
 
+
+/// Registers a new client and manages session conflicts, including handling multiple logins by the same user.
+/// # Parameters
+/// - `state: &Arc<SrvState>`:
+///   A server state object containing configuration, database access, etc.
+/// - `s: &SocketRef`:
+///   A reference to the current Socket.IO client connection.
+/// - `uid: Id`:
+///   The user ID associated with the client.
+/// - `hwid_hash: &str`:
+///   The hash of the hardware ID provided by the client.
+///
+/// # Returns
+/// - `Result<()>`:
+///   Returns `Ok(())` if the session is successfully managed. Otherwise, returns an error.
 async fn new_client(
     state: &Arc<SrvState>,
     s: &SocketRef,
