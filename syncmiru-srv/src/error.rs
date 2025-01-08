@@ -57,10 +57,10 @@ pub enum SyncmiruError {
     #[error("jwt error")]
     JoseError(#[from] josekit::JoseError),
 
-    #[error("socketio send error")]
-    SocketIoSendUnitError(#[from] socketioxide::SendError),
+    #[error("Socket.io send error")]
+    SocketIoSendError(#[from] socketioxide::SendError),
 
-    #[error("socketio disconnect error")]
+    #[error("Socket.io disconnect error")]
     SocketIoDisconnectError(#[from] socketioxide::DisconnectError),
 
     #[error("int parse failed")]
