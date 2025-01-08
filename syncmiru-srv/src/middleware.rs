@@ -23,7 +23,7 @@ pub async fn auth(
     Ok(())
 }
 
-pub async fn new_client(
+async fn new_client(
     state: &Arc<SrvState>,
     s: &SocketRef,
     uid: Id,
