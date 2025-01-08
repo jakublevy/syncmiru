@@ -1,3 +1,5 @@
+//! This module provides utilities for sending various types of emails.
+
 use lettre::{Message, SmtpTransport, Transport};
 use lettre::message::header::ContentType;
 use crate::config::EmailConf;
@@ -5,6 +7,19 @@ use crate::result::Result;
 use rust_i18n::{t};
 use crate::models::query::Id;
 
+
+/// Sends a verification email to the specified user.
+///
+/// # Arguments
+/// - `email_conf`: Reference to the email configuration.
+/// - `to`: The recipient's email address.
+/// - `tkn`: The verification token.
+/// - `uid`: The user ID.
+/// - `srv_url`: The server URL.
+/// - `lang`: The language/locale for the email.
+///
+/// # Returns
+/// `Result<()>` indicating success or failure.
 pub async fn send_verification_email(
     email_conf: &EmailConf,
     to: &str,
@@ -35,6 +50,20 @@ pub async fn send_verification_email(
     Ok(())
 }
 
+
+/// Sends email notifications for changing the user's email address.
+///
+/// # Arguments
+/// - `email_conf`: Reference to the email configuration.
+/// - `to_old`: The old email address.
+/// - `tkn_to_old`: Token for the old email address.
+/// - `to_new`: The new email address.
+/// - `tkn_to_new`: Token for the new email address.
+/// - `srv_url`: The server URL.
+/// - `lang`: The language/locale for the email.
+///
+/// # Returns
+/// `Result<()>` indicating success or failure.
 pub async fn send_change_emails(
     email_conf: &EmailConf,
     to_old: &str,
@@ -63,6 +92,17 @@ pub async fn send_change_emails(
 }
 
 
+/// Sends a forgotten password email to the specified user.
+///
+/// # Arguments
+/// - `email_conf`: Reference to the email configuration.
+/// - `to`: The recipient's email address.
+/// - `tkn`: The password reset token.
+/// - `srv_url`: The server URL.
+/// - `lang`: The language/locale for the email.
+///
+/// # Returns
+/// `Result<()>` indicating success or failure.
 pub async fn send_forgotten_password_email(
     email_conf: &EmailConf,
     to: &str,
@@ -80,6 +120,17 @@ pub async fn send_forgotten_password_email(
     Ok(())
 }
 
+
+/// Sends a warning email when the user's password is changed.
+///
+/// # Arguments
+/// - `email_conf`: Reference to the email configuration.
+/// - `to`: The recipient's email address.
+/// - `srv_url`: The server URL.
+/// - `lang`: The language/locale for the email.
+///
+/// # Returns
+/// `Result<()>` indicating success or failure.
 pub async fn send_password_changed_warning(
     email_conf: &EmailConf,
     to: &str,
@@ -96,6 +147,19 @@ pub async fn send_password_changed_warning(
     Ok(())
 }
 
+
+/// Sends a warning email to notify the user of an email change.
+///
+/// # Arguments
+/// - `email_conf`: Reference to the email configuration.
+/// - `to`: The recipient's current email address.
+/// - `srv_url`: The server URL.
+/// - `new_email`: The new email address being set.
+/// - `username`: The username of the account associated with the email.
+/// - `lang`: The language/locale for the email.
+///
+/// # Returns
+/// `Result<()>` indicating success or failure.
 pub async fn send_email_changed_warning(
     email_conf: &EmailConf,
     to: &str,
@@ -121,6 +185,18 @@ pub async fn send_email_changed_warning(
     Ok(())
 }
 
+
+/// Sends an email to confirm account deletion with a token.
+///
+/// # Arguments
+/// - `email_conf`: Reference to the email configuration.
+/// - `to`: The recipient's email address.
+/// - `tkn`: The account deletion confirmation token.
+/// - `srv_url`: The server URL.
+/// - `lang`: The language/locale for the email.
+///
+/// # Returns
+/// `Result<()>` indicating success or failure.
 pub async fn send_delete_account_email(
     email_conf: &EmailConf,
     to: &str,
@@ -138,6 +214,17 @@ pub async fn send_delete_account_email(
     Ok(())
 }
 
+/// Sends a warning email when the user's account is deleted.
+///
+/// # Arguments
+/// - `email_conf`: Reference to the email configuration.
+/// - `to`: The recipient's email address.
+/// - `username`: The username of the account that was deleted.
+/// - `srv_url`: The server URL.
+/// - `lang`: The language/locale for the email.
+///
+/// # Returns
+/// `Result<()>` indicating success or failure.
 pub async fn send_account_deleted_email_warning(
     email_conf: &EmailConf,
     to: &str,
@@ -155,6 +242,17 @@ pub async fn send_account_deleted_email_warning(
     Ok(())
 }
 
+/// Sends a generic email with the specified subject and body content.
+///
+/// # Arguments
+/// - `email_conf`: Reference to the email configuration.
+/// - `to`: The recipient's email address.
+/// - `srv_url`: The server URL.
+/// - `subject`: The subject of the email.
+/// - `body`: The HTML body content of the email.
+///
+/// # Returns
+/// `Result<()>` indicating success or failure.
 async fn send_email(
     email_conf: &EmailConf,
     to: &str,
@@ -176,6 +274,14 @@ async fn send_email(
     Ok(())
 }
 
+/// Joins two URL components into a single valid URL.
+///
+/// # Arguments
+/// - `url1`: The base URL.
+/// - `url2`: The path or query string to append to the base URL.
+///
+/// # Returns
+/// A `String` containing the combined URL.
 fn join_url(url1: &str, url2: &str) -> String {
     if url1.ends_with("/") {
         format!("{}{}", url1, url2)

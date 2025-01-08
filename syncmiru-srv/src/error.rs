@@ -87,43 +87,56 @@ pub enum SyncmiruError {
     #[error("Socket.IO disconnect error")]
     SocketIoDisconnectError(#[from] socketioxide::DisconnectError),
 
+    /// Errors from parsing integers
     #[error("int parse failed")]
     ParseIntError(#[from] ParseIntError),
 
+    /// Errors from HTTP requests using Reqwest
     #[error("Reqwest error")]
     ReqwestError(#[from] reqwest::Error),
 
+    /// Errors from JSON serialization or deserialization using Serde
     #[error("Serde JSON error")]
     SerdeJsonError(#[from] serde_json::error::Error),
 
+    /// Errors when parsing CLI arguments
     #[error("Parsing CLI args failed {0}")]
     CliParseFailed(String),
 
+    /// Errors for invalid YAML structures
     #[error("Yaml invalid {0}")]
     YamlInvalid(String),
 
+    /// HTTP Unprocessable entity errors
     #[error("Unprocessable entity")]
     UnprocessableEntity(String),
 
+    /// HTTP Conflict errors
     #[error("Conflict")]
     Conflict(String),
 
+    /// Authentication-related errors
     #[error("Auth error")]
     AuthError,
 
+    /// Errors when an email is not verified
     #[error("Email not verified")]
     EmailNotVerified,
 
+    /// Errors while parsing JWT keys
     #[error("JWT key parse error")]
     JwtKeyParseError(String),
 
+    /// Errors when parsing YAML arrays
     #[error("YAML array parse error")]
     YAMLArrayParseError(String),
 
+    /// Synchronization-related errors (e.g., poisoned locks)
     #[error("Poison error")]
     PoisonError
 }
 
+/// Converts a `PoisonError` into a `SyncmiruError::PoisonError`.
 impl<T> From<PoisonError<T>> for SyncmiruError {
     fn from(_: PoisonError<T>) -> Self {
         Self::PoisonError
@@ -133,6 +146,7 @@ impl<T> From<PoisonError<T>> for SyncmiruError {
 
 
 impl IntoResponse for SyncmiruError {
+    /// Converts `SyncmiruError` into an HTTP response, including appropriate status codes and error details.
     fn into_response(self) -> Response {
         #[serde_with::serde_as]
         #[serde_with::skip_serializing_none]
@@ -170,6 +184,7 @@ impl IntoResponse for SyncmiruError {
 }
 
 impl SyncmiruError {
+    /// Maps `SyncmiruError` variants to appropriate HTTP status codes.
     fn status_code(&self) -> StatusCode {
         use SyncmiruError::*;
 
