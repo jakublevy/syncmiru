@@ -3,11 +3,12 @@ use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
 use crate::config::DbConfig;
 use crate::result::Result;
 use sqlx::PgPool;
+use crate::constants;
 
 pub async fn create_connection_pool(db_config: &DbConfig) -> Result<PgPool> {
     let opts = PgConnectOptions::new()
         .host(&db_config.host)
-        .application_name("syncmiru-srv")
+        .application_name(constants::APP_NAME)
         .username(&db_config.user)
         .password(&db_config.password)
         .port(db_config.port)
