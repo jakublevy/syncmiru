@@ -1,5 +1,3 @@
-//! Utility functions for handlers.
-
 use std::sync::Arc;
 use std::time::Duration;
 use rand::Rng;
@@ -22,7 +20,7 @@ use crate::result::Result;
 ///
 /// # Returns
 /// * `Result<bool>`: A result indicating whether the user is within its quota for email tokens.
-pub(super) async fn check_email_tkn_out_of_quota(
+pub(super) async fn check_email_tkn_within_quota(
     state: &SrvState,
     uid: Id,
     email_type: EmailTknType,

@@ -223,8 +223,8 @@ pub async fn email_verify_send(
     }
     let uid = uid.unwrap();
 
-    let out_of_quota = utils::check_email_tkn_out_of_quota(&state, uid, EmailTknType::Verify).await?;
-    if !out_of_quota {
+    let within_quota = utils::check_email_tkn_within_quota(&state, uid, EmailTknType::Verify).await?;
+    if !within_quota {
         return Err(SyncmiruError::UnprocessableEntity("too many requests".to_string()));
     }
 
@@ -283,8 +283,8 @@ pub async fn forgotten_password_send(
     }
     let uid = uid.unwrap();
 
-    let out_of_quota = utils::check_email_tkn_out_of_quota(&state, uid, EmailTknType::ForgottenPassword).await?;
-    if !out_of_quota {
+    let within_quota = utils::check_email_tkn_within_quota(&state, uid, EmailTknType::ForgottenPassword).await?;
+    if !within_quota {
         return Err(SyncmiruError::UnprocessableEntity("too many requests".to_string()));
     }
     let tkn = crypto::gen_tkn();

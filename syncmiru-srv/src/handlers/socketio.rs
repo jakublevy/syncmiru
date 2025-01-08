@@ -572,12 +572,12 @@ pub async fn send_delete_account_email(
         .await
         .expect("db error");
 
-    let out_of_quota = utils::check_email_tkn_out_of_quota(
+    let within_quota = utils::check_email_tkn_within_quota(
         &state, uid, EmailTknType::DeleteAccount,
     )
         .await
         .expect("check_email_tkn quota error");
-    if !out_of_quota {
+    if !within_quota {
         ack.send(&SocketIoAck::<()>::err()).ok();
         return;
     }
