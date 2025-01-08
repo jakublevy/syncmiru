@@ -5,7 +5,7 @@ use cfg_if::cfg_if;
 use rust_decimal::Decimal;
 use tauri::{Emitter};
 use crate::appstate::{AppState, MpvMsg};
-use crate::mpv::{gen_pipe_id, on_mpv_stopped, start_ipc, start_process, stop_ipc, stop_process, utils, window};
+use crate::mpv::{gen_pipe_id, start_ipc, start_process, stop_ipc, stop_process, utils, window};
 use crate::mpv::ipc::{Interface, IpcData, MsgMood};
 use crate::mpv::models::{LoadFromSource, LoadFromUrl, UserLoadedInfo};
 use crate::mpv::window::HtmlElementRect;
