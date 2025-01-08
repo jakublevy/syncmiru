@@ -80,11 +80,11 @@ pub enum SyncmiruError {
     JoseError(#[from] josekit::JoseError),
 
     /// Errors when sending messages via Socket.IO
-    #[error("socketio send error")]
-    SocketIoSendUnitError(#[from] socketioxide::SendError),
+    #[error("Socket.IO send error")]
+    SocketIoSendError(#[from] socketioxide::SendError),
 
-
-    #[error("socketio disconnect error")]
+    /// Errors when disconnecting a Socket.IO client
+    #[error("Socket.IO disconnect error")]
     SocketIoDisconnectError(#[from] socketioxide::DisconnectError),
 
     #[error("int parse failed")]
