@@ -1,3 +1,5 @@
+//! This module provides a frontend interface for controlling the mpv player through Tauri commands.
+
 use std::sync::Arc;
 use cfg_if::cfg_if;
 use rust_decimal::Decimal;
@@ -15,6 +17,16 @@ use crate::{constants, mpv};
 #[cfg(target_family = "windows")]
 use tokio::time::{sleep, Duration};
 
+
+/// Starts mpv process and its IPC communication.
+/// Initializes state variables for event handling.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Tauri window instance.
+///
+/// # Returns
+/// - `Result<()>`: An empty result on success or an error if the operation fails.
 #[tauri::command]
 pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
     let mpv_running_rl = state.mpv_stop_tx.read().await;
@@ -64,6 +76,16 @@ pub async fn mpv_start(state: tauri::State<'_, Arc<AppState>>, window: tauri::Wi
     Ok(())
 }
 
+
+/// Stops mpv process and its IPC communication.
+/// Resets specific application state flags.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Tauri window instance.
+///
+/// # Returns
+/// - `Result<()>`: An empty result on success or an error if the operation fails.
 #[tauri::command]
 pub async fn mpv_quit(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
     stop_ipc(&state).await?;
@@ -80,11 +102,26 @@ pub async fn mpv_quit(state: tauri::State<'_, Arc<AppState>>, window: tauri::Win
     Ok(())
 }
 
+
+/// Checks if the current window system is supported for operations with mpv window.
+///
+/// # Returns
+/// - `Result<bool>`: `true` if supported, `false` otherwise.
 #[tauri::command]
 pub async fn get_is_supported_window_system() -> Result<bool> {
     Ok(*constants::SUPPORTED_WINDOW_SYSTEM.get().unwrap())
 }
 
+
+/// Handles changes in the mpv wrapper's size and repositions the mpv window.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Tauri window instance.
+/// - `wrapper_size`: The new size of the MPV wrapper.
+///
+/// # Returns
+/// - `Result<()>`: An empty result on success or an error if the operation fails.
 #[tauri::command]
 pub async fn mpv_wrapper_size_changed(
     state: tauri::State<'_, Arc<AppState>>,
@@ -119,6 +156,16 @@ pub async fn mpv_wrapper_size_changed(
     Ok(())
 }
 
+
+/// Repositions the mpv window to a smaller size and adjusts its position on the screen.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Reference to the Tauri window instance.
+///
+/// # Returns
+/// - `Ok(())` on successful repositioning.
+/// - `Err` if an error occurs during repositioning.
 #[tauri::command]
 pub async fn mpv_reposition_to_small(
     state: tauri::State<'_, Arc<AppState>>,
@@ -152,6 +199,17 @@ pub async fn mpv_reposition_to_small(
     Ok(())
 }
 
+
+/// Loads media from a source.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Reference to the Tauri window instance.
+/// - `data`: JSON string containing source URL and JWT for playback.
+///
+/// # Returns
+/// - `Ok(())` on successful loading.
+/// - `Err` if an error occurs during loading.
 #[tauri::command]
 pub async fn mpv_load_from_source(
     state: tauri::State<'_, Arc<AppState>>,
@@ -171,6 +229,17 @@ pub async fn mpv_load_from_source(
     Ok(())
 }
 
+
+/// Loads media from a given URL.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Reference to the Tauri window instance.
+/// - `data`: JSON string containing the URL for playback.
+///
+/// # Returns
+/// - `Ok(())` on successful loading.
+/// - `Err` if an error occurs during loading.
 #[tauri::command]
 pub async fn mpv_load_from_url(
     state: tauri::State<'_, Arc<AppState>>,
@@ -188,6 +257,16 @@ pub async fn mpv_load_from_url(
     Ok(())
 }
 
+
+/// Removes the current item from the playlist.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Reference to the Tauri window instance.
+///
+/// # Returns
+/// - `Ok(())` on success.
+/// - `Err` if an error occurs.
 #[tauri::command]
 pub async fn mpv_remove_current_from_playlist(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<()> {
     let mpv_ipc_tx_rl = state.mpv_ipc_tx.read().await;
@@ -197,6 +276,16 @@ pub async fn mpv_remove_current_from_playlist(state: tauri::State<'_, Arc<AppSta
     Ok(())
 }
 
+
+/// Retrieves loaded information about the current media, including audio and subtitle settings.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Reference to the Tauri window instance.
+///
+/// # Returns
+/// - `Ok(UserLoadedInfo)` containing details about the loaded media.
+/// - `Err` if an error occurs.
 #[tauri::command]
 pub async fn mpv_get_loaded_info(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<UserLoadedInfo> {
     let ipc_data = IpcData { app_state: state.inner().clone(), window };
@@ -219,6 +308,17 @@ pub async fn mpv_get_loaded_info(state: tauri::State<'_, Arc<AppState>>, window:
     Ok(user_loaded_info)
 }
 
+
+/// Sets the pause state of the player.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Reference to the Tauri window instance.
+/// - `pause`: Boolean indicating whether to pause or resume playback.
+///
+/// # Returns
+/// - `Ok(())` on success.
+/// - `Err` if an error occurs.
 #[tauri::command]
 pub async fn mpv_set_pause(
     state: tauri::State<'_, Arc<AppState>>,
@@ -244,6 +344,16 @@ pub async fn mpv_set_pause(
     Ok(())
 }
 
+
+/// Retrieves the current playback timestamp.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Reference to the Tauri window instance.
+///
+/// # Returns
+/// - `Ok(f64)` containing the current timestamp in seconds.
+/// - `Err` if an error occurs.
 #[tauri::command]
 pub async fn mpv_get_timestamp(state: tauri::State<'_, Arc<AppState>>, window: tauri::Window) -> Result<f64> {
     let ipc_data = IpcData { app_state: state.inner().clone(), window };
@@ -251,6 +361,15 @@ pub async fn mpv_get_timestamp(state: tauri::State<'_, Arc<AppState>>, window: t
     Ok(time)
 }
 
+
+/// Seeks to a specific timestamp in the media.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `timestamp`: The timestamp to seek to, in seconds.
+///
+/// # Returns
+/// - `Ok(())` if the operation is successful.
 #[tauri::command]
 pub async fn mpv_seek(
     state: tauri::State<'_, Arc<AppState>>,
@@ -264,6 +383,16 @@ pub async fn mpv_seek(
     Ok(())
 }
 
+
+/// Displays messages about user readiness states.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `loading`: List of users that are still loading.
+/// - `not_ready`: List of users that are not ready.
+///
+/// # Returns
+/// - `Ok(())` if the messages are displayed successfully.
 #[tauri::command]
 pub async fn mpv_show_ready_messages(
     state: tauri::State<'_, Arc<AppState>>,
@@ -298,6 +427,14 @@ pub async fn mpv_show_ready_messages(
     Ok(())
 }
 
+
+/// Hides messages related to user readiness.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+///
+/// # Returns
+/// - `Ok(())` if the messages are successfully hidden.
 #[tauri::command]
 pub async fn mpv_hide_ready_messages(
     state: tauri::State<'_, Arc<AppState>>,
@@ -311,6 +448,17 @@ pub async fn mpv_hide_ready_messages(
     Ok(())
 }
 
+
+/// Displays a message in mpv.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `text`: The message text to display.
+/// - `duration`: Duration for which the message should be displayed, in seconds.
+/// - `mood`: Mood of the message (`Neutral`, `Good`, `Bad`, or `Warning`).
+///
+/// # Returns
+/// - `Ok(())` if the message is displayed successfully.
 #[tauri::command]
 pub async fn mpv_show_msg(
     state: tauri::State<'_, Arc<AppState>>,
@@ -342,6 +490,16 @@ pub async fn mpv_show_msg(
     Ok(())
 }
 
+
+/// Sets the playback speed of mpv.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Tauri window instance.
+/// - `speed`: Desired playback speed.
+///
+/// # Returns
+/// - `Ok(())` if the speed is set successfully.
 #[tauri::command]
 pub async fn mpv_set_speed(
     state: tauri::State<'_, Arc<AppState>>,
@@ -361,6 +519,16 @@ pub async fn mpv_set_speed(
     Ok(())
 }
 
+
+/// Retrieves the current audio track ID.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Tauri window for user interface.
+///
+/// # Returns
+/// - `Ok(Some(u64))` if an audio track ID is retrieved.
+/// - `Ok(None)` if no audio track is selected.
 #[tauri::command]
 pub async fn mpv_get_audio(
     state: tauri::State<'_, Arc<AppState>>,
@@ -371,6 +539,15 @@ pub async fn mpv_get_audio(
     Ok(aid)
 }
 
+
+/// Sets the audio track by its ID.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `aid`: Optional ID of the audio track to set.
+///
+/// # Returns
+/// - `Ok(())` if the audio track is set successfully.
 #[tauri::command]
 pub async fn mpv_set_audio(
     state: tauri::State<'_, Arc<AppState>>,
@@ -385,6 +562,16 @@ pub async fn mpv_set_audio(
     Ok(())
 }
 
+
+/// Retrieves the current subtitle track ID.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Tauri window instance.
+///
+/// # Returns
+/// - `Ok(Some(u64))` if a subtitle track ID is retrieved.
+/// - `Ok(None)` if no subtitle track is selected.
 #[tauri::command]
 pub async fn mpv_get_sub(
     state: tauri::State<'_, Arc<AppState>>,
@@ -395,6 +582,15 @@ pub async fn mpv_get_sub(
     Ok(sid)
 }
 
+
+/// Sets the subtitle track by its ID.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `sid`: Optional ID of the subtitle track to set.
+///
+/// # Returns
+/// - `Ok(())` if the subtitle track is set successfully.
 #[tauri::command]
 pub async fn mpv_set_sub(
     state: tauri::State<'_, Arc<AppState>>,
@@ -409,6 +605,15 @@ pub async fn mpv_set_sub(
     Ok(())
 }
 
+
+/// Retrieves the current audio delay.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Tauri window instance.
+///
+/// # Returns
+/// - `Ok(f64)` containing the audio delay in seconds.
 #[tauri::command]
 pub async fn mpv_get_audio_delay(
     state: tauri::State<'_, Arc<AppState>>,
@@ -419,6 +624,15 @@ pub async fn mpv_get_audio_delay(
     Ok(audio_delay)
 }
 
+
+/// Sets the audio delay.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `audio_delay`: Desired audio delay in seconds.
+///
+/// # Returns
+/// - `Ok(())` if the audio delay is set successfully.
 #[tauri::command]
 pub async fn mpv_set_audio_delay(
     state: tauri::State<'_, Arc<AppState>>,
@@ -433,6 +647,15 @@ pub async fn mpv_set_audio_delay(
     Ok(())
 }
 
+
+/// Retrieves the current subtitle delay.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Tauri window instance.
+///
+/// # Returns
+/// - `Ok(f64)` containing the subtitle delay in seconds.
 #[tauri::command]
 pub async fn mpv_get_sub_delay(
     state: tauri::State<'_, Arc<AppState>>,
@@ -443,6 +666,15 @@ pub async fn mpv_get_sub_delay(
     Ok(sub_delay)
 }
 
+
+/// Sets the subtitle delay.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `sub_delay`: Desired subtitle delay in seconds.
+///
+/// # Returns
+/// - `Ok(())` if the subtitle delay is set successfully.
 #[tauri::command]
 pub async fn mpv_set_sub_delay(
     state: tauri::State<'_, Arc<AppState>>,
@@ -457,6 +689,14 @@ pub async fn mpv_set_sub_delay(
     Ok(())
 }
 
+
+/// Clears all messages displayed in mpv.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+///
+/// # Returns
+/// - `Ok(())` if all messages are successfully cleared.
 #[tauri::command]
 pub async fn mpv_clear_msgs(
     state: tauri::State<'_, Arc<AppState>>,
@@ -468,6 +708,16 @@ pub async fn mpv_clear_msgs(
     Ok(())
 }
 
+
+/// Increases the playback speed by a specified value.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Tauri window instance.
+/// - `playback_speed_plus`: Amount by which to increase the speed.
+///
+/// # Returns
+/// - `Ok(())` if the speed is increased successfully.
 #[tauri::command]
 pub async fn mpv_increase_playback_speed(
     state: tauri::State<'_, Arc<AppState>>,
@@ -485,6 +735,16 @@ pub async fn mpv_increase_playback_speed(
     Ok(())
 }
 
+
+/// Decreases the playback speed by a specified value.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Tauri window instance.
+/// - `playback_speed_minus`: Amount by which to decrease the speed.
+///
+/// # Returns
+/// - `Ok(())` if the speed is decreased successfully.
 #[tauri::command]
 pub async fn mpv_decrease_playback_speed(
     state: tauri::State<'_, Arc<AppState>>,
@@ -502,6 +762,15 @@ pub async fn mpv_decrease_playback_speed(
     Ok(())
 }
 
+
+/// Retrieves the current playback pause state.
+///
+/// # Parameters
+/// - `state`: Shared application state.
+/// - `window`: Tauri window for user interface.
+///
+/// # Returns
+/// - `Ok(bool)` indicating whether playback is paused.
 #[tauri::command]
 pub async fn mpv_get_pause(
     state: tauri::State<'_, Arc<AppState>>,
