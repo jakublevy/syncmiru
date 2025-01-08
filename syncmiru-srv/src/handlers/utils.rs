@@ -11,7 +11,7 @@ use crate::srvstate::{PlaylistEntryId, SrvState};
 use crate::result::Result;
 
 
-/// Checks whether the given user has exceeded its quota for email tokens.
+/// Checks whether the given user is within its quota for email tokens.
 ///
 /// # Arguments
 /// * `state`: The shared application state (`&SrvState`).
@@ -65,6 +65,13 @@ pub(super) async fn check_email_tkn_within_quota(
     }
 }
 
+
+/// Pauses the execution for a random amount of time within a specified range.
+/// Used to introduce delays and prevent abuse.
+///
+/// # Arguments
+/// * `from_millis`: The minimum duration in milliseconds for the random sleep (`u64`).
+/// * `to_millis`: The maximum duration in milliseconds for the random sleep (`u64`).
 pub(super) async fn random_sleep(from_millis: u64, to_millis: u64) {
     let sleep_duration = rand::thread_rng().gen_range(
         Duration::from_millis(from_millis)..=Duration::from_millis(to_millis)
@@ -72,6 +79,16 @@ pub(super) async fn random_sleep(from_millis: u64, to_millis: u64) {
     tokio::time::sleep(sleep_duration).await;
 }
 
+
+
+/// Checks whether the user is out of quota for changing their email address.
+///
+/// # Arguments
+/// * `state`: The shared application state (`&SrvState`).
+/// * `uid`: The unique identifier of the user (`Id`).
+///
+/// # Returns
+/// * `Result<bool>`: A result indicating whether the user is out of quota for changing their email.
 pub(super) async fn is_change_email_out_of_quota(
     state: &SrvState,
     uid: Id,
@@ -105,6 +122,16 @@ pub(super) async fn is_change_email_out_of_quota(
     Ok(out_of_quota)
 }
 
+
+/// Verifies whether the provided email change token is valid.
+///
+/// # Arguments
+/// * `state`: The shared application state (`&SrvState`).
+/// * `payload`: The email change token payload (`&EmailChangeTkn`).
+/// * `uid`: The unique identifier of the user (`Id`).
+///
+/// # Returns
+/// * `Result<bool>`: A result indicating whether the email change token is valid.
 pub(super) async fn check_email_change_tkn(
     state: &SrvState,
     payload: &EmailChangeTkn,
@@ -143,6 +170,14 @@ pub(super) async fn check_email_change_tkn(
     }
 }
 
+
+/// Disconnects a user from a room and cleans up room-specific data.
+///
+/// # Arguments
+/// * `state`: The shared application state (`Arc<SrvState>`).
+/// * `s`: The socket reference (`SocketRef`).
+/// * `uid`: The unique identifier of the user (`Id`).
+/// * `rid`: The unique identifier of the room (`Id`).
 pub(super) async fn disconnect_from_room(
     state: &Arc<SrvState>,
     s: &SocketRef,
@@ -187,6 +222,16 @@ pub(super) async fn disconnect_from_room(
     }
 }
 
+
+/// Checks if a specific video ID exists in a room's playlist.
+///
+/// # Arguments
+/// * `state`: The shared application state (`Arc<SrvState>`).
+/// * `rid`: The unique identifier of the room (`Id`).
+/// * `playlist_entry_id`: The unique identifier of the playlist entry (`PlaylistEntryId`).
+///
+/// # Returns
+/// * `bool`: `true` if the video ID is found in the room's playlist, otherwise `false`.
 pub(super) async fn video_id_in_room(
     state: &Arc<SrvState>,
     rid: Id,
