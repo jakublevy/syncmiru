@@ -1,3 +1,5 @@
+//! This module handles IPC with the mpv.
+
 #[cfg(target_family = "windows")]
 pub mod win32;
 mod utils;
@@ -25,35 +27,88 @@ use crate::{constants, mpv};
 use crate::error::SyncmiruError;
 use crate::result::Result;
 
+
+/// Enum representing various commands that can be sent to the mpv process.
 #[derive(Debug, PartialEq)]
 pub enum Interface {
+    /// Command to load a file from a URL with an authentication token
     LoadFromSource { source_url: String, jwt: String },
+
+    /// Command to load a file from a URL
     LoadFromUrl(String),
+
+    /// Command to set the playback pause state
     SetPause(bool),
+
+    /// Command to seek to a specific timestamp in the media
     Seek(f64),
+
+    /// Command to set the audio stream (None means no audio stream is selected)
     SetAudio(Option<u64>),
+
+    /// Command to set the subtitle stream (None means no subtitle stream is selected)
     SetSub(Option<u64>),
+
+    /// Command to set the fullscreen state of the mpv window
     SetFullscreen(bool),
+
+    /// Command to set the playback speed
     SetPlaybackSpeed(Decimal),
+
+    /// Command to set the audio delay
     SetAudioDelay(f64),
+
+    /// Command to set the subtitle delay
     SetSubDelay(f64),
+
+    /// Command to retrieve the audio stream ID
     GetAid(u32),
+
+    /// Command to retrieve the subtitle stream ID
     GetSid(u32),
+
+    /// Command to retrieve the fullscreen state
     GetFullscreen(u32),
+
+    /// Command to retrieve the current timestamp position of mpv
     GetTimePos(u32),
+
+    /// Command to retrieve the pause state of playback
     GetPause(u32),
+
+    /// Command to retrieve the playback speed
     GetPlaybackSpeed(u32),
+
+    /// Command to retrieve the audio delay
     GetAudioDelay(u32),
+
+    /// Command to retrieve the subtitle delay
     GetSubDelay(u32),
+
+    /// Command to show a "not ready" message with a list of names
     ShowNotReadyMsg(Vec<String>),
+
+    /// Command to show a "loading" message with a list of names
     ShowLoadingMsg(Vec<String>),
+
+    /// Command to show a message with a specific ID, text, duration, and mood
     ShowMsg { id: u32, text: String, duration: f64, mood: MsgMood },
+
+    /// Command to delete a message with a specific ID
     DeleteMsg(u32),
+
+    /// Command to clear all messages
     ClearMessages,
+
+    /// Command to remove the current item from the playlist.
     PlaylistRemoveCurrent,
+
+    /// Command to exit the mpv IPC.
     Exit
 }
 
+
+/// Enum representing the different properties that can be retrieved from the mpv process.
 #[derive(Debug, PartialEq)]
 enum Property {
     Aid,
@@ -66,12 +121,21 @@ enum Property {
     SubDelay
 }
 
+
+/// Enum representing the possible moods for messages displayed in mpv.
 #[derive(Debug, PartialEq, Deserialize_repr)]
 #[repr(u8)]
 pub enum MsgMood {
+    /// Neutral mood (blue)
     Neutral = 0,
+
+    /// Bad mood (red)
     Bad = 1,
+
+    /// Good mood (green)
     Good = 2,
+
+    /// Warning mood (yellow)
     Warning = 3
 }
 
@@ -86,11 +150,29 @@ impl Display for MsgMood {
     }
 }
 
+/// A struct that encapsulates the data necessary for IPC communication, including
+/// access to the application state and the window instance for emitting events.
+///
+/// Fields:
+/// - `window`: The `tauri::Window` that is used to communicate with the frontend.
+/// - `app_state`: A reference to the shared application state (`AppState`), used for accessing player-specific data like MPV's current properties.
 pub struct IpcData {
     pub window: tauri::Window,
     pub app_state: Arc<AppState>,
 }
 
+
+/// Starts the IPC communication by establishing a connection to the MPV player via a named pipe.
+/// It listens for mpv's responses and writes commands based on the data received from the `mpv_write_rx` receiver.
+///
+/// Arguments:
+/// - `mpv_write_rx`: A receiver that provides commands (`Interface` enum) to be sent to MPV.
+/// - `pipe_id`: The ID of the pipe used to communicate with MPV.
+/// - `window`: The `tauri::Window` instance used to emit events to the frontend.
+/// - `app_state`: A reference to the shared `AppState` that stores the application's state.
+///
+/// Returns:
+/// - `Result<()>`: A `Result` that indicates whether the operation was successful or failed with an error.
 pub async fn start(
     mpv_write_rx: Receiver<Interface>,
     pipe_id: String,
@@ -114,6 +196,14 @@ pub async fn start(
     Ok(())
 }
 
+
+/// Retrieves the audio stream ID (aid) from mpv.
+///
+/// Arguments:
+/// - `ipc_data`: A reference to the `IpcData` struct, which contains the application state and window.
+///
+/// Returns:
+/// - `Result<Option<u64>>`: The result contains the `aid` if available, or `None` if no audio stream is set, or an error if the operation fails.
 pub async fn get_aid(ipc_data: &IpcData) -> Result<Option<u64>> {
     let mut rx = send_with_response(ipc_data, Property::Aid).await?;
     if let Some(json) = rx.recv().await {
@@ -129,6 +219,14 @@ pub async fn get_aid(ipc_data: &IpcData) -> Result<Option<u64>> {
     Err(SyncmiruError::MpvReceiveResponseError)
 }
 
+
+/// Retrieves the subtitle stream ID (sid) from mpv.
+///
+/// Arguments:
+/// - `ipc_data`: A reference to the `IpcData` struct, which contains the application state and window.
+///
+/// Returns:
+/// - `Result<Option<u64>>`: The result contains the `sid` if available, or `None` if no subtitle stream is set, or an error if the operation fails.
 pub async fn get_sid(ipc_data: &IpcData) -> Result<Option<u64>> {
     let mut rx = send_with_response(ipc_data, Property::Sid).await?;
     if let Some(json) = rx.recv().await {
@@ -144,6 +242,14 @@ pub async fn get_sid(ipc_data: &IpcData) -> Result<Option<u64>> {
     Err(SyncmiruError::MpvReceiveResponseError)
 }
 
+
+/// Retrieves the audio delay setting from mpv.
+///
+/// Arguments:
+/// - `ipc_data`: A reference to the `IpcData` struct, which contains the application state and window.
+///
+/// Returns:
+/// - `Result<f64>`: The result contains the audio delay in seconds, or an error if the operation fails.
 pub async fn get_audio_delay(ipc_data: &IpcData) -> Result<f64> {
     let mut rx = send_with_response(ipc_data, Property::AudioDelay).await?;
     if let Some(json) = rx.recv().await {
@@ -156,6 +262,14 @@ pub async fn get_audio_delay(ipc_data: &IpcData) -> Result<f64> {
     Err(SyncmiruError::MpvReceiveResponseError)
 }
 
+
+/// Retrieves the subtitle delay setting from mpv.
+///
+/// Arguments:
+/// - `ipc_data`: A reference to the `IpcData` struct, which contains the application state and window.
+///
+/// Returns:
+/// - `Result<f64>`: The result contains the subtitle delay in seconds, or an error if the operation fails.
 pub async fn get_sub_delay(ipc_data: &IpcData) -> Result<f64> {
     let mut rx = send_with_response(ipc_data, Property::SubDelay).await?;
     if let Some(json) = rx.recv().await {
@@ -168,6 +282,14 @@ pub async fn get_sub_delay(ipc_data: &IpcData) -> Result<f64> {
     Err(SyncmiruError::MpvReceiveResponseError)
 }
 
+
+/// Retrieves the current timestamp (time position) of mpv.
+///
+/// Arguments:
+/// - `ipc_data`: A reference to the `IpcData` struct, which contains the application state and window.
+///
+/// Returns:
+/// - `Result<f64>`: The result contains the current time position in seconds, or an error if the operation fails.
 pub async fn get_timestamp(ipc_data: &IpcData) -> Result<f64> {
     let mut rx = send_with_response(ipc_data, Property::TimePos).await?;
     if let Some(json) = rx.recv().await {
@@ -180,6 +302,14 @@ pub async fn get_timestamp(ipc_data: &IpcData) -> Result<f64> {
     Err(SyncmiruError::MpvReceiveResponseError)
 }
 
+
+/// Retrieves the current pause state of mpv (whether playback is paused).
+///
+/// Arguments:
+/// - `ipc_data`: A reference to the `IpcData` struct, which contains the application state and window.
+///
+/// Returns:
+/// - `Result<bool>`: The result contains `true` if the player is paused, or `false` if it is playing, or an error if the operation fails.
 pub async fn get_pause(ipc_data: &IpcData) -> Result<bool> {
     let mut rx = send_with_response(ipc_data, Property::Pause).await?;
     if let Some(json) = rx.recv().await {
@@ -192,6 +322,14 @@ pub async fn get_pause(ipc_data: &IpcData) -> Result<bool> {
     Err(SyncmiruError::MpvReceiveResponseError)
 }
 
+
+/// Retrieves the playback speed from mpv.
+///
+/// Arguments:
+/// - `ipc_data`: A reference to the `IpcData` struct, which contains the application state and window.
+///
+/// Returns:
+/// - `Result<Decimal>`: The result contains the playback speed as a `Decimal`, or an error if the operation fails.
 pub async fn get_speed(ipc_data: &IpcData) -> Result<Decimal> {
     let mut rx = send_with_response(ipc_data, Property::PlaybackSpeed).await?;
     if let Some(json) = rx.recv().await {
@@ -206,6 +344,15 @@ pub async fn get_speed(ipc_data: &IpcData) -> Result<Decimal> {
     Err(SyncmiruError::MpvReceiveResponseError)
 }
 
+
+/// Sends a request to mpv to retrieve a specific property and waits for a response.
+///
+/// Arguments:
+/// - `ipc_data`: A reference to the `IpcData` struct, which contains the application state and window.
+/// - `property`: The specific property (`Property` enum) to retrieve from mpv.
+///
+/// Returns:
+/// - `Result<Receiver<serde_json::Value>>`: The result contains a receiver that provides the response from MPV.
 async fn send_with_response(ipc_data: &IpcData, property: Property) -> Result<Receiver<serde_json::Value>> {
     let req_id = ipc_data.app_state.get_mpv_next_req_id().await;
 
@@ -232,6 +379,16 @@ async fn send_with_response(ipc_data: &IpcData, property: Property) -> Result<Re
     }
 }
 
+
+/// Listens for responses from mpv and processes them asynchronously.
+///
+/// Arguments:
+/// - `recv`: The receiving half of the socket stream to read responses from mpv.
+/// - `ipc_data`: A reference to the `IpcData` struct, which contains the application state and window.
+/// - `exit_rx`: A receiver for the exit signal to stop the listening task.
+///
+/// Returns:
+/// - `Result<()>`: A `Result` indicating whether the operation was successful or failed with an error.
 async fn listen(
     recv: RecvHalf,
     ipc_data: &IpcData,
@@ -263,6 +420,17 @@ async fn listen(
     Ok(())
 }
 
+
+/// Writes commands to the mpv based on incoming messages from the `mpv_write_rx` receiver.
+///
+/// Arguments:
+/// - `rx`: A receiver that provides commands (`Interface` enum) to be sent to mpv.
+/// - `sender`: The sending half of the socket stream to send commands to mpv.
+/// - `ipc_data`: A reference to the `IpcData` struct, which contains the application state and window.
+/// - `exit_tx_opt`: An optional sender for the exit signal to stop the writing task.
+///
+/// Returns:
+/// - `Result<()>`: A `Result` indicating whether the operation was successful or failed with an error.
 async fn write(
     mut rx: Receiver<Interface>,
     mut sender: SendHalf,
@@ -492,6 +660,15 @@ async fn write(
     Ok(())
 }
 
+
+/// Initializes observing various mpv properties like audio, subtitle tracks, pause state, etc.
+/// This function sends multiple observe property commands to the mpv process for continuous observation.
+///
+/// # Parameters:
+/// - `sender`: A reference to the sending half of the channel for communication with MPV.
+///
+/// # Returns:
+/// - `Result<()>`: A `Result` indicating whether the operation was successful or not.
 async fn init_observe_property(sender: &SendHalf) -> Result<()> {
     let properties = vec!["aid", "sid", "pause", "fullscreen", "speed", "audio-delay", "sub-delay"];
     for (i, property) in properties.iter().enumerate() {
@@ -500,6 +677,16 @@ async fn init_observe_property(sender: &SendHalf) -> Result<()> {
     Ok(())
 }
 
+
+/// Sends a command to the mpv process to observe a specific property.
+///
+/// # Parameters:
+/// - `sender`: A mutable reference to the sending half of the channel for communication with mpv.
+/// - `id`: An identifier for the property being observed.
+/// - `name`: The name of the property to observe.
+///
+/// # Returns:
+/// - `Result<()>`: A `Result` indicating whether the operation was successful or not.
 async fn observe_property(
     mut sender: &SendHalf,
     id: usize,
@@ -510,6 +697,16 @@ async fn observe_property(
     Ok(())
 }
 
+
+/// Processes incoming mpv messages and handles different event types (such as property changes, file loads, etc.).
+/// It parses the JSON message and dispatches it to appropriate handlers for each event type.
+///
+/// # Parameters:
+/// - `msg`: The incoming message string from mpv.
+/// - `ipc_data`: A reference to the shared application state and communication channels.
+///
+/// # Returns:
+/// - `Result<()>`: A `Result` indicating whether the operation was successful or not.
 async fn process_mpv_msg(msg: &str, ipc_data: &IpcData) -> Result<()> {
     let json: serde_json::Value = serde_json::from_str(msg)?;
     if let Some(event) = json.get("event") {
@@ -537,6 +734,15 @@ async fn process_mpv_msg(msg: &str, ipc_data: &IpcData) -> Result<()> {
     Ok(())
 }
 
+
+/// Processes a property-change event from mpv and triggers the appropriate actions based on the changed property.
+///
+/// # Parameters:
+/// - `msg`: The parsed JSON message containing the property-change event.
+/// - `ipc_data`: A reference to the shared application state and communication channels.
+///
+/// # Returns:
+/// - `Result<()>`: A `Result` indicating whether the operation was successful or not.
 async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -> Result<()> {
     if let Some(name_value) = msg.get("name") {
         if let Some(name) = name_value.as_str() {
@@ -632,6 +838,16 @@ async fn process_property_changed(msg: &serde_json::Value, ipc_data: &IpcData) -
     Ok(())
 }
 
+
+/// Handles changes in the fullscreen state and updates the application's window accordingly.
+/// It ensures that fullscreen events are debounced to prevent excessive updates.
+///
+/// # Parameters:
+/// - `fullscreen_state`: The new fullscreen state (true for fullscreen, false for windowed).
+/// - `ipc_data`: A reference to the shared application state and communication channels.
+///
+/// # Returns:
+/// - `Result<()>`: A `Result` indicating whether the operation was successful or not.
 async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Result<()> {
     if !constants::SUPPORTED_WINDOW_SYSTEM.get().unwrap() {
         return Ok(())
@@ -710,6 +926,15 @@ async fn fullscreen_changed(fullscreen_state: bool, ipc_data: &IpcData) -> Resul
     Ok(())
 }
 
+
+/// Processes the incoming client message and performs actions based on specific commands.
+///
+/// # Parameters
+/// - `msg`: The message received in JSON format from the mpv.
+/// - `ipc_data`: An instance of `IpcData` that holds shared application state and resources.
+///
+/// # Returns
+/// - `Result<()>`: A `Result` indicating whether the client message was successfully processed or not.
 async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Result<()> {
     if !constants::SUPPORTED_WINDOW_SYSTEM.get().unwrap() {
         return Ok(())
@@ -738,10 +963,23 @@ async fn process_client_msg(msg: &serde_json::Value, ipc_data: &IpcData) -> Resu
     Ok(())
 }
 
+
+/// Handles the event when a file is loaded in mpv.
+///
+/// # Parameters
+/// - `ipc_data`: An instance of `IpcData` for interacting with the application's state.
 fn process_file_loaded(ipc_data: &IpcData) {
     ipc_data.window.emit("mpv-file-loaded", {}).ok();
 }
 
+
+/// Processes a playback restart event.
+///
+/// # Parameters
+/// - `ipc_data`: An instance of `IpcData`.
+///
+/// # Returns
+/// A `Result<()>` indicating success or failure.
 fn process_playback_restart(ipc_data: &IpcData) -> Result<()> {
     cfg_if! {
         if #[cfg(target_family = "unix")] {
@@ -751,6 +989,15 @@ fn process_playback_restart(ipc_data: &IpcData) -> Result<()> {
     Ok(())
 }
 
+
+/// Handles the `end-file` event from mpv.
+///
+/// # Parameters
+/// - `msg`: A JSON object containing the reason for the file's end.
+/// - `ipc_data`: An instance of `IpcData`.
+///
+/// # Returns
+/// A `Result<()>` indicating success or failure.
 fn process_end_file(msg: &serde_json::Value, ipc_data: &IpcData) -> Result<()> {
     if let Some(reason_v) = msg.get("reason") {
         let reason = reason_v.as_str().unwrap();
@@ -761,6 +1008,14 @@ fn process_end_file(msg: &serde_json::Value, ipc_data: &IpcData) -> Result<()> {
     Ok(())
 }
 
+
+/// Processes an idle message from mpv and performs necessary actions.
+///
+/// # Parameters
+/// - `ipc_data`: An instance of `IpcData`.
+///
+/// # Returns
+/// A `Result<()>` indicating success or failure.
 fn process_idle_msg(ipc_data: &IpcData) -> Result<()> {
     cfg_if! {
         if #[cfg(target_family = "unix")] {
@@ -770,10 +1025,24 @@ fn process_idle_msg(ipc_data: &IpcData) -> Result<()> {
     Ok(())
 }
 
+
+/// Handles changes in the playback pause state.
+///
+/// # Parameters
+/// - `pause_state`: The new pause state (true for paused, false for playing).
+/// - `ipc_data`: An instance of `IpcData` for interacting with the application's state.
 fn pause_changed(pause_state: bool, ipc_data: &IpcData) {
     ipc_data.window.emit("mpv-pause-changed", pause_state).ok();
 }
 
+
+/// Processes a seek message from mpv and triggers a seek event.
+///
+/// # Parameters
+/// - `ipc_data`: An instance of `IpcData`.
+///
+/// # Returns
+/// A `Result<()>` indicating success or failure.
 async fn process_seek_msg(ipc_data: &IpcData) -> Result<()> {
     let mut mpv_ignore_next_seek_event_wl = ipc_data.app_state.mpv_ignore_next_seek_event.write().await;
     if *mpv_ignore_next_seek_event_wl {
@@ -785,22 +1054,52 @@ async fn process_seek_msg(ipc_data: &IpcData) -> Result<()> {
     Ok(())
 }
 
+
+/// Handles changes in the playback speed.
+///
+/// # Parameters
+/// - `speed`: The new playback speed as a `Decimal` value.
+/// - `ipc_data`: An instance of `IpcData` for interacting with the application's state.
 fn speed_changed(speed: &Decimal, ipc_data: &IpcData) {
     ipc_data.window.emit("mpv-speed-changed", speed).ok();
 }
 
+
+/// Handles changes in the subtitle delay.
+///
+/// # Parameters
+/// - `sub_delay`: The new subtitle delay in seconds.
+/// - `ipc_data`: An instance of `IpcData` for interacting with the application's state.
 fn sub_delay_changed(sub_delay: f64, ipc_data: &IpcData) {
     ipc_data.window.emit("mpv-sub-delay-changed", sub_delay).ok();
 }
 
+
+/// Handles changes in the audio delay.
+///
+/// # Parameters
+/// - `audio_delay`: The new audio delay in seconds.
+/// - `ipc_data`: An instance of `IpcData` for interacting with the application's state.
 fn audio_delay_changed(audio_delay: f64, ipc_data: &IpcData) {
     ipc_data.window.emit("mpv-audio-delay-changed", audio_delay).ok();
 }
 
+
+/// Handles changes in the audio track.
+///
+/// # Parameters
+/// - `aid`: The audio track ID or `None` if the audio track is disabled.
+/// - `ipc_data`: An instance of `IpcData` for interacting with the application's state.
 fn audio_track_changed(aid: Option<u64>, ipc_data: &IpcData) {
     ipc_data.window.emit("mpv-audio-changed", aid).ok();
 }
 
+
+/// Handles changes in the subtitle track.
+///
+/// # Parameters
+/// - `sid`: The subtitle track ID or `None` if the subtitle track is disabled.
+/// - `ipc_data`: An instance of `IpcData` for interacting with the application's state.
 fn sub_track_changed(sid: Option<u64>, ipc_data: &IpcData) {
     ipc_data.window.emit("mpv-sub-changed", sid).ok();
 }
