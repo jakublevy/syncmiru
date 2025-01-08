@@ -75,7 +75,7 @@ pub async fn gen_access_jwt(
     Ok(signed)
 }
 
-pub fn extract_extension(path: &str) -> &str {
+fn extract_extension(path: &str) -> &str {
     path.split(".").last().unwrap_or("")
 }
 
