@@ -1,3 +1,5 @@
+//! This module contains the Socket.IO handlers for the server.
+
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use indexmap::{IndexMap, IndexSet};
@@ -18,89 +20,255 @@ use crate::models::file::FileType;
 use crate::models::mpv::{UserChangeAudio, UserChangeAudioDelay, UserChangeAudioSync, UserChangeSub, UserChangeSubDelay, UserChangeSubSync, UserLoadedInfo, UserPause, UserPlayInfoClient, UserSeek, UserSpeedChange, UserUploadMpvState};
 use crate::srvstate::{PlayingState, PlaylistEntry, RoomPlayInfo, RoomRuntimeState, UserPlayInfo, UserReadyStatus, PlaylistEntryId, SrvState, TimestampInfo};
 
+/// Sets up all the Socket.IO event handlers for the given socket connection.
 pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
+    /// Disconnect event handler for client disconnections
     s.on_disconnect(disconnect);
+
+    /// Event handler to retrieve a list of all users
     s.on("get_users", get_users);
+
+    /// Event handler to retrieve the current user's data
     s.on("get_me", get_me);
+
+    /// Event handler to retrieve the currently online users
     s.on("get_online", get_online);
+
+    /// Event handler to retrieve all user sessions
     s.on("get_user_sessions", get_user_sessions);
+
+    /// Event handler to delete a user session
     s.on("delete_session", delete_session);
+
+    /// Event handler to sign out the user
     s.on("sign_out", sign_out);
+
+    /// Event handler to set the display name of the user
     s.on("set_displayname", set_displayname);
+
+    /// Event handler to retrieve the current user's email
     s.on("get_email", get_email);
+
+    /// Event handler to retrieve the email resend timeout
     s.on("get_email_resend_timeout", get_email_resend_timeout);
+
+    /// Event handler to retrieve whether public registration is allowed
     s.on("get_reg_pub_allowed", get_reg_pub_allowed);
+
+    /// Event handler to send email change verification emails
     s.on("send_email_change_verification_emails", send_email_change_verification_emails);
+
+    /// Event handler to check the validity of an email change token
     s.on("check_email_change_tkn", check_email_change_tkn);
+
+    /// Event handler to change the user's email
     s.on("change_email", change_email);
+
+    /// Event handler to set the user's avatar
     s.on("set_avatar", set_avatar);
+
+    /// Event handler to delete the user's avatar
     s.on("delete_avatar", delete_avatar);
+
+    /// Event handler to check if the user's password is correct
     s.on("check_password", check_password);
+
+    /// Event handler to change the user's password
     s.on("change_password", change_password);
+
+    /// Event handler to send a request to delete the user's account via email
     s.on("send_delete_account_email", send_delete_account_email);
+
+    /// Event handler to check the validity of a delete account token
     s.on("check_delete_account_tkn", check_delete_account_tkn);
+
+    /// Event handler to delete the user's account
     s.on("delete_account", delete_account);
+
+    /// Event handler to create a registration token
     s.on("create_reg_tkn", create_reg_tkn);
+
+    /// Event handler to retrieve all active registration tokens
     s.on("active_reg_tkns", active_reg_tkns);
+
+    /// Event handler to retrieve all inactive registration tokens
     s.on("inactive_reg_tkns", inactive_reg_tkns);
+
+    /// Event handler to check if a registration token name is unique
     s.on("check_reg_tkn_name_unique", check_reg_tkn_name_unique);
+
+    /// Event handler to delete a registration token
     s.on("delete_reg_tkn", delete_reg_tkn);
+
+    /// Event handler to retrieve information about a registration token
     s.on("get_reg_tkn_info", get_reg_tkn_info);
+
+    /// Event handler to retrieve the default playback speed
     s.on("get_default_playback_speed", get_default_playback_speed);
+
+    /// Event handler to set the default playback speed
     s.on("set_default_playback_speed", set_default_playback_speed);
+
+    /// Event handler to retrieve the default desync tolerance
     s.on("get_default_desync_tolerance", get_default_desync_tolerance);
+
+    /// Event handler to set the default desync tolerance
     s.on("set_default_desync_tolerance", set_default_desync_tolerance);
+
+    /// Event handler to retrieve the default minimum value to trigger major desync
     s.on("get_default_major_desync_min", get_default_major_desync_min);
+
+    /// Event handler to set the default minimum value to trigger major desync
     s.on("set_default_major_desync_min", set_default_major_desync_min);
+
+    /// Event handler to retrieve the default minor desync playback slowdown rate
     s.on("get_default_minor_desync_playback_slow", get_default_minor_desync_playback_slow);
+
+    /// Event handler to set the default minor desync playback slowdown rate
     s.on("set_default_minor_desync_playback_slow", set_default_minor_desync_playback_slow);
+
+    /// Event handler to check if a room name is unique
     s.on("check_room_name_unique", check_room_name_unique);
+
+    /// Event handler to create a new room
     s.on("create_room", create_room);
+
+    /// Event handler to retrieve all rooms
     s.on("get_rooms", get_rooms);
+
+    /// Event handler to set the name of a room
     s.on("set_room_name", set_room_name);
+
+    /// Event handler to delete a room
     s.on("delete_room", delete_room);
+
+    /// Event handler to retrieve the room's playback speed
     s.on("get_room_playback_speed", get_room_playback_speed);
+
+    /// Event handler to set the room's playback speed
     s.on("set_room_playback_speed", set_room_playback_speed);
+
+    /// Event handler to retrieve the room's desync tolerance
     s.on("get_room_desync_tolerance", get_room_desync_tolerance);
+
+    /// Event handler to set the room's desync tolerance
     s.on("set_room_desync_tolerance", set_room_desync_tolerance);
+
+    /// Event handler to retrieve the room's minor desync playback slowdown rate
     s.on("get_room_minor_desync_playback_slow", get_room_minor_desync_playback_slow);
+
+    /// Event handler to set the room's minor desync playback slowdown rate
     s.on("set_room_minor_desync_playback_slow", set_room_minor_desync_playback_slow);
+
+    /// Event handler to retrieve the room's minimum value to trigger major desync
     s.on("get_room_major_desync_min", get_room_major_desync_min);
+
+    /// Event handler to set the room's minimum value to trigger major desync
     s.on("set_room_major_desync_min", set_room_major_desync_min);
+
+    /// Event handler to set the order of rooms
     s.on("set_room_order", set_room_order);
+
+    /// Event handler to receive ping messages from clients
     s.on("ping", ping);
+
+    /// Event handler to join a room
     s.on("join_room", join_room);
+
+    /// Event handler to disconnect a user from a room
     s.on("disconnect_room", disconnect_room);
+
+    /// Event handler to retrieve the list of users in a room
     s.on("get_room_users", get_room_users);
+
+    /// Event handler to handle ping messages from clients connected to a room
     s.on("room_ping", room_ping);
+
+    /// Event handler to retrieve the list of sources available
     s.on("get_sources", get_sources);
+
+    /// Event handler to retrieve file information
     s.on("get_files", get_files);
+
+    /// Event handler to add video files to a room
     s.on("add_video_files", add_video_files);
+
+    /// Event handler to add URLs to a playlist
     s.on("add_urls", add_urls);
+
+    /// Event handler to request a JWT token for playing a video
     s.on("req_playing_jwt", req_playing_jwt);
+
+    /// Event handler to change the active video in a room
     s.on("change_active_video", change_active_video);
+
+    /// Event handler to set the playlist order for videos
     s.on("set_playlist_order", set_playlist_order);
+
+    /// Event handler to delete an entry from the playlist
     s.on("delete_playlist_entry", delete_playlist_entry);
+
+    /// Event handler to handle when a video file is successfully loaded in mpv
     s.on("mpv_file_loaded", mpv_file_loaded);
+
+    /// Event handler to handle when a video file fails to load in mpv
     s.on("mpv_file_load_failed", mpv_file_load_failed);
+
+    /// Event handler to change the user's ready state
     s.on("user_ready_state_change", user_ready_state_change);
+
+    /// Event handler to retry loading a file for a user
     s.on("user_file_load_retry", user_file_load_retry);
+
+    /// Event handler to play a video in mpv
     s.on("mpv_play", mpv_play);
+
+    /// Event handler to pause a video in mpv
     s.on("mpv_pause", mpv_pause);
+
+    /// Event handler to seek to a specific time in a video
     s.on("mpv_seek", mpv_seek);
+
+    /// Event handler to change the playback speed of a video
     s.on("mpv_speed_change", mpv_speed_change);
+
+    /// Event handler to enable/disable synchronization of the audio track
     s.on("change_audio_sync", change_audio_sync);
+
+    /// Event handler to enable/disable synchronization of the subtitle track
     s.on("change_sub_sync", change_sub_sync);
+
+    /// Event handler to change the audio track in mpv
     s.on("mpv_audio_change", mpv_audio_change);
+
+    /// Event handler to change the subtitle track in mpv
     s.on("mpv_sub_change", mpv_sub_change);
+
+    /// Event handler to change the audio delay in mpv.
     s.on("mpv_audio_delay_change", mpv_audio_delay_change);
+
+    /// Event handler to change the subtitle delay in mpv.
     s.on("mpv_sub_delay_change", mpv_sub_delay_change);
+
+    /// Event handler to upload the state of mpv configuration.
     s.on("mpv_upload_state", mpv_upload_state);
+
+    /// Event handler to change the audio ID for a user
     s.on("user_change_aid", user_change_aid);
+
+    /// Event handler to change the subtitle ID for a user
     s.on("user_change_sid", user_change_sid);
+
+    /// Event handler to change the audio delay for the user
     s.on("user_change_audio_delay", user_change_audio_delay);
+
+    /// Event handler to change the subtitle delay for the user
     s.on("user_change_sub_delay", user_change_sub_delay);
+
+    /// Event handler to process the timestamp of a client to maintain the synchronization
     s.on("timestamp_tick", timestamp_tick);
+
+    /// Event handler to retrieve the current state of the media player
     s.on("get_mpv_state", get_mpv_state);
 
     let uid = state.socket2uid(&s).await;
@@ -108,7 +276,10 @@ pub async fn ns_callback(State(state): State<Arc<SrvState>>, s: SocketRef) {
         .await
         .expect("db error");
 
+    /// Broadcasts the information about the newly connected user to all other connected clients
     s.broadcast().emit("users", &user).ok();
+
+    /// Broadcast the online status of the newly connected user to all other connected clients
     s.broadcast().emit("online", &uid).ok();
 }
 
