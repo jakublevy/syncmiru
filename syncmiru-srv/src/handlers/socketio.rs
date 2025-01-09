@@ -295,7 +295,8 @@ pub async fn disconnect(State(state): State<Arc<SrvState>>, s: SocketRef) {
         let mut socket_uid_disconnect_wl = state.socket_uid_disconnect.write().await;
         uid = socket_uid_disconnect_wl.get(&s.id).unwrap().clone();
         socket_uid_disconnect_wl.remove(&s.id);
-    } else {
+    }
+    else {
         uid = uid_opt.unwrap()
     }
     let hwid_hash = state.socket2hwid_hash(&s).await;
@@ -966,7 +967,8 @@ pub async fn delete_reg_tkn(
             .commit()
             .await
             .expect("db error");
-    } else {
+    }
+    else {
         ack.send(&SocketIoAck::<()>::err()).ok();
     }
 }
@@ -1251,7 +1253,8 @@ pub async fn delete_room(
             .commit()
             .await
             .expect("db error");
-    } else {
+    }
+    else {
         ack.send(&SocketIoAck::<()>::err()).ok();
     }
 }
@@ -1548,7 +1551,8 @@ pub async fn join_room(
         let urc = UserRoomChange { uid, old_rid: old_connected_room, new_rid: payload.rid };
         s.broadcast().emit("user_room_change", &urc).ok();
         s.emit("user_room_change", &urc).ok();
-    } else {
+    }
+    else {
         let urj = UserRoomJoin { uid, rid: payload.rid };
         s.broadcast().emit("user_room_join", &urj).ok();
         s.emit("user_room_join", &urj).ok();
