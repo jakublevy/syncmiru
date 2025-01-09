@@ -24,7 +24,6 @@ pub struct RegForm {
     #[validate(custom(function = "validators::check_password_format"))]
     pub password: String,
 
-    #[validate(length(min = 1))]
     pub captcha: String,
 
     #[validate(custom(function = "validators::check_tkn"))]

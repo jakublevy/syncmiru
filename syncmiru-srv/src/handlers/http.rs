@@ -50,7 +50,6 @@ pub async fn register(
 
     let hashed_password = crypto::hash(payload.password.clone()).await?;
     if state.config.reg_pub.allowed {
-
         let hcaptcha_req = hcaptcha::Request::new(
             &state.config.reg_pub.hcaptcha_secret.as_ref().unwrap(),
             hcaptcha::Captcha::new(payload.captcha.as_str())?
@@ -69,7 +68,8 @@ pub async fn register(
         else {
             return Err(SyncmiruError::UnprocessableEntity("captcha".to_string()));
         }
-    } else {
+    }
+    else {
         if payload.reg_tkn.is_none() {
             return Err(SyncmiruError::UnprocessableEntity("reg_tkn".to_string()));
         }
@@ -146,7 +146,8 @@ pub async fn email_verify(
         ).await?;
         transaction.commit().await?;
         Ok(html::ok_verified(&payload.lang))
-    } else {
+    }
+    else {
         Err(SyncmiruError::UnprocessableEntity("invalid token".to_string()))
     }
 }
