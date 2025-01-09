@@ -17,6 +17,13 @@ use crate::config::LogOutput::{StdErr, Stdout};
 use crate::error::SyncmiruError;
 use crate::result::Result;
 
+/// Reads the configuration from a YAML file and parses it into a `Config` struct.
+///
+/// # Parameters:
+/// - `config_file`: The path to the YAML configuration file.
+///
+/// # Returns:
+/// A `Result` that either contains a `Config` struct, or an error if parsing failed.
 pub fn read(config_file: impl AsRef<Path> + Copy) -> Result<Config> {
     let cf_print = &config_file.as_ref().to_string_lossy();
     let mut yaml_str: String = Default::default();
@@ -39,6 +46,8 @@ pub fn read(config_file: impl AsRef<Path> + Copy) -> Result<Config> {
     )
 }
 
+
+/// Represents the entire configuration for the application.
 #[derive(Debug, Clone)]
 pub struct Config {
     pub srv: SrvConfig,
@@ -51,6 +60,8 @@ pub struct Config {
     pub extensions: Extensions
 }
 
+
+/// Represents the server-related configuration.
 #[derive(Debug, Clone)]
 pub struct SrvConfig {
     pub url: String,
@@ -58,6 +69,13 @@ pub struct SrvConfig {
 }
 
 impl SrvConfig {
+    /// Parses a YAML node to create a `SrvConfig` instance.
+    ///
+    /// # Parameters:
+    /// - `srv_yaml`: The YAML node representing the `srv` configuration section.
+    ///
+    /// # Returns:
+    /// A `Result` containing the parsed `SrvConfig` or an error if parsing fails.
     pub fn from(srv_yaml: &Yaml) -> Result<Self> {
         let url = srv_yaml["url"]
             .as_str()
@@ -72,6 +90,7 @@ impl SrvConfig {
     }
 }
 
+/// Represents the database-related configuration including connection details.
 #[derive(Debug, Clone)]
 pub struct DbConfig {
     pub name: String,
@@ -82,6 +101,13 @@ pub struct DbConfig {
 }
 
 impl DbConfig {
+    /// Parses a YAML node to create a `DbConfig` instance.
+    ///
+    /// # Parameters:
+    /// - `db_yaml`: The YAML node representing the `db` configuration section.
+    ///
+    /// # Returns:
+    /// A `Result` containing the parsed `DbConfig` or an error if parsing fails.
     pub fn from(db_yaml: &Yaml) -> Result<Self> {
         let name = db_yaml["name"]
             .as_str()
@@ -115,6 +141,8 @@ impl DbConfig {
     }
 }
 
+
+/// Represents the registration-related configuration including CAPTCHA settings.
 #[derive(Debug, Clone)]
 pub struct RegConfig {
     pub allowed: bool,
@@ -122,6 +150,13 @@ pub struct RegConfig {
 }
 
 impl RegConfig {
+    /// Parses a YAML node to create a `RegConfig` instance.
+    ///
+    /// # Parameters:
+    /// - `reg_yaml`: The YAML node representing the `registration_public` configuration section.
+    ///
+    /// # Returns:
+    /// A `Result` containing the parsed `RegConfig` or an error if parsing fails.
     pub fn from(reg_yaml: &Yaml) -> Result<Self> {
         let mut hcaptcha_secret: Option<String> = None;
         let allowed = reg_yaml["allowed"]
@@ -140,6 +175,8 @@ impl RegConfig {
     }
 }
 
+
+/// Represents the logging configuration.
 #[derive(Debug, Clone)]
 pub struct LogConfig {
     pub output: LogOutput,
@@ -147,6 +184,13 @@ pub struct LogConfig {
 }
 
 impl LogConfig {
+    /// Parses a YAML node to create a `LogConfig` instance.
+    ///
+    /// # Parameters:
+    /// - `log_yaml`: The YAML node representing the `log` configuration section.
+    ///
+    /// # Returns:
+    /// A `Result` containing the parsed `LogConfig` or an error if parsing fails.
     pub fn from(log_yaml: &Yaml) -> Result<Self> {
         let output = log_yaml["output"]
             .as_str()
@@ -181,6 +225,7 @@ impl LogConfig {
     }
 }
 
+/// Represents the possible outputs for logging, such as `Stdout`, `StdErr`, or a file.
 #[derive(Debug, PartialEq, Clone)]
 pub enum LogOutput {
     File(PathBuf),
@@ -188,12 +233,21 @@ pub enum LogOutput {
     StdErr
 }
 
+
+/// Represents the various log levels for logging (e.g., Error, Warn, Info, etc.).
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum LogLevel {
     Error, Warn, Info, Debug, Trace
 }
 
 impl LogLevel {
+    /// Converts a string representation of a log level to a `LogLevel` enum.
+    ///
+    /// # Parameters:
+    /// - `s`: The string representing the log level.
+    ///
+    /// # Returns:
+    /// An `Option` containing the corresponding `LogLevel` or `None` if invalid.
     pub fn from(s: &str) -> Option<LogLevel> {
         match s.to_lowercase().as_str() {
             "error" => Some(Self::Error),
@@ -207,6 +261,12 @@ impl LogLevel {
 }
 
 impl From<LogLevel> for simplelog::LevelFilter {
+    /// Converts a `LogLevel` into a `simplelog::LevelFilter`
+    /// # Parameters:
+    /// - `value`: The `LogLevel` value to convert.
+    ///
+    /// # Returns:
+    /// - A `simplelog::LevelFilter` that corresponds to the provided `LogLevel`.
     fn from(value: LogLevel) -> Self {
         match value {
             LogLevel::Error => simplelog::LevelFilter::Error,
@@ -218,6 +278,8 @@ impl From<LogLevel> for simplelog::LevelFilter {
     }
 }
 
+
+/// Represents the email-related configuration.
 #[derive(Debug, Clone)]
 pub struct EmailConf {
     pub smtp_host: String,
@@ -230,6 +292,13 @@ pub struct EmailConf {
 }
 
 impl EmailConf {
+    /// Parses a YAML node to create an `EmailConf` instance.
+    ///
+    /// # Parameters:
+    /// - `email`: The YAML node representing the `email` configuration section.
+    ///
+    /// # Returns:
+    /// A `Result` containing the parsed `EmailConf` or an error if parsing fails.
     pub fn from(email: &Yaml) -> Result<Self> {
         let smtp_host = email["smtp_host"]
             .as_str()
@@ -280,6 +349,8 @@ impl EmailConf {
     }
 }
 
+
+/// Represents the rate limiting configuration for different types of emails.
 #[derive(Debug, Copy, Clone)]
 pub struct EmailRates {
     pub forgotten_password: Option<Rate>,
@@ -289,6 +360,13 @@ pub struct EmailRates {
 }
 
 impl EmailRates {
+    /// Parses a YAML node to create an `EmailRates` instance.
+    ///
+    /// # Parameters:
+    /// - `rates_yaml`: The YAML node representing the `rates` configuration section for emails.
+    ///
+    /// # Returns:
+    /// A `Result` containing the parsed `EmailRates` or an error if parsing fails.
     pub fn from(rates_yaml: &Yaml) -> Result<Self> {
         let mut rates = Self { forgotten_password: None, verification: None, change_email: None, delete_account: None };
 
@@ -330,18 +408,34 @@ impl EmailRates {
     }
 }
 
+/// Parses a YAML node representing rate limits into a tuple of `(max, per)`.
+/// # Parameters:
+/// - `rate_yaml`: The YAML node containing the rate limit configuration, expected to have the keys `"max"` and `"per"`.
+///
+/// # Returns:
+/// - `Ok((max, per))`: A tuple containing the parsed values for the maximum number of requests (`max`) and the duration
+///   (`per`) in the rate limit configuration, both as `i64`.
+/// - `Err`: Returns an error if the `"max"` or `"per"` values are missing or cannot be parsed as `i64`.
+///
+/// # Errors:
+/// - If the `max` or `per` values are missing or invalid, the function will return a `SyncmiruError::YamlParseError`
+///   indicating the missing or incorrect field.
 fn parse_rate(rate_yaml: &Yaml) -> Result<(i64, i64)> {
     let max = rate_yaml["max"].as_i64().context("rate is missing max value")?;
     let per = rate_yaml["per"].as_i64().context("rate is missing per value")?;
     Ok((max, per))
 }
 
+
+/// Represents the rate limiting for a specific type of email.
 #[derive(Debug, Copy, Clone)]
 pub struct Rate {
     pub max: i64,
     pub per: i64
 }
 
+
+/// Represents the configuration for login JWT.
 #[derive(Debug, Clone)]
 pub struct LoginJwt {
     pub priv_pem: Vec<u8>,
@@ -350,6 +444,13 @@ pub struct LoginJwt {
 }
 
 impl LoginJwt {
+    /// Parses a YAML node to create a `LoginJwt` instance.
+    ///
+    /// # Parameters:
+    /// - `yaml`: The YAML node representing the `login_jwt` configuration section.
+    ///
+    /// # Returns:
+    /// A `Result` containing the parsed `LoginJwt` or an error if parsing fails.
     pub fn from(yaml: &Yaml) -> Result<Self> {
         let alg_str = yaml["algorithm"]
             .as_str()
@@ -373,12 +474,21 @@ impl LoginJwt {
     }
 }
 
+/// Implementation of the `JwtVerifier` trait for the `LoginJwt` struct.
+///
+/// This implementation provides the method to create a JWT verifier based on the
+/// public key and signing algorithm specified in the `LoginJwt` instance.
 impl JwtVerifier for LoginJwt {
     fn jwt_verifier(&self) -> Result<Box<dyn JwsVerifier>> {
         create_jwt_verifier(&self.alg, &self.pub_pem)
     }
 }
 
+
+/// Implementation of the `JwtSigner` trait for the `LoginJwt` struct.
+///
+/// This implementation provides the method to create a JWT signer based on the
+/// private key and signing algorithm specified in the `LoginJwt` instance.
 impl JwtSigner for LoginJwt {
     fn jwt_signer(&self) -> Result<Box<dyn JwsSigner>> {
         create_jwt_signer(&self.alg, &self.priv_pem)
@@ -387,6 +497,8 @@ impl JwtSigner for LoginJwt {
 
 pub type Sources = IndexMap<String, Source>;
 
+
+/// Represents the configuration for a source.
 #[derive(Debug, Clone)]
 pub struct Source {
     pub list_root_url: String,
@@ -397,6 +509,13 @@ pub struct Source {
 }
 
 impl Source {
+    /// Parses a YAML node to create a `Source` instance.
+    ///
+    /// # Parameters:
+    /// - `yaml`: The YAML node representing a source in the `sources` configuration section.
+    ///
+    /// # Returns:
+    /// A `Result` containing a `Source` instance or an error if parsing fails.
     pub fn from(yaml: &Yaml) -> Result<Sources> {
         let mut sources = Sources::new();
         if let Yaml::Hash(hash) = yaml {
@@ -444,18 +563,32 @@ impl Source {
     }
 }
 
+
+/// Implementation of the `JwtSigner` trait for the `Source` struct.
+///
+/// This implementation provides the method to create a JWT signer based on the
+/// private key and signing algorithm specified in the `Source` instance.
 impl JwtSigner for Source {
     fn jwt_signer(&self) -> Result<Box<dyn JwsSigner>> {
         create_jwt_signer(&self.alg, &self.priv_pem)
     }
 }
 
+
+/// Represents the extensions configuration, such as file type filters.
 #[derive(Debug, Clone)]
 pub struct Extensions {
     pub videos: Option<HashSet<String>>
 }
 
 impl Extensions {
+    /// Parses a YAML node to create an `Extensions` instance.
+    ///
+    /// # Parameters:
+    /// - `yaml`: The YAML node representing the `extensions` configuration section.
+    ///
+    /// # Returns:
+    /// A `Result` containing the parsed `Extensions` or an error if parsing fails.
     pub fn from(yaml: &Yaml) -> Result<Extensions> {
         let videos = Self::parse_yaml_opt_string_arr(&yaml["videos"])?;
         if videos.is_none() {
@@ -464,6 +597,16 @@ impl Extensions {
         Ok(Self { videos })
     }
 
+    /// Parses a YAML node representing an optional array of strings into a `HashSet<String>`.
+    /// # Parameters:
+    /// - `yaml`: The YAML node representing an array of strings (or an invalid value).
+    ///
+    /// # Returns:
+    /// - `Ok(Some(HashSet<String>))`: If the YAML node is a valid array of strings, returns a `HashSet` containing
+    /// the parsed strings.
+    /// - `Ok(None)`: If the YAML node is a bad value (empty or invalid type), returns `None`.
+    /// - `Err(SyncmiruError::YAMLArrayParseError)`: If the YAML node is an invalid array (not of type `array`), returns
+    /// an error.
     fn parse_yaml_opt_string_arr(yaml: &Yaml) -> Result<Option<HashSet<String>>> {
         if yaml.is_badvalue() {
             Ok(None)
@@ -486,6 +629,7 @@ impl Extensions {
     }
 }
 
+/// Enum representing the type of cryptographic key.
 #[derive(PartialEq)]
 enum KeyType {
     Private,
@@ -493,6 +637,7 @@ enum KeyType {
 }
 
 
+/// Represents the supported key algorithms for JWT signing and verification.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum KeyAlg {
     RS256,
@@ -502,6 +647,13 @@ pub enum KeyAlg {
 }
 
 impl KeyAlg {
+    /// Converts a string representation of a key algorithm to a `KeyAlg` enum.
+    ///
+    /// # Parameters:
+    /// - `s`: The string representing the key algorithm.
+    ///
+    /// # Returns:
+    /// An `Option` containing the corresponding `KeyAlg` or `None` if invalid.
     pub fn from(s: &str) -> Option<KeyAlg> {
         match s.to_lowercase().as_str() {
             "rs256" => Some(RS256),
@@ -513,6 +665,16 @@ impl KeyAlg {
     }
 }
 
+
+/// Parses a PEM-encoded key file and validates its type based on the specified key type and algorithm.
+/// # Arguments
+/// * `p` - The path to the PEM-encoded key file. This is passed as an implementer of `AsRef<Path>` and `Clone` for flexibility.
+/// * `kt` - A `KeyType` value indicating whether the key is expected to be a private or public key (`KeyType::Private` or `KeyType::Public`).
+/// * `ka` - A `KeyAlg` value representing the algorithm expected for the key (e.g., `RS256`, `RS512`, `ES256`, `ES512`).
+///
+/// # Returns
+/// * `Result<Vec<u8>>` - A result containing the key in PEM format as a byte vector if successful. If any errors occur, an error will be returned.
+///   The error type is `SyncmiruError::JwtKeyParseError` if the key does not match the expected type or if the file does not exist.
 fn parse_key(p: impl AsRef<Path> + Clone, kt: KeyType, ka: KeyAlg) -> Result<Vec<u8>> {
     if !p.as_ref().exists() {
         return Err(SyncmiruError::JwtKeyParseError(format!("{} does not exists", p.as_ref().display())))
@@ -532,14 +694,27 @@ fn parse_key(p: impl AsRef<Path> + Clone, kt: KeyType, ka: KeyAlg) -> Result<Vec
     Ok(pem_bytes.to_vec())
 }
 
+
+/// A trait for objects that can sign JWT tokens.
 pub trait JwtSigner {
     fn jwt_signer(&self) -> Result<Box<dyn JwsSigner>>;
 }
 
+/// A trait for objects that can verify JWT tokens.
 pub trait JwtVerifier {
     fn jwt_verifier(&self) -> Result<Box<dyn JwsVerifier>>;
 }
 
+
+/// Creates a JWT signer based on the provided algorithm and private key.
+///
+/// # Arguments
+/// * `alg` - A reference to a `KeyAlg` value that specifies the desired signing algorithm (RS256, RS512, ES256, or ES512).
+/// * `priv_pem` - A slice of bytes representing the private key in PEM format.
+///
+/// # Returns
+/// * `Result<Box<dyn JwsSigner>>` - A result that will contain a boxed `JwsSigner` if successful, or an error if the
+///   private key is invalid or the signing process fails. The `JwsSigner` is used to sign JWTs using the specified algorithm.
 pub fn create_jwt_signer(alg: &KeyAlg, priv_pem: &[u8]) -> Result<Box<dyn JwsSigner>> {
     match alg {
         RS256 => Ok(Box::new(josekit::jws::RS256.signer_from_pem(priv_pem)?)),
@@ -549,6 +724,16 @@ pub fn create_jwt_signer(alg: &KeyAlg, priv_pem: &[u8]) -> Result<Box<dyn JwsSig
     }
 }
 
+
+/// Creates a JWT verifier based on the provided algorithm and public key.
+///
+/// # Arguments
+/// * `alg` - A reference to a `KeyAlg` value that specifies the desired verification algorithm (RS256, RS512, ES256, or ES512).
+/// * `pub_pem` - A slice of bytes representing the public key in PEM format.
+///
+/// # Returns
+/// * `Result<Box<dyn JwsVerifier>>` - A result that will contain a boxed `JwsVerifier` if successful, or an error if the
+///   public key is invalid or the verification process fails. The `JwsVerifier` is used to verify JWTs using the specified algorithm.
 pub fn create_jwt_verifier(alg: &KeyAlg, pub_pem: &[u8]) -> Result<Box<dyn JwsVerifier>> {
     match alg {
         RS256 => Ok(Box::new(josekit::jws::RS256.verifier_from_pem(pub_pem)?)),
