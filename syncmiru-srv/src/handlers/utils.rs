@@ -1,3 +1,5 @@
+//! This module contains utility functions for handlers
+
 use std::sync::Arc;
 use std::time::Duration;
 use rand::Rng;

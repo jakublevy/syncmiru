@@ -18,12 +18,11 @@ pub struct BiMultiMap<K, V> {
     value_to_key: HashMap<V, K>,
 }
 
+/// Key must be hashable, comparable for equality, and cloneable
+/// Value must be hashable, comparable for equality, and cloneable
 impl<K, V> BiMultiMap<K, V>
     where
-        /// Key must be hashable, comparable for equality, and cloneable
         K: std::hash::Hash + Eq + Clone,
-
-        /// Value must be hashable, comparable for equality, and cloneable
         V: std::hash::Hash + Eq + Clone,
 {
     pub fn new() -> Self {

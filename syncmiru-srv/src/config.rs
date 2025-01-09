@@ -1,3 +1,6 @@
+//! This module defines the configuration-related types and functionality for the application.
+
+
 use std::collections::{HashSet};
 use std::fs;
 use std::fs::File;
