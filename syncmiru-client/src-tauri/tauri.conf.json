@@ -1,6 +1,6 @@
 {
   "productName": "Syncmiru",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "identifier": "cz.levy.jakub.client.syncmiru",
   "build": {
     "beforeDevCommand": "npm run dev",
